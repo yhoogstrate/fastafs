@@ -3,23 +3,16 @@
 #include <array>
 #include <vector>
 
-
+#include "include/fasta_index.hpp"
+#include "include/fasta.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521
-
-struct fasta_index {
-	std::vector<std::string> sequences;
-};
-
-struct fasta {
-	bool compressed;
-	bool twobit;
-
-	fasta_index index;
-};
+// https://github.com/samtools/samtools/blob/develop/faidx.c
 
 class Fasta {
+	fasta data;
+	
 	int cache(void) {
 		return 0;
 	}
@@ -27,9 +20,9 @@ class Fasta {
 	
 };
 
-int main()
+int main(int argc, char * argv[])
 {
-	std::cout << "usage: fastafs index -n hg38 test.fa";
+	std::cout << "usage: fastafs cache -n hg38 test.fa";
 	return 0;
 }
 
