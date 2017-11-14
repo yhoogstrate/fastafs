@@ -1,4 +1,8 @@
+CC=g++
+CFLAGS=-g -Wall -O2 -Wno-unused-function
+
+all: fastqfs
 
 fastqfs:
-	g++ -o bin/fastafs src/main.cpp
+	$(CC) $(CFLAGS) -o bin/fastafs src/main.cpp
 
