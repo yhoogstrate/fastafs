@@ -1,4 +1,6 @@
 
+#include "include/fasta_index.hpp"
+
 struct fasta {
 	bool compressed;
 	bool twobit;
