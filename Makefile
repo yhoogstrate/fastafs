@@ -9,3 +9,6 @@ build/Fasta.o:
 fastqfs: build/Fasta.o
 	$(CC) $(CFLAGS) -o bin/fastafs src/main.cpp build/Fasta.o
 
+clean:
+	rm -rf build/*.o
+	rm -rf bin/fastafs
