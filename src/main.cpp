@@ -5,6 +5,7 @@
 
 //#include "include/fasta_index.hpp"
 //#include "include/fasta.hpp"
+
 #include "include/Fasta.hpp"
 
 
@@ -16,7 +17,8 @@
 
 int main(int argc, char * argv[])
 {
-	Fasta f = Fasta();
+    std::string fname = "test/cache/test.fa";
+	Fasta f = Fasta(&fname);
 	printf("[%i]", f.cache());
 	
 	std::cout << "usage: fastafs cache -n hg38 test.fa";
