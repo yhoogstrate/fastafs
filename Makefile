@@ -23,4 +23,4 @@ clean:
 tidy:
 	astyle --style=linux include/*.hpp
 	astyle --style=linux src/*.cpp
-	astyle --style=linux test/*.cpp
+	#astyle --style=linux test/*.cpp

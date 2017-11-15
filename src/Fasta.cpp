@@ -22,16 +22,15 @@ int Fasta::cache(void)
 	std::string line;
 	std::ifstream myfile (*this->filename);
 	std::string sequence = "";
-
+	
 	if (myfile.is_open()) {
-		
+	
 		while(getline (myfile, line)) {
 			if (line[0] == '>') {
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				std::cout << line << '\n';
-			}
-			else {
-				
+			} else {
+			
 				char i = 0;
 				b = new TwoBitByte();
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
@@ -45,7 +44,7 @@ int Fasta::cache(void)
 						case 'c':
 						case 'C':
 							b->set(i, 1);
-						break;
+							break;
 						case 'a':
 						case 'A':
 							b->set(i, 2);
@@ -53,10 +52,10 @@ int Fasta::cache(void)
 						case 'g':
 						case 'G':
 							b->set(i, 3);
-						break;
+							break;
 					}
 					
-					i = (i+2) % 8;
+					i = (i + 2) % 8;
 					if(i == 0) {
 						b->print();
 						delete b;
