@@ -6,13 +6,13 @@ all: fastqfs
 build/TwoBitByte.o:
 	$(CC) $(CFLAGS) -c -o build/TwoBitByte.o src/TwoBitByte.cpp
 
-build/Fasta.o: build/TwoBitByte.o
-	$(CC) $(CFLAGS) -c -o build/Fasta.o src/Fasta.cpp
+build/fasta.o: build/TwoBitByte.o
+	$(CC) $(CFLAGS) -c -o build/fasta.o src/fasta.cpp
 
 
 
-fastqfs: build/Fasta.o build/TwoBitByte.o
-	$(CC) $(CFLAGS) -o bin/fastafs src/main.cpp build/Fasta.o build/TwoBitByte.o
+fastqfs: build/fasta.o build/TwoBitByte.o
+	$(CC) $(CFLAGS) -o bin/fastafs src/main.cpp build/fasta.o build/TwoBitByte.o
 
 clean:
 	rm -rf build/*.o

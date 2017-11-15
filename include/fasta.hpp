@@ -1,12 +1,12 @@
 
 #include <vector>
 
-class Fasta
+class fasta
 {
 		std::string *filename = nullptr;
 		std::vector<unsigned char> twobit_string;
 		
 	public:
-		Fasta(std::string *fname);
+		fasta(std::string *fname);
 		int cache(void);
 };

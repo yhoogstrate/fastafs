@@ -2,18 +2,18 @@
 #include <fstream>
 
 #include "TwoBitByte.hpp"
-#include "Fasta.hpp"
+#include "fasta.hpp"
 
 
 // is resource by filename required?
 // not yet, maybe other classes or empty?
-Fasta::Fasta(std::string *fname)
+fasta::fasta(std::string *fname)
 {
 	this->filename = fname;
 }
 
 // http://genome.ucsc.edu/FAQ/FAQformat.html#format7 2bit format explained
-int Fasta::cache(void)
+int fasta::cache(void)
 {
 	std::cout << "parsing " << *this->filename << std::endl;
 	

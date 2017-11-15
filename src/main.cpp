@@ -8,7 +8,7 @@
 //#include "include/fasta_index.hpp"
 //#include "include/fasta.hpp"
 
-#include "Fasta.hpp"
+#include "fasta.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[1], "cache") == 0) {
 			
 			std::string fname = "test/cache/test.fa";
-			Fasta f = Fasta(&fname);
+			fasta f = fasta(&fname);
 			printf("[%i]", f.cache());
 			
 			std::cout << "usage: fastafs cache -n hg38 test.fa";
