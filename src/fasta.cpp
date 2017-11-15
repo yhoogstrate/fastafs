@@ -30,9 +30,10 @@ int fasta::cache(void)
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				std::cout << line << '\n';
 			} else {
-				unsigned int i = 0;
+				unsigned int i = 0, n_start = 0, n_stop = 0;
 				char j = 6;
 				b = new TwoBitByte();
+				
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
 					switch(*it) {
 						case 't':
@@ -55,6 +56,13 @@ int fasta::cache(void)
 							break;
 						case 'n':
 						case 'N':
+							if(n_start == 0) {
+								n_start = i + 1;
+								n_stop = i + 1;
+							}
+							else if(n_stop == i) {
+								n_stop++;
+							}
 							// store 1-based and use 0 als null
 							// store begin_n and end_n;
 							// if last_n == i-1:
@@ -64,6 +72,13 @@ int fasta::cache(void)
 								std::cerr << "invalid chars in FASTA file" << std::endl;
 								exit(1);
 							break;
+					}
+					
+					if(n_start != 0 && *it != 'n' && *it != 'N') {
+						printf("store N [%i, %i]\n", n_start - 1, n_stop - 1);
+						n_start = 0;
+						//n_stop = 0;
+						// set n_start and n_stop to 0
 					}
 					
 					if(j == 0) {
