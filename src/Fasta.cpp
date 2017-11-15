@@ -31,9 +31,10 @@ int Fasta::cache(void)
 				std::cout << line << '\n';
 			} else {
 			
-				char i = 0;
+				char i = 6;
 				b = new TwoBitByte();
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
+					printf("*%i]\n",i);
 					switch(*it) {
 						case 't':
 						case 'T':
@@ -55,11 +56,14 @@ int Fasta::cache(void)
 							break;
 					}
 					
-					i = (i + 2) % 8;
 					if(i == 0) {
 						b->print();
 						delete b;
 						b = new TwoBitByte();
+						i = 6;
+					}
+					else {
+						i = (i - 2);// needs to iterat back {6, 4, 2, 0}
 					}
 				}
 			}
