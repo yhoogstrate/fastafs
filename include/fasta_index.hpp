@@ -10,6 +10,6 @@ struct fasta_index {
 	 * ("chr1", 6467)
 	 * ("chr2", 5344)
 	 */
-
+	
 	std::vector<std::string> sequences;
 };

@@ -15,9 +15,9 @@
 
 
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
-    std::string fname = "test/cache/test.fa";
+	std::string fname = "test/cache/test.fa";
 	Fasta f = Fasta(&fname);
 	printf("[%i]", f.cache());
 	

@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -Wall -O2 -Wno-unused-function -std=c++11 -Iinclude
+CFLAGS=-g -Wall -Wextra -O2 -Wno-unused-function -std=c++11 -Iinclude
 
 all: fastqfs
 
@@ -12,3 +12,10 @@ fastqfs: build/Fasta.o
 clean:
 	rm -rf build/*.o
 	rm -rf bin/fastafs
+
+
+
+tidy:
+	astyle --style=linux include/*.hpp
+	astyle --style=linux src/*.cpp
+	astyle --style=linux test/*.cpp
