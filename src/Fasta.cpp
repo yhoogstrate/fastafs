@@ -57,7 +57,7 @@ int Fasta::cache(void)
 					if(i == 0) {
 						b->print();
 						
-						this->data.twobit_string.push_back(b->data);
+						this->twobit_string.push_back(b->data);
 						//delete b;
 						b = new TwoBitByte();
 						i = 6;

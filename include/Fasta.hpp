@@ -1,10 +1,10 @@
 
-#include "fasta.hpp"
+#include <vector>
 
 class Fasta
 {
 		std::string *filename = nullptr;
-		fasta data;
+		std::vector<unsigned char> twobit_string;
 		
 	public:
 		Fasta(std::string *fname);
