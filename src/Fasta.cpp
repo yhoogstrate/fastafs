@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "TwoBitByte.hpp"
 #include "Fasta.hpp"
 
 
@@ -16,6 +17,8 @@ int Fasta::cache(void)
 {
 	std::cout << "parsing " << *this->filename << std::endl;
 	
+	TwoBitByte *b;
+	
 	std::string line;
 	std::ifstream myfile (*this->filename);
 	std::string sequence = "";
@@ -28,33 +31,36 @@ int Fasta::cache(void)
 				std::cout << line << '\n';
 			}
 			else {
-				/*
-				char some_char = 0;
-				some_char |= 1 << 0; // set the 7th bit (least significant bit)
-				some_char |= 1 << 1; // set the 6th bit
-				some_char |= 1 << 2; // set the 5th bit
-				 */
 				
+				char i = 0;
+				b = new TwoBitByte();
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
-					switch(*it) { //  T - 00, C - 01, A - 10, G - 11
-						case 'a':
-						case 'A':
-							sequence.push_back('0');
-						break;
-						case 'c':
-						case 'C':
-							sequence.push_back('1');
-							break;
+					switch(*it) {
 						case 't':
 						case 'T':
 						case 'u':
 						case 'U':
-							sequence.push_back('2');
+							b->set(i, 0);
+							break;
+						case 'c':
+						case 'C':
+							b->set(i, 1);
+						break;
+						case 'a':
+						case 'A':
+							b->set(i, 2);
 							break;
 						case 'g':
 						case 'G':
-							sequence.push_back('3');
+							b->set(i, 3);
 						break;
+					}
+					
+					i = (i+2) % 8;
+					if(i == 0) {
+						b->print();
+						delete b;
+						b = new TwoBitByte();
 					}
 				}
 			}
