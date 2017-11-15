@@ -28,7 +28,7 @@ int fasta::cache(void)
 		while(getline (myfile, line)) {
 			if (line[0] == '>') {
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
-				std::cout << line << '\n';
+				std::cout << "\n" << line << '\n';
 			} else {
 				unsigned int i = 0, n_start = 0, n_stop = 0;
 				char j = 6;
@@ -74,6 +74,9 @@ int fasta::cache(void)
 							break;
 					}
 					
+					
+					
+					/* ---- flush function ----------- */ 
 					if(n_start != 0 && *it != 'n' && *it != 'N') {
 						printf("store N [%i, %i]\n", n_start - 1, n_stop - 1);
 						n_start = 0;
@@ -89,6 +92,7 @@ int fasta::cache(void)
 						b = new TwoBitByte();
 						j = 6;
 					}
+					/* --------------------------------- */
 					else {
 						j = (j - 2);// needs to iterat back {6, 4, 2, 0}
 					}
@@ -96,8 +100,21 @@ int fasta::cache(void)
 					i++;
 				}
 				
-				// if i % 4 > 0
-				//    save semi filled 2bit byte
+				/* ---- flush function ----------- */ 
+				if(n_start != 0) {
+					n_stop++;
+					printf("store N [%i, %i]\n", n_start - 1, n_stop - 1);
+				}
+				
+				if(i % 4 != 0) {
+					b->print();
+					
+					this->twobit_string.push_back(b->data);
+					delete b;
+					b = new TwoBitByte();
+					//j = 6;
+				}
+				/* --------------------------------- */
 				
 				delete b;
 			}
