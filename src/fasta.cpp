@@ -30,7 +30,8 @@ int fasta::cache(void)
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				std::cout << line << '\n';
 			} else {
-				char i = 6;
+				unsigned int i = 0;
+				char j = 6;
 				b = new TwoBitByte();
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
 					switch(*it) {
@@ -38,34 +39,52 @@ int fasta::cache(void)
 						case 'T':
 						case 'u':
 						case 'U':
-							b->set(i, 0);
+							b->set(j, 0);
 							break;
 						case 'c':
 						case 'C':
-							b->set(i, 1);
+							b->set(j, 1);
 							break;
 						case 'a':
 						case 'A':
-							b->set(i, 2);
+							b->set(j, 2);
 							break;
 						case 'g':
 						case 'G':
-							b->set(i, 3);
+							b->set(j, 3);
+							break;
+						case 'n':
+						case 'N':
+							// store 1-based and use 0 als null
+							// store begin_n and end_n;
+							// if last_n == i-1:
+							//     last_n++
+						break;
+						default:
+								std::cerr << "invalid chars in FASTA file" << std::endl;
+								exit(1);
 							break;
 					}
 					
-					if(i == 0) {
+					if(j == 0) {
 						b->print();
 						
 						this->twobit_string.push_back(b->data);
-						//delete b;
+						delete b;
 						b = new TwoBitByte();
-						i = 6;
+						j = 6;
 					}
 					else {
-						i = (i - 2);// needs to iterat back {6, 4, 2, 0}
+						j = (j - 2);// needs to iterat back {6, 4, 2, 0}
 					}
+					
+					i++;
 				}
+				
+				// if i % 4 > 0
+				//    save semi filled 2bit byte
+				
+				delete b;
 			}
 		}
 		myfile.close();
