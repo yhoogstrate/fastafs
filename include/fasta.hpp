@@ -3,7 +3,8 @@
 
 struct fasta {
 	bool compressed;
-	bool twobit;
+	//bool twobit;
+    std::vector<unsigned char> twobit_string;
 	
 	fasta_index index;
 };

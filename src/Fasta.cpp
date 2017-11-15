@@ -30,11 +30,9 @@ int Fasta::cache(void)
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				std::cout << line << '\n';
 			} else {
-			
 				char i = 6;
 				b = new TwoBitByte();
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
-					printf("*%i]\n",i);
 					switch(*it) {
 						case 't':
 						case 'T':
@@ -58,7 +56,9 @@ int Fasta::cache(void)
 					
 					if(i == 0) {
 						b->print();
-						delete b;
+						
+						this->data.twobit_string.push_back(b->data);
+						//delete b;
 						b = new TwoBitByte();
 						i = 6;
 					}
