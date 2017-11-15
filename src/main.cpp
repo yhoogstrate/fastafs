@@ -6,7 +6,7 @@
 //#include "include/fasta_index.hpp"
 //#include "include/fasta.hpp"
 
-#include "include/Fasta.hpp"
+#include "Fasta.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521

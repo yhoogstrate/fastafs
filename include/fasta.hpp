@@ -1,5 +1,5 @@
 
-#include "include/fasta_index.hpp"
+#include "fasta_index.hpp"
 
 struct fasta {
 	bool compressed;

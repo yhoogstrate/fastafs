@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -Wall -O2 -Wno-unused-function -std=c++11
+CFLAGS=-g -Wall -O2 -Wno-unused-function -std=c++11 -Iinclude
 
 all: fastqfs
 

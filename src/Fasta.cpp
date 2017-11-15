@@ -1,5 +1,5 @@
 
-#include "include/Fasta.hpp"
+#include "Fasta.hpp"
 
 
 // is resource by filename required?

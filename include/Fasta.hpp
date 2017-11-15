@@ -1,5 +1,5 @@
 
-#include "include/fasta.hpp"
+#include "fasta.hpp"
 
 class Fasta {
     std::string *filename = nullptr;
