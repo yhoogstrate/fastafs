@@ -12,6 +12,20 @@ fasta::fasta(std::string *fname)
     this->filename = fname;
 }
 
+
+/*
+
+int values[4] = {6,4,2,0};
+
+int* nextvalues[4] = {&values[1],&values[2],&values[3],&values[4]};
+
+func next()
+
+ */
+
+
+///@todo create iterator that goes from 6 to 4 to 2 to 0
+
 // http://genome.ucsc.edu/FAQ/FAQformat.html#format7 2bit format explained
 int fasta::cache(void)
 {
@@ -40,19 +54,19 @@ int fasta::cache(void)
                     case 'T':
                     case 'u':
                     case 'U':
-                        b->set(j, 0);
+                        b->set(j, NUCELOTIDE_BITS_T);
                         break;
                     case 'c':
                     case 'C':
-                        b->set(j, 1);
+                        b->set(j, NUCELOTIDE_BITS_C);
                         break;
                     case 'a':
                     case 'A':
-                        b->set(j, 2);
+                        b->set(j, NUCELOTIDE_BITS_A);
                         break;
                     case 'g':
                     case 'G':
-                        b->set(j, 3);
+                        b->set(j, NUCELOTIDE_BITS_G);
                         break;
                     case 'n':
                     case 'N':
