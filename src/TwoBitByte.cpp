@@ -12,7 +12,7 @@ void TwoBitByte::set(unsigned char bit_offset, unsigned char nucleotide)
 	// => T - 00, C - 01, A - 10, G - 11
 	// => T - 00, C -  1, A -  2, G -  3
 	
-	this->data |= nucleotide << bit_offset;
+	this->data |= (unsigned char) (nucleotide << bit_offset);
 };
 
 void TwoBitByte::print()

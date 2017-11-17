@@ -31,7 +31,7 @@ int fasta::cache(void)
 				std::cout << "\n" << line << '\n';
 			} else {
 				unsigned int i = 0, n_start = 0, n_stop = 0;
-				char j = 6;
+				uint8_t j = 6;
 				b = new TwoBitByte();
 				
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
@@ -94,7 +94,7 @@ int fasta::cache(void)
 					}
 					/* --------------------------------- */
 					else {
-						j = (j - 2);// needs to iterat back {6, 4, 2, 0}
+						j --; j --;// needs to iterat back {6, 4, 2, 0}
 					}
 					
 					i++;
