@@ -44,13 +44,13 @@ configure_file("include/config.hpp.in" "include/config.hpp")
 # ------------------------------ Styling -------------------------------
 # run 'make tidy' to style the syntax using astyle
 
-#find_program(ASTYLE astyle)
+find_program(ASTYLE astyle)
 
 add_custom_command(
 				OUTPUT  make_tidy
-				COMMAND astyle --style=linux include/*.hpp
-				COMMAND astyle --style=linux src/*.cpp src/Utils/*.cpp
-				COMMAND astyle --style=linux test/*.cpp
+				COMMAND astyle -n --style=linux include/*.hpp
+				COMMAND astyle -n --style=linux src/*.cpp
+				COMMAND astyle -n --style=linux test/*.cpp
 			)
 
 add_custom_target(tidy DEPENDS make_tidy )

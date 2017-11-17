@@ -7,21 +7,27 @@ const char two_bit_byte::hash_table[(256*4) + 1] = "TTTTTTTCTTTATTTGTTCTTTCCTTCA
 
 void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 {
-	// byte_offset must be: {0, 2, 4 or 6};
-	// nucleotides must be:
-	// => T - 00, C - 01, A - 10, G - 11
-	// => T - 00, C -  1, A -  2, G -  3
-	
-	this->data |= (unsigned char) (nucleotide << bit_offset);
+    // byte_offset must be: {0, 2, 4 or 6};
+    // nucleotides must be:
+    // => T - 00, C - 01, A - 10, G - 11
+    // => T - 00, C -  1, A -  2, G -  3
+
+#if DEBUG
+    if(byte_offset != 0 and byte_offset != 2 and byte_offset != 4 and byte_offset != 6) {
+        throw std::invalid_argument("two_bit_byte(bit_offset, ..) must be 0, 2, 4 or 6\n");
+    }
+#endif //DEBUG
+
+    this->data |= (unsigned char) (nucleotide << bit_offset);
 };
 
 void two_bit_byte::print()
 {
-	// leuk, testen!
-	char c1 = two_bit_byte::hash_table[this->data * 4];
-	char c2 = two_bit_byte::hash_table[(this->data * 4) + 1] ;
-	char c3 = two_bit_byte::hash_table[(this->data * 4) + 2] ;
-	char c4 = two_bit_byte::hash_table[(this->data * 4) + 3] ;
-	printf("[%i] -> %c%c%c%c\n", this->data , c1 ,c2 ,c3 ,c4);
-	
+    // leuk, testen!
+    char c1 = two_bit_byte::hash_table[this->data * 4];
+    char c2 = two_bit_byte::hash_table[(this->data * 4) + 1] ;
+    char c3 = two_bit_byte::hash_table[(this->data * 4) + 2] ;
+    char c4 = two_bit_byte::hash_table[(this->data * 4) + 3] ;
+    printf("[%i] -> %c%c%c%c\n", this->data, c1,c2,c3,c4);
+
 }

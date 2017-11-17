@@ -18,7 +18,7 @@ set(BUILD_DIR      "../bin")
 set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 
 
-add_executable(test_cache          cache/test_cache.cpp)
+add_executable(test_cache          cache/test_cache.cpp ../src/two_bit_byte.cpp)
 
 set_target_properties(test_cache
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
