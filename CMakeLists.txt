@@ -96,7 +96,7 @@ endif()
 add_executable(fastafs
 					src/main.cpp
 					src/fasta.cpp
-					src/TwoBitByte.cpp
+					src/two_bit_byte.cpp
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")

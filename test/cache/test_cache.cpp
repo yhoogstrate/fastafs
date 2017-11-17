@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
  *
  * @test
  */
-BOOST_AUTO_TEST_CASE(Test_equality)
+BOOST_AUTO_TEST_CASE(test_equality_two_bit_byte)
 {
 	BOOST_CHECK_EQUAL(1, 1);
 

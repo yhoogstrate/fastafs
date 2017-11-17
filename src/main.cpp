@@ -8,6 +8,7 @@
 //#include "include/fasta_index.hpp"
 //#include "include/fasta.hpp"
 
+#include "config.hpp"
 #include "fasta.hpp"
 
 
@@ -16,8 +17,8 @@
 
 
 void usage(char** argv) {
-	std::cout << "Usage: " << argv[0] << std::endl << std::endl
-	<< "  fastafs cache      adds FASTA file to cache" << std::endl;
+	std::cout << "usage: " << PACKAGE << " [--version] [--help]" << std::endl << std::endl
+	<< "  " << PACKAGE << " cache      adds FASTA file to cache" << std::endl;
 }
 
 
@@ -27,6 +28,10 @@ int main(int argc, char *argv[])
 	{
 		if (strcmp(argv[1], "--help") == 0) {
 			usage(argv);
+		}
+		else if (strcmp(argv[1], "--version") == 0) {
+			std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << std::endl;
+            exit(0);
 		}
 		else if (strcmp(argv[1], "cache") == 0) {
 			

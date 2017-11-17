@@ -2,7 +2,7 @@
 #include <array>
 
 
-class TwoBitByte
+class two_bit_byte
 {
 	//protected:
 		//char hash_table[5][4] = {"TTTT","TTTC","TTTA","TTTG","TTCT"};

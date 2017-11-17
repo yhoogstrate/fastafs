@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "TwoBitByte.hpp"
+#include "two_bit_byte.hpp"
 #include "fasta.hpp"
 
 
@@ -17,7 +17,7 @@ int fasta::cache(void)
 {
 	std::cout << "parsing " << *this->filename << std::endl;
 	
-	TwoBitByte *b;
+	two_bit_byte *b;
 	
 	std::string line;
 	std::ifstream myfile (*this->filename);
@@ -32,7 +32,7 @@ int fasta::cache(void)
 			} else {
 				unsigned int i = 0, n_start = 0, n_stop = 0;
 				uint8_t j = 6;
-				b = new TwoBitByte();
+				b = new two_bit_byte();
 				
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
 					switch(*it) {
@@ -89,7 +89,7 @@ int fasta::cache(void)
 						
 						this->twobit_string.push_back(b->data);
 						delete b;
-						b = new TwoBitByte();
+						b = new two_bit_byte();
 						j = 6;
 					}
 					/* --------------------------------- */
@@ -111,7 +111,7 @@ int fasta::cache(void)
 					
 					this->twobit_string.push_back(b->data);
 					delete b;
-					b = new TwoBitByte();
+					b = new two_bit_byte();
 					//j = 6;
 				}
 				/* --------------------------------- */
