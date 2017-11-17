@@ -1,1 +1,3 @@
 ignore/
+CMakeFiles/
+CMakeCache.txt
