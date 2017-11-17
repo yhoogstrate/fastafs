@@ -1,6 +1,7 @@
+
+bin/
 ignore/
 CMakeFiles/
-CMakeCache.txt
 CMakeCache.txt
 DartConfiguration.tcl
 Makefile
@@ -8,3 +9,5 @@ include/config.hpp
 install_manifest.txt
 *.cmake
 
+Testing/
+cmake_install.cmake

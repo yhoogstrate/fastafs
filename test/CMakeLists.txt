@@ -12,9 +12,9 @@ else()
 endif()
 
 
-add_definitions(-std=c++0x)
+add_definitions(-std=c++11)
 
-set(BUILD_DIR      "../build")
+set(BUILD_DIR      "../bin")
 set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 
 

@@ -104,13 +104,13 @@ set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}"
 # ----------------------------------------------------------------------
 # ------------------------------ Testing -------------------------------
 
-#add_subdirectory(test)
+add_subdirectory(test)
 
-#enable_testing()
+enable_testing()
 
-#add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-#add_test(direction_test          "${BUILD_TEST_DIR}/direction_test")
+add_test(direction_test          "${BUILD_TEST_DIR}/test_cache")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'
