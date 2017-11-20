@@ -39,7 +39,7 @@ void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 			break;
 		case 3://NUCLEOTIDE_G (11)
 			this->data = (unsigned char) (this->data | (nucleotide << bit_offset));
-		break;
+			break;
 	}
 };
 
