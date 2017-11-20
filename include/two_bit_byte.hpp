@@ -14,6 +14,12 @@ class two_bit_byte
 	public:
 		unsigned char data;
 		void set(unsigned char, unsigned char);
-		void print();
 		const char *get();
+
+
+// debug functions
+#if DEBUG
+		void print();
+#endif //DEBUG
+
 };

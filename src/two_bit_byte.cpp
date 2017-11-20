@@ -43,6 +43,8 @@ void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 	}
 };
 
+
+#if DEBUG
 void two_bit_byte::print()
 {
 	// leuk, testen!
@@ -51,8 +53,9 @@ void two_bit_byte::print()
 	char c3 = two_bit_byte::hash_table[(this->data * 4) + 2] ;
 	char c4 = two_bit_byte::hash_table[(this->data * 4) + 3] ;
 	printf("[%i] -> %c%c%c%c\n", this->data, c1, c2, c3, c4);
-	
 }
+#endif //DEBUG
+
 
 const char *two_bit_byte::get()
 {
