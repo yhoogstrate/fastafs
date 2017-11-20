@@ -1,0 +1,37 @@
+/* Template for automatic generation of these variables into config.hpp  */
+
+/* user specified conf dir */
+#define DATA_DIR "@DESTDIR@@CMAKE_INSTALL_PREFIX@"
+
+/* Name of package */
+#define PACKAGE "@CMAKE_PROJECT_NAME@"
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "@CMAKE_PROJECT_NAME@"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "@CMAKE_PROJECT_NAME@ @PROJECT_VERSION@"
+
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "@CMAKE_PROJECT_NAME@"
+
+/* Define to the home page for this package. */
+#define PACKAGE_URL "@PACKAGE_URL@"
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "@PROJECT_VERSION@"
+
+/* Build type (release/debug) */
+#define DEBUG @DEBUG@
+
+/* Git commit SHA1 */
+#define GIT_SHA1_STRING "@GIT_SHA1_STRING@"
+
+
+#define NUCLEOTIDE_T 0 // 00
+#define NUCLEOTIDE_C 1 // 01
+#define NUCLEOTIDE_A 2 // 10
+#define NUCLEOTIDE_G 3 // 11
