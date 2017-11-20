@@ -45,7 +45,7 @@ matrix:
 script:
   - ctest --extra-verbose --output-on-failure
   ##- if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then for f in ./build/test/*; do valgrind --leak-check=full --show-reachable=no --error-exitcode=1 "$f"; done; fi
-  - if make tidy | grep "Formatted " ; then exit 2; else echo "No changes found by astyle" ; make tidy; fi;
+  #- if make tidy | grep "Formatted " ; then exit 2; else echo "No changes found by astyle" ; make tidy; fi;
 
 # DEfault method hides error messages for certain imports
 # ; python setup.py test
