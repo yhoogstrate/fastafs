@@ -23,7 +23,24 @@ void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 	}
 #endif //DEBUG
 	
-	this->data |= (unsigned char) (nucleotide << bit_offset);
+	//set   bit(s): INPUT |= 1 << N;
+	//unset bit(s): INPUT &= ~(1 << N);
+	switch(nucleotide) {
+		case 0://NUCLEOTIDE_T (00)
+			this->data = (unsigned char) (this->data & ~(3 << bit_offset));
+			break;
+		case 1://NUCLEOTIDE_C (01)
+			this->data = (unsigned char) (this->data & ~(2 << bit_offset));
+			this->data = (unsigned char) (this->data | (1 << bit_offset));
+			break;
+		case 2://NUCLEOTIDE_A (10)
+			this->data = (unsigned char) (this->data & ~(1 << bit_offset));
+			this->data = (unsigned char) (this->data | (2 << bit_offset));
+			break;
+		case 3://NUCLEOTIDE_G (11)
+			this->data = (unsigned char) (this->data | (nucleotide << bit_offset));
+		break;
+	}
 };
 
 void two_bit_byte::print()

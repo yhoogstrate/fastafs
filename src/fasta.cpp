@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "config.hpp"
+
 #include "two_bit_byte.hpp"
 #include "fasta.hpp"
 
@@ -54,19 +56,19 @@ int fasta::cache(void)
 						case 'T':
 						case 'u':
 						case 'U':
-							b->set(j, NUCELOTIDE_BITS_T);
+							b->set(j, NUCLEOTIDE_T);
 							break;
 						case 'c':
 						case 'C':
-							b->set(j, NUCELOTIDE_BITS_C);
+							b->set(j, NUCLEOTIDE_C);
 							break;
 						case 'a':
 						case 'A':
-							b->set(j, NUCELOTIDE_BITS_A);
+							b->set(j, NUCLEOTIDE_A);
 							break;
 						case 'g':
 						case 'G':
-							b->set(j, NUCELOTIDE_BITS_G);
+							b->set(j, NUCLEOTIDE_G);
 							break;
 						case 'n':
 						case 'N':
@@ -100,7 +102,7 @@ int fasta::cache(void)
 					if(j == 0) {
 						b->print();
 						
-						this->twobit_string.push_back(b->data);
+						this->twobit_string.push_back((unsigned char) b->data);
 						delete b;
 						b = new two_bit_byte();
 						j = 6;
@@ -123,7 +125,7 @@ int fasta::cache(void)
 				if(i % 4 != 0) {
 					b->print();
 					
-					this->twobit_string.push_back(b->data);
+					this->twobit_string.push_back((unsigned char) b->data);
 					delete b;
 					b = new two_bit_byte();
 					//j = 6;

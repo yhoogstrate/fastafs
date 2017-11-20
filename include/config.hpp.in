@@ -29,3 +29,9 @@
 
 /* Git commit SHA1 */
 #define GIT_SHA1_STRING "@GIT_SHA1_STRING@"
+
+
+#define NUCLEOTIDE_T 0 // 00
+#define NUCLEOTIDE_C 1 // 01
+#define NUCLEOTIDE_A 2 // 10
+#define NUCLEOTIDE_G 3 // 11

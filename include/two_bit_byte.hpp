@@ -1,10 +1,6 @@
 
 #include <array>
 
-#define NUCELOTIDE_BITS_T 0 // 00
-#define NUCELOTIDE_BITS_C 1 // 01
-#define NUCELOTIDE_BITS_A 2 // 10
-#define NUCELOTIDE_BITS_G 3 // 11
 
 
 class two_bit_byte
