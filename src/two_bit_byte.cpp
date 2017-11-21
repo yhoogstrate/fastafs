@@ -15,8 +15,6 @@ void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 	// => T - 00, C - 01, A - 10, G - 11
 	// => T - 00, C -  1, A -  2, G -  3
 	
-	printf("{%i}\n", bit_offset);
-	
 #if DEBUG
 	if(bit_offset != 0 and bit_offset != 2 and bit_offset != 4 and bit_offset != 6) {
 		throw std::invalid_argument("two_bit_byte(bit_offset, ..) must be 0, 2, 4 or 6\n");
@@ -42,6 +40,24 @@ void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 			break;
 	}
 };
+
+
+/**
+ * @brief fully decodes a twobit byte, not hash based, slower than two_bit_byte::get(void) but capable of determining very ends
+ * 
+**/
+char *two_bit_byte::get(unsigned char length) {
+	char *seq = new char[length+1];
+	
+	
+	unsigned int hash_offset = this->data * 4;
+	for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
+		seq[i] = two_bit_byte::hash_table[hash_offset + 0];
+	}
+
+	seq[length] = '\0';
+	return seq;
+}
 
 
 #if DEBUG

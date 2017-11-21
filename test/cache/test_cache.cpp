@@ -18,14 +18,29 @@ BOOST_AUTO_TEST_SUITE(Testing)
 BOOST_AUTO_TEST_CASE(test_equality_two_bit_byte)
 {
 	two_bit_byte b = two_bit_byte();
+	char *seq1;
+	char *seq2;
+	char *seq3;
+	char *seq4;
 	
 	// test 00 00 00 00 -> 00000000 -> 0
 	b.set(6, NUCLEOTIDE_T);
 	b.set(4, NUCLEOTIDE_T);
 	b.set(2, NUCLEOTIDE_T);
 	b.set(0, NUCLEOTIDE_T);
-	printf("[%i] [%s]\n", b.data, b.get());
 	BOOST_CHECK_EQUAL(b.data, 0);
+	seq1 = b.get(1);
+	seq2 = b.get(2);
+	seq3 = b.get(3);
+	seq4 = b.get(4);
+	BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
+	BOOST_CHECK_EQUAL(strcmp(seq2, "TT"), 0);
+	BOOST_CHECK_EQUAL(strcmp(seq3, "TTT"), 0);
+	BOOST_CHECK_EQUAL(strcmp(seq4, "TTTT"), 0);
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
 	
 	
 	// test 00 00 11 00 -> 00001100 -> 8+4 -> 12

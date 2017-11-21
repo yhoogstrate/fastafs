@@ -15,6 +15,7 @@ class two_bit_byte
 		unsigned char data;
 		void set(unsigned char, unsigned char);
 		const char *get();
+		char *get(unsigned char length);
 
 
 // debug functions
