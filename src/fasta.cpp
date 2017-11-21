@@ -100,8 +100,6 @@ int fasta::cache(void)
 					}
 					
 					if(j == 0) {
-						b->print();
-						
 						this->twobit_string.push_back((unsigned char) b->data);
 						delete b;
 						b = new two_bit_byte();
@@ -123,8 +121,6 @@ int fasta::cache(void)
 				}
 				
 				if(i % 4 != 0) {
-					b->print();
-					
 					this->twobit_string.push_back((unsigned char) b->data);
 					delete b;
 					b = new two_bit_byte();
