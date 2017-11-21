@@ -1,7 +1,7 @@
 
 #include <array>
 
-
+#include "config.hpp"
 
 class twobit_byte
 {

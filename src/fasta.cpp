@@ -3,8 +3,7 @@
 
 #include "config.hpp"
 
-#include "twobit_seq.hpp"
-#include "twobit_byte.hpp"
+#include "twobit_seq.hpp" // #include "twobit_byte.hpp"
 #include "fasta.hpp"
 
 
@@ -14,20 +13,6 @@ fasta::fasta(std::string *fname)
 {
 	this->filename = fname;
 }
-
-
-/*
-
-int values[4] = {6,4,2,0};
-
-int* nextvalues[4] = {&values[1],&values[2],&values[3],&values[4]};
-
-func next()
-
- */
-
-
-///@todo create iterator that goes from 6 to 4 to 2 to 0
 
 // http://genome.ucsc.edu/FAQ/FAQformat.html#format7 2bit format explained
 int fasta::cache(void)
@@ -48,10 +33,13 @@ int fasta::cache(void)
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				if(s != nullptr) {
 					s->print();
+					s->close_reading();
 					delete s;
 				}
+				
 				s = new twobit_seq();
 				s->name = line;
+				//s->open_reading();
 			} else {
 				unsigned int i = 0, n_start = 0, n_stop = 0;
 				uint8_t j = 6;
@@ -64,18 +52,22 @@ int fasta::cache(void)
 						case 'u':
 						case 'U':
 							b->set(j, NUCLEOTIDE_T);
+							s->add_nucleotide(NUCLEOTIDE_T);
 							break;
 						case 'c':
 						case 'C':
 							b->set(j, NUCLEOTIDE_C);
+							s->add_nucleotide(NUCLEOTIDE_C);
 							break;
 						case 'a':
 						case 'A':
 							b->set(j, NUCLEOTIDE_A);
+							s->add_nucleotide(NUCLEOTIDE_A);
 							break;
 						case 'g':
 						case 'G':
 							b->set(j, NUCLEOTIDE_G);
+							s->add_nucleotide(NUCLEOTIDE_G);
 							break;
 						case 'n':
 						case 'N':
@@ -140,8 +132,11 @@ int fasta::cache(void)
 		myfile.close();
 	}
 	
+	
+	
 	if(s != nullptr) {
 		s->print();
+		s->close_reading();
 		delete s;
 	}
 	return 0;
