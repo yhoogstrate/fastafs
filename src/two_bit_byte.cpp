@@ -43,14 +43,12 @@ void two_bit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 
 /**
  * @brief fully decodes a twobit byte, not hash based, slower than two_bit_byte::get(void) but capable of determining very ends
- * 
 **/
 char *two_bit_byte::get(unsigned char length) {
 	char *seq = new char[length+1];
 	
 	for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
 		seq[i] = two_bit_byte::inverse_hash[this->data][i];
-		
 	}
 
 	seq[length] = '\0';

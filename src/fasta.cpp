@@ -124,7 +124,6 @@ int fasta::cache(void)
 					this->twobit_string.push_back((unsigned char) b->data);
 					delete b;
 					b = new two_bit_byte();
-					//j = 6;
 				}
 				/* --------------------------------- */
 				

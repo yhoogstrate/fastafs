@@ -166,6 +166,9 @@ BOOST_AUTO_TEST_CASE(test_equality_two_bit_byte)
  */
 BOOST_AUTO_TEST_CASE(Test_size)
 {
+	two_bit_byte b = two_bit_byte();
+	
+	BOOST_CHECK_EQUAL(sizeof(b.data), 1);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
