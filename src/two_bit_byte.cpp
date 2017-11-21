@@ -52,7 +52,8 @@ char *two_bit_byte::get(unsigned char length) {
 	
 	unsigned int hash_offset = this->data * 4;
 	for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
-		seq[i] = two_bit_byte::hash_table[hash_offset + 0];
+		//printf("[%i:%c]", hash_offset + 1, two_bit_byte::hash_table[hash_offset + i]);
+		seq[i] = two_bit_byte::hash_table[hash_offset + i];
 	}
 
 	seq[length] = '\0';
