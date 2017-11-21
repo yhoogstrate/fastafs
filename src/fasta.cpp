@@ -3,7 +3,8 @@
 
 #include "config.hpp"
 
-#include "two_bit_byte.hpp"
+#include "twobit_seq.hpp"
+#include "twobit_byte.hpp"
 #include "fasta.hpp"
 
 
@@ -33,7 +34,8 @@ int fasta::cache(void)
 {
 	std::cout << "parsing " << *this->filename << std::endl;
 	
-	two_bit_byte *b;
+	twobit_byte *b;
+	twobit_seq *s = nullptr;
 	
 	std::string line;
 	std::ifstream myfile (*this->filename);
@@ -44,11 +46,16 @@ int fasta::cache(void)
 		while(getline (myfile, line)) {
 			if (line[0] == '>') {
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
-				std::cout << "\n" << line << '\n';
+				if(s != nullptr) {
+					s->print();
+					delete s;
+				}
+				s = new twobit_seq();
+				s->name = line;
 			} else {
 				unsigned int i = 0, n_start = 0, n_stop = 0;
 				uint8_t j = 6;
-				b = new two_bit_byte();
+				b = new twobit_byte();
 				
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
 					switch(*it) {
@@ -102,7 +109,7 @@ int fasta::cache(void)
 					if(j == 0) {
 						this->twobit_string.push_back((unsigned char) b->data);
 						delete b;
-						b = new two_bit_byte();
+						b = new twobit_byte();
 						j = 6;
 					}
 					/* --------------------------------- */
@@ -123,7 +130,7 @@ int fasta::cache(void)
 				if(i % 4 != 0) {
 					this->twobit_string.push_back((unsigned char) b->data);
 					delete b;
-					b = new two_bit_byte();
+					b = new twobit_byte();
 				}
 				/* --------------------------------- */
 				
@@ -133,5 +140,9 @@ int fasta::cache(void)
 		myfile.close();
 	}
 	
+	if(s != nullptr) {
+		s->print();
+		delete s;
+	}
 	return 0;
 }

@@ -4,7 +4,7 @@
 
 #include "config.hpp"
 
-#include "two_bit_byte.hpp"
+#include "twobit_byte.hpp"
 
 
 
@@ -15,9 +15,9 @@ BOOST_AUTO_TEST_SUITE(Testing)
  *
  * @test
  */
-BOOST_AUTO_TEST_CASE(test_equality_two_bit_byte)
+BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 {
-	two_bit_byte b = two_bit_byte();
+	twobit_byte b = twobit_byte();
 	char *seq1;
 	char *seq2;
 	char *seq3;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(test_equality_two_bit_byte)
  */
 BOOST_AUTO_TEST_CASE(Test_size)
 {
-	two_bit_byte b = two_bit_byte();
+	twobit_byte b = twobit_byte();
 	
 	BOOST_CHECK_EQUAL(sizeof(b.data), 1);
 }
