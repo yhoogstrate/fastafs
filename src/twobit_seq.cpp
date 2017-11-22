@@ -63,9 +63,19 @@ void twobit_seq::add_twobit(twobit_byte& tb) {
 //void flush_reading();
 
 void twobit_seq::close_reading() {
-	if(this->n % 4 != 0) { // sticky end
-		// set remaining 3, 2 or 1 bitpairs to 0
+	unsigned char sticky_end = this->n % 4;
+	if(sticky_end != 0) { // sticky end
+		signed int i;
+		// if i = 1, last three 2bits need to be set to 00
+		// 3 - i = 2, 
+		for(i = 3 - (signed int) sticky_end; i >= 0; i--) {
+			this->twobit_data->set((unsigned char) (i*2), 0);
+			printf("[%i]\n", i*2);
+		}
+		
 		// insert semi closed twobit
+		this->data.push_back(this->twobit_data->data);
+		printf(" CLOSING down [%i]\n", sticky_end);
 	}
 	delete this->twobit_data;
 	this->twobit_data = nullptr;
@@ -78,6 +88,11 @@ void twobit_seq::close_reading() {
 
 void twobit_seq::print(void) {
 	printf(">%s (size=%i, compressed=%i)\n", this->name.c_str(), this->n, (unsigned int) this->size());
+	unsigned int i;
+	for(i = 0; i < this->size(); i++) {
+		printf("%i\t",this->data[i]);
+	}
+	printf("\n");
 }
 
 size_t twobit_seq::size(void) {

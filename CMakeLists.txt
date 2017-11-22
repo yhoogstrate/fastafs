@@ -88,7 +88,7 @@ endif()
 
 
 if(DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion")# -Werror makes compilation crash when warnings are given (also part of Travis)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion -Werror")# -Werror makes compilation crash when warnings are given (also part of Travis)
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif()

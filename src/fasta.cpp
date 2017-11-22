@@ -32,8 +32,8 @@ int fasta::cache(void)
 			if (line[0] == '>') {
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				if(s != nullptr) {
-					s->print();
 					s->close_reading();
+					s->print();
 					delete s;
 				}
 				

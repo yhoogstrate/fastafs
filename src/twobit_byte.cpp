@@ -41,6 +41,7 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 };
 
 
+
 /**
  * @brief fully decodes a twobit byte, not hash based, slower than twobit_byte::get(void) but capable of determining very ends
 **/
