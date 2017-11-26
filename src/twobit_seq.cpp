@@ -70,12 +70,10 @@ void twobit_seq::close_reading() {
 		// 3 - i = 2, 
 		for(i = 3 - (signed int) sticky_end; i >= 0; i--) {
 			this->twobit_data->set((unsigned char) (i*2), 0);
-			printf("[%i]\n", i*2);
 		}
 		
 		// insert semi closed twobit
 		this->data.push_back(this->twobit_data->data);
-		printf(" CLOSING down [%i]\n", sticky_end);
 	}
 	delete this->twobit_data;
 	this->twobit_data = nullptr;
@@ -87,12 +85,34 @@ void twobit_seq::close_reading() {
 
 
 void twobit_seq::print(void) {
-	printf(">%s (size=%i, compressed=%i)\n", this->name.c_str(), this->n, (unsigned int) this->size());
+	twobit_byte t = twobit_byte();
+	//unsigned int unprocessed = (unsigned int) this->size();//0,2^32
+	
+	/*
+	this->n_starts;
+	this->n_ends;
+	 */
+	
+	printf(">%s (size=%i, compressed=%i)\nN: ", this->name.c_str(), this->n, (unsigned int) this->size());
 	unsigned int i;
+	for(i = 0; i < this->n_starts.size(); i++) {
+		printf("%i\t",this->n_starts[i]);
+	}
+	printf("\n:N\n");
+	for(i = 0; i < this->n_ends.size(); i++) {
+		printf("%i\t",this->n_ends[i]);
+	}
+	printf("\n");
+	
 	for(i = 0; i < this->size(); i++) {
 		printf("%i\t",this->data[i]);
 	}
 	printf("\n");
+	for(i = 0; i < this->size(); i++) {
+		t.data = this->data[i];
+		printf("%s    ", t.get());
+	}
+	printf("\n\n");
 }
 
 size_t twobit_seq::size(void) {

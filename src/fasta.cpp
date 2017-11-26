@@ -92,7 +92,7 @@ int fasta::cache(void)
 					
 					/* ---- flush function ----------- */
 					if(n_start != 0 && *it != 'n' && *it != 'N') {
-						printf("store N [%i, %i]\n", n_start - 1, n_stop - 1);
+						//printf("store N [%i, %i]\n", n_start - 1, n_stop - 1);
 						n_start = 0;
 						//n_stop = 0;
 						// set n_start and n_stop to 0
