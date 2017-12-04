@@ -37,6 +37,11 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 		case 3://NUCLEOTIDE_G (11)
 			this->data = (unsigned char) (this->data | (nucleotide << bit_offset));
 			break;
+#if DEBUG
+		default:
+			throw std::invalid_argument("twobit_byte::set(,nucleotide) invalid value\n");
+		break;
+#endif //DEBUG
 	}
 };
 

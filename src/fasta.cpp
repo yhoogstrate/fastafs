@@ -78,7 +78,7 @@ int fasta::cache(void)
 								n_stop++;
 							}
 							
-							//s->set_N(i);
+							s->add_N();
 							// store 1-based and use 0 als null
 							// store begin_n and end_n;
 							// if last_n == i-1:

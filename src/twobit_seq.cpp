@@ -7,7 +7,7 @@
 
 
 
-twobit_seq::twobit_seq(void) : twobit_data(nullptr), n(0) {
+twobit_seq::twobit_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0) {
 }
 
 /**
@@ -23,8 +23,12 @@ twobit_seq::~twobit_seq(void) {
 
 
 void twobit_seq::add_N() {
+	if(!this->previous_was_N) {
+		this->n_starts.push_back(this->n);
+	}
 	
-	//
+	this->previous_was_N = true;
+	//this->n++;
 }
 
 
@@ -54,7 +58,13 @@ void twobit_seq::add_nucleotide(unsigned char nucleotide) {
 #endif //DEBUG
 	}
 	
-	this->n ++;
+	if(this->previous_was_N) {
+		this->n_ends.push_back(this->n);
+	}
+	
+	
+	this->previous_was_N = false;
+	this->n++;
 }
 
 
@@ -67,7 +77,6 @@ void twobit_seq::add_twobit(twobit_byte& tb) {
 	this->n++;
 }
 
-//void flush_reading();
 
 void twobit_seq::close_reading() {
 	unsigned char sticky_end = this->n % 4;
@@ -82,6 +91,11 @@ void twobit_seq::close_reading() {
 		// insert semi closed twobit
 		this->data.push_back(this->twobit_data->data);
 	}
+	
+	if(this->previous_was_N) {
+		this->n_ends.push_back(this->n);
+	}
+	
 	delete this->twobit_data;
 	this->twobit_data = nullptr;
 }
@@ -93,19 +107,13 @@ void twobit_seq::close_reading() {
 
 void twobit_seq::print(void) {
 	twobit_byte t = twobit_byte();
-	//unsigned int unprocessed = (unsigned int) this->size();//0,2^32
-	
-	/*
-	this->n_starts;
-	this->n_ends;
-	 */
 	
 	printf(">%s (size=%i, compressed=%i)\nN: ", this->name.c_str(), this->n, (unsigned int) this->size());
 	unsigned int i;
 	for(i = 0; i < this->n_starts.size(); i++) {
 		printf("%i\t",this->n_starts[i]);
 	}
-	printf("\n:N\n");
+	printf("\n:N ");
 	for(i = 0; i < this->n_ends.size(); i++) {
 		printf("%i\t",this->n_ends[i]);
 	}
