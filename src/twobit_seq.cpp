@@ -22,6 +22,13 @@ twobit_seq::~twobit_seq(void) {
 #endif //DEBUG
 
 
+void twobit_seq::add_N() {
+	
+	//
+}
+
+
+
 void twobit_seq::add_nucleotide(unsigned char nucleotide) {
 	switch(this->n % 4) {
 		case 0:

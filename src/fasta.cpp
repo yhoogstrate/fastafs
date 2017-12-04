@@ -61,12 +61,12 @@ int fasta::cache(void)
 							break;
 						case 'a':
 						case 'A':
-							b->set(j, NUCLEOTIDE_A);
+							//b->set(j, NUCLEOTIDE_A);
 							s->add_nucleotide(NUCLEOTIDE_A);
 							break;
 						case 'g':
 						case 'G':
-							b->set(j, NUCLEOTIDE_G);
+							//b->set(j, NUCLEOTIDE_G);
 							s->add_nucleotide(NUCLEOTIDE_G);
 							break;
 						case 'n':
@@ -77,6 +77,8 @@ int fasta::cache(void)
 							} else if(n_stop == i) {
 								n_stop++;
 							}
+							
+							//s->set_N(i);
 							// store 1-based and use 0 als null
 							// store begin_n and end_n;
 							// if last_n == i-1:

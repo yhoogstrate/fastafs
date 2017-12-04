@@ -9,7 +9,9 @@ class twobit_seq
 	private:
 		std::vector<unsigned char> data;
 		twobit_byte *twobit_data;
-	
+		
+		bool previous_was_N;
+
 	public:
 		twobit_seq(void);
 #if DEBUG
@@ -24,6 +26,7 @@ class twobit_seq
 		std::vector<unsigned int> n_starts;
 		std::vector<unsigned int> n_ends;
 		
+		void add_N();
 		void add_nucleotide(unsigned char);
 		void add_twobit(twobit_byte&);
 		void flush_reading();
