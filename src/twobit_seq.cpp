@@ -108,9 +108,10 @@ void twobit_seq::close_reading() {
 void twobit_seq::print(void) {
 	bool in_N = false;
 	twobit_byte t = twobit_byte();
-	
-	printf(">%s (size=%i, compressed=%i)\nN: ", this->name.c_str(), this->n, (unsigned int) this->size());
 	unsigned int i;
+	
+	printf(">%s (size=%i, compressed=%i)\n", this->name.c_str(), this->n, (unsigned int) this->size());
+	/*
 	for(i = 0; i < this->n_starts.size(); i++) {
 		printf("%i\t",this->n_starts[i]);
 	}
@@ -127,6 +128,41 @@ void twobit_seq::print(void) {
 	for(i = 0; i < this->size(); i++) {
 		t.data = this->data[i];
 		printf("%s    ", t.get());
+	}
+	printf("\n\nfull-seq:\n");
+	*/
+	
+	unsigned int i_n_start = 0;//@todo make iterator
+	unsigned int i_n_end = 0;//@todo make iterator
+	unsigned int i_in_seq = 0;
+	unsigned int chunk_offset;
+	const char *chunk;
+	
+	for(i = 0; i < this->n; i++) {
+		printf("%i \n", i);
+		
+		// load chunk when needed
+		chunk_offset = i_in_seq % 4;
+		if(chunk_offset == 0)
+		{
+			t.data = this->data[i];
+			chunk = t.get();
+			printf(" - loading chunk[%i] = %s\n",i_in_seq / 4, chunk);
+		}
+		printf(":%c\n", chunk[chunk_offset]);
+		
+		
+		
+		
+		if(in_N) {
+			
+		}
+		else {
+			//chunk = 'ACTG';
+			//if i_in_seq % 4 == 0, new chunk
+			//printf chunk[i_in_seq % 4];
+			i_in_seq++;
+		}
 	}
 	printf("\n\n");
 }
