@@ -106,6 +106,7 @@ void twobit_seq::close_reading() {
 
 
 void twobit_seq::print(void) {
+	bool in_N = false;
 	twobit_byte t = twobit_byte();
 	
 	printf(">%s (size=%i, compressed=%i)\nN: ", this->name.c_str(), this->n, (unsigned int) this->size());
