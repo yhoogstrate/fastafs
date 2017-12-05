@@ -99,29 +99,44 @@ void fasta::print(void) {
 	}
 }
 
+unsigned int fasta::get_index_size() {
+	unsigned int n = this->data.size() * 5;// one byte to describe each size + 32bits to describe offset
 
-// http://genome.ucsc.edu/FAQ/FAQformat.html#format7 2bit format explained
-/*
-All fields are 32 bits unless noted. If the signature value is not as given, the reader program should byte-swap the signature and check if the swapped version matches. If so, all multiple-byte entities in the file will have to be byte-swapped. This enables these binary files to be used unchanged on different architectures.
-The header is followed by a file index, which contains one entry for each sequence. Each index entry contains three fields:
-nameSize - a byte containing the length of the name field
-name - the sequence name itself, of variable length depending on nameSize
-offset - the 32-bit offset of the sequence data relative to the start of the file
-The index is followed by the sequence records, which contain nine fields:
-dnaSize - number of bases of DNA in the sequence
-nBlockCount - the number of blocks of Ns in the file (representing unknown sequence)
-nBlockStarts - an array of length nBlockCount of 32 bit integers indicating the starting position of a block of Ns
-nBlockSizes - an array of length nBlockCount of 32 bit integers indicating the length of a block of Ns
-maskBlockCount - the number of masked (lower-case) blocks
-maskBlockStarts - an array of length maskBlockCount of 32 bit integers indicating the starting position of a masked block
-maskBlockSizes - an array of length maskBlockCount of 32 bit integers indicating the length of a masked block
-reserved - always zero for now
-packedDna - the DNA packed to two bits per base, represented as so: T - 00, C - 01, A - 10, G - 11. The first base is in the most significant 2-bit byte; the last base is in the least significant 2 bits. For example, the sequence TCAG is represented as 00011011.
-For a complete definition of all fields in the twoBit format, see this description in the source code.
- */
+	for(unsigned int i = 0; i < this->data.size(); i++){
+		n += (unsigned int) this->data[i]->name.size();
+	}
+	
+	return n;
+}
+
+unsigned int fasta::get_sequence_offset(unsigned int sequence) {
+	unsigned int n = 4+4+4+4 + this->get_index_size();
+	
+	printf("estimating offset for [%i]\n",sequence);
+	for(unsigned int i = 0; i < sequence; i++) {
+		n += 4; // dna_size
+		n += 4; // n_block_count
+		n += (unsigned int) this->data[i]->n_starts.size() * 4 * 2;//nBlockStarts + nBlockSizes
+		n += 4;//maskBlockCount
+		n += 0;//maskBlockStarts
+		n += 0;//maskBlockSizes
+		n += 4;//reserved
+		n += (unsigned int) this->data[i]->size();//packedDna
+		
+		printf(" packedDNA=%i  || [%i] -> %i\n", this->data[i]->size(),i, n);
+	}
+	
+		printf(" [==> %i\n", n);
+	return n;
+}
+
+
 void fasta::write(std::string filename) {
 
 	std::fstream twobit_out_stream (filename.c_str(),std::ios :: out | std::ios :: binary);
+	
+	unsigned int four_bytes;
+	unsigned char byte;
 	
 	char ch1[] = TWOBIT_MAGIC;
 	char ch2[] = TWOBIT_VERSION;
@@ -130,21 +145,23 @@ void fasta::write(std::string filename) {
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch1),(size_t) 4);
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch2),(size_t) 4);
 	
-	unsigned int four_bytes = (unsigned int) this->data.size();
+	four_bytes = (unsigned int) this->data.size();
 	twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 	
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
 	
-	unsigned char byte;
 	
 	for(unsigned int i = 0; i < this->data.size(); i++){
 		byte = (unsigned char) this->data[i]->name.size();
 		twobit_out_stream.write((char*) &byte,(size_t) 1);
 		
 		for(unsigned int j = 0; j < this->data[i]->name.size(); j++) {
-			byte = (unsigned char) this->data[i]->name[i];
+			byte = (unsigned char) this->data[i]->name[j];
 			twobit_out_stream.write((char*) &byte,(size_t) 1);
 		}
+		
+		four_bytes = this->get_sequence_offset(i);
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 	}
 	
 	twobit_out_stream.close();

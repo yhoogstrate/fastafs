@@ -5,8 +5,6 @@
 
 class fasta
 {
-
-
 		std::string *filename = nullptr;
 		
 		std::vector<twobit_seq *> data;
@@ -17,4 +15,6 @@ class fasta
 		int cache(void);
 		void print();
 		void write(std::string);
+		unsigned int get_index_size();
+		unsigned int get_sequence_offset(unsigned int);
 };
