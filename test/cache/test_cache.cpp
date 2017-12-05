@@ -40,7 +40,10 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "TTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "TTTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
 	
 	
 	// test 00 00 11 00 -> 00001100 -> 8+4 -> 12
@@ -59,8 +62,11 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "TTG"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "TTGT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "TTGT"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
-
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
+	
 	
 	// test 00 11 00 00 -> 00110000 -> 16+32 -> 48
 	b.set(6, NUCLEOTIDE_T);
@@ -78,8 +84,11 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "TGT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "TGTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "TGTT"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
-
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
+	
 	
 	// test 11 00 00 00 -> 11000000 -> 64+128 -> 192
 	b.set(6, NUCLEOTIDE_G);
@@ -97,7 +106,10 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "GTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "GTTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "GTTT"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
 	
 	
 	// test 10 01 01 10 -> 10010110 -> 2 + 4 + 16 + 128 -> 150
@@ -116,8 +128,11 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "ACC"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "ACCA"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "ACCA"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
-
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
+	
 	
 	
 	// test 11 11 11 11 -> 11111111 -> 255
@@ -136,7 +151,10 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "GGG"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "GGGG"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "GGGG"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
 	
 	// test 00 00 00 00 -> 00000000 -> 0
 	b.set(6, NUCLEOTIDE_T);
@@ -154,7 +172,10 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 	BOOST_CHECK_EQUAL(strcmp(seq3, "TTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq4, "TTTT"), 0);
 	BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);
-	delete seq1; delete seq2; delete seq3; delete seq4;
+	delete seq1;
+	delete seq2;
+	delete seq3;
+	delete seq4;
 }
 
 

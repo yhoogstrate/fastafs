@@ -41,7 +41,7 @@ int fasta::cache(void)
 				s = new twobit_seq();
 				s->name = line;
 			} else {
-				
+			
 				for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
 					switch(*it) {
 						case 't':

@@ -11,7 +11,7 @@ class twobit_seq
 		twobit_byte *twobit_data;
 		
 		bool previous_was_N;
-
+		
 	public:
 		twobit_seq(void);
 #if DEBUG
@@ -29,7 +29,7 @@ class twobit_seq
 		
 		void add_N();
 		void add_nucleotide(unsigned char);
-		void add_twobit(twobit_byte&);
+		void add_twobit(twobit_byte &);
 		void flush_reading();
 		void close_reading();
 		
