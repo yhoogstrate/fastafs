@@ -35,9 +35,10 @@ int main(int argc, char *argv[])
 		
 			std::string fname = "test/cache/test.fa";
 			fasta f = fasta(&fname);
-			printf("[%i]", f.cache());
-			
-			std::cout << "usage: fastafs cache -n hg38 test.fa";
+			f.cache();
+			f.print();
+			f.write("test.2bit");
+			std::cout << "usage: fastafs cache -n hg38 test.fa\n\n";
 		} else {
 			std::cerr << "Invalid 1st argument given" << std::endl;
 			return 1;
