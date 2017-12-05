@@ -81,8 +81,8 @@ int fasta::cache(void)
 	
 	
 	if(s != nullptr) {
-		s->print();
 		s->close_reading();
+		s->print();
 		delete s;
 	}
 	return 0;
