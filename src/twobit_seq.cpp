@@ -28,7 +28,7 @@ void twobit_seq::add_N() {
 	}
 	
 	this->previous_was_N = true;
-	//this->n++;
+	this->n++;
 }
 
 
@@ -59,7 +59,7 @@ void twobit_seq::add_nucleotide(unsigned char nucleotide) {
 	}
 	
 	if(this->previous_was_N) {
-		this->n_ends.push_back(this->n);
+		this->n_ends.push_back(this->n - 1);
 	}
 	
 	
@@ -93,11 +93,15 @@ void twobit_seq::close_reading() {
 	}
 	
 	if(this->previous_was_N) {
-		this->n_ends.push_back(this->n);
+		this->n_ends.push_back(this->n - 1);
 	}
 	
 	delete this->twobit_data;
 	this->twobit_data = nullptr;
+	
+	printf(" ------------- \n");
+	printf(" close reading \n");
+	printf(" ------------- \n");
 }
 
 
@@ -106,6 +110,13 @@ void twobit_seq::close_reading() {
 
 
 void twobit_seq::print(void) {
+#if DEBUG
+	if(this->n_starts.size() != this->n_ends.size())
+	{
+		//throw std::invalid_argument("unequal number of start and end positions for N regions\n");
+	}
+#endif //DEBUG
+
 	bool in_N = false;
 	twobit_byte t = twobit_byte();
 	unsigned int i;
@@ -140,15 +151,73 @@ void twobit_seq::print(void) {
 	const char *chunk;
 	
 	for(i = 0; i < this->n; i++) {
-		printf("%i \n", i);
-		
-
+		printf("%i\t", i);
 		
 		
 		
+		// als:
+		// - N gestart wordt [of]
+		// - als in-N
+			// voeg N toe
+			// als N stopt (i == ends[i-end])
+				// zet terug naar niet-N
+		// anders:
+			// parse chunks
+		
+		if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
+			printf("N	(started)\n");
+			i_n_start++;
+			
+			// if ..
+			// else, only for single N thus
+			// in_N = false
+			
+			if(i == this->n_ends[i_n_end]) {
+				i_n_end++;
+				in_N = false;
+				//printf(" - closing N\n");
+			}
+			else
+			{
+				in_N = true;
+			}
+		}
+		else if(in_N)
+		{
+			printf("N	(proceeding)\n");
+			
+			if(i == this->n_ends[i_n_end]) {
+				i_n_end++;
+				in_N = false;
+				//printf(" - closing N\n");
+			}
+		}
+		else
+		{
+				// load chunk when needed
+				chunk_offset = i_in_seq % 4;
+				if(chunk_offset == 0)
+				{
+					//printf("\n - loading chunk\n");
+					t.data = this->data[i_in_seq / 4];
+					chunk = t.get();
+					//printf("\n - loading chunk[%i] = (%i,%i) %s\n",i_in_seq / 4, this->data[i], t.data,  chunk);
+				}
+				printf("%c\n", chunk[chunk_offset]);
+				
+				i_in_seq++;
+		}
+		
+		/*
 		if(in_N)
 		{
 			printf("*N\n");
+			printf(" [%i , %i]\n",i,this->n_ends[i_n_end]);
+			if(i == this->n_ends[i_n_end]) {
+				i_n_end++;
+				in_N = false;
+				printf(" - closing N");
+			}
 		}
 		else {
 			
@@ -156,6 +225,7 @@ void twobit_seq::print(void) {
 			// check if we didn't enter an N region
 			if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
 				printf("N started!\n");
+				i_n_start++;
 				in_N = true;
 			}
 			else {
@@ -174,6 +244,7 @@ void twobit_seq::print(void) {
 				i_in_seq++;
 			}
 		}
+		* */
 	}
 	printf("\n\n");
 }
