@@ -102,11 +102,6 @@ void fasta::print(void) {
 
 // http://genome.ucsc.edu/FAQ/FAQformat.html#format7 2bit format explained
 /*
-A .2bit file stores multiple DNA sequences (up to 4 Gb total) in a compact randomly-accessible format. The file contains masking information as well as the DNA itself.
-The file begins with a 16-byte header containing the following fields:
- - sequenceCount - the number of sequences in the file.
- - reserved - always zero for now
-
 All fields are 32 bits unless noted. If the signature value is not as given, the reader program should byte-swap the signature and check if the swapped version matches. If so, all multiple-byte entities in the file will have to be byte-swapped. This enables these binary files to be used unchanged on different architectures.
 The header is followed by a file index, which contains one entry for each sequence. Each index entry contains three fields:
 nameSize - a byte containing the length of the name field
@@ -135,10 +130,22 @@ void fasta::write(std::string filename) {
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch1),(size_t) 4);
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch2),(size_t) 4);
 	
-	unsigned int i = (unsigned int) this->data.size();
-	twobit_out_stream.write( reinterpret_cast<char*>(&i), sizeof(i) );
+	unsigned int four_bytes = (unsigned int) this->data.size();
+	twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 	
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+	
+	unsigned char byte;
+	
+	for(unsigned int i = 0; i < this->data.size(); i++){
+		byte = (unsigned char) this->data[i]->name.size();
+		twobit_out_stream.write((char*) &byte,(size_t) 1);
+		
+		for(unsigned int j = 0; j < this->data[i]->name.size(); j++) {
+			byte = (unsigned char) this->data[i]->name[i];
+			twobit_out_stream.write((char*) &byte,(size_t) 1);
+		}
+	}
 	
 	twobit_out_stream.close();
 
