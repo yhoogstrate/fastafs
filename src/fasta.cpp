@@ -31,6 +31,7 @@ int fasta::cache(void)
 		while(getline (myfile, line)) {
 			if (line[0] == '>') {
 				line.erase(0, 1);// erases first part, quicker would be pointer from first char
+				
 				if(s != nullptr) {
 					s->close_reading();
 					s->print();
@@ -71,13 +72,10 @@ int fasta::cache(void)
 							break;
 					}
 				}
-				
-				//s->close_reading();
 			}
 		}
 		myfile.close();
 	}
-	
 	
 	
 	if(s != nullptr) {

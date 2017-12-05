@@ -19,6 +19,7 @@ class twobit_seq
 #endif //DEBUG
 		
 		unsigned int n;// effective size in nt
+		unsigned int N;// effective size of unnknown nulceotides (N's) in nt
 		size_t size(void);// size of compressed data, may be longer than 4*this->n
 		
 		std::string name;

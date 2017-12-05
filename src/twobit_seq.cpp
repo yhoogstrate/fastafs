@@ -7,7 +7,7 @@
 
 
 
-twobit_seq::twobit_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0) {
+twobit_seq::twobit_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0), N(0) {
 }
 
 /**
@@ -29,13 +29,15 @@ void twobit_seq::add_N() {
 	
 	this->previous_was_N = true;
 	this->n++;
+	this->N++;
 }
 
 
 
 void twobit_seq::add_nucleotide(unsigned char nucleotide) {
-	switch(this->n % 4) {
+	switch( (this->n - this->N) % 4) {
 		case 0:
+			delete this->twobit_data;
 			this->twobit_data = new twobit_byte();
 			this->twobit_data->set(6, nucleotide);
 		break;
@@ -79,7 +81,7 @@ void twobit_seq::add_twobit(twobit_byte& tb) {
 
 
 void twobit_seq::close_reading() {
-	unsigned char sticky_end = this->n % 4;
+	unsigned char sticky_end = (this->n - this->N) % 4;
 	if(sticky_end != 0) { // sticky end
 		signed int i;
 		// if i = 1, last three 2bits need to be set to 00
@@ -98,10 +100,6 @@ void twobit_seq::close_reading() {
 	
 	delete this->twobit_data;
 	this->twobit_data = nullptr;
-	
-	printf(" ------------- \n");
-	printf(" close reading \n");
-	printf(" ------------- \n");
 }
 
 
@@ -113,15 +111,15 @@ void twobit_seq::print(void) {
 #if DEBUG
 	if(this->n_starts.size() != this->n_ends.size())
 	{
-		//throw std::invalid_argument("unequal number of start and end positions for N regions\n");
+		throw std::invalid_argument("unequal number of start and end positions for N regions\n");
 	}
 #endif //DEBUG
-
+	
 	bool in_N = false;
 	twobit_byte t = twobit_byte();
 	unsigned int i;
 	
-	printf(">%s (size=%i, compressed=%i)\n", this->name.c_str(), this->n, (unsigned int) this->size());
+	printf(">%s (size=%i [ACTG: %i, N: %i], compressed=%i)\n", this->name.c_str(), this->n, this->n - this->N, this->N, (unsigned int) this->size());
 
 	printf("\nN[s]: ");
 	for(i = 0; i < this->n_starts.size(); i++) {
@@ -132,17 +130,6 @@ void twobit_seq::print(void) {
 		printf("%i\t",this->n_ends[i]);
 	}
 	printf("\n----------------------\n");
-	/*	
-	for(i = 0; i < this->size(); i++) {
-		printf("%i\t",this->data[i]);
-	}
-	printf("\n");
-	for(i = 0; i < this->size(); i++) {
-		t.data = this->data[i];
-		printf("%s    ", t.get());
-	}
-	printf("\n\nfull-seq:\n");
-	*/
 	
 	unsigned int i_n_start = 0;//@todo make iterator
 	unsigned int i_n_end = 0;//@todo make iterator
@@ -151,100 +138,41 @@ void twobit_seq::print(void) {
 	const char *chunk;
 	
 	for(i = 0; i < this->n; i++) {
+		if(i % 4 == 0 and i != 0){
+			printf("\n");
+		}
 		printf("%i\t", i);
 		
-		
-		
-		// als:
-		// - N gestart wordt [of]
-		// - als in-N
-			// voeg N toe
-			// als N stopt (i == ends[i-end])
-				// zet terug naar niet-N
-		// anders:
-			// parse chunks
+
 		
 		if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-			printf("N	(started)\n");
-			i_n_start++;
-			
-			// if ..
-			// else, only for single N thus
-			// in_N = false
-			
-			if(i == this->n_ends[i_n_end]) {
-				i_n_end++;
-				in_N = false;
-				//printf(" - closing N\n");
-			}
-			else
-			{
-				in_N = true;
-			}
+			in_N = true;
 		}
-		else if(in_N)
+		
+		if(in_N)
 		{
-			printf("N	(proceeding)\n");
+			printf("N\n");
 			
 			if(i == this->n_ends[i_n_end]) {
 				i_n_end++;
 				in_N = false;
-				//printf(" - closing N\n");
 			}
 		}
 		else
 		{
-				// load chunk when needed
-				chunk_offset = i_in_seq % 4;
-				if(chunk_offset == 0)
-				{
-					//printf("\n - loading chunk\n");
-					t.data = this->data[i_in_seq / 4];
-					chunk = t.get();
-					//printf("\n - loading chunk[%i] = (%i,%i) %s\n",i_in_seq / 4, this->data[i], t.data,  chunk);
-				}
-				printf("%c\n", chunk[chunk_offset]);
-				
-				i_in_seq++;
-		}
-		
-		/*
-		if(in_N)
-		{
-			printf("*N\n");
-			printf(" [%i , %i]\n",i,this->n_ends[i_n_end]);
-			if(i == this->n_ends[i_n_end]) {
-				i_n_end++;
-				in_N = false;
-				printf(" - closing N");
+			// load chunk when needed
+			chunk_offset = i_in_seq % 4;
+			if(chunk_offset == 0)
+			{
+				//printf("\n - loading chunk\n");
+				t.data = this->data[i_in_seq / 4];
+				chunk = t.get();
+				//printf("\n - loading chunk[%i] = (%i,%i) %s\n",i_in_seq / 4, this->data[i], t.data,  chunk);
 			}
-		}
-		else {
+			printf("%c\n", chunk[chunk_offset]);
 			
-			//printf("not in N\n");
-			// check if we didn't enter an N region
-			if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-				printf("N started!\n");
-				i_n_start++;
-				in_N = true;
-			}
-			else {
-				//printf(" chunk parsing\n");
-
-				// load chunk when needed
-				chunk_offset = i_in_seq % 4;
-				if(chunk_offset == 0)
-				{
-					t.data = this->data[i];
-					chunk = t.get();
-					printf(" - loading chunk[%i] = %s\n",i_in_seq / 4, chunk);
-				}
-				printf(":%c\n", chunk[chunk_offset]);
-				
-				i_in_seq++;
-			}
+			i_in_seq++;
 		}
-		* */
 	}
 	printf("\n\n");
 }
