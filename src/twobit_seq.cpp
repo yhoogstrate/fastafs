@@ -111,16 +111,17 @@ void twobit_seq::print(void) {
 	unsigned int i;
 	
 	printf(">%s (size=%i, compressed=%i)\n", this->name.c_str(), this->n, (unsigned int) this->size());
-	/*
+
+	printf("\nN[s]: ");
 	for(i = 0; i < this->n_starts.size(); i++) {
 		printf("%i\t",this->n_starts[i]);
 	}
-	printf("\n:N ");
+	printf("\nN[e]: ");
 	for(i = 0; i < this->n_ends.size(); i++) {
 		printf("%i\t",this->n_ends[i]);
 	}
-	printf("\n");
-	
+	printf("\n----------------------\n");
+	/*	
 	for(i = 0; i < this->size(); i++) {
 		printf("%i\t",this->data[i]);
 	}
@@ -141,27 +142,37 @@ void twobit_seq::print(void) {
 	for(i = 0; i < this->n; i++) {
 		printf("%i \n", i);
 		
-		// load chunk when needed
-		chunk_offset = i_in_seq % 4;
-		if(chunk_offset == 0)
+
+		
+		
+		
+		if(in_N)
 		{
-			t.data = this->data[i];
-			chunk = t.get();
-			printf(" - loading chunk[%i] = %s\n",i_in_seq / 4, chunk);
-		}
-		printf(":%c\n", chunk[chunk_offset]);
-		
-		
-		
-		
-		if(in_N) {
-			
+			printf("*N\n");
 		}
 		else {
-			//chunk = 'ACTG';
-			//if i_in_seq % 4 == 0, new chunk
-			//printf chunk[i_in_seq % 4];
-			i_in_seq++;
+			
+			//printf("not in N\n");
+			// check if we didn't enter an N region
+			if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
+				printf("N started!\n");
+				in_N = true;
+			}
+			else {
+				//printf(" chunk parsing\n");
+
+				// load chunk when needed
+				chunk_offset = i_in_seq % 4;
+				if(chunk_offset == 0)
+				{
+					t.data = this->data[i];
+					chunk = t.get();
+					printf(" - loading chunk[%i] = %s\n",i_in_seq / 4, chunk);
+				}
+				printf(":%c\n", chunk[chunk_offset]);
+				
+				i_in_seq++;
+			}
 		}
 	}
 	printf("\n\n");
