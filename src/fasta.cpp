@@ -100,7 +100,7 @@ void fasta::print(void) {
 }
 
 unsigned int fasta::get_index_size() {
-	unsigned int n = this->data.size() * 5;// one byte to describe each size + 32bits to describe offset
+	unsigned int n = (unsigned int) this->data.size() * 5;// one byte to describe each size + 32bits to describe offset
 
 	for(unsigned int i = 0; i < this->data.size(); i++){
 		n += (unsigned int) this->data[i]->name.size();
@@ -131,6 +131,8 @@ unsigned int fasta::get_sequence_offset(unsigned int sequence) {
 }
 
 
+
+// closely similar to: http://genome.ucsc.edu/FAQ/FAQformat.html#format7
 void fasta::write(std::string filename) {
 
 	std::fstream twobit_out_stream (filename.c_str(),std::ios :: out | std::ios :: binary);
@@ -150,7 +152,7 @@ void fasta::write(std::string filename) {
 	
 	twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
 	
-	
+	// write indices
 	for(unsigned int i = 0; i < this->data.size(); i++){
 		byte = (unsigned char) this->data[i]->name.size();
 		twobit_out_stream.write((char*) &byte,(size_t) 1);
@@ -162,6 +164,40 @@ void fasta::write(std::string filename) {
 		
 		four_bytes = this->get_sequence_offset(i);
 		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+	}
+	
+	// write data
+	for(unsigned int i = 0; i < this->data.size(); i++){
+		four_bytes = this->data[i]->n;
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		
+		four_bytes = (unsigned int) this->data[i]->n_starts.size();
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		
+		// N regions
+		for(unsigned int j = 0; j < this->data[i]->n_starts.size(); j++) {
+			four_bytes = (unsigned int) this->data[i]->n_starts[j];
+			twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		}
+		
+		for(unsigned int j = 0; j < this->data[i]->n_ends.size(); j++) {
+			four_bytes = (unsigned int) this->data[i]->n_ends[j];
+			twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		}
+		
+		// masked, not yet implemented
+		four_bytes = (unsigned int) 0;
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		
+		//reserved
+		twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+		
+		for(unsigned int j = 0; j < this->data[i]->data.size(); j++) {
+			byte = (unsigned char) this->data[i]->data[j];
+			twobit_out_stream.write((char*) &byte,(size_t) 1);
+		}
 	}
 	
 	twobit_out_stream.close();

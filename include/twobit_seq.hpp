@@ -7,12 +7,13 @@
 class twobit_seq
 {
 	private:
-		std::vector<unsigned char> data;
 		twobit_byte *twobit_data;
 		
 		bool previous_was_N;
 		
 	public:
+		std::vector<unsigned char> data;
+		
 		twobit_seq(void);
 #if DEBUG
 		~twobit_seq(void);
