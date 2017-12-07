@@ -127,10 +127,8 @@ unsigned int twobit::get_sequence_offset(unsigned int sequence)
         n += 4;//reserved
         n += (unsigned int) this->data[i]->size();//packedDna
 
-        //printf(" packedDNA=%i  || [%i] -> %i\n", this->data[i]->size(),i, n);
     }
 
-    //printf(" [==> %i\n", n);
     return n;
 }
 

@@ -5,6 +5,9 @@
 
 #include "twobit_header.hpp"
 
+unsigned int fourbytes_to_uint(char *chars, unsigned char offset) {
+    return (chars[0 + offset] << 24) | (chars[1 + offset] << 16) | (chars[2 + offset] << 8) | chars[3 + offset];
+}
 
 void twobit_header::load(std::string filename) {
     std::cout << "parsing file: " << filename << std::endl;
@@ -57,10 +60,33 @@ void twobit_header::load(std::string filename) {
                 }
             }
             
-            unsigned int n_seq = (memblock[0+8] << 24) | (memblock[1+8] << 16) | (memblock[2+8] << 8) | memblock[3+8];
+            unsigned int n_seq = fourbytes_to_uint(memblock, 8);
             
             
             printf(" \n n seqs: %i\n", n_seq);
+            unsigned char j;
+            for(i = 0; i < n_seq; i ++ ) {
+                file.read (memblock, 1);
+                printf("len seq name: %i\n", memblock[0]);
+                char name[memblock[0] + 1];
+                file.read (name, memblock[0]);
+                name[memblock[0]] = '\0';
+                printf("[%s]\n\n",name);
+                
+                
+                /*
+                for(j = 0; j < 4 ; j++) {
+                    printf("%i\t", memblock[j]);
+                    if(j % 4 == 3) {
+                        printf("\n");
+                    }
+                }
+
+                unsigned int seqlen = fourbytes_to_uint(memblock, 0);
+                printf("[%i] seq len=%i\n", i , seqlen);
+                */
+            }
+            
             
             file.close();
 
