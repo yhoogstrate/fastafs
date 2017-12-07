@@ -5,6 +5,12 @@
 
 #include "twobit.hpp"
 
+void uint_to_fourbytes(char *chars, unsigned int n) {
+    chars[0] = (unsigned char) ((n >> 24) & 0xFF);
+    chars[1] = (unsigned char) ((n >> 16) & 0xFF);
+    chars[2] = (unsigned char) ((n >> 8) & 0xFF);
+    chars[3] = (unsigned char) (n & 0xFF);
+}
 
 // is resource by filename required?
 // not yet, maybe other classes or empty?
@@ -150,13 +156,10 @@ void twobit::write(std::string filename)
     twobit_out_stream.write(reinterpret_cast<char *> (&ch2),(size_t) 4);
 
     //four_bytes = (unsigned int) this->data.size();
-    unsigned int n = (unsigned int) this->data.size();
+    //unsigned int n = (unsigned int) this->data.size();
     
     char ch3[4];
-    ch3[0] = (unsigned char) ((n >> 24) & 0xFF);
-    ch3[1] = (unsigned char) ((n >> 16) & 0xFF);
-    ch3[2] = (unsigned char) ((n >> 8) & 0xFF);
-    ch3[3] = (unsigned char) (n & 0xFF);
+    uint_to_fourbytes(ch3, (unsigned int) this->data.size());
     twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
 
     char ch4[] = "\0\0\0\0";
@@ -172,14 +175,19 @@ void twobit::write(std::string filename)
             twobit_out_stream.write((char*) &byte,(size_t) 1);
         }
 
-        four_bytes = this->get_sequence_offset(i);
-        twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+        uint_to_fourbytes(ch3, this->get_sequence_offset(i));
+        twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+
+        //four_bytes = this->get_sequence_offset(i);
+        //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
     }
 
     // write data
     for(unsigned int i = 0; i < this->data.size(); i++) {
-        four_bytes = this->data[i]->n;
-        twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+        uint_to_fourbytes(ch3, this->data[i]->n);
+        twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+        //four_bytes = this->data[i]->n;
+        //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 
         four_bytes = (unsigned int) this->data[i]->n_starts.size();
         twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
