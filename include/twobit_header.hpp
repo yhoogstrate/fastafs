@@ -3,10 +3,14 @@
 
 struct twobit_seq_header {
     std::string name;//may not exceed 255 chars in current datatype
+    unsigned int data_position;
     unsigned int n;// number nucleotides
     unsigned int N_regions;// number N regions
-    std::vector<unsigned int> n_starts;
-    std::vector<unsigned int> n_ends;
+    
+    // considered actual data:
+    //std::vector<unsigned int> n_starts;
+    //std::vector<unsigned int> n_ends;
+    
     
     // masked not -yet- needed
 };

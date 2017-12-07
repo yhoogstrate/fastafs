@@ -65,17 +65,20 @@ void twobit_header::load(std::string filename) {
             
             printf("\nn seqs: %i\n", n_seq);
             unsigned char j;
+            twobit_seq_header *s;
             for(i = 0; i < n_seq; i ++ ) {
+                s = new twobit_seq_header;
                 file.read (memblock, 1);
-                printf("\n\n------------------\n");
-                printf("  len seq name: %i\n", memblock[0]);
+
                 char name[memblock[0] + 1];
+                
                 file.read (name, memblock[0]);
                 name[memblock[0]] = '\0';
+                s->name = std::string(name);
                 printf("  [%s]\n",name);
                 
 
-                file.read (memblock, 4);
+                file.read(memblock, 4);
                 for(j = 0; j < 4 ; j++) {
                     printf("%i\t", (unsigned char) memblock[j]);
                     if(j % 4 == 3) {
@@ -83,14 +86,17 @@ void twobit_header::load(std::string filename) {
                     }
                 }
                 
-                unsigned int seqlen = fourbytes_to_uint(memblock, 0);
-                printf("[%i]seq start data/offset=%i\n", (unsigned int) i , seqlen);
+                s->data_position = fourbytes_to_uint(memblock, 0);
+                printf("[%i]seq start data/offset=%i\n", (unsigned int) i , s->data_position);
                 
+                this->data.push_back(s);
 
             }
 
+            for(i = 0; i < n_seq; i ++ ) {
+
 /*
-/*
+ *              read s->n and set it 
                 file.read (memblock, 4);
                 for(j = 0; j < 4 ; j++) {
                     printf("%i\t", (unsigned char) memblock[j]);
@@ -100,10 +106,12 @@ void twobit_header::load(std::string filename) {
                 }
                 
                 unsigned int nblocks = fourbytes_to_uint(memblock, 0);
+                s->N = nblocks;
                 printf("[%i]N-blocks=%i\n", (unsigned int) i , nblocks);
                 */
- * */            
-            
+            }
+
+   
             file.close();
 
             std::cout << "the entire file content is in memory";
