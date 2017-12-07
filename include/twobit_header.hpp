@@ -8,8 +8,8 @@ struct twobit_seq_header {
     unsigned int N_regions;// number N regions
     
     // considered actual data:
-    //std::vector<unsigned int> n_starts;
-    //std::vector<unsigned int> n_ends;
+    std::vector<unsigned int> n_starts;
+    std::vector<unsigned int> n_ends;
     
     
     // masked not -yet- needed

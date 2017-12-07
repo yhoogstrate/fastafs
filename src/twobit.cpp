@@ -189,18 +189,24 @@ void twobit::write(std::string filename)
         //four_bytes = this->data[i]->n;
         //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 
-        four_bytes = (unsigned int) this->data[i]->n_starts.size();
-        twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+        uint_to_fourbytes(ch3, this->data[i]->n_starts.size());
+        twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+        //four_bytes = (unsigned int) this->data[i]->n_starts.size();
+        //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 
         // N regions
         for(unsigned int j = 0; j < this->data[i]->n_starts.size(); j++) {
-            four_bytes = (unsigned int) this->data[i]->n_starts[j];
-            twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+            uint_to_fourbytes(ch3, this->data[i]->n_starts[j]);
+            twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+            //four_bytes = (unsigned int) this->data[i]->n_starts[j];
+            //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
         }
 
         for(unsigned int j = 0; j < this->data[i]->n_ends.size(); j++) {
-            four_bytes = (unsigned int) this->data[i]->n_ends[j];
-            twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
+            uint_to_fourbytes(ch3, this->data[i]->n_ends[j]);
+            twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+            //four_bytes = (unsigned int) this->data[i]->n_ends[j];
+            //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
         }
 
         // masked, not yet implemented

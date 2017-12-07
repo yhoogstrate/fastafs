@@ -79,36 +79,56 @@ void twobit_header::load(std::string filename) {
                 
 
                 file.read(memblock, 4);
-                for(j = 0; j < 4 ; j++) {
-                    printf("%i\t", (unsigned char) memblock[j]);
-                    if(j % 4 == 3) {
-                        printf("\n");
-                    }
-                }
-                
+
                 s->data_position = fourbytes_to_uint(memblock, 0);
-                printf("[%i]seq start data/offset=%i\n", (unsigned int) i , s->data_position);
+                printf("[%u]seq start data/offset=%i\n", (unsigned int) i , s->data_position);
                 
                 this->data.push_back(s);
 
             }
 
-            for(i = 0; i < n_seq; i ++ ) {
 
-/*
- *              read s->n and set it 
-                file.read (memblock, 4);
-                for(j = 0; j < 4 ; j++) {
-                    printf("%i\t", (unsigned char) memblock[j]);
-                    if(j % 4 == 3) {
-                        printf("\n");
-                    }
-                }
+
+            for(i = 0; i < n_seq; i ++ ) {
+                s = this->data[i];
+                printf("\n\ngoto: %u\n",  s->data_position);
                 
+                file.seekg ( s->data_position);
+
+                
+                file.read(memblock, 4);
+                s->n = fourbytes_to_uint(memblock, 0);
+                printf("[%i]n=%i\n", (unsigned int) i , (unsigned int) s->n);
+
+                file.read(memblock, 4);
                 unsigned int nblocks = fourbytes_to_uint(memblock, 0);
-                s->N = nblocks;
+                s->N_regions = nblocks;
                 printf("[%i]N-blocks=%i\n", (unsigned int) i , nblocks);
-                */
+
+                for(j = 0 ; nblocks > j  ; j ++) {
+                    file.read(memblock, 4);
+                    unsigned int nblock = fourbytes_to_uint(memblock, 0);
+                    s->n_starts.push_back(nblock);
+                    printf("[%i]N-block start: %i\n", (unsigned int) i , nblock);
+
+                }
+                for(j = 0 ; j < nblocks ; j ++) {
+                    file.read(memblock, 4);
+                    unsigned int nblock = fourbytes_to_uint(memblock, 0);
+                    s->n_ends.push_back(nblock);
+                    printf("[%i]N-block start: %i\n", (unsigned int) i , nblock);
+
+                }
+
+                file.read(memblock, 4);
+                unsigned int maskblock = fourbytes_to_uint(memblock, 0);
+                printf("mask: %i\n", (unsigned int) i , maskblock);
+
+                file.read(memblock, 4);
+                unsigned int nullblock = fourbytes_to_uint(memblock, 0);
+                printf("null: %i\n", (unsigned int) i , nullblock);
+
+                
             }
 
    
