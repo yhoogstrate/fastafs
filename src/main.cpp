@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
                 f.cache();
                 f.print();
                 f.write("test.2bit");
+                printf("written to test.2bit\n");
             }
             else {
                 std::cout << "usage: " << PACKAGE << " cache -n hg38 test.fa\n\n";

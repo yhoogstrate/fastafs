@@ -127,10 +127,10 @@ unsigned int twobit::get_sequence_offset(unsigned int sequence)
         n += 4;//reserved
         n += (unsigned int) this->data[i]->size();//packedDna
 
-        printf(" packedDNA=%i  || [%i] -> %i\n", this->data[i]->size(),i, n);
+        //printf(" packedDNA=%i  || [%i] -> %i\n", this->data[i]->size(),i, n);
     }
 
-    printf(" [==> %i\n", n);
+    //printf(" [==> %i\n", n);
     return n;
 }
 
@@ -146,16 +146,23 @@ void twobit::write(std::string filename)
     unsigned char byte;
 
     char ch1[] = TWOBIT_MAGIC;
-    char ch2[] = TWOBIT_VERSION;
-    char ch3[] = "\0\0\0\0";
-
     twobit_out_stream.write(reinterpret_cast<char *> (&ch1),(size_t) 4);
+    
+    char ch2[] = TWOBIT_VERSION;
     twobit_out_stream.write(reinterpret_cast<char *> (&ch2),(size_t) 4);
 
-    four_bytes = (unsigned int) this->data.size();
-    twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
-
+    //four_bytes = (unsigned int) this->data.size();
+    unsigned int n = (unsigned int) this->data.size();
+    
+    char ch3[4];
+    ch3[0] = (unsigned char) ((n >> 24) & 0xFF);
+    ch3[1] = (unsigned char) ((n >> 16) & 0xFF);
+    ch3[2] = (unsigned char) ((n >> 8) & 0xFF);
+    ch3[3] = (unsigned char) (n & 0xFF);
     twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
+
+    char ch4[] = "\0\0\0\0";
+    twobit_out_stream.write(reinterpret_cast<char *> (&ch4),(size_t) 4);
 
     // write indices
     for(unsigned int i = 0; i < this->data.size(); i++) {
