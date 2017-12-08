@@ -93,17 +93,28 @@ void twobit_header::load(std::string filename) {
                 s = this->data[i];
                 printf("\n\ngoto: %u\n",  s->data_position);
                 
-                file.seekg ( s->data_position);
+                //file.seekg ( s->data_position);
 
-                
+                // n (seq size)
                 file.read(memblock, 4);
+                for(j = 0; j < 4 ; j++) {
+                    printf("%i\t", memblock[j]);
+                }
+                printf("\n");
                 s->n = fourbytes_to_uint(memblock, 0);
                 printf("[%i]n=%i\n", (unsigned int) i , (unsigned int) s->n);
 
+
+
+                // N blocks
                 file.read(memblock, 4);
+                for(j = 0; j < 4 ; j++) {
+                    printf("%i\t", memblock[j]);
+                }
+                printf("\n");
                 unsigned int nblocks = fourbytes_to_uint(memblock, 0);
                 s->N_regions = nblocks;
-                printf("[%i]N-blocks=%i\n", (unsigned int) i , nblocks);
+                printf("[%i]N-blocks=%u\n\n", (unsigned int) i , nblocks);
 
                 for(j = 0 ; nblocks > j  ; j ++) {
                     file.read(memblock, 4);
@@ -121,14 +132,43 @@ void twobit_header::load(std::string filename) {
                 }
 
                 file.read(memblock, 4);
+                for(j = 0; j < 4 ; j++) {
+                    printf("[%i]\t", memblock[j]);
+                }
+                printf("\n");
                 unsigned int maskblock = fourbytes_to_uint(memblock, 0);
-                printf("mask: %i\n", (unsigned int) i , maskblock);
+                printf("mask: %i\n\n", (unsigned int) i , maskblock);
 
+                
+                
+
+                unsigned int n_twobit_datapoints = s->n;// - s->N_regions + 3) / 4;
+                printf("[%i]\n", n_twobit_datapoints);
+                for(j = 0 ; j < s->N_regions; j++) {
+                    printf("  %i - %i = %i \n",s->n_ends[j] , s->n_starts[j],s->n_ends[j] - s->n_starts[j]);
+                    n_twobit_datapoints -= s->n_ends[j] - s->n_starts[j] + 1;
+                    printf(" - [%i]\n", n_twobit_datapoints);
+                }
+                n_twobit_datapoints = (n_twobit_datapoints + 3) / 4;
+                printf(" / [%i]\n", n_twobit_datapoints);
+                for(j = 0; j <  n_twobit_datapoints; j++) {
+                    file.read (memblock, 1);
+                    printf("[%i]\t", memblock[0]);
+                }
+                printf("\ndata\n\n");
+                
+
+
+                /*
                 file.read(memblock, 4);
+                for(j = 0; j < 4 ; j++) {
+                    printf("[%i]\t", memblock[j]);
+                }
+                printf("\n");
                 unsigned int nullblock = fourbytes_to_uint(memblock, 0);
                 printf("null: %i\n", (unsigned int) i , nullblock);
 
-                
+                */
             }
 
    
