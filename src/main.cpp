@@ -7,7 +7,7 @@
 
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
-//#include "fastafs.hpp"
+#include "database.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521
@@ -62,6 +62,9 @@ int main(int argc, char *argv[])
                 std::cout << "    -p, --padding    width of nucleotide lines (int > 0; default=60)\n";
                 std::cout << "\n";
             }
+        } else if (strcmp(argv[1], "list") == 0) {
+            database d = database();
+            d.list();
         } else {
             std::cerr << PACKAGE << ": '" << argv[1] << "' is not a " << PACKAGE <<" command. See '" << PACKAGE <<" --help':" << std::endl<< std::endl;
             usage(argv);
