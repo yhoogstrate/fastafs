@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
             }
         } else if (strcmp(argv[1], "view") == 0) {
             if(argc > 2) {
-                std::string fname = std::string(argv[2]);
+                std::string fname = std::string(argv[argc - 1]);
                 twobit_header f = twobit_header();
                 f.load(&fname);
                 f.view(60);

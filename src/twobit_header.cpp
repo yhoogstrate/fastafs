@@ -91,7 +91,6 @@ void twobit_header::load(std::string *filename) {
     std::ifstream file (*filename, std::ios::in|std::ios::binary|std::ios::ate);
     if (file.is_open())
     {
-        std::cout << "parsing file: " << *filename << std::endl;
         this->filename = filename;
         
         size = file.tellg();
@@ -146,7 +145,6 @@ void twobit_header::load(std::string *filename) {
 
                 file.read(memblock, 4);
                 s->data_position = fourbytes_to_uint(memblock, 0);
-                //printf("[%u]seq start data/offset=%i\n", (unsigned int) i , s->data_position);
                 
                 this->data.push_back(s);
 
@@ -197,7 +195,6 @@ void twobit_header::load(std::string *filename) {
    
             file.close();
 
-            //std::cout << "the entire file contpaddingent is in memory";
 
             delete[] memblock;
         }
