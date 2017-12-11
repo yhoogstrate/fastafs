@@ -217,7 +217,7 @@ void twobit_header::view(unsigned int padding) {
     if (file.is_open())
     {
         for(unsigned int i = 0; i < this->data.size(); i++) {
-            this->data[i]->view(4, &file);
+            this->data[i]->view(padding, &file);
         }
         file.close();
     }
