@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
                 std::string fname = "test/cache/test.fa";
                 twobit f = twobit(&fname);
                 f.cache();
-                f.print();
+                //f.print();
                 f.write("test.2bit");
                 printf("written to test.2bit\n");
             }

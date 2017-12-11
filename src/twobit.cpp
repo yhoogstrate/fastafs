@@ -120,11 +120,8 @@ unsigned int twobit::get_index_size()
 
 unsigned int twobit::get_sequence_offset(unsigned int sequence)
 {
-    unsigned int n = 4+4+4+4;
-    //n += 4+4+4;
-    n += this->get_index_size();
+    unsigned int n = 4+4+4+4 + this->get_index_size();
 
-    printf("estimating offset for [%i]\n",sequence);
     for(unsigned int i = 0; i < sequence; i++) {
         n += 4; // dna_size
         n += 4; // n_block_count
@@ -145,7 +142,6 @@ unsigned int twobit::get_sequence_offset(unsigned int sequence)
 // closely similar to: http://genome.ucsc.edu/FAQ/FAQformat.html#format7
 void twobit::write(std::string filename)
 {
-
     std::fstream twobit_out_stream (filename.c_str(),std::ios :: out | std::ios :: binary);
 
     unsigned int four_bytes;
@@ -206,11 +202,9 @@ void twobit::write(std::string filename)
         //s->M
         four_bytes = (unsigned int) 0;
         twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
-        
 
         for(unsigned int j = 0; j < this->data[i]->data.size(); j++) {
             byte = (unsigned char) this->data[i]->data[j];
-            //byte = 7;
             twobit_out_stream.write((char*) &byte,(size_t) 1);
         }
     }

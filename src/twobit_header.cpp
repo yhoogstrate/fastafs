@@ -31,8 +31,6 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh) {
     printf(">");
     std::cout << this->name << "\n";
     
-    printf(" settings offset to: %u\n", (unsigned int) this->data_position);
-
     char *byte_tmp = new char [4];
     unsigned int chunk_offset;
     const char *chunk;
@@ -44,6 +42,8 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh) {
     unsigned int i_in_seq = 0;
     unsigned int i;
     unsigned int modulo = padding - 1;
+    
+    //@todo create func this->get_offset_2bit_data();
     fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     for(i = 0; i < this->n; i++) {
 
@@ -65,13 +65,11 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh) {
             if(chunk_offset == 0) {
                     
                 fh->read(byte_tmp, 1);
-                //printf("[%u]", byte_tmp[0]);
-                t.data = byte_tmp[0];//this->data[i_in_seq / 4];
+                t.data = byte_tmp[0];
                 chunk = t.get();
             }
             printf("%c", chunk[chunk_offset]);
 
-            //printf(".");
             i_in_seq++;
         }
 
