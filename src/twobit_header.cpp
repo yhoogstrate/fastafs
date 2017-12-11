@@ -21,7 +21,7 @@ unsigned int fourbytes_to_uint(char *chars, unsigned char offset) {
 }
 
 
-void twobit_seq_header::view(unsigned int padding, std::ifstream* filename) {
+void twobit_seq_header::view(unsigned int padding, std::ifstream* fh) {
 #if DEBUG
     if(this->n_starts.size() != this->n_ends.size()) {
         throw std::invalid_argument("unequal number of start and end positions for N regions\n");
@@ -33,6 +33,10 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* filename) {
     
     printf(" settings offset to: %u\n", (unsigned int) this->data_position);
 
+    char *byte_tmp = new char [4];
+    unsigned int chunk_offset;
+    const char *chunk;
+    
     bool in_N = false;
     twobit_byte t = twobit_byte();
     unsigned int i_n_start = 0;//@todo make iterator
@@ -40,6 +44,7 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* filename) {
     unsigned int i_in_seq = 0;
     unsigned int i;
     unsigned int modulo = padding - 1;
+    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     for(i = 0; i < this->n; i++) {
 
 
@@ -56,14 +61,16 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* filename) {
             }
         } else {
             // load new twobit chunk when needed
-            /*
             chunk_offset = i_in_seq % 4;
             if(chunk_offset == 0) {
-                t.data = this->data[i_in_seq / 4];
-                chunk = t.get();
+                    
+                fh->read(byte_tmp, 1);
+                printf("[%u]", byte_tmp[0]);
+                //t.data = this->data[i_in_seq / 4];
+                //chunk = t.get();
             }
-            printf("%c\n", chunk[chunk_offset]);
-            */
+            //printf("%c\n", chunk[chunk_offset]);
+
             printf(".");
             i_in_seq++;
         }

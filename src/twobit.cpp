@@ -6,10 +6,6 @@
 #include "twobit.hpp"
 
 void uint_to_fourbytes(char *chars, unsigned int n) {
-    chars[0] = '\0';
-    chars[1] = '\0';
-    chars[2] = '\0';
-    chars[3] = '\0';
     chars[0] = (unsigned char) ((n >> 24) & 0xFF);
     chars[1] = (unsigned char) ((n >> 16) & 0xFF);
     chars[2] = (unsigned char) ((n >> 8) & 0xFF);
@@ -124,7 +120,9 @@ unsigned int twobit::get_index_size()
 
 unsigned int twobit::get_sequence_offset(unsigned int sequence)
 {
-    unsigned int n = 4+4+4+4 + this->get_index_size();
+    unsigned int n = 4+4+4+4;
+    //n += 4+4+4;
+    n += this->get_index_size();
 
     printf("estimating offset for [%i]\n",sequence);
     for(unsigned int i = 0; i < sequence; i++) {
@@ -134,7 +132,7 @@ unsigned int twobit::get_sequence_offset(unsigned int sequence)
         n += 4;//maskBlockCount
         n += 0;//maskBlockStarts
         n += 0;//maskBlockSizes
-        n += 4;//reserved
+        //n += 4;//reserved
         n += (unsigned int) this->data[i]->size();//packedDna
 
     }
