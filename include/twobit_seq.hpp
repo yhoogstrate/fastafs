@@ -12,21 +12,23 @@ private:
     bool previous_was_N;
 
 public:
-    std::vector<unsigned char> data;
+    std::vector<unsigned char> twobits;
 
     twobit_seq(void);
 #if DEBUG
     ~twobit_seq(void);
 #endif //DEBUG
 
+    std::string name;
     unsigned int n;// effective size in nt
     unsigned int N;// effective size of unnknown nulceotides (N's) in nt
-    size_t size(void);// size of compressed data, may be longer than 4*this->n
-
-    std::string name;
-
     std::vector<unsigned int> n_starts;
     std::vector<unsigned int> n_ends;
+
+
+    size_t size(void);// size of compressed data, may be longer than 4*this->n
+
+
 
     void add_N();
     void add_nucleotide(unsigned char);

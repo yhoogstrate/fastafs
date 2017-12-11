@@ -53,7 +53,7 @@ void twobit_seq::add_nucleotide(unsigned char nucleotide)
         break;
     case 3:
         this->twobit_data->set(0, nucleotide);
-        this->data.push_back(this->twobit_data->data);
+        this->twobits.push_back(this->twobit_data->data);
         delete this->twobit_data;
         this->twobit_data = new twobit_byte();
         break;
@@ -79,7 +79,7 @@ void twobit_seq::add_nucleotide(unsigned char nucleotide)
  */
 void twobit_seq::add_twobit(twobit_byte &tb)
 {
-    this->data.push_back(tb.data);
+    this->twobits.push_back(tb.data);
     this->n++;
 }
 
@@ -96,7 +96,7 @@ void twobit_seq::close_reading()
         }
 
         // insert sticky-ended twobit
-        this->data.push_back(this->twobit_data->data);
+        this->twobits.push_back(this->twobit_data->data);
     }
 
     if(this->previous_was_N) {
@@ -165,7 +165,7 @@ void twobit_seq::print(void)
             // load new twobit chunk when needed
             chunk_offset = i_in_seq % 4;
             if(chunk_offset == 0) {
-                t.data = this->data[i_in_seq / 4];
+                t.data = this->twobits[i_in_seq / 4];
                 chunk = t.get();
             }
             printf("%c\n", chunk[chunk_offset]);
@@ -178,6 +178,6 @@ void twobit_seq::print(void)
 
 size_t twobit_seq::size(void)
 {
-    return this->data.size();
+    return this->twobits.size();
 }
 

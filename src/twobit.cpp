@@ -5,7 +5,8 @@
 
 #include "twobit.hpp"
 
-void uint_to_fourbytes(char *chars, unsigned int n) {
+void uint_to_fourbytes(char *chars, unsigned int n)
+{
     chars[0] = (unsigned char) ((n >> 24) & 0xFF);
     chars[1] = (unsigned char) ((n >> 16) & 0xFF);
     chars[2] = (unsigned char) ((n >> 8) & 0xFF);
@@ -149,13 +150,13 @@ void twobit::write(std::string filename)
 
     char ch1[] = TWOBIT_MAGIC;
     twobit_out_stream.write(reinterpret_cast<char *> (&ch1),(size_t) 4);
-    
+
     char ch2[] = TWOBIT_VERSION;
     twobit_out_stream.write(reinterpret_cast<char *> (&ch2),(size_t) 4);
 
     //four_bytes = (unsigned int) this->data.size();
     //unsigned int n = (unsigned int) this->data.size();
-    
+
     char ch3[4];
     uint_to_fourbytes(ch3, (unsigned int) this->data.size());
     twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
@@ -182,7 +183,7 @@ void twobit::write(std::string filename)
         //s->n
         uint_to_fourbytes(ch3, this->data[i]->n);
         twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
-        
+
         //s-N
         uint_to_fourbytes(ch3, this->data[i]->n_starts.size());
         twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
@@ -203,8 +204,9 @@ void twobit::write(std::string filename)
         four_bytes = (unsigned int) 0;
         twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
 
-        for(unsigned int j = 0; j < this->data[i]->data.size(); j++) {
-            byte = (unsigned char) this->data[i]->data[j];
+        // @todo this->data[i].write_twobit_data(fstream);
+        for(unsigned int j = 0; j < this->data[i]->twobits.size(); j++) {
+            byte = (unsigned char) this->data[i]->twobits[j];
             twobit_out_stream.write((char*) &byte,(size_t) 1);
         }
     }

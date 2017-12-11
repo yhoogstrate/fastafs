@@ -45,8 +45,7 @@ int main(int argc, char *argv[])
                 f.cache();
                 f.write("test.2bit");
                 printf("written to test.2bit\n");
-            }
-            else {
+            } else {
                 std::cout << "usage: " << PACKAGE << " cache -n hg38 test.fa\n\n";
                 std::cout << "    -n, --name       Name of reference file (required)\n";
                 std::cout << "\n";
@@ -57,8 +56,7 @@ int main(int argc, char *argv[])
                 twobit_header f = twobit_header();
                 f.load(&fname);
                 f.view(60);
-            }
-            else {
+            } else {
                 std::cout << "usage: " << PACKAGE << " view [<options>] test.fastafs\n\n";
                 std::cout << "    -p, --padding    width of nucleotide lines (int > 0; default=60)\n";
                 std::cout << "\n";
