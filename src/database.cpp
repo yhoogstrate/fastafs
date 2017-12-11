@@ -58,15 +58,22 @@ void database::list() {
     {
         std::istringstream iss(line);
 
-        fastafs f = fastafs();
-        f.load(this->path + "/" + line + ".fastafs");
+        std::string fname = this->path + "/" + line + ".fastafs";
 
-        printf("%-24s%-24s%-16s%-24u%-24u\n", 
+        fastafs f = fastafs();
+        f.load(fname);
+        
+        std::ifstream file (fname, std::ios::in|std::ios::binary|std::ios::ate);
+        unsigned int size = (unsigned int) file.tellg();
+        file.close();
+        
+        printf("%-24s%-24s%-16s%-24u%-16u%u\n", 
             line.c_str(),
             std::string("uid").c_str(),
             std::string("v0-x32-2bit").c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
             (unsigned int) f.data.size(),
-            f.n()
+            f.n(),
+            size
             );
     }
 }
