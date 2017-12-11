@@ -1,6 +1,7 @@
 
 #include <vector>
 
+
 class twobit_seq_header {
     public:
         std::string name;//may not exceed 255 chars in current datatype
@@ -16,7 +17,7 @@ class twobit_seq_header {
         
         // masked not -yet- needed
         
-        void view(unsigned int, std::string *);
+        void view(unsigned int, std::ifstream *);
 };
 
 

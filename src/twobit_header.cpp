@@ -3,17 +3,71 @@
 
 #include "config.hpp"
 
+#include "twobit_byte.hpp"
 #include "twobit_header.hpp"
 
 
+unsigned int fourbytes_to_uint(char *chars, unsigned char offset) {
+    //for(unsigned int j = 0; j < 4 ; j++)
+    //{
+  //      printf("[%i] ", chars[offset + j]);
+//    }
+    
+    unsigned int u = ((unsigned char) chars[0 + offset] << 24) | ((unsigned char) chars[1 + offset] << 16) | ((unsigned char)  chars[2 + offset] << 8) | ((unsigned char) chars[3 + offset]);
+    
+    //printf(" -> %i | %u\n",(unsigned int) u,(unsigned int) u);
+    
+    return u;
+}
 
-void twobit_seq_header::view(unsigned int padding, std::string* filename) {
-    unsigned int modulo = padding - 1;
+
+void twobit_seq_header::view(unsigned int padding, std::ifstream* filename) {
+#if DEBUG
+    if(this->n_starts.size() != this->n_ends.size()) {
+        throw std::invalid_argument("unequal number of start and end positions for N regions\n");
+    }
+#endif //DEBUG
+
     printf(">");
     std::cout << this->name << "\n";
+    
+    printf(" settings offset to: %u\n", (unsigned int) this->data_position);
+
+    bool in_N = false;
+    twobit_byte t = twobit_byte();
+    unsigned int i_n_start = 0;//@todo make iterator
+    unsigned int i_n_end = 0;//@todo make iterator
+    unsigned int i_in_seq = 0;
     unsigned int i;
+    unsigned int modulo = padding - 1;
     for(i = 0; i < this->n; i++) {
-        printf(".");
+
+
+        if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
+            in_N = true;
+        }
+
+        if(in_N) {
+            printf("N");
+
+            if(i == this->n_ends[i_n_end]) {
+                i_n_end++;
+                in_N = false;
+            }
+        } else {
+            // load new twobit chunk when needed
+            /*
+            chunk_offset = i_in_seq % 4;
+            if(chunk_offset == 0) {
+                t.data = this->data[i_in_seq / 4];
+                chunk = t.get();
+            }
+            printf("%c\n", chunk[chunk_offset]);
+            */
+            printf(".");
+            i_in_seq++;
+        }
+
         if(i % padding == modulo) {
             std::cout << "\n";
         }
@@ -23,10 +77,6 @@ void twobit_seq_header::view(unsigned int padding, std::string* filename) {
     }
 }
 
-
-unsigned int fourbytes_to_uint(char *chars, unsigned char offset) {
-    return (chars[0 + offset] << 24) | (chars[1 + offset] << 16) | (chars[2 + offset] << 8) | chars[3 + offset];
-}
 
 void twobit_header::load(std::string *filename) {
 
@@ -86,11 +136,10 @@ void twobit_header::load(std::string *filename) {
                 file.read (name, memblock[0]);
                 name[(char) memblock[0]] = '\0';
                 s->name = std::string(name);
-                //=printf("  [%s]\n",name);
+
                 
 
                 file.read(memblock, 4);
-
                 s->data_position = fourbytes_to_uint(memblock, 0);
                 //printf("[%u]seq start data/offset=%i\n", (unsigned int) i , s->data_position);
                 
@@ -155,7 +204,16 @@ void twobit_header::load(std::string *filename) {
 
 
 void twobit_header::view(unsigned int padding) {
-    for(unsigned int i = 0; i < this->data.size(); i++) {
-        this->data[i]->view(4, this->filename);// filename shouldn't be one single stream to allow parallel processing
+    if(this->filename == nullptr) {
+        throw std::invalid_argument("No filename found");
+    }
+
+    std::ifstream file (this->filename->c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+    if (file.is_open())
+    {
+        for(unsigned int i = 0; i < this->data.size(); i++) {
+            this->data[i]->view(4, &file);
+        }
+        file.close();
     }
 }

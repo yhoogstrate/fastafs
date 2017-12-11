@@ -6,6 +6,10 @@
 #include "twobit.hpp"
 
 void uint_to_fourbytes(char *chars, unsigned int n) {
+    chars[0] = '\0';
+    chars[1] = '\0';
+    chars[2] = '\0';
+    chars[3] = '\0';
     chars[0] = (unsigned char) ((n >> 24) & 0xFF);
     chars[1] = (unsigned char) ((n >> 16) & 0xFF);
     chars[2] = (unsigned char) ((n >> 8) & 0xFF);
@@ -177,9 +181,6 @@ void twobit::write(std::string filename)
 
         uint_to_fourbytes(ch3, this->get_sequence_offset(i));
         twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
-
-        //four_bytes = this->get_sequence_offset(i);
-        //twobit_out_stream.write( reinterpret_cast<char*>(&four_bytes), 4 );
     }
 
     // write data
