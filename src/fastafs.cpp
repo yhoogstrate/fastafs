@@ -82,20 +82,20 @@ void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
 }
 
 
-void fastafs::load(std::string *filename)
+void fastafs::load(std::string afilename)
 {
 
     std::streampos size;
     char * memblock;
 
-    std::ifstream file (*filename, std::ios::in|std::ios::binary|std::ios::ate);
+    std::ifstream file (afilename, std::ios::in|std::ios::binary|std::ios::ate);
     if (file.is_open()) {
-        this->filename = filename;
+        this->filename = afilename;
 
         size = file.tellg();
         if(size < 16) {
             file.close();
-            throw std::invalid_argument("Corrupt file: " + *filename);
+            throw std::invalid_argument("Corrupt file: " + filename);
         } else {
             // magic
             // version
@@ -114,12 +114,12 @@ void fastafs::load(std::string *filename)
             // check magic
             for(i = 0 ; i < 4;  i++) {
                 if(memblock[i] != twobit_magic[i]) {
-                    throw std::invalid_argument("Corrupt file: " + *filename);
+                    throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
             for(i = 0+4 ; i < 0+4+4;  i++) {
                 if(memblock[i] !='\0' or memblock[i+8] != '\0') {
-                    throw std::invalid_argument("Corrupt file: " + *filename);
+                    throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
 
@@ -191,15 +191,24 @@ void fastafs::load(std::string *filename)
 
 void fastafs::view(unsigned int padding)
 {
-    if(this->filename == nullptr) {
+    if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
 
-    std::ifstream file (this->filename->c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+    std::ifstream file (this->filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
     if (file.is_open()) {
         for(unsigned int i = 0; i < this->data.size(); i++) {
             this->data[i]->view(padding, &file);
         }
         file.close();
     }
+}
+
+unsigned int fastafs::n() {
+    unsigned int n = 0;
+    for(unsigned i = 0; i < this->data.size();i++){
+        n += this->data[i]->n;
+    }
+    
+    return n;
 }

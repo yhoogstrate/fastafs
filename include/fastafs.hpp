@@ -23,10 +23,11 @@ class fastafs
 {
 
 public:
-    std::string *filename = nullptr;
+    std::string filename;
     std::vector<fastafs_seq *> data;
+    unsigned int n();
 
-    void load(std::string *); // loads
+    void load(std::string); // loads
     //void write_2bit_header(fstream);
     //unsigned int get_index_size();
     //unsigned int get_sequence_offset(unsigned int);

@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
             if(argc > 2) {
                 std::string fname = std::string(argv[argc - 1]);
                 fastafs f = fastafs();
-                f.load(&fname);
+                f.load(fname);
                 f.view(60);
             } else {
                 std::cout << "usage: " << PACKAGE << " view [<options>] test.fastafs\n\n";
