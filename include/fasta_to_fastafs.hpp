@@ -5,9 +5,9 @@
 
 #include "twobit_byte.hpp"
 
-class fasta_to_fastafs_seq
+class fastafs_seq
 {
-    private:
+private:
     twobit_byte *twobit_data;
 
     bool previous_was_N;
@@ -15,8 +15,8 @@ class fasta_to_fastafs_seq
 public:
     std::vector<unsigned char> twobits;
 
-    fasta_to_fastafs_seq(void);
-    ~fasta_to_fastafs_seq(void);
+    fastafs_seq(void);
+    ~fastafs_seq(void);
 
     std::string name;
     unsigned int n;// effective size in nt
@@ -43,7 +43,7 @@ class fasta_to_fastafs
 {
     std::string *filename = nullptr;
 
-    std::vector<fasta_to_fastafs_seq *> data;
+    std::vector<fastafs_seq *> data;
 
 public:
     fasta_to_fastafs(std::string *fname);

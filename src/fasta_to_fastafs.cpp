@@ -19,14 +19,14 @@ void uint_to_fourbytes(char *chars, unsigned int n)
 
 
 
-fasta_to_fastafs_seq::fasta_to_fastafs_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0), N(0)
+fastafs_seq::fastafs_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0), N(0)
 {
 }
 
 /**
  */
 #if DEBUG
-fasta_to_fastafs_seq::~fasta_to_fastafs_seq(void)
+fastafs_seq::~fastafs_seq(void)
 {
     if(this->twobit_data != nullptr) {
         //throw std::runtime_error("2bit/fasta sequence was opened for insertion but not flushed");
@@ -36,7 +36,7 @@ fasta_to_fastafs_seq::~fasta_to_fastafs_seq(void)
 #endif //DEBUG
 
 
-void fasta_to_fastafs_seq::add_N()
+void fastafs_seq::add_N()
 {
     if(!this->previous_was_N) {
         this->n_starts.push_back(this->n);
@@ -49,7 +49,7 @@ void fasta_to_fastafs_seq::add_N()
 
 
 
-void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
+void fastafs_seq::add_nucleotide(unsigned char nucleotide)
 {
     switch( (this->n - this->N) % 4) {
     case 0:
@@ -89,14 +89,14 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
  * @brief MAY ONLY BE USED TO INSERT FULL TWOBIT BYTES REPRESENTING FOUR CHARS!
  *  otherwise use add_twobit_sticky_end(twobit_byte& tb, i < 4);
  */
-void fasta_to_fastafs_seq::add_twobit(twobit_byte &tb)
+void fastafs_seq::add_twobit(twobit_byte &tb)
 {
     this->twobits.push_back(tb.data);
     this->n++;
 }
 
 
-void fasta_to_fastafs_seq::close_reading()
+void fastafs_seq::close_reading()
 {
     unsigned char sticky_end = (this->n - this->N) % 4;
     if(sticky_end != 0) { // sticky end
@@ -125,7 +125,7 @@ void fasta_to_fastafs_seq::close_reading()
 
 #if DEBUG
 
-void fasta_to_fastafs_seq::print(void)
+void fastafs_seq::print(void)
 {
     if(this->n_starts.size() != this->n_ends.size()) {
         throw std::invalid_argument("unequal number of start and end positions for N regions\n");
@@ -189,7 +189,7 @@ void fasta_to_fastafs_seq::print(void)
 
 #endif //DEBUG
 
-size_t fasta_to_fastafs_seq::size(void)
+size_t fastafs_seq::size(void)
 {
     return this->twobits.size();
 }
@@ -216,7 +216,7 @@ fasta_to_fastafs::~fasta_to_fastafs()
 
 int fasta_to_fastafs::cache(void)
 {
-    fasta_to_fastafs_seq *s = nullptr;
+    fastafs_seq *s = nullptr;
 
     std::string line;
     std::ifstream myfile (*this->filename);
@@ -235,7 +235,7 @@ int fasta_to_fastafs::cache(void)
                     s = nullptr;
                 }
 
-                s = new fasta_to_fastafs_seq();
+                s = new fastafs_seq();
                 s->name = line;
             } else {
 
@@ -371,7 +371,7 @@ void fasta_to_fastafs::write(std::string filename)
         twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
 
         //s-N
-        uint_to_fourbytes(ch3, this->data[i]->n_starts.size());
+        uint_to_fourbytes(ch3, (unsigned int )this->data[i]->n_starts.size());
         twobit_out_stream.write(reinterpret_cast<char *> (&ch3),(size_t) 4);
 
         //s->n_starts

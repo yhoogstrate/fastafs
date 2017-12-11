@@ -96,7 +96,7 @@ endif()
 add_executable(fastafs
 					src/main.cpp
 					src/fasta_to_fastafs.cpp
-					src/twobit_header.cpp
+					src/fastafs.cpp
 					src/twobit_byte.cpp
 				)
 

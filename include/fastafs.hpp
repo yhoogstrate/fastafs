@@ -19,7 +19,7 @@ public:
 };
 
 
-class twobit_header
+class fastafs
 {
 
 public:

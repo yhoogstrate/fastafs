@@ -4,7 +4,7 @@
 #include "config.hpp"
 
 #include "twobit_byte.hpp"
-#include "twobit_header.hpp"
+#include "fastafs.hpp"
 
 
 unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
@@ -85,7 +85,7 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh)
 }
 
 
-void twobit_header::load(std::string *filename)
+void fastafs::load(std::string *filename)
 {
 
     std::streampos size;
@@ -139,7 +139,7 @@ void twobit_header::load(std::string *filename)
                 char name[memblock[0] + 1];
 
                 file.read (name, memblock[0]);
-                name[(char) memblock[0]] = '\0';
+                name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
 
 
@@ -202,7 +202,7 @@ void twobit_header::load(std::string *filename)
 
 
 
-void twobit_header::view(unsigned int padding)
+void fastafs::view(unsigned int padding)
 {
     if(this->filename == nullptr) {
         throw std::invalid_argument("No filename found");

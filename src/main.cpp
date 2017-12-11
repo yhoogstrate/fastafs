@@ -7,7 +7,7 @@
 
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
-#include "twobit_header.hpp"
+#include "fastafs.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "view") == 0) {
             if(argc > 2) {
                 std::string fname = std::string(argv[argc - 1]);
-                twobit_header f = twobit_header();
+                fastafs f = fastafs();
                 f.load(&fname);
                 f.view(60);
             } else {
