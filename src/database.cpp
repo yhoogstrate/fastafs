@@ -1,46 +1,37 @@
 
+#include <stdio.h>
 #include <dirent.h>
-#include <stdio.h>
-#include <stdio.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <limits.h>
-#include <stdlib.h>
-
-
 
 #include "database.hpp"
 
-bool dir_exists(std::string &path) {
-    //path = "/home/youri/.local/share/fastafs";
-    bool isdir;
-    
-    printf(" [%s]\n",path.c_str());
-    char *full_path = realpath(path.c_str(), NULL);
-    if(full_path == NULL) {
-        printf(" NULL \n");
-    }
-    else {
-        printf(" %s\n", full_path);
-    }
-    free(full_path);
-    
+void force_db_exists(std::string &path) {
     DIR* dir = opendir(path.c_str());
     if (dir)
     {
-        /* Directory exists. */
         closedir(dir);
-        isdir = true;
     
     }
     else
     {
-        
-        throw std::runtime_error("database seem to exist already, but not as directory: " + path);
-        isdir = false;
+        if(mkdir(path.c_str(), S_IRWXU ) == 0) {
+        }
+        else {
+            throw std::runtime_error("could not access and not create database as directory: " + path);
+        }
     }
 
-    return isdir;
+    std::string db_file = path + "/index";
+
+    if(FILE *file = fopen(db_file.c_str(), "r")) {
+        fclose(file);
+    } else {
+        if(FILE *file2 = fopen(db_file.c_str(), "w")) {
+            fclose(file2);
+        } else {
+            throw std::runtime_error("could not access and not create database file: " + db_file);
+        }
+    }
 }
 
 
@@ -52,14 +43,11 @@ database::database() :
 }
 
 void database::load() {
-    //if not dir exists,
-    //  mkdir
-    if(!dir_exists(this->path)) {
-        printf("needs to make dirr!!!\n");
-    }
+    force_db_exists(this->path);
     
 }
 
 void database::list() {
-    std::cout << "FASTAFS NAME\t\tFASTFS ID\t\tIMAGE\t\t\tSEQUENCES\t\tBASES\t\tDISK SIZE" << std::endl;
+    std::cout << "FASTAFS NAME\t\tFASTFS ID\t\tFASTAFS\t\tIMAGE\t\t\tSEQUENCES\t\tBASES\t\tDISK SIZE" << std::endl;
+    //FASTAFS=v1_x32_2bit, version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
 }
