@@ -40,15 +40,16 @@ int main(int argc, char *argv[])
 
             exit(0);
         } else if (strcmp(argv[1], "cache") == 0) {
-            if(argc > 2) {
+            if(argc > 3) {
                 std::string fname = "test/cache/test.fa";
                 fasta_to_fastafs f = fasta_to_fastafs(&fname);
                 f.cache();
-                f.write("test.2bit");
+                database d = database();
+                std::string fname_out = d.add(argv[2]);
+                f.write(fname_out);
                 // @ todo progress bar
             } else {
-                std::cout << "usage: " << PACKAGE << " cache -n hg38 test.fa\n\n";
-                std::cout << "    -n, --name       Name of reference file (required)\n";
+                std::cout << "usage: " << PACKAGE << " cache hg38 /tmp/hg38_test.fa\n\n";
                 std::cout << "\n";
             }
         } else if (strcmp(argv[1], "view") == 0) {

@@ -2,34 +2,31 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
+#include <fstream>
 #include "database.hpp"
 
-void force_db_exists(std::string &path) {
-    DIR* dir = opendir(path.c_str());
+void database::force_db_exists() {
+    DIR* dir = opendir(this->path.c_str());
     if (dir)
     {
         closedir(dir);
-    
     }
     else
     {
-        if(mkdir(path.c_str(), S_IRWXU ) == 0) {
+        if(mkdir(this->path.c_str(), S_IRWXU ) == 0) {
         }
         else {
             throw std::runtime_error("could not access and not create database as directory: " + path);
         }
     }
 
-    std::string db_file = path + "/index";
-
-    if(FILE *file = fopen(db_file.c_str(), "r")) {
+    if(FILE *file = fopen(this->idx.c_str(), "r")) {
         fclose(file);
     } else {
-        if(FILE *file2 = fopen(db_file.c_str(), "w")) {
+        if(FILE *file2 = fopen(this->idx.c_str(), "w")) {
             fclose(file2);
         } else {
-            throw std::runtime_error("could not access and not create database file: " + db_file);
+            throw std::runtime_error("could not access and not create database file: " + this->idx);
         }
     }
 }
@@ -37,17 +34,30 @@ void force_db_exists(std::string &path) {
 
 
 database::database() :
-    path(std::string(getenv("HOME")) + "/.local/share/fastafs")
+    path(std::string(getenv("HOME")) + "/.local/share/fastafs"),
+    idx(std::string(getenv("HOME")) + "/.local/share/fastafs/index")
 {
     this->load();
 }
 
 void database::load() {
-    force_db_exists(this->path);
-    
+    this->force_db_exists();
 }
 
 void database::list() {
     std::cout << "FASTAFS NAME\t\tFASTFS ID\t\tFASTAFS\t\tIMAGE\t\t\tSEQUENCES\t\tBASES\t\tDISK SIZE" << std::endl;
     //FASTAFS=v1_x32_2bit, version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
 }
+
+
+// @todo return a filestream to a particular file one day?
+std::string database::add(char* name) {
+    std::ofstream outputFile;
+    outputFile.open(this->idx);
+    
+    outputFile << name << std::endl;
+    outputFile.close();
+    
+    return this->path + "/" + name;
+}
+
