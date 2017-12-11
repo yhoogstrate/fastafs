@@ -2,18 +2,18 @@
 #include <vector>
 
 
-class twobit_seq_header
+class fastafs_seq
 {
 public:
     std::string name;//may not exceed 255 chars in current datatype
     unsigned int data_position;
     unsigned int n;// number nucleotides
-    unsigned int N_regions;// number N regions
     std::vector<unsigned int> n_starts;
     std::vector<unsigned int> n_ends;
 
-
     // masked not -yet- needed
+
+    fastafs_seq();
 
     void view(unsigned int, std::ifstream *);
 };
@@ -24,7 +24,7 @@ class fastafs
 
 public:
     std::string *filename = nullptr;
-    std::vector<twobit_seq_header *> data;
+    std::vector<fastafs_seq *> data;
 
     void load(std::string *); // loads
     //void write_2bit_header(fstream);

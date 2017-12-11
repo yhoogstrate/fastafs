@@ -22,7 +22,10 @@ unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
 }
 
 
-void twobit_seq_header::view(unsigned int padding, std::ifstream* fh)
+fastafs_seq::fastafs_seq(): n(0) {
+}
+
+void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
 {
 #if DEBUG
     if(this->n_starts.size() != this->n_ends.size()) {
@@ -55,7 +58,7 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh)
         }
 
         if(in_N) {
-            printf("N");
+            std::cout << "N";
 
             if(i == this->n_ends[i_n_end]) {
                 i_n_end++;
@@ -70,7 +73,7 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh)
                 t.data = byte_tmp[0];
                 chunk = t.get();
             }
-            printf("%c", chunk[chunk_offset]);
+            std::cout << chunk[chunk_offset];
 
             i_in_seq++;
         }
@@ -96,7 +99,6 @@ void fastafs::load(std::string *filename)
         this->filename = filename;
 
         size = file.tellg();
-        //std::cout << size << " bytes\n";
         if(size < 16) {
             file.close();
             throw std::invalid_argument("Corrupt file: " + *filename);
@@ -131,9 +133,9 @@ void fastafs::load(std::string *filename)
 
 
             unsigned char j;
-            twobit_seq_header *s;
+            fastafs_seq *s;
             for(i = 0; i < n_seq; i ++ ) {
-                s = new twobit_seq_header;
+                s = new fastafs_seq;
                 file.read (memblock, 1);
 
                 char name[memblock[0] + 1];
@@ -156,36 +158,27 @@ void fastafs::load(std::string *filename)
             for(i = 0; i < n_seq; i ++ ) {
                 s = this->data[i];
 
-                file.seekg ((unsigned int) s->data_position, file.beg); //+ 4 + 4 + 4 + (s->n_starts.size() * 8)
+                file.seekg ((unsigned int) s->data_position, file.beg);
 
                 //s->n
                 file.read(memblock, 4);
                 s->n = fourbytes_to_uint(memblock, 0);
 
-                // N_regions
                 file.read(memblock, 4);
-                unsigned int nblocks = fourbytes_to_uint(memblock, 0);
-                s->N_regions = nblocks;
+                unsigned int N_regions = fourbytes_to_uint(memblock, 0);
 
 
-                for(j = 0 ; nblocks > j  ; j ++) {
+                for(j = 0 ; N_regions > j  ; j ++) {
                     file.read(memblock, 4);
                     s->n_starts.push_back( fourbytes_to_uint(memblock, 0));
                 }
-                for(j = 0 ; j < nblocks ; j ++) {
+                for(j = 0 ; j < N_regions ; j ++) {
                     file.read(memblock, 4);
                     s->n_ends.push_back(fourbytes_to_uint(memblock, 0));
                 }
 
-                file.read(memblock, 4);
+                //file.read(memblock, 4);
                 //unsigned int maskblock = fourbytes_to_uint(memblock, 0);
-
-                // @ todo write subfunc
-                unsigned int n_twobit_datapoints = s->n;// - s->N_regions + 3) / 4;
-                for(j = 0 ; j < s->N_regions; j++) {
-                    n_twobit_datapoints -= s->n_ends[j] - s->n_starts[j] + 1;
-                }
-
 
             }
 

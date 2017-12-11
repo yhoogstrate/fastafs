@@ -7,7 +7,7 @@
 
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
-#include "fastafs.hpp"
+//#include "fastafs.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521
@@ -16,15 +16,19 @@
 
 void usage(char **argv)
 {
-    std::cout << "usage: " << PACKAGE << " [--version] [--help]" << std::endl << std::endl
-              << "  " << PACKAGE << " cache      adds FASTA file to cache" << std::endl;
+    std::cout << "usage: " << PACKAGE << " [--version] [--help]" << std::endl << std::endl;
+    std::cout <<      "    list       overview of FASTAFS database" << std::endl;
+    std::cout <<      "    cache      adds FASTA file to cache" << std::endl;
+    std::cout <<      "    view       view FASTAFS as FASTA" << std::endl;
+    std::cout <<      "    info       view FASTAFS information" << std::endl;
+    std::cout << std::endl;
 }
 
 
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
-        if (strcmp(argv[1], "--help") == 0) {
+        if (strcmp(argv[1], "--help") == 0 or strcmp(argv[1], "-h") == 0) {
             usage(argv);
         } else if (strcmp(argv[1], "--version") == 0) {
             std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "\n\n";
@@ -59,7 +63,8 @@ int main(int argc, char *argv[])
                 std::cout << "\n";
             }
         } else {
-            std::cerr << "Invalid 1st argument given" << std::endl;
+            std::cerr << PACKAGE << ": '" << argv[1] << "' is not a " << PACKAGE <<" command. See '" << PACKAGE <<" --help':" << std::endl<< std::endl;
+            usage(argv);
             return 1;
         }
     } else {
