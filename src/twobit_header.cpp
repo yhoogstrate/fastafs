@@ -65,13 +65,13 @@ void twobit_seq_header::view(unsigned int padding, std::ifstream* fh) {
             if(chunk_offset == 0) {
                     
                 fh->read(byte_tmp, 1);
-                printf("[%u]", byte_tmp[0]);
-                //t.data = this->data[i_in_seq / 4];
-                //chunk = t.get();
+                //printf("[%u]", byte_tmp[0]);
+                t.data = byte_tmp[0];//this->data[i_in_seq / 4];
+                chunk = t.get();
             }
-            //printf("%c\n", chunk[chunk_offset]);
+            printf("%c", chunk[chunk_offset]);
 
-            printf(".");
+            //printf(".");
             i_in_seq++;
         }
 

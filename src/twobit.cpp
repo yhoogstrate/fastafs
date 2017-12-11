@@ -210,7 +210,7 @@ void twobit::write(std::string filename)
 
         for(unsigned int j = 0; j < this->data[i]->data.size(); j++) {
             byte = (unsigned char) this->data[i]->data[j];
-            byte = 7;
+            //byte = 7;
             twobit_out_stream.write((char*) &byte,(size_t) 1);
         }
     }
