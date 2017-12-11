@@ -3,18 +3,18 @@
 
 #include "config.hpp"
 
-#include "twobit_seq.hpp" // #include "twobit_byte.hpp"
+#include "fasta_to_fastafs_seq.hpp"
 
 
 
-twobit_seq::twobit_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0), N(0)
+fasta_to_fastafs_seq::fasta_to_fastafs_seq(void) : twobit_data(nullptr), previous_was_N(false), n(0), N(0)
 {
 }
 
 /**
  */
 #if DEBUG
-twobit_seq::~twobit_seq(void)
+fasta_to_fastafs_seq::~fasta_to_fastafs_seq(void)
 {
     if(this->twobit_data != nullptr) {
         //throw std::runtime_error("2bit/fasta sequence was opened for insertion but not flushed");
@@ -24,7 +24,7 @@ twobit_seq::~twobit_seq(void)
 #endif //DEBUG
 
 
-void twobit_seq::add_N()
+void fasta_to_fastafs_seq::add_N()
 {
     if(!this->previous_was_N) {
         this->n_starts.push_back(this->n);
@@ -37,7 +37,7 @@ void twobit_seq::add_N()
 
 
 
-void twobit_seq::add_nucleotide(unsigned char nucleotide)
+void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 {
     switch( (this->n - this->N) % 4) {
     case 0:
@@ -77,14 +77,14 @@ void twobit_seq::add_nucleotide(unsigned char nucleotide)
  * @brief MAY ONLY BE USED TO INSERT FULL TWOBIT BYTES REPRESENTING FOUR CHARS!
  *  otherwise use add_twobit_sticky_end(twobit_byte& tb, i < 4);
  */
-void twobit_seq::add_twobit(twobit_byte &tb)
+void fasta_to_fastafs_seq::add_twobit(twobit_byte &tb)
 {
     this->twobits.push_back(tb.data);
     this->n++;
 }
 
 
-void twobit_seq::close_reading()
+void fasta_to_fastafs_seq::close_reading()
 {
     unsigned char sticky_end = (this->n - this->N) % 4;
     if(sticky_end != 0) { // sticky end
@@ -112,7 +112,7 @@ void twobit_seq::close_reading()
 
 
 
-void twobit_seq::print(void)
+void fasta_to_fastafs_seq::print(void)
 {
 #if DEBUG
     if(this->n_starts.size() != this->n_ends.size()) {
@@ -176,7 +176,7 @@ void twobit_seq::print(void)
     printf("\n\n");
 }
 
-size_t twobit_seq::size(void)
+size_t fasta_to_fastafs_seq::size(void)
 {
     return this->twobits.size();
 }

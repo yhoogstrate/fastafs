@@ -97,7 +97,7 @@ add_executable(fastafs
 					src/main.cpp
 					src/twobit.cpp
 					src/twobit_header.cpp
-					src/twobit_seq.cpp
+					src/fasta_to_fastafs_seq.cpp
 					src/twobit_byte.cpp
 				)
 

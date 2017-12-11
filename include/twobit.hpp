@@ -1,13 +1,13 @@
 
 #include <vector>
 
-#include "twobit_seq.hpp"
+#include "fasta_to_fastafs_seq.hpp"
 
 class twobit
 {
     std::string *filename = nullptr;
 
-    std::vector<twobit_seq *> data;
+    std::vector<fasta_to_fastafs_seq *> data;
 
 public:
     twobit(std::string *fname);

@@ -4,7 +4,7 @@
 
 #include "twobit_byte.hpp"
 
-class twobit_seq
+class fasta_to_fastafs_seq
 {
 private:
     twobit_byte *twobit_data;
@@ -14,9 +14,9 @@ private:
 public:
     std::vector<unsigned char> twobits;
 
-    twobit_seq(void);
+    fasta_to_fastafs_seq(void);
 #if DEBUG
-    ~twobit_seq(void);
+    ~fasta_to_fastafs_seq(void);
 #endif //DEBUG
 
     std::string name;

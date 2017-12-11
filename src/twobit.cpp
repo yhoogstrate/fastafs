@@ -30,9 +30,7 @@ twobit::~twobit()
 
 int twobit::cache(void)
 {
-    std::cout << "parsing " << *this->filename << std::endl;
-
-    twobit_seq *s = nullptr;
+    fasta_to_fastafs_seq *s = nullptr;
 
     std::string line;
     std::ifstream myfile (*this->filename);
@@ -51,7 +49,7 @@ int twobit::cache(void)
                     s = nullptr;
                 }
 
-                s = new twobit_seq();
+                s = new fasta_to_fastafs_seq();
                 s->name = line;
             } else {
 
