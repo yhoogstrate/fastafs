@@ -5,11 +5,8 @@
 #include <string.h>
 
 
-//#include "include/fasta_index.hpp"
-//#include "include/fasta.hpp"
-
 #include "config.hpp"
-#include "twobit.hpp"
+#include "fasta_to_fastafs.hpp"
 #include "twobit_header.hpp"
 
 
@@ -41,10 +38,10 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "cache") == 0) {
             if(argc > 2) {
                 std::string fname = "test/cache/test.fa";
-                twobit f = twobit(&fname);
+                fasta_to_fastafs f = fasta_to_fastafs(&fname);
                 f.cache();
                 f.write("test.2bit");
-                printf("written to test.2bit\n");
+                // @ todo progress bar
             } else {
                 std::cout << "usage: " << PACKAGE << " cache -n hg38 test.fa\n\n";
                 std::cout << "    -n, --name       Name of reference file (required)\n";

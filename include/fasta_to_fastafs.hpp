@@ -1,3 +1,4 @@
+
 #include <vector>
 
 #include "config.hpp"
@@ -6,7 +7,7 @@
 
 class fasta_to_fastafs_seq
 {
-private:
+    private:
     twobit_byte *twobit_data;
 
     bool previous_was_N;
@@ -15,9 +16,7 @@ public:
     std::vector<unsigned char> twobits;
 
     fasta_to_fastafs_seq(void);
-#if DEBUG
     ~fasta_to_fastafs_seq(void);
-#endif //DEBUG
 
     std::string name;
     unsigned int n;// effective size in nt
@@ -29,7 +28,6 @@ public:
     size_t size(void);// size of compressed data, may be longer than 4*this->n
 
 
-
     void add_N();
     void add_nucleotide(unsigned char);
     void add_twobit(twobit_byte &);
@@ -37,4 +35,22 @@ public:
     void close_reading();
 
     void print(void);
+};
+
+
+
+class fasta_to_fastafs
+{
+    std::string *filename = nullptr;
+
+    std::vector<fasta_to_fastafs_seq *> data;
+
+public:
+    fasta_to_fastafs(std::string *fname);
+    ~fasta_to_fastafs();
+    int cache(void);
+    void print();
+    void write(std::string);
+    unsigned int get_index_size();
+    unsigned int get_sequence_offset(unsigned int);
 };
