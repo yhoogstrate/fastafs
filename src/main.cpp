@@ -53,7 +53,8 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "view") == 0) {
             std::string fname = "test.2bit";
             twobit_header f = twobit_header();
-            f.load(fname);
+            f.load(&fname);
+            f.view(60);
         } else {
             std::cerr << "Invalid 1st argument given" << std::endl;
             return 1;
