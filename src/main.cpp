@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
             std::cout << "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n";
             std::cout << "This is free software: you are free to change and redistribute it.\n";
             std::cout << "There is NO WARRANTY, to the extent permitted by law.\n\n";
-            std::cout << "The " << PACKAGE << " package is writting by Youri Hoogstrate.\n";
+            std::cout << "The " << PACKAGE << " package is written by Youri Hoogstrate.\n";
 
             exit(0);
         } else if (strcmp(argv[1], "cache") == 0) {
