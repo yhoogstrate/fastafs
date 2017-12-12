@@ -19,6 +19,13 @@ public:
 };
 
 
+
+struct fastafs_metadata {
+    std::string name;
+    std::string uid;
+};
+
+
 class fastafs
 {
 
@@ -32,4 +39,5 @@ public:
     //unsigned int get_index_size();
     //unsigned int get_sequence_offset(unsigned int);
     void view(unsigned int);
+    void info();
 };

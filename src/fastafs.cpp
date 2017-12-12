@@ -204,6 +204,28 @@ void fastafs::view(unsigned int padding)
     }
 }
 
+
+void fastafs::info()
+{
+    if(this->filename.size() == 0) {
+        throw std::invalid_argument("No filename found");
+    }
+
+    std::ifstream file (this->filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+    if (file.is_open()) {
+        std::cout << "FASTAFS NAME: " << this->filename << "\n";
+        //std::cout << "SEQUENCES:    " << this->filename << "\n";
+        printf("SEQUENCES:    %u\n",(unsigned int) this->data.size());
+        
+        for(unsigned int i = 0; i < this->data.size(); i++) {
+            //this->data[i]->view(padding, &file);
+            printf("    >%-24s%-12int%s\n" , this->data[i]->name.c_str(),this->data[i]->n,std::string("a2e6643f").c_str());
+        }
+        file.close();
+    }
+}
+
+
 unsigned int fastafs::n() {
     unsigned int n = 0;
     for(unsigned i = 0; i < this->data.size();i++){

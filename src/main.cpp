@@ -78,9 +78,35 @@ int main(int argc, char *argv[])
                 fastafs f = fastafs();
                 f.load(fname);
                 f.view(60);
+            }
+        } else if (strcmp(argv[1], "info") == 0) {
+            if(argc > 2) {
+                bool from_file = false;
+                
+                for(int i = 2; i < argc - 1; i++) {
+                    if (strcmp(argv[i], "-f") == 0) {
+                        from_file = true;
+                    }
+                }
+                
+                std::string fname;
+                if(from_file) {
+                    fname = std::string(argv[argc - 1]);
+                }
+                else {
+                    database d = database();
+                    fname = d.get(argv[argc - 1]);
+                    if(fname.size() == 0) {
+                        std::cout << "Invalid FASTAFS requested\n";
+                        exit(1);
+                    }
+                }
+                
+                fastafs f = fastafs();
+                f.load(fname);
+                f.info();
             } else {
-                std::cout << "usage: " << PACKAGE << " view [<options>] fastafs-name-or-id\n\n";
-                std::cout << "    -p, --padding    width of nucleotide lines (int > 0; default=60)\n";
+                std::cout << "usage: " << PACKAGE << " info [<options>] fastafs-name-or-id\n\n";
                 std::cout << "    -f               use filename instead  of name or ID\n";
                 std::cout << "\n";
             }
