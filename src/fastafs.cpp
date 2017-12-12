@@ -286,3 +286,8 @@ unsigned int fastafs::n()
 
     return n;
 }
+
+
+
+void fastafs::mount() {
+}

@@ -87,12 +87,13 @@ else()
 endif()
 
 link_libraries(crypto)
+link_libraries(fuse)
 
 
 if(DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion")# -Werror makes compilation crash when warnings are given (also part of Travis)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion -D_FILE_OFFSET_BITS=64")# -Werror makes compilation crash when warnings are given (also part of Travis)
 else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -D_FILE_OFFSET_BITS=64")
 endif()
 
 add_executable(fastafs
@@ -102,6 +103,7 @@ add_executable(fastafs
 					src/twobit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
+					src/fuse.cpp
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")

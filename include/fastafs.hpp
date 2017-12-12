@@ -44,4 +44,6 @@ public:
     //unsigned int get_sequence_offset(unsigned int);
     void view(unsigned int);
     void info();
+    
+    void mount();
 };
