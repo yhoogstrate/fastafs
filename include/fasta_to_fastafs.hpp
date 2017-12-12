@@ -37,12 +37,13 @@ public:
 
 class fasta_to_fastafs
 {
-    std::string *filename = nullptr;
+    std::string name;
+    std::string filename;
 
     std::vector<fasta_to_fastafs_seq *> data;
 
 public:
-    fasta_to_fastafs(std::string *fname);
+    fasta_to_fastafs(std::string, std::string);
     ~fasta_to_fastafs();
     int cache(void);
     //void print();

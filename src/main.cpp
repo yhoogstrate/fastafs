@@ -43,11 +43,10 @@ int main(int argc, char *argv[])
             exit(0);
         } else if (strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
-                std::string fname = std::string(argv[argc - 1]);
-                fasta_to_fastafs f = fasta_to_fastafs(&fname);
+                fasta_to_fastafs f = fasta_to_fastafs(std::string(argv[argc - 2]), std::string(argv[argc - 1]));
                 f.cache();
                 database d = database();
-                std::string fname_out = d.add(argv[2]);
+                std::string fname_out = d.add(argv[argc - 2]);
                 f.write(fname_out);
                 // @ todo progress bar
             } else {
@@ -76,7 +75,7 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                fastafs f = fastafs();
+                fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
                 f.view(60);
             }
@@ -102,7 +101,7 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                fastafs f = fastafs();
+                fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
                 f.info();
             } else {
@@ -114,7 +113,6 @@ int main(int argc, char *argv[])
             //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
             
             if(argc > 3) {
-                /*
                 bool from_file = false;
 
                 for(int i = 2; i < argc - 1; i++) {
@@ -134,13 +132,12 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                 }
-                * */
 
-                //fastafs f = fastafs();
-                //f.load(fname);
+                fastafs f = fastafs(std::string(argv[argc - 2]));
+                f.load(fname);
                 //f.mount();
                 
-                fuse fs = fuse(argc, argv);
+                fuse fs = fuse(argc, argv, &f);
             } else {
                 std::cout << "usage: " << PACKAGE << " mount [-f] <fastafs-id/file> <mountpoint>\n\n";
                 std::cout << "    -f               use filename instead  of name or ID\n";

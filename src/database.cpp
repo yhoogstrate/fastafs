@@ -58,7 +58,7 @@ void database::list()
 
         std::string fname = this->path + "/" + line + ".fastafs";
 
-        fastafs f = fastafs();
+        fastafs f = fastafs(line);
         f.load(fname);
 
         std::ifstream file (fname, std::ios::in|std::ios::binary|std::ios::ate);

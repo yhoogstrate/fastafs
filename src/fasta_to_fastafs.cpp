@@ -194,8 +194,9 @@ size_t fasta_to_fastafs_seq::size(void)
 
 // is resource by filename required?
 // not yet, maybe other classes or empty?
-fasta_to_fastafs::fasta_to_fastafs(std::string *fname)
+fasta_to_fastafs::fasta_to_fastafs(std::string name, std::string fname)
 {
+    this->name = name;
     this->filename = fname;
 }
 
@@ -212,7 +213,7 @@ int fasta_to_fastafs::cache(void)
     fasta_to_fastafs_seq *s = nullptr;
 
     std::string line;
-    std::ifstream myfile (*this->filename);
+    std::ifstream myfile (this->filename.c_str());
     std::string sequence = "";
 
     if (myfile.is_open()) {

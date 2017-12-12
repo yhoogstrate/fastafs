@@ -137,6 +137,11 @@ unsigned int fastafs_seq::n_twobits()
 
 
 
+fastafs::fastafs(std::string arg_name) : 
+    name(arg_name) {
+    
+}
+
 fastafs::~fastafs() {
     for(unsigned int i = 0; i < this->data.size();i++)
     {

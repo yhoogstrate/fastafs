@@ -27,11 +27,10 @@ static int do_getattr( const char *path, struct stat *st )
 {
     printf( "[getattr] Called\n" );
     printf( "\tAttributes of %s requested\n", path );
-    //fuse_get_context()->private_data;
-    fuse_context *fc = fuse_get_context();
-    
-    std::string *ud = static_cast<std::string*>(fuse_get_context()->private_data);
-    printf(" [ context: ] %s\n",ud->c_str());
+
+
+    fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+    printf(" [ context: ] %s\n",f->name.c_str());
     
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
@@ -73,12 +72,18 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 {
     printf( "--> Getting The List of Files of %s\n", path );
     
+
+    fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+    printf(" [ context: ] %s\n",f->name.c_str());
+    std::string virtual_filename = f->name + ".fa";
+    
+    
     filler( buffer, ".", NULL, 0 ); // Current Directory
     filler( buffer, "..", NULL, 0 ); // Parent Directory
     
     if ( strcmp( path, "/" ) == 0 ) // If the user is trying to show the files/directories of the root directory show the following
     {
-        filler( buffer, "file54.fa", NULL, 0 );
+        filler( buffer, virtual_filename.c_str(), NULL, 0 );
     }
     
     return 0;
@@ -89,12 +94,20 @@ static int do_read( const char *path, char *buffer, size_t size, off_t offset, s
 {
     printf( "--> Trying to read %s, %u, %u\n", path, offset, size );
     
+    
+    
+    fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+    printf(" [ context: ] %s\n",f->name.c_str());
+    std::string virtual_filename = "/" + f->name + ".fa";
+    
+    
+    
     char file54Text[] = "Hello World From File54!";
     char *selectedText = NULL;
     
     // ... //
     
-    if ( strcmp( path, "/file54.fa" ) == 0 )
+    if ( strcmp( path, virtual_filename.c_str() ) == 0 )
         selectedText = file54Text;
     else
         return -1;
@@ -111,7 +124,7 @@ static int do_read( const char *path, char *buffer, size_t size, off_t offset, s
 fuse_operations operations  = { do_getattr ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,do_read ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,do_readdir ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL };
 
 
-fuse::fuse(int argc, char *argv[]) {
+fuse::fuse(int argc, char *argv[], fastafs* f) {
     printf("fusing3\n");
   
     int argc2 = 3;
@@ -119,13 +132,13 @@ fuse::fuse(int argc, char *argv[]) {
     //[1] = <mountpoint>
     // (char *) "/home/users/u/.local/share/fastaf/file.fastfs",
     char *argv2[] = {(char *) "fasfafs-mnt",(char *) "-f",(char *) "/mnt/fastafs/hg19",  nullptr};
-    
-    std::string ud = "user data.fastafs";
+
+//@todo create a struct that points to fastafs *f as well as some virtual data (virtualized file names etc)
 
     fuse_main( 
             argc2, 
             argv2, 
             &operations, 
-            &ud );
+            f );
     
 }

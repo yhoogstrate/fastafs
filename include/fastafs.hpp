@@ -3,6 +3,8 @@
 
 #include "utils.hpp"
 
+#ifndef FASTAFS_HPP
+#define FASTAFS_HPP
 
 class fastafs_seq
 {
@@ -34,8 +36,10 @@ class fastafs
 {
 
 public:
+    fastafs(std::string);
     ~fastafs();
     
+    std::string name;
     std::string filename;
     std::vector<fastafs_seq *> data;
     unsigned int n();
@@ -51,3 +55,5 @@ public:
     
     void mount();
 };
+
+#endif
