@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
             exit(0);
         } else if (strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
-                std::string fname = "test/cache/test.fa";
+                std::string fname = std::string(argv[argc - 1]);
                 fasta_to_fastafs f = fasta_to_fastafs(&fname);
                 f.cache();
                 database d = database();
