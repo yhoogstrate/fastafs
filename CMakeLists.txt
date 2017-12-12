@@ -86,6 +86,8 @@ else()
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+link_libraries(crypto)
+
 
 if(DEBUG)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion")# -Werror makes compilation crash when warnings are given (also part of Travis)

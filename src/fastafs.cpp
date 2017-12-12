@@ -1,5 +1,10 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+
+#include <openssl/sha.h>
 
 #include "config.hpp"
 
@@ -79,6 +84,26 @@ void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
     if(i % padding != 0) {
         std::cout << "\n";
     }
+}
+
+
+std::string fastafs_seq::sha1() {
+    
+    SHA_CTX ctx;
+    SHA1_Init(&ctx);
+    SHA1_Update(&ctx, "Hello,ab", 7);
+    SHA1_Update(&ctx, "Hello,ab", 7);
+
+    unsigned char hash[SHA_DIGEST_LENGTH];
+    SHA1_Final(hash, &ctx);
+
+    char outputBuffer[41];
+    for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
+    {
+        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+    }
+    outputBuffer[40] = 0;
+    return std::string(outputBuffer);
 }
 
 
@@ -214,11 +239,11 @@ void fastafs::info()
     std::ifstream file (this->filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
     if (file.is_open()) {
         std::cout << "FASTAFS NAME: " << this->filename << "\n";
-        //std::cout << "SEQUENCES:    " << this->filename << "\n";
         printf("SEQUENCES:    %u\n",(unsigned int) this->data.size());
         
         for(unsigned int i = 0; i < this->data.size(); i++) {
             //this->data[i]->view(padding, &file);
+            std::cout << "[" << this->data[i]->sha1() << "]\n";
             printf("    >%-24s%-12int%s\n" , this->data[i]->name.c_str(),this->data[i]->n,std::string("a2e6643f").c_str());
         }
         file.close();
