@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "config.hpp"
+#include "utils.hpp"
 
 #include "fastafs.hpp"
 #include "twobit_byte.hpp"

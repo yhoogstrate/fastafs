@@ -7,14 +7,6 @@
 
 
 
-void uint_to_fourbytes(char *chars, unsigned int n)
-{
-    chars[0] = (unsigned char) ((n >> 24) & 0xFF);
-    chars[1] = (unsigned char) ((n >> 16) & 0xFF);
-    chars[2] = (unsigned char) ((n >> 8) & 0xFF);
-    chars[3] = (unsigned char) (n & 0xFF);
-}
-
 
 
 
