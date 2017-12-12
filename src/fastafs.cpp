@@ -1,8 +1,8 @@
-#include <iostream>
+
 #include <fstream>
-#include <sstream>
 #include <iomanip>
-#include <fstream>
+#include <iostream>
+#include <sstream>
 
 #include <openssl/sha.h>
 
@@ -77,6 +77,8 @@ void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
     if(i % padding != 0) {
         std::cout << "\n";
     }
+    
+    delete[] byte_tmp;
 }
 
 
@@ -133,6 +135,14 @@ unsigned int fastafs_seq::n_twobits()
     return (n + 3)/ 4;
 }
 
+
+
+fastafs::~fastafs() {
+    for(unsigned int i = 0; i < this->data.size();i++)
+    {
+        delete this->data[i];
+    }
+}
 
 void fastafs::load(std::string afilename)
 {
@@ -290,4 +300,10 @@ unsigned int fastafs::n()
 
 
 void fastafs::mount() {
+}
+
+
+
+std::string fastafs::basename() {
+    std::string basename = "";
 }

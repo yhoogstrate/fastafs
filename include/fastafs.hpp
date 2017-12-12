@@ -34,9 +34,13 @@ class fastafs
 {
 
 public:
+    ~fastafs();
+    
     std::string filename;
     std::vector<fastafs_seq *> data;
     unsigned int n();
+
+    std::string basename();
 
     void load(std::string); // loads
     //void write_2bit_header(fstream);

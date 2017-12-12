@@ -85,12 +85,17 @@ static int do_read( const char *path, char *buffer, size_t size, off_t offset, s
 
 fuse_operations operations  = { do_getattr ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,do_read ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,do_readdir ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL ,NULL };
 
+
+// more examples: https://libfuse.github.io/doxygen/hello_8c.html
+
 fuse::fuse(int argc, char *argv[]) {
     printf("fusing3\n");
   
     int argc2 = 2;
-    char *argv2[] = {(char *) "test", (char *) "/mnt/fastafs/hg19", nullptr};
-	
+    //[0] = ... on
+    //[1] = <mountpoint>
+    char *argv2[] = {(char *) "/home/users/u/.local/share/fastaf/file.fastfs",(char *) "/mnt/fastafs/hg19", (char *) "zfastafs", (char *) "zadasdsdfs",  nullptr};
+    
 
     fuse_main( 
             argc2, 

@@ -1,4 +1,7 @@
 
+#include <iostream>
+
+#include "config.hpp"
 
 unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
 {
@@ -15,4 +18,20 @@ void uint_to_fourbytes(char *chars, unsigned int n)
     chars[1] = (unsigned char) ((n >> 16) & 0xFF);
     chars[2] = (unsigned char) ((n >> 8) & 0xFF);
     chars[3] = (unsigned char) (n & 0xFF);
+}
+
+
+
+/**
+ * @brief parses mtab and searches for al fastafs mounts
+
+"/home/users/youri/.local/share/fastafs/test.fastafs -> ["/mnt/fastafs/test/",....]
+
+ */
+std::string get_mtab() {
+    
+    
+    
+    std::string out = "";
+    return out;
 }
