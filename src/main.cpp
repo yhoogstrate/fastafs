@@ -21,6 +21,7 @@ void usage(char **argv)
     std::cout <<      "    cache      adds FASTA file to cache" << std::endl;
     std::cout <<      "    view       view FASTAFS as FASTA" << std::endl;
     std::cout <<      "    info       view FASTAFS information" << std::endl;
+    std::cout <<      "    mount      mount FASTAFS as FASTA file" << std::endl;
     std::cout << std::endl;
 }
 
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
                 f.write(fname_out);
                 // @ todo progress bar
             } else {
-                std::cout << "usage: " << PACKAGE << " cache hg38 /tmp/hg38_test.fa\n\n";
+                std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file>\n\n";
                 std::cout << "\n";
             }
         } else if (strcmp(argv[1], "view") == 0) {
@@ -104,7 +105,16 @@ int main(int argc, char *argv[])
                 f.load(fname);
                 f.info();
             } else {
-                std::cout << "usage: " << PACKAGE << " info [<options>] fastafs-name-or-id\n\n";
+                std::cout << "usage: " << PACKAGE << " info [<options>] <fastafs-id>\n\n";
+                std::cout << "    -f               use filename instead  of name or ID\n";
+                std::cout << "\n";
+            }
+        } else if (strcmp(argv[1], "mount") == 0) {
+            // https://github.com/vasi/squashfuse example of using fuse/fs
+            if(argc > 3) {
+
+            } else {
+                std::cout << "usage: " << PACKAGE << " mount [-f] <fastafs-id/file> <mountpoint>\n\n";
                 std::cout << "    -f               use filename instead  of name or ID\n";
                 std::cout << "\n";
             }
