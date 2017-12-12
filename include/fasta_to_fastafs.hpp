@@ -18,7 +18,7 @@ public:
     std::vector<unsigned char> twobits;
 
     unsigned int N;// effective size of unnknown nulceotides (N's) in nt
-    
+
     fasta_to_fastafs_seq(void);
     ~fasta_to_fastafs_seq(void);
 

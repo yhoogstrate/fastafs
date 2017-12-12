@@ -55,18 +55,17 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "view") == 0) {
             if(argc > 2) {
                 bool from_file = false;
-                
+
                 for(int i = 2; i < argc - 1; i++) {
                     if (strcmp(argv[i], "-f") == 0) {
                         from_file = true;
                     }
                 }
-                
+
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
-                }
-                else {
+                } else {
                     database d = database();
                     fname = d.get(argv[argc - 1]);
                     if(fname.size() == 0) {
@@ -74,7 +73,7 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                 }
-                
+
                 fastafs f = fastafs();
                 f.load(fname);
                 f.view(60);
@@ -82,18 +81,17 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
                 bool from_file = false;
-                
+
                 for(int i = 2; i < argc - 1; i++) {
                     if (strcmp(argv[i], "-f") == 0) {
                         from_file = true;
                     }
                 }
-                
+
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
-                }
-                else {
+                } else {
                     database d = database();
                     fname = d.get(argv[argc - 1]);
                     if(fname.size() == 0) {
@@ -101,7 +99,7 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                 }
-                
+
                 fastafs f = fastafs();
                 f.load(fname);
                 f.info();

@@ -16,7 +16,7 @@ class database
 
 public:
     database();
-    
+
     void force_db_exists();
     std::string add(char* );
     void load();// reads path + "/" + info.txt, only containing N
