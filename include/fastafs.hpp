@@ -18,7 +18,8 @@ public:
     fastafs_seq();
 
     void view(unsigned int, std::ifstream *);
-    std::string sha1();
+    std::string sha1(std::ifstream *);
+    unsigned int n_twobits();
 };
 
 

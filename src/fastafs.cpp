@@ -79,22 +79,56 @@ void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
 }
 
 
-std::string fastafs_seq::sha1() {
+std::string fastafs_seq::sha1(std::ifstream* fh) {
+    char chunk[4];
+    unsigned int i;
+    
     SHA_CTX ctx;
     SHA1_Init(&ctx);
-    SHA1_Update(&ctx, "Hello,ab", 7);
-    SHA1_Update(&ctx, "Hello,ab", 7);
+    
+    uint_to_fourbytes(chunk, this->n);
+    SHA1_Update(&ctx, chunk, 4);
+    
+    for(i = 0; i < this->n_starts.size(); i++) {
+        uint_to_fourbytes(chunk, this->n_starts[i]);
+        SHA1_Update(&ctx, chunk, 4);
+        
+        uint_to_fourbytes(chunk, this->n_ends[i]);
+        SHA1_Update(&ctx, chunk, 4);
+    }
+    
+    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    for(i = 0; i < this->n_twobits(); i++) {
+        fh->read(chunk, 1);
+        SHA1_Update(&ctx, chunk, 1);
+    }
+    
 
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1_Final(hash, &ctx);
 
     char outputBuffer[41];
-    for(int i = 0; i < SHA_DIGEST_LENGTH; i++)
+    for(i = 0; i < SHA_DIGEST_LENGTH; i++)
     {
         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
     }
     outputBuffer[40] = 0;
     return std::string(outputBuffer);
+}
+
+
+unsigned int fastafs_seq::n_twobits() {
+    // if n actg bits is:
+    // 0 -> 0
+    // 1,2,3 and 4 -> 1
+    
+    unsigned int n = this->n;
+
+    for(unsigned int i = 0; i < this->n_starts.size(); i++) {
+        n -= n_ends[i] - this->n_starts[i] + 1;
+    }
+    
+    return (n + 3)/ 4;
 }
 
 
@@ -234,8 +268,7 @@ void fastafs::info()
         
         for(unsigned int i = 0; i < this->data.size(); i++) {
             //this->data[i]->view(padding, &file);
-            std::cout << "[" << this->data[i]->sha1() << "]\n";
-            printf("    >%-24s%-12int%s\n" , this->data[i]->name.c_str(),this->data[i]->n,std::string("a2e6643f").c_str());
+            printf("    >%-24s%-12i%s\n" , this->data[i]->name.c_str(),this->data[i]->n,this->data[i]->sha1(&file).c_str());
         }
         file.close();
     }
