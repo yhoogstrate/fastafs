@@ -101,6 +101,7 @@ add_executable(fastafs
 					src/fastafs.cpp
 					src/twobit_byte.cpp
 					src/database.cpp
+					src/utils.cpp
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")

@@ -12,14 +12,6 @@
 #include "fastafs.hpp"
 
 
-unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
-{
-
-    unsigned int u = ((unsigned char) chars[0 + offset] << 24) | ((unsigned char) chars[1 + offset] << 16) | ((unsigned char)  chars[2 + offset] << 8) | ((unsigned char) chars[3 + offset]);
-
-    return u;
-}
-
 
 fastafs_seq::fastafs_seq(): n(0) {
 }
@@ -88,7 +80,6 @@ void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
 
 
 std::string fastafs_seq::sha1() {
-    
     SHA_CTX ctx;
     SHA1_Init(&ctx);
     SHA1_Update(&ctx, "Hello,ab", 7);

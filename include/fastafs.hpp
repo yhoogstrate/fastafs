@@ -1,6 +1,8 @@
 
 #include <vector>
 
+#include "utils.hpp"
+
 
 class fastafs_seq
 {
