@@ -84,7 +84,7 @@ void database::list()
 std::string database::add(char* name)
 {
     std::ofstream outputFile;
-    outputFile.open(this->idx);
+    outputFile.open(this->idx, std::fstream::app);
 
     outputFile << name << std::endl;
     outputFile.close();
