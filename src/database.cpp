@@ -90,3 +90,25 @@ std::string database::add(char* name) {
     return this->path + "/" + name + ".fastafs";
 }
 
+
+
+/**
+ * @brief searches for a filename that corresponds to the uid
+ */
+std::string database::get(std::string fastafs_name_or_id) {
+    std::string fname;
+    
+    std::ifstream infile(this->idx);
+    std::string line;
+    while (std::getline(infile, line))
+    {
+        std::istringstream iss(line);
+
+        if(line.compare(fastafs_name_or_id) == 0) {
+            fname = this->path + "/" + line + ".fastafs";
+        }
+    }
+    
+    return fname;
+}
+
