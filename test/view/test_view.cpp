@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     }
     
     //unsigned int read =
-    fs.view_fasta_chunk(100, buffer, 100, 0);
+    fs.view_fasta_chunk(100, buffer, 100, 4);
     
     
     

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include <openssl/sha.h>
 
@@ -315,14 +316,29 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
         
         
         // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
-        if((file_offset + i_buffer) >= total_fa_size and file_offset <= (total_fa_size + seq_true_fasta_size)) {
-            // offset is in range of seq[i]! // 23
+        if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
             
-            while(file_offset + i_buffer <= (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-                printf("%i ", i_buffer);
+            // file offset = 4
+            // i_buffer = 0
+            
+            // total_fa_size = 0
+            // seq_true_fasta_size = 23
+            
+            
+            // we zijn op plek:
+            // file_offset + i_buffer
+            
+            printf("read(%i, %i)\n", file_offset + i_buffer - total_fa_size, std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ) - 1);
+            
+            while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
+                //printf("%i ", i_buffer);
+                printf("%i ", file_offset + i_buffer - total_fa_size);
                 buffer[i_buffer++] = (unsigned char) (i+1);
             }
+
+            //printf("\n{%i}\n", total_fa_size + file_offset);
         }
+        
         
         printf("\n");
         // update for next iteration
