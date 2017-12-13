@@ -106,30 +106,22 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
         buffer[written++] = this->name[i];
     }
     
-    // then close line
-    if(written < len_to_copy) {
+    if(start_pos_in_fasta <= this->name.size() + 2 and written < len_to_copy) {
         buffer[written++] = '\n';
     }
     
-    
-    // start = 8
-    // written = 6
-    
-    
-    
-    // //then parse the file
-    //char *byte_tmp = new char [4];
-    //unsigned int chunk_offset;
-    //const char *chunk;
 
-    //bool in_N = false;
-    //twobit_byte t = twobit_byte();
-    //unsigned int i_n_start = 0;//@todo make iterator
-    //unsigned int i_n_end = 0;//@todo make iterator
-    //unsigned int i_in_seq = 0;
-    //unsigned int modulo = padding - 1;
+    
+    printf("starting at char (%u + %u - %u): %u after header\n",    start_pos_in_fasta , written, (1 + this->name.size() + 1)  , start_pos_in_fasta + written -  (1 + this->name.size() + 1));
 
-    printf("starting at FA nucleotide: %u\n",start_pos_in_fasta - (1 + this->name.size() + 1) + written);
+    // find paddings before this number
+    // substract this and 
+
+    // if char == padding:
+    //     buffer[written++] = "\n";
+    
+    
+
 
     for(i = 0; i < this->n and written < len_to_copy; i++) {
         buffer[written++] = 'N';

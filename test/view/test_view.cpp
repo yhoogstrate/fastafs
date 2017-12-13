@@ -18,7 +18,8 @@ seq1:
 
 
 [>] + [chr1] + [\n] + [ACTG]{16} + [\n] = 1+4+1+16+1 = 23
- 0     1234     5      678... 22    23
+ 0     1234     5      6789...22    23
+ *                     0123...16
 
 
  * @test
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     }
     
     //unsigned int read =
-    fs.view_fasta_chunk(100, buffer, 100, 1);
+    fs.view_fasta_chunk(100, buffer, 100, 9);
     
     
     
