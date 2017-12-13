@@ -217,7 +217,6 @@ int fasta_to_fastafs::cache(void)
     std::string sequence = "";
 
     if (myfile.is_open()) {
-
         while(getline (myfile, line)) {
             if (line[0] == '>') {
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
@@ -267,7 +266,9 @@ int fasta_to_fastafs::cache(void)
         }
         myfile.close();
     }
-
+    else {
+        throw std::runtime_error("could not cache fasta file: " + this->filename);
+    }
 
     if(s != nullptr) {
         s->close_reading();
