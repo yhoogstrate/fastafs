@@ -92,15 +92,83 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     unsigned int i;
     unsigned int written = 0;
     
-    //buffer[0] = '|';
+    // then close line
+    if(written < len_to_copy) {
+        buffer[written++] = '>';
+    }
     
     // first check if sequence name needs to be included
-    // name = 8
-    // start = 4
     for(i = start_pos_in_fasta; i < this->name.size() and written < len_to_copy; i++) {
         buffer[written++] = this->name[i];
     }
     
+    // then close line
+    if(written < len_to_copy) {
+        buffer[written++] = '\n';
+    }
+    
+    
+    
+    
+    // //then parse the file
+    //char *byte_tmp = new char [4];
+    //unsigned int chunk_offset;
+    //const char *chunk;
+
+    //bool in_N = false;
+    //twobit_byte t = twobit_byte();
+    //unsigned int i_n_start = 0;//@todo make iterator
+    //unsigned int i_n_end = 0;//@todo make iterator
+    //unsigned int i_in_seq = 0;
+    //unsigned int modulo = padding - 1;
+
+    for(i = 0; i < this->n and written < len_to_copy; i++) {
+        buffer[written++] = 'N';
+    }
+
+    //@todo create func this->get_offset_2bit_data();
+    /*
+
+    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    
+    for(i = 0; i < this->n; i++) {
+
+
+        if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
+            in_N = true;
+        }
+
+        if(in_N) {
+            std::cout << "N";
+
+            if(i == this->n_ends[i_n_end]) {
+                i_n_end++;
+                in_N = false;
+            }
+        } else {
+            // load new twobit chunk when needed
+            chunk_offset = i_in_seq % 4;
+            if(chunk_offset == 0) {
+
+                fh->read(byte_tmp, 1);
+                t.data = byte_tmp[0];
+                chunk = t.get();
+            }
+            std::cout << chunk[chunk_offset];
+
+            i_in_seq++;
+        }
+
+        if(i % padding == modulo) {
+            std::cout << "\n";
+        }
+    }
+    if(i % padding != 0) {
+        std::cout << "\n";
+    }
+    
+    delete[] byte_tmp;
+     */
     
     return 0;
 }
@@ -365,9 +433,9 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
             while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
                 //printf("%i ", i_buffer);
                 printf("%i ", file_offset + i_buffer - total_fa_size);
-                if(buffer[i_buffer] == 123) {
-                    buffer[i_buffer] = (unsigned char) (i+1);
-                }
+                //if(buffer[i_buffer] == 123) {
+                //    buffer[i_buffer] = (unsigned char) (i+1);
+                //}
                 i_buffer++;
             }
 

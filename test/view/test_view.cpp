@@ -13,7 +13,13 @@ BOOST_AUTO_TEST_SUITE(Testing)
 
 /**
  * @brief
- *
+
+seq1:
+
+
+[chr1] + [\n] + [ACTG]{16} + [\n] = 4+1+16+1 = 
+
+
  * @test
  */
 BOOST_AUTO_TEST_CASE(test_chunked_viewing)
@@ -30,16 +36,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     
     char *buffer = new char[100];
     for(unsigned int i = 0 ; i < 100 ; i++) {
-        buffer[i] = 123;
+        buffer[i] = '?';
     }
     
     //unsigned int read =
-    fs.view_fasta_chunk(100, buffer, 100, 1);
+    fs.view_fasta_chunk(100, buffer, 100, 0);
     
     
     
     
-    
+    /*
     
     
     for(unsigned int i = 0 ; i < 100 ; i++) {
@@ -52,7 +58,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
             std::cout << "\n";
         }
     }
-    printf("\n");
+    */
+    printf("%s\n", buffer);
 
     delete buffer;
 }
