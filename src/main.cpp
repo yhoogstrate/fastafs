@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                f.view(60);
+                f.view_fasta(60);
             }
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {

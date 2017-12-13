@@ -17,7 +17,7 @@ fastafs_seq::fastafs_seq(): n(0)
 {
 }
 
-void fastafs_seq::view(unsigned int padding, std::ifstream* fh)
+void fastafs_seq::view_fasta(unsigned int padding, std::ifstream* fh)
 {
 #if DEBUG
     if(this->n_starts.size() != this->n_ends.size()) {
@@ -256,7 +256,7 @@ void fastafs::load(std::string afilename)
 
 
 
-void fastafs::view(unsigned int padding)
+void fastafs::view_fasta(unsigned int padding)
 {
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
@@ -265,10 +265,66 @@ void fastafs::view(unsigned int padding)
     std::ifstream file (this->filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
     if (file.is_open()) {
         for(unsigned int i = 0; i < this->data.size(); i++) {
-            this->data[i]->view(padding, &file);
+            this->data[i]->view_fasta(padding, &file);
         }
         file.close();
     }
+}
+
+
+/**
+example (padding = 4, buffer = 12):
+
+>seq1
+ACTG
+>seq2
+NNNN
+>seq3
+AAAG
+
+
+buffer_size = 12
+file_offset = 0
+seq       1   1   1   1   1   1    1   1   1   1   1    2
+buffer -> [>] [s] [e] [q] [1] [\n] [A] [C] [T] [G] [\n] [>]
+
+buffer_size = 12
+file_offset = 12
+seq       2   2   2   2   2    2   2   2   2   2    3   3
+buffer -> [s] [e] [q] [2] [\n] [N] [N] [N] [N] [\n] [>] [s]
+
+buffer_size = 12
+file_offset = 24
+          3   3   3   3    3   3   3   3
+buffer -> [e] [q] [3] [\n] [A] [A] [A] [G] ?   ?    ?   ?
+
+ */
+int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_size, off_t file_offset) {
+    unsigned int total_fa_size = 0, i_buffer = 0;
+    unsigned int i, seq_true_fasta_size;
+    
+    printf("loaded?\n");
+    
+    for(i = 0; i < this->data.size(); i++) {
+        printf(">%u 'th sequence is being scanned\n", i+1);
+        
+        seq_true_fasta_size = 1; // '>'
+        seq_true_fasta_size += this->data[i]->name.size() + 1;// "chr1\n"
+        seq_true_fasta_size += this->data[i]->n; // ACTG NNN
+        seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+        
+        // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
+        if(file_offset >= total_fa_size and file_offset <= (total_fa_size + seq_true_fasta_size)) {
+            // offset is in range of seq[i]!
+            buffer[i_buffer++] = (unsigned char) i;
+        }
+        
+        // update for next iteration
+        total_fa_size +=  seq_true_fasta_size;
+    }
+    
+    
+    
 }
 
 

@@ -117,7 +117,8 @@ enable_testing()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-add_test(direction_test          "${BUILD_TEST_DIR}/test_cache")
+add_test(test_cache          "${BUILD_TEST_DIR}/test_cache")
+add_test(test_view           "${BUILD_TEST_DIR}/test_view")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'

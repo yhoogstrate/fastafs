@@ -19,7 +19,7 @@ public:
 
     fastafs_seq();
 
-    void view(unsigned int, std::ifstream *);
+    void view_fasta(unsigned int, std::ifstream *);
     std::string sha1(std::ifstream *);
     unsigned int n_twobits();
 };
@@ -50,7 +50,10 @@ public:
     //void write_2bit_header(fstream);
     //unsigned int get_index_size();
     //unsigned int get_sequence_offset(unsigned int);
-    void view(unsigned int);
+    void view_fasta(unsigned int);
+    int view_fasta_chunk(unsigned int, char*, size_t , off_t );
+    
+    
     void info();
     
     void mount();
