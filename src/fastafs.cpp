@@ -89,8 +89,18 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream* fh)
     //                                        offset1: starting pos (fasta)
     //                                        offset2: ending pos ? (fasta)
 int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t start_pos_in_fasta, size_t len_to_copy) {
+    unsigned int i;
+    unsigned int written = 0;
     
-    buffer[0] = '|';
+    //buffer[0] = '|';
+    
+    // first check if sequence name needs to be included
+    // name = 8
+    // start = 4
+    for(i = start_pos_in_fasta; i < this->name.size() and written < len_to_copy; i++) {
+        buffer[written++] = this->name[i];
+    }
+    
     
     return 0;
 }
@@ -355,7 +365,7 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
             while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
                 //printf("%i ", i_buffer);
                 printf("%i ", file_offset + i_buffer - total_fa_size);
-                if(buffer[i_buffer] != '|') {
+                if(buffer[i_buffer] == 123) {
                     buffer[i_buffer] = (unsigned char) (i+1);
                 }
                 i_buffer++;

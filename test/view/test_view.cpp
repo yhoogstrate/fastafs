@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     }
     
     //unsigned int read =
-    fs.view_fasta_chunk(100, buffer, 100, 4);
+    fs.view_fasta_chunk(100, buffer, 100, 1);
     
     
     
@@ -43,7 +43,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     
     
     for(unsigned int i = 0 ; i < 100 ; i++) {
-        printf("[%i] ",buffer[i]);
+        if(buffer[i] == 123) {
+            buffer[i] = '?';
+        }
+        printf("[%c] ",buffer[i]);
         
         if((i+1) % 10 == 0) {
             std::cout << "\n";
