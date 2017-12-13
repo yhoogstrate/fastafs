@@ -306,19 +306,25 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
     printf("loaded?\n");
     
     for(i = 0; i < this->data.size(); i++) {
-        printf(">%u 'th sequence is being scanned\n", i+1);
-        
         seq_true_fasta_size = 1; // '>'
         seq_true_fasta_size += this->data[i]->name.size() + 1;// "chr1\n"
         seq_true_fasta_size += this->data[i]->n; // ACTG NNN
         seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+        printf(">%u 'th sequence is being scanned [estimated len=%u]\n", i+1, seq_true_fasta_size);
+        
         
         // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
-        if(file_offset >= total_fa_size and file_offset <= (total_fa_size + seq_true_fasta_size)) {
-            // offset is in range of seq[i]!
-            buffer[i_buffer++] = (unsigned char) i;
+        if((file_offset + i_buffer) >= total_fa_size and file_offset <= (total_fa_size + seq_true_fasta_size)) {
+            // offset is in range of seq[i]! // 23
+            
+            while(file_offset + i_buffer <= (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
+                printf("%i ", i_buffer);
+                buffer[i_buffer++] = (unsigned char) (i+1);
+            }
         }
         
+        printf("\n");
         // update for next iteration
         total_fa_size +=  seq_true_fasta_size;
     }
