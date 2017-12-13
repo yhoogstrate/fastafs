@@ -83,6 +83,18 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream* fh)
 }
 
 
+
+    // unsigned int padding
+    // char* = buffer + i_buffer?
+    //                                        offset1: starting pos (fasta)
+    //                                        offset2: ending pos ? (fasta)
+int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t start_pos_in_fasta, size_t len_to_copy) {
+    
+    buffer[0] = '|';
+    
+    return 0;
+}
+
 std::string fastafs_seq::sha1(std::ifstream* fh)
 {
     char chunk[4];
@@ -303,8 +315,7 @@ buffer -> [e] [q] [3] [\n] [A] [A] [A] [G] ?   ?    ?   ?
 int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_size, off_t file_offset) {
     unsigned int total_fa_size = 0, i_buffer = 0;
     unsigned int i, seq_true_fasta_size;
-    
-    printf("loaded?\n");
+
     
     for(i = 0; i < this->data.size(); i++) {
         seq_true_fasta_size = 1; // '>'
@@ -328,12 +339,26 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
             // we zijn op plek:
             // file_offset + i_buffer
             
-            printf("read(%i, %i)\n", file_offset + i_buffer - total_fa_size, std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ) - 1);
+            printf("read(&buffer[%i], %i, %i)\n",
+                i_buffer,
+                file_offset + i_buffer - total_fa_size,
+                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ) - 1
+                );
+            
+            this->data[i]->view_fasta_chunk(
+                padding,
+                &buffer[i_buffer],
+                file_offset + i_buffer - total_fa_size,
+                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ) - 1
+                );
             
             while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
                 //printf("%i ", i_buffer);
                 printf("%i ", file_offset + i_buffer - total_fa_size);
-                buffer[i_buffer++] = (unsigned char) (i+1);
+                if(buffer[i_buffer] != '|') {
+                    buffer[i_buffer] = (unsigned char) (i+1);
+                }
+                i_buffer++;
             }
 
             //printf("\n{%i}\n", total_fa_size + file_offset);
