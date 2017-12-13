@@ -93,12 +93,16 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     unsigned int written = 0;
     
     // then close line
-    if(written < len_to_copy) {
+    if( start_pos_in_fasta == 0 and written < len_to_copy) {
         buffer[written++] = '>';
     }
     
     // first check if sequence name needs to be included
-    for(i = start_pos_in_fasta; i < this->name.size() and written < len_to_copy; i++) {
+    // start = 0: w=1 set i = 0     s+w-1=0+1-1=0
+    // start = 1: w=0 set i = 0     s+w-1=1+0-1=0
+    // start = 2: w=0 set i = 1     s+w-1=2+0-1=1
+    // start = 3: w=0 set i = 2     s+w-1=
+    for(i = start_pos_in_fasta + written - 1; i < this->name.size() and written < len_to_copy; i++) {
         buffer[written++] = this->name[i];
     }
     
@@ -107,6 +111,9 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
         buffer[written++] = '\n';
     }
     
+    
+    // start = 8
+    // written = 6
     
     
     
@@ -121,6 +128,8 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     //unsigned int i_n_end = 0;//@todo make iterator
     //unsigned int i_in_seq = 0;
     //unsigned int modulo = padding - 1;
+
+    printf("starting at FA nucleotide: %u\n",start_pos_in_fasta - (1 + this->name.size() + 1) + written);
 
     for(i = 0; i < this->n and written < len_to_copy; i++) {
         buffer[written++] = 'N';
@@ -169,6 +178,12 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     
     delete[] byte_tmp;
      */
+     
+    // then close line (avoid this if the previous one was newline by padding!)
+    if(written < len_to_copy) {
+        buffer[written++] = '\n';
+    }
+    
     
     return 0;
 }
