@@ -126,9 +126,18 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     //printf (" %u < %u \n", written, len_to_copy);
     fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     
-    i = 0; // how many'th nucleotide , is not 0 if there is an offset
+    // offset=6 en header=5
+    //>chr1
+    //ACTG
+    
+    //printf("    {%u - %u + %u} = %i\n", written, start_pos_in_fasta, this->name.size() + 2,(written + start_pos_in_fasta) - (this->name.size() + 2));
+    
+    i = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th nucleotide , is not 0 if there is an offset
     unsigned int i_in_file;
-    for(i_in_file = 0; written < len_to_copy; i_in_file++) {
+    
+    // if i != 0, set i_in_seq and set fseek appropriately
+    
+    for(i_in_file = i; written < len_to_copy; i_in_file++) {
         
         if((i_in_file % (padding+1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
