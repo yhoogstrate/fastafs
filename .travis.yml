@@ -9,7 +9,7 @@ compiler:
   - clang
 
 before_install:
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update; fi
+  - mkdir tmp ; if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update; fi
 
 python:
   - "2.7"

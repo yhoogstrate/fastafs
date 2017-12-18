@@ -92,12 +92,8 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 
 static int do_read( const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
 {
-    printf( "--> Trying to read %s, %u, %u\n", path, offset, size );
-    
-    
-    
+
     fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
-    printf(" [ context: ] %s\n",f->name.c_str());
     std::string virtual_filename = "/" + f->name + ".fa";
     
     
@@ -105,15 +101,18 @@ static int do_read( const char *path, char *buffer, size_t size, off_t offset, s
     char file54Text[] = "Hello World From File54!";
     char *selectedText = NULL;
     
-    // ... //
-    
-    if ( strcmp( path, virtual_filename.c_str() ) == 0 )
+
+    if ( strcmp( path, virtual_filename.c_str() ) == 0 ) {
         selectedText = file54Text;
-    else
+    }
+    else {
         return -1;
+    }
     
-    // ... //
+    printf( "--> Trying to read %s, %u, %u => %u\n", path, offset, size , strlen( selectedText ) - offset);
+    //-> Trying to read /test.fa, 0, 4096 => 24
     
+    // size is size of buffer, so that's always 'safe'
     memcpy( buffer, selectedText + offset, size );
         
     return strlen( selectedText ) - offset;
