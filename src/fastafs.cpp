@@ -108,7 +108,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     
 
     
-    printf("starting at char (%u + %u - %u): %u after header\n",    start_pos_in_fasta , written, (1 + this->name.size() + 1)  , start_pos_in_fasta + written -  (1 + this->name.size() + 1));
+    //printf("starting at char (%u + %u - %u): %u after header\n",    start_pos_in_fasta , written, (1 + this->name.size() + 1)  , start_pos_in_fasta + written -  (1 + this->name.size() + 1));
 
 
     bool in_N = false;
@@ -123,7 +123,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     unsigned int num_paddings = (this->n + padding - 1) / padding;
 
     
-    printf (" %u < %u \n", written, len_to_copy);
+    //printf (" %u < %u \n", written, len_to_copy);
     fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     
     i = 0; // how many'th nucleotide , is not 0 if there is an offset
@@ -391,7 +391,7 @@ buffer -> [e] [q] [3] [\n] [A] [A] [A] [G] ?   ?    ?   ?
 
  */
 int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_size, off_t file_offset) {
-    unsigned int written = 0;
+    unsigned int written = 0,tmppp=0;
     unsigned int total_fa_size = 0, i_buffer = 0;
     unsigned int i, seq_true_fasta_size;
 
@@ -421,30 +421,29 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
                 // we zijn op plek:
                 // file_offset + i_buffer
                 
-                printf("read(&buffer[%i], %i, %i)\n",
+                printf("    read(&buffer[%i], %i, min(%i,%i)= %i)\n",
                     i_buffer,
                     file_offset + i_buffer - total_fa_size,
-                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size )
+                    (unsigned int) buffer_size - i_buffer, seq_true_fasta_size - file_offset,
+                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size- ( (unsigned int) file_offset + i_buffer - total_fa_size ))
                     );
                 
-                written += this->data[i]->view_fasta_chunk(
+                tmppp = this->data[i]->view_fasta_chunk(
                     padding,
                     &buffer[i_buffer],
                     file_offset + i_buffer - total_fa_size,
-                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ),
+                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size- ( (unsigned int) file_offset + i_buffer - total_fa_size ) ),
                     &file
                     );
                 
+                printf("    [written = %u]\n", tmppp);
+                
+                written += tmppp;
+                
                 while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-                    //printf("%i ", i_buffer);
-                    printf("%i ", file_offset + i_buffer - total_fa_size);
-                    //if(buffer[i_buffer] == 123) {
-                    //    buffer[i_buffer] = (unsigned char) (i+1);
-                    //}
+                    //printf("%i ", file_offset + i_buffer - total_fa_size);
                     i_buffer++;
                 }
-
-                //printf("\n{%i}\n", total_fa_size + file_offset);
             }
             
             
