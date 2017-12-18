@@ -44,8 +44,15 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     //unsigned int read =
     fs.view_fasta_chunk(4, buffer, 100, 0);
     
+    std::string std_buffer = std::string(buffer);
     
+    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
+    //----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
     
+    BOOST_CHECK_EQUAL(std_buffer.compare(">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\n"), 0);
+
+
+
     
     /*
     
