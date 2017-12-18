@@ -25,7 +25,7 @@ public:
     //                                        offset1: starting pos (fasta)
     //                                        offset2: ending pos ? (fasta)
     //int view_fasta_chunk(unsigned int, char*, off_t , off_t);
-    int view_fasta_chunk(unsigned int, char*, off_t, size_t);
+    int view_fasta_chunk(unsigned int, char*, off_t, size_t, std::ifstream *);
     
     std::string sha1(std::ifstream *);
     unsigned int n_twobits();

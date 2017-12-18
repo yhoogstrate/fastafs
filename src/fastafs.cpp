@@ -88,7 +88,7 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream* fh)
     // char* = buffer + i_buffer?
     //                                        offset1: starting pos (fasta)
     //                                        offset2: ending pos ? (fasta)
-int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t start_pos_in_fasta, size_t len_to_copy) {
+int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream* fh) {
     unsigned int i;
     unsigned int written = 0;
     
@@ -97,11 +97,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
         buffer[written++] = '>';
     }
     
-    // first check if sequence name needs to be included
-    // start = 0: w=1 set i = 0     s+w-1=0+1-1=0
-    // start = 1: w=0 set i = 0     s+w-1=1+0-1=0
-    // start = 2: w=0 set i = 1     s+w-1=2+0-1=1
-    // start = 3: w=0 set i = 2     s+w-1=
+
     for(i = start_pos_in_fasta + written - 1; i < this->name.size() and written < len_to_copy; i++) {
         buffer[written++] = this->name[i];
     }
@@ -114,116 +110,64 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     
     printf("starting at char (%u + %u - %u): %u after header\n",    start_pos_in_fasta , written, (1 + this->name.size() + 1)  , start_pos_in_fasta + written -  (1 + this->name.size() + 1));
 
-    // find paddings before this number
-    // substract this and 
 
-    // if char == padding:
-    //     buffer[written++] = "\n";
-    
-/**
-number of newlines within sequence section
-padding =  4
-for n=0:10:
-n=0     0       >chr1 \n
-n=1     1       >chr1 \n [A \n ]
-n=2     1       >chr1 \n [AC \n ]
-n=3     1       >chr1 \n [ACT \n ]
-n=4     1       >chr1 \n [ACTA \n ]
-n=5     2       >chr1 \n [ACTA \n C \n ]
-n=6     2       >chr1 \n [ACTA \n CT \n ]
-n=7     2       >chr1 \n [ACTA \n CTG \n ]
-n=8     2       >chr1 \n [ACTA \n CTGG \n ]
-n=9     3       >chr1 \n [ACTA \n CTGG \n A \n ]
-
-num_paddings = (n + padding - 1) / padding
-
-
-
-if not last  (n = 9) -> num_padding = 3:  number of elements = 9 + 3 = 12
-    i=0     f       >chr1 \n [A ]
-    i=1     1       >chr1 \n [AC ]
-    i=2     1       >chr1 \n [ACT ]
-    i=3     1       >chr1 \n [ACTA ]
-    i=4     2       >chr1 \n [ACTA \n ] 
-    i=5     2       >chr1 \n [ACTA \n C ]
-    i=6     2       >chr1 \n [ACTA \n CT ]
-    i=7     2       >chr1 \n [ACTA \n CTG ]
-    i=8     3       >chr1 \n [ACTA \n CTGG ]
-    i=9     3       >chr1 \n [ACTA \n CTGG \n ]
-    i=10    3       >chr1 \n [ACTA \n CTGG \n A ]
-    i=11    3       >chr1 \n [ACTA \n CTGG \n A \n ]
-
-
-0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 
-> c h r 1 \ 1 2 3 4 \  5  6  7  8  \  9  10 11 12 \  13 14 15 16 \
-
-
-
- */
-    unsigned int num_paddings = (this->n + padding - 1) / padding;
+    bool in_N = false;
+    char *byte_tmp = new char [4];
+    const char *chunk;
+    twobit_byte t = twobit_byte();
+    unsigned int chunk_offset;
+    unsigned int i_in_seq = 0;
+    unsigned int i_n_end = 0;
+    unsigned int i_n_start = 0;
     unsigned int num_full_padding_blocks = 0;
-    printf (" %u < %u \n", written, len_to_copy);
-    //printf(" num paddings: %u [%u / %u]    num bytes: %u\n", num_paddings, this->n, padding, this->n + num_paddings);
+    unsigned int num_paddings = (this->n + padding - 1) / padding;
 
-    //for(i = 0; i < this->n + num_paddings and written < len_to_copy; i++) {
-    for(i = 0; written < len_to_copy; i++) {
+    
+    printf (" %u < %u \n", written, len_to_copy);
+    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    
+    i = 0; // how many'th nucleotide , is not 0 if there is an offset
+    unsigned int i_in_file;
+    for(i_in_file = 0; written < len_to_copy; i_in_file++) {
         
-        if((i % (padding+1) == padding) or (i == this->n + num_paddings - 1)) {
+        if((i_in_file % (padding+1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
         }
         else {
-            buffer[written++] = 'X';
-        }
-    }
-
-    //@todo create func this->get_offset_2bit_data();
-    /*
-
-    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
-    
-    for(i = 0; i < this->n; i++) {
-
-
-        if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-            in_N = true;
-        }
-
-        if(in_N) {
-            std::cout << "N";
-
-            if(i == this->n_ends[i_n_end]) {
-                i_n_end++;
-                in_N = false;
+            
+            if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
+                in_N = true;
             }
-        } else {
-            // load new twobit chunk when needed
-            chunk_offset = i_in_seq % 4;
-            if(chunk_offset == 0) {
+            if(in_N) {
+                buffer[written++] = 'N';
 
-                fh->read(byte_tmp, 1);
-                t.data = byte_tmp[0];
-                chunk = t.get();
+                if(i == this->n_ends[i_n_end]) {
+                    i_n_end++;
+                    in_N = false;
+                }
+            } else {
+                
+                chunk_offset = i_in_seq % 4;
+                // load new twobit chunk when needed
+                
+                if(chunk_offset == 0) {
+                    fh->read(byte_tmp, 1);
+                    t.data = byte_tmp[0];
+                    chunk = t.get();
+                }
+                //std::cout << chunk[chunk_offset];
+
+
+                buffer[written++] = chunk[chunk_offset];
+
+                i_in_seq++;
             }
-            std::cout << chunk[chunk_offset];
-
-            i_in_seq++;
-        }
-
-        if(i % padding == modulo) {
-            std::cout << "\n";
+            
+            i++;
         }
     }
-    if(i % padding != 0) {
-        std::cout << "\n";
-    }
-    
-    delete[] byte_tmp;
-     */
-     
-    // then close line (avoid this if the previous one was newline by padding!)
-    if(written < len_to_copy) {
-        buffer[written++] = '\n';
-    }
+
+
     
     
     return 0;
@@ -450,62 +394,70 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
     unsigned int total_fa_size = 0, i_buffer = 0;
     unsigned int i, seq_true_fasta_size;
 
-    
-    for(i = 0; i < this->data.size(); i++) {
-        seq_true_fasta_size = 1; // '>'
-        seq_true_fasta_size += this->data[i]->name.size() + 1;// "chr1\n"
-        seq_true_fasta_size += this->data[i]->n; // ACTG NNN
-        seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+    std::ifstream file (this->filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+    if (file.is_open()) {
 
-        printf(">%u 'th sequence is being scanned [estimated len=%u]\n", i+1, seq_true_fasta_size);
-        
-        
-        // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
-        if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
-            
-            // file offset = 4
-            // i_buffer = 0
-            
-            // total_fa_size = 0
-            // seq_true_fasta_size = 23
+
+        for(i = 0; i < this->data.size(); i++) {
+            seq_true_fasta_size = 1; // '>'
+            seq_true_fasta_size += this->data[i]->name.size() + 1;// "chr1\n"
+            seq_true_fasta_size += this->data[i]->n; // ACTG NNN
+            seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+            printf(">%u 'th sequence is being scanned [estimated len=%u]\n", i+1, seq_true_fasta_size);
             
             
-            // we zijn op plek:
-            // file_offset + i_buffer
-            
-            printf("read(&buffer[%i], %i, %i)\n",
-                i_buffer,
-                file_offset + i_buffer - total_fa_size,
-                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size )
-                );
-            
-            this->data[i]->view_fasta_chunk(
-                padding,
-                &buffer[i_buffer],
-                file_offset + i_buffer - total_fa_size,
-                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size )
-                );
-            
-            while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-                //printf("%i ", i_buffer);
-                printf("%i ", file_offset + i_buffer - total_fa_size);
-                //if(buffer[i_buffer] == 123) {
-                //    buffer[i_buffer] = (unsigned char) (i+1);
-                //}
-                i_buffer++;
+            // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
+            if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
+                
+                // file offset = 4
+                // i_buffer = 0
+                
+                // total_fa_size = 0
+                // seq_true_fasta_size = 23
+                
+                
+                // we zijn op plek:
+                // file_offset + i_buffer
+                
+                printf("read(&buffer[%i], %i, %i)\n",
+                    i_buffer,
+                    file_offset + i_buffer - total_fa_size,
+                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size )
+                    );
+                
+                this->data[i]->view_fasta_chunk(
+                    padding,
+                    &buffer[i_buffer],
+                    file_offset + i_buffer - total_fa_size,
+                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ),
+                    &file
+                    );
+                
+                while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
+                    //printf("%i ", i_buffer);
+                    printf("%i ", file_offset + i_buffer - total_fa_size);
+                    //if(buffer[i_buffer] == 123) {
+                    //    buffer[i_buffer] = (unsigned char) (i+1);
+                    //}
+                    i_buffer++;
+                }
+
+                //printf("\n{%i}\n", total_fa_size + file_offset);
             }
-
-            //printf("\n{%i}\n", total_fa_size + file_offset);
+            
+            
+            printf("\n");
+            // update for next iteration
+            total_fa_size +=  seq_true_fasta_size;
         }
-        
-        
-        printf("\n");
-        // update for next iteration
-        total_fa_size +=  seq_true_fasta_size;
+    
+    
+        file.close();
     }
-    
-    
-    
+    else {
+        throw std::runtime_error("could not load fastafs: " + this->filename);
+    }
 }
 
 
