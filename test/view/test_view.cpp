@@ -26,6 +26,8 @@ seq1:
  */
 BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 {
+    unsigned int written;
+    
     std::string fastafs_file = "tmp/test.fastafs";
     
     fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
@@ -37,12 +39,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     fs.load(fastafs_file);
     
     char *buffer = new char[100];
-    for(unsigned int i = 0 ; i < 100 ; i++) {
-        buffer[i] = '?';
-    }
     
-    //unsigned int read =
-    fs.view_fasta_chunk(4, buffer, 100, 0);
+    
+    written = fs.view_fasta_chunk(4, buffer, 100, 0);
+    BOOST_CHECK_EQUAL(written, 100);
     
     std::string std_buffer = std::string(buffer);
     
