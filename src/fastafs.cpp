@@ -160,7 +160,7 @@ if not last  (n = 9) -> num_padding = 3:  number of elements = 9 + 3 = 12
 
 
  */
-    //unsigned int num_paddings = (this->n + padding - 1) / padding;
+    unsigned int num_paddings = (this->n + padding - 1) / padding;
     unsigned int num_full_padding_blocks = 0;
     printf (" %u < %u \n", written, len_to_copy);
     //printf(" num paddings: %u [%u / %u]    num bytes: %u\n", num_paddings, this->n, padding, this->n + num_paddings);
@@ -168,7 +168,7 @@ if not last  (n = 9) -> num_padding = 3:  number of elements = 9 + 3 = 12
     //for(i = 0; i < this->n + num_paddings and written < len_to_copy; i++) {
     for(i = 0; written < len_to_copy; i++) {
         
-        if(i % (padding+1) == padding) {
+        if((i % (padding+1) == padding) or (i == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
         }
         else {
