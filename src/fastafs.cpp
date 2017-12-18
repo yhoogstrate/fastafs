@@ -102,7 +102,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
         buffer[written++] = this->name[i];
     }
     
-    if(start_pos_in_fasta <= this->name.size() + 2 and written < len_to_copy) {
+    if(start_pos_in_fasta < this->name.size() + 2 and written < len_to_copy) {
         buffer[written++] = '\n';
     }
     

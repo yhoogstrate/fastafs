@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     
     std_buffer = std::string(buffer, 100);
     
-    std::cout << std_buffer << std::endl;
+    std::cout << "[" << std_buffer << "]" << std::endl;
     
     
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
