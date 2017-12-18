@@ -120,11 +120,60 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     // if char == padding:
     //     buffer[written++] = "\n";
     
-    
+/**
+number of newlines within sequence section
+padding =  4
+for n=0:10:
+n=0     0       >chr1 \n
+n=1     1       >chr1 \n [A \n ]
+n=2     1       >chr1 \n [AC \n ]
+n=3     1       >chr1 \n [ACT \n ]
+n=4     1       >chr1 \n [ACTA \n ]
+n=5     2       >chr1 \n [ACTA \n C \n ]
+n=6     2       >chr1 \n [ACTA \n CT \n ]
+n=7     2       >chr1 \n [ACTA \n CTG \n ]
+n=8     2       >chr1 \n [ACTA \n CTGG \n ]
+n=9     3       >chr1 \n [ACTA \n CTGG \n A \n ]
+
+num_paddings = (n + padding - 1) / padding
 
 
-    for(i = 0; i < this->n and written < len_to_copy; i++) {
-        buffer[written++] = 'N';
+
+if not last  (n = 9) -> num_padding = 3:  number of elements = 9 + 3 = 12
+    i=0     f       >chr1 \n [A ]
+    i=1     1       >chr1 \n [AC ]
+    i=2     1       >chr1 \n [ACT ]
+    i=3     1       >chr1 \n [ACTA ]
+    i=4     2       >chr1 \n [ACTA \n ] 
+    i=5     2       >chr1 \n [ACTA \n C ]
+    i=6     2       >chr1 \n [ACTA \n CT ]
+    i=7     2       >chr1 \n [ACTA \n CTG ]
+    i=8     3       >chr1 \n [ACTA \n CTGG ]
+    i=9     3       >chr1 \n [ACTA \n CTGG \n ]
+    i=10    3       >chr1 \n [ACTA \n CTGG \n A ]
+    i=11    3       >chr1 \n [ACTA \n CTGG \n A \n ]
+
+
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 
+> c h r 1 \ 1 2 3 4 \  5  6  7  8  \  9  10 11 12 \  13 14 15 16 \
+
+
+
+ */
+    //unsigned int num_paddings = (this->n + padding - 1) / padding;
+    unsigned int num_full_padding_blocks = 0;
+    printf (" %u < %u \n", written, len_to_copy);
+    //printf(" num paddings: %u [%u / %u]    num bytes: %u\n", num_paddings, this->n, padding, this->n + num_paddings);
+
+    //for(i = 0; i < this->n + num_paddings and written < len_to_copy; i++) {
+    for(i = 0; written < len_to_copy; i++) {
+        
+        if(i % (padding+1) == padding) {
+            buffer[written++] = '\n';
+        }
+        else {
+            buffer[written++] = 'X';
+        }
     }
 
     //@todo create func this->get_offset_2bit_data();
@@ -427,14 +476,14 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
             printf("read(&buffer[%i], %i, %i)\n",
                 i_buffer,
                 file_offset + i_buffer - total_fa_size,
-                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ) - 1
+                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size )
                 );
             
             this->data[i]->view_fasta_chunk(
                 padding,
                 &buffer[i_buffer],
                 file_offset + i_buffer - total_fa_size,
-                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size ) - 1
+                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size )
                 );
             
             while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {

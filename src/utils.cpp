@@ -24,9 +24,7 @@ void uint_to_fourbytes(char *chars, unsigned int n)
 
 /**
  * @brief parses mtab and searches for al fastafs mounts
-
-"/home/users/youri/.local/share/fastafs/test.fastafs -> ["/mnt/fastafs/test/",....]
-
+ "/home/users/youri/.local/share/fastafs/test.fastafs -> ["/mnt/fastafs/test/",....]
  */
 std::string get_mtab() {
     
