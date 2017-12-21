@@ -131,20 +131,50 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     //ACTG
     
     //printf("    {%u - %u + %u} = %i\n", written, start_pos_in_fasta, this->name.size() + 2,(written + start_pos_in_fasta) - (this->name.size() + 2));
+    /*
+    unsigned int nucleotide_offset = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th nucleotide , is not 0 if there is an offset
     
-    i = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th nucleotide , is not 0 if there is an offset
-    unsigned int i_in_file;
+    // @todo function n's until ...
+    unsigned int nucleotide_actg_offset = nucleotide_offset;// number of ACTGS have gone by before
+    i_n_start = 0;
+    while(this->n_starts.size () > i_n_start ) {
+        printf("%u %u => %u,min(%u,%u)  [len=%u]\n",i_n_start, this->n_starts.size(),this->n_starts[i_n_start],this->n_ends[i_n_start],nucleotide_offset,this->n_ends[i_n_start] - this->n_starts[i_n_start]);
+        i_n_start++;
+        
+        // for sure the opening is in range 
+        // only need to check its size and whether we are currently 'in_N'
+        
+        
+    }
+    i_n_start = 0;
     
+    unsigned int twobit_offset;// number of twobit bytes that have passed
+    
+    if( (this->name.size() + 2) >  (written + start_pos_in_fasta)) {
+        printf("\n");
+        printf("\tonly header reading: %u <-> %u \n", (written + start_pos_in_fasta) , (this->name.size() + 2));        
+    }
+    else {
+        printf("\n");
+        printf("\tnucleotide [ACTGN] offset: %u\n",nucleotide_offset);
+        printf("\tnucleotide [ACTG]  offset: %u\n",nucleotide_actg_offset);
+        printf("\ttwobit byte offset:        %u\n",twobit_offset);
+    }
+    */
     // if i != 0, set i_in_seq and set fseek appropriately
     
-    for(i_in_file = i; written < len_to_copy; i_in_file++) {
+    
+    unsigned int i_in_file;i=0;
+    for(i_in_file = 0; written < len_to_copy; i_in_file++) {
         
         if((i_in_file % (padding+1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
         }
         else {
-            
+            if(this->n_starts.size() > 0){
+            printf("this->n_starts.size()::%u > i_n_start::%u and i::%u == this->n_starts[i_n_start]::%u\n",this->n_starts.size() , i_n_start , i ,this->n_starts[i_n_start]);}
             if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
+                printf(" YES\n");
                 in_N = true;
             }
             if(in_N) {
@@ -372,33 +402,6 @@ void fastafs::view_fasta(unsigned int padding)
 }
 
 
-/**
-example (padding = 4, buffer = 12):
-
->seq1
-ACTG
->seq2
-NNNN
->seq3
-AAAG
-
-
-buffer_size = 12
-file_offset = 0
-seq       1   1   1   1   1   1    1   1   1   1   1    2
-buffer -> [>] [s] [e] [q] [1] [\n] [A] [C] [T] [G] [\n] [>]
-
-buffer_size = 12
-file_offset = 12
-seq       2   2   2   2   2    2   2   2   2   2    3   3
-buffer -> [s] [e] [q] [2] [\n] [N] [N] [N] [N] [\n] [>] [s]
-
-buffer_size = 12
-file_offset = 24
-          3   3   3   3    3   3   3   3
-buffer -> [e] [q] [3] [\n] [A] [A] [A] [G] ?   ?    ?   ?
-
- */
 int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_size, off_t file_offset) {
     unsigned int written = 0,tmppp=0;
     unsigned int total_fa_size = 0, i_buffer = 0;

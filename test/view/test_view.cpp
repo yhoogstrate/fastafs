@@ -115,6 +115,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     BOOST_CHECK_EQUAL(written, 100);
     
     std_buffer = std::string(buffer, 100);
+    std::cout << "[" << std_buffer << "]" << std::endl;
     
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G 
     //XXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
@@ -126,6 +127,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     BOOST_CHECK_EQUAL(written, 100);
     
     std_buffer = std::string(buffer, 100);
+    std::cout << "[" << std_buffer << "]" << std::endl;
     
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G 
     //XXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
@@ -137,6 +139,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     BOOST_CHECK_EQUAL(written, 100);
     
     std_buffer = std::string(buffer, 100);
+    std::cout << "[" << std_buffer << "]" << std::endl;    
     
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
     //XXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
@@ -149,9 +152,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     BOOST_CHECK_EQUAL(written, 100);
     
     std_buffer = std::string(buffer, 100);
-
     std::cout << "[" << std_buffer << "]" << std::endl;
-    
     
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
     //XXXXXXX---.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
