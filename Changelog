@@ -1,0 +1,13 @@
+2017-12-22  Youri Hoogstrate
+
+    * First working prototype of `fastafs`
+
+    * fastafs cache
+
+    * fastafs list
+
+    * fastafs info
+
+    * fastafs view
+
+    * fastafs mount
