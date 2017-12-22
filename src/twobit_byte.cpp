@@ -9,40 +9,40 @@ const char twobit_byte::twobit_hash[256][5] = {"TTTT", "TTTC", "TTTA", "TTTG", "
 
 void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 {
-    // bit_offset must be: {0, 2, 4 or 6};
-    // nucleotides must be:
-    // => T - 00, C - 01, A - 10, G - 11
-    // => T - 00, C -  1, A -  2, G -  3
-
+	// bit_offset must be: {0, 2, 4 or 6};
+	// nucleotides must be:
+	// => T - 00, C - 01, A - 10, G - 11
+	// => T - 00, C -  1, A -  2, G -  3
+	
 #if DEBUG
-    if(bit_offset != 0 and bit_offset != 2 and bit_offset != 4 and bit_offset != 6) {
-        throw std::invalid_argument("twobit_byte(bit_offset, ..) must be 0, 2, 4 or 6\n");
-    }
+	if(bit_offset != 0 and bit_offset != 2 and bit_offset != 4 and bit_offset != 6) {
+		throw std::invalid_argument("twobit_byte(bit_offset, ..) must be 0, 2, 4 or 6\n");
+	}
 #endif //DEBUG
-
-    //set   bit(s): INPUT |= 1 << N;
-    //unset bit(s): INPUT &= ~(1 << N);
-    switch(nucleotide) {
-    case 0://NUCLEOTIDE_T (00)
-        this->data = (unsigned char) (this->data & ~(3 << bit_offset));
-        break;
-    case 1://NUCLEOTIDE_C (01)
-        this->data = (unsigned char) (this->data & ~(2 << bit_offset));
-        this->data = (unsigned char) (this->data | (1 << bit_offset));
-        break;
-    case 2://NUCLEOTIDE_A (10)
-        this->data = (unsigned char) (this->data & ~(1 << bit_offset));
-        this->data = (unsigned char) (this->data | (2 << bit_offset));
-        break;
-    case 3://NUCLEOTIDE_G (11)
-        this->data = (unsigned char) (this->data | (nucleotide << bit_offset));
-        break;
+	
+	//set   bit(s): INPUT |= 1 << N;
+	//unset bit(s): INPUT &= ~(1 << N);
+	switch(nucleotide) {
+		case 0://NUCLEOTIDE_T (00)
+			this->data = (unsigned char) (this->data & ~(3 << bit_offset));
+			break;
+		case 1://NUCLEOTIDE_C (01)
+			this->data = (unsigned char) (this->data & ~(2 << bit_offset));
+			this->data = (unsigned char) (this->data | (1 << bit_offset));
+			break;
+		case 2://NUCLEOTIDE_A (10)
+			this->data = (unsigned char) (this->data & ~(1 << bit_offset));
+			this->data = (unsigned char) (this->data | (2 << bit_offset));
+			break;
+		case 3://NUCLEOTIDE_G (11)
+			this->data = (unsigned char) (this->data | (nucleotide << bit_offset));
+			break;
 #if DEBUG
-    default:
-        throw std::invalid_argument("twobit_byte::set(,nucleotide) invalid value\n");
-        break;
+		default:
+			throw std::invalid_argument("twobit_byte::set(,nucleotide) invalid value\n");
+			break;
 #endif //DEBUG
-    }
+	}
 };
 
 
@@ -52,19 +52,19 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 **/
 char *twobit_byte::get(unsigned char length)
 {
-    char *seq = new char[length + 1];
-
-    for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
-        seq[i] = twobit_byte::twobit_hash[this->data][i];
-    }
-
-    seq[length] = '\0';
-    return seq;
+	char *seq = new char[length + 1];
+	
+	for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
+		seq[i] = twobit_byte::twobit_hash[this->data][i];
+	}
+	
+	seq[length] = '\0';
+	return seq;
 }
 
 
 
 const char *twobit_byte::get()
 {
-    return twobit_byte::twobit_hash[this->data];
+	return twobit_byte::twobit_hash[this->data];
 }
