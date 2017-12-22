@@ -18,7 +18,12 @@ set(BUILD_DIR      "../bin")
 set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 
 
-add_executable(test_cache          cache/test_cache.cpp ../src/two_bit_byte.cpp)
+add_executable(test_cache          cache/test_cache.cpp ../src/twobit_byte.cpp)
+add_executable(test_view           view/test_view.cpp ../src/fasta_to_fastafs.cpp ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)
+
+
 
 set_target_properties(test_cache
+                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
+set_target_properties(test_view
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")

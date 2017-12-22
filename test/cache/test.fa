@@ -2,8 +2,12 @@
 ttttccccaaaagggg
 >chr2
 ACTGACTGnnnnACTG
->chr3
+>chr3.1
+ACTGACTGaaaac
+>chr3.2
 ACTGACTGaaaacc
+>chr3.3
+ACTGACTGaaaaccc
 >chr4
 ACTGnnnn
 >chr5

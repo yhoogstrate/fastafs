@@ -1,6 +1,6 @@
 os:
   - linux
-  - osx
+#  - osx
 
 language: cpp
 
@@ -9,7 +9,8 @@ compiler:
   - clang
 
 before_install:
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update; fi
+  - mkdir tmp
+#; if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update; fi
 
 python:
   - "2.7"
@@ -23,6 +24,7 @@ addons:
           - libboost-system-dev
           - libboost-filesystem-dev
           - libboost-test-dev
+          - libfuse-dev
           - gcc-4.8
           - g++-4.8
           - clang
@@ -31,15 +33,15 @@ addons:
 install:
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo apt-get install -qq valgrind astyle; fi
   
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew upgrade boost; fi
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install doxygen valgrind astyle; fi
+#  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew upgrade boost; fi
+#  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install doxygen valgrind astyle openssl; fi
   
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8" CMAKE_CXX_COMPILER="g++-4.8" CMAKE_C_COMPILER="gcc-4.8"; fi ; ./build-debug.sh
 
-matrix:
-    exclude:
-        - os: osx
-          compiler: gcc
+#matrix:
+#    exclude:
+#        - os: osx
+#          compiler: gcc
 
 
 script:

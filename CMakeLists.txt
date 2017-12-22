@@ -86,17 +86,25 @@ else()
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+#link_libraries(openssl)
+link_libraries(crypto)
+link_libraries(fuse)
+
 
 if(DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion -Werror")# -Werror makes compilation crash when warnings are given (also part of Travis)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion -D_FILE_OFFSET_BITS=64")# -Werror makes compilation crash when warnings are given (also part of Travis)
 else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -D_FILE_OFFSET_BITS=64")
 endif()
 
 add_executable(fastafs
 					src/main.cpp
-					src/fasta.cpp
-					src/two_bit_byte.cpp
+					src/fasta_to_fastafs.cpp
+					src/fastafs.cpp
+					src/twobit_byte.cpp
+					src/database.cpp
+					src/utils.cpp
+					src/fuse.cpp
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
@@ -110,7 +118,8 @@ enable_testing()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-add_test(direction_test          "${BUILD_TEST_DIR}/test_cache")
+add_test(test_cache          "${BUILD_TEST_DIR}/test_cache")
+add_test(test_view           "${BUILD_TEST_DIR}/test_view")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'

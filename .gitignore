@@ -11,3 +11,6 @@ install_manifest.txt
 
 Testing/
 cmake_install.cmake
+.directory
+/*.2bit
+tmp/
