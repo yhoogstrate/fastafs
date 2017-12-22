@@ -139,19 +139,19 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
     }
 
     in_N = fs.data[1]->get_n_offset(8, &num_Ns);
-    BOOST_CHECK_EQUAL(num_Ns, 1);
+    BOOST_CHECK_EQUAL(num_Ns, 0);// This is the first N, 0 were found before
     BOOST_CHECK_EQUAL(in_N, true);
 
     in_N = fs.data[1]->get_n_offset(9, &num_Ns);
-    BOOST_CHECK_EQUAL(num_Ns, 2);
+    BOOST_CHECK_EQUAL(num_Ns, 1);
     BOOST_CHECK_EQUAL(in_N, true);
 
     in_N = fs.data[1]->get_n_offset(10, &num_Ns);
-    BOOST_CHECK_EQUAL(num_Ns, 3);
+    BOOST_CHECK_EQUAL(num_Ns, 2);
     BOOST_CHECK_EQUAL(in_N, true);
 
     in_N = fs.data[1]->get_n_offset(11, &num_Ns);
-    BOOST_CHECK_EQUAL(num_Ns, 4);
+    BOOST_CHECK_EQUAL(num_Ns, 3);
     BOOST_CHECK_EQUAL(in_N, true);
     
     for(unsigned int i = 12 ; i <= 15; i++) {
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     written = fs.view_fasta_chunk(4, buffer, 100, 6);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
+    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG 
     //XXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
     BOOST_CHECK_EQUAL(std_buffer.compare("TTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>ch"), 0);
 
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     written = fs.view_fasta_chunk(4, buffer, 100, 7);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
+    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG 
     //XXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
     BOOST_CHECK_EQUAL(std_buffer.compare("TTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr"), 0);
 
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     written = fs.view_fasta_chunk(4, buffer, 100, 8);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
+    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG 
     //XXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
     BOOST_CHECK_EQUAL(std_buffer.compare("TT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3"), 0);
 
@@ -299,50 +299,32 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     written = fs.view_fasta_chunk(4, buffer, 100, 9);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
+    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG 
     //XXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
     BOOST_CHECK_EQUAL(std_buffer.compare("T\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3."), 0);
 
 
     // padding: 4, offset: 10
     written = fs.view_fasta_chunk(4, buffer, 100, 10);
-    BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
+    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG 
     //XXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
+    BOOST_CHECK_EQUAL(written, 100);
     BOOST_CHECK_EQUAL(std_buffer.compare("\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3"), 0);
 
 
-    // padding: 4, offset: 11
-    written = fs.view_fasta_chunk(4, buffer, 100, 11);
-    BOOST_CHECK_EQUAL(written, 100);
-    std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
-    //XXXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
-    BOOST_CHECK_EQUAL(std_buffer.compare("CCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\n"), 0);
+    std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
+    //std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
+    for(unsigned int offset = 0; offset < 62; ++offset) {
+        std::string substr_file = full_file.substr(offset, 100);
+        
+        written = fs.view_fasta_chunk(4, buffer, 100, offset);
+        std_buffer = std::string(buffer, substr_file.size());
+        
+        BOOST_CHECK_EQUAL(written, substr_file.size());
+        BOOST_CHECK_EQUAL(std_buffer.compare(substr_file), 0);
+    }
 
-
-    // padding: 4, offset: 12
-    written = fs.view_fasta_chunk(4, buffer, 100, 12);
-    BOOST_CHECK_EQUAL(written, 100);
-    std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
-    //XXXXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
-    BOOST_CHECK_EQUAL(std_buffer.compare("CCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nA"), 0);
-
-
-    // padding: 4, offset: 13
-    written = fs.view_fasta_chunk(4, buffer, 100, 13);
-    BOOST_CHECK_EQUAL(written, 100);
-    std_buffer = std::string(buffer, 100);
-    //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG 
-    //XXXXXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
-    BOOST_CHECK_EQUAL(std_buffer.compare("CC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nAC"), 0);
-
-
-
-
-    //std::cout << "[" << std_buffer << "]" << std::endl;
     delete buffer;
 }
 
