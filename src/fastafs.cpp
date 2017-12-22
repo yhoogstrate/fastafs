@@ -116,7 +116,6 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     const char *chunk;
     twobit_byte t = twobit_byte();
     unsigned int chunk_offset;
-    unsigned int i_in_seq = 0;
     unsigned int i_n_end = 0;
     unsigned int i_n_start = 0;
     unsigned int num_full_padding_blocks = 0;
@@ -164,30 +163,28 @@ nnACTG
     in_N = this->get_n_offset(start_nucleotide, &ns_until_start);
     unsigned int start_actg_nuc = start_nucleotide - ns_until_start;
     printf("\tACTG nucleotides until start nuc [ACTG]: {%u - %u} = (%u)\n",start_nucleotide, ns_until_start, start_actg_nuc);
-    unsigned int twobit_offset_t = start_actg_nuc / 4;
+    unsigned int twobit_offset = start_actg_nuc / 4;
     // 0 / 4 = 0
     // 1 / 4 = 0
     // 2 / 4 = 0
     // 3 / 4 = 0
     // 4 / 4 = 1
-    printf("twobit_offset = %u\n", twobit_offset_t);
+    printf("twobit_offset = %u\n", twobit_offset);
     
     // 2. subtract aantal N's van start pos & set is_N: bepaal 2bit & zet file allocatie goed
 
-    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + twobit_offset, fh->beg);
 
     // 3. gaan met die loop
     
     
     
     
-    unsigned int twobit_offset;// number of twobit bytes that have passed
-    
 
-    
-    
-    unsigned int i_in_file;i=0;
-    for(i_in_file = 0; written < len_to_copy; i_in_file++) {
+                 i = 0;        // pos in file ACTG N \n
+    unsigned int i_in_file = 0;// pos in nucleotides ACTG N
+    unsigned int i_in_seq = 0; // pos in ACTG
+    for(; written < len_to_copy; i_in_file++) {
         
         if((i_in_file % (padding+1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
