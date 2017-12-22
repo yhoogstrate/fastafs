@@ -121,28 +121,6 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     unsigned int num_full_padding_blocks = 0;
     unsigned int num_paddings = (this->n + padding - 1) / padding;
 
-/*
->chr1
-ttttccccaaaagggg
->chr2
-ACTGACTGnnnnACTG
->chr3.1
-ACTGACTGaaaac
->chr3.2
-ACTGACTGaaaacc
->chr3.3
-ACTGACTGaaaaccc
->chr4
-ACTGnnnn
->chr5
-nnACTG
-
- *   ***    ****    ****    ****     = 16 ACTGN + 4 N
-{T} [TTT \n CCCC \n AAAA \n GGGG \n]
- |   ||| |  |||| |  ||||  | |||| |
-1    234 5  6789 10 11 14 15  19 20
-
- * */
 
     // 1. zoek nucleotide om te beginnen a.d.h.v. start_pos + copy len (minus geschreven header lengte)
     unsigned int start_pos_after_header = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th char after ">header\n"
@@ -150,14 +128,9 @@ nnACTG
     printf("\toffsets in file [ACTG N \\n]: (%u, %u)\n", start_pos_after_header, end_pos_after_header);
     
     
-    unsigned int removal_pre = fastafs_seq::n_padding(0, start_pos_after_header, padding);
-    unsigned int removal_post = fastafs_seq::n_padding(start_pos_after_header, end_pos_after_header, padding);
-    /*for(unsigned int q = 1; q < 25; ++q) {
-        printf("\tfastafs_seq::n_padding(1, %u, 4) == %u\n", q, fastafs_seq::n_padding(1, q, 4));
-    }*/
+    unsigned int removal_pre = fastafs_seq::n_padding(0, start_pos_after_header - 1, padding);
     unsigned int start_nucleotide = start_pos_after_header - removal_pre;
-    unsigned int end_nucleotide = end_pos_after_header - removal_post;
-    printf("\tnucleotides in file [ACTG N]: {-%u, -%u} => (%u, %u)\n",removal_pre, removal_post, start_nucleotide, end_nucleotide);
+    printf("\tnucleotides in file [ACTG N]: {-%u} => (%u)\n",removal_pre, start_nucleotide);
     
     unsigned int ns_until_start;
     in_N = this->get_n_offset(start_nucleotide, &ns_until_start);
@@ -180,8 +153,8 @@ nnACTG
 
 
 
-                 i = start_pos_after_header;        // pos in file ACTG N \n
-    unsigned int i_in_file = start_nucleotide;// pos in nucleotides ACTG N
+                 i = start_nucleotide;              // pos in nucleotides ACTG N
+    unsigned int i_in_file = start_pos_after_header;// pos in file ACTG N \n
     unsigned int i_in_seq = start_actg_nuc; // pos in ACTG
     
     
