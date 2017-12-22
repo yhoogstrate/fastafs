@@ -29,6 +29,8 @@ public:
     
     std::string sha1(std::ifstream *);
     unsigned int n_twobits();
+    
+    static unsigned int n_padding(unsigned int , unsigned int, unsigned int  );
 };
 
 

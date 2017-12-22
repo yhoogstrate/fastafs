@@ -122,23 +122,69 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     unsigned int num_full_padding_blocks = 0;
     unsigned int num_paddings = (this->n + padding - 1) / padding;
 
+/*
+>chr1
+ttttccccaaaagggg
+>chr2
+ACTGACTGnnnnACTG
+>chr3.1
+ACTGACTGaaaac
+>chr3.2
+ACTGACTGaaaacc
+>chr3.3
+ACTGACTGaaaaccc
+>chr4
+ACTGnnnn
+>chr5
+nnACTG
+
+ *   ***    ****    ****    ****     = 16 ACTGN + 4 N
+{T} [TTT \n CCCC \n AAAA \n GGGG \n]
+ |   ||| |  |||| |  ||||  | |||| |
+1    234 5  6789 10 11 14 15  19 20
+
+ * */
+
+    // 1. zoek nucleotide om te beginnen a.d.h.v. start_pos + copy len (minus geschreven header lengte)
+    unsigned int start_pos_after_header = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th char after ">header\n"
+    unsigned int end_pos_after_header = start_pos_after_header + len_to_copy - written;
+    printf("\toffsets in file [ACTG N \\n]: (%u, %u)\n", start_pos_after_header, end_pos_after_header);
     
-    //printf (" %u < %u \n", written, len_to_copy);
+    
+    unsigned int removal_pre = fastafs_seq::n_padding(0, start_pos_after_header, padding);
+    unsigned int removal_post = fastafs_seq::n_padding(start_pos_after_header, end_pos_after_header, padding);
+    /*for(unsigned int q = 1; q < 25; ++q) {
+        printf("\tfastafs_seq::n_padding(1, %u, 4) == %u\n", q, fastafs_seq::n_padding(1, q, 4));
+    }*/
+    unsigned int start_nucleotide = start_pos_after_header - removal_pre;
+    unsigned int end_nucleotide = end_pos_after_header - removal_post;
+    printf("\tnucleotides in file [ACTG N]: {-%u, -%u} => (%u, %u)\n",removal_pre, removal_post, start_nucleotide, end_nucleotide);
+    
+    
+    
+    // 2. subtract aantal N's & set is_N
+    // 3. bepaal 2bit & zet file allocatie goed
+
     fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+
+    // 4. gaan met die loop
     
-    // offset=6 en header=5
-    //>chr1
-    //ACTG
     
-    //printf("    {%u - %u + %u} = %i\n", written, start_pos_in_fasta, this->name.size() + 2,(written + start_pos_in_fasta) - (this->name.size() + 2));
-    /*
-    unsigned int nucleotide_offset = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th nucleotide , is not 0 if there is an offset
+    
+    //unsigned int last_nucleotide = len_to_copy - nucleotide_and_newline_offset;
+    //printf("\tFA file    [ACTGN\n] offset: %u -> %u\n",nucleotide_and_newline_offset, last_nucleotide );
+    
+    //unsigned int nls = nucleotide_and_newline_offset - fastafs_seq::n_padding(0, last_nucleotide, padding); // how many'th nucleotide , is not 0 if there is an offset
+    //printf("newlines %u\n",nls);
+
+    //printf("\tnucleotide [ACTGN] offset: %u -> %u\n",start_nucleotide_offset, last_nucleotide_offset );
+
     
     // @todo function n's until ...
-    unsigned int nucleotide_actg_offset = nucleotide_offset;// number of ACTGS have gone by before
+    //unsigned int nucleotide_actg_offset = nucleotide_offset;// number of ACTGS have gone by before
     i_n_start = 0;
     while(this->n_starts.size () > i_n_start ) {
-        printf("%u %u => %u,min(%u,%u)  [len=%u]\n",i_n_start, this->n_starts.size(),this->n_starts[i_n_start],this->n_ends[i_n_start],nucleotide_offset,this->n_ends[i_n_start] - this->n_starts[i_n_start]);
+        //printf("%u %u => %u,min(%u,%u)  [len=%u]\n",i_n_start, this->n_starts.size(),this->n_starts[i_n_start],this->n_ends[i_n_start],nucleotide_offset,this->n_ends[i_n_start] - this->n_starts[i_n_start]);
         i_n_start++;
         
         // for sure the opening is in range 
@@ -151,16 +197,15 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
     unsigned int twobit_offset;// number of twobit bytes that have passed
     
     if( (this->name.size() + 2) >  (written + start_pos_in_fasta)) {
-        printf("\n");
-        printf("\tonly header reading: %u <-> %u \n", (written + start_pos_in_fasta) , (this->name.size() + 2));        
+        //printf("\n");
+        //printf("\tonly header reading: %u <-> %u \n", (written + start_pos_in_fasta) , (this->name.size() + 2));        
     }
     else {
-        printf("\n");
-        printf("\tnucleotide [ACTGN] offset: %u\n",nucleotide_offset);
-        printf("\tnucleotide [ACTG]  offset: %u\n",nucleotide_actg_offset);
-        printf("\ttwobit byte offset:        %u\n",twobit_offset);
+        //printf("\n");
+        //printf("\tnucleotide [ACTG]  offset: %u\n",nucleotide_actg_offset);
+        //printf("\ttwobit byte offset:        %u\n",twobit_offset);
     }
-    */
+    
     // if i != 0, set i_in_seq and set fseek appropriately
     
     
@@ -171,10 +216,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
             buffer[written++] = '\n';
         }
         else {
-            if(this->n_starts.size() > 0){
-            printf("this->n_starts.size()::%u > i_n_start::%u and i::%u == this->n_starts[i_n_start]::%u\n",this->n_starts.size() , i_n_start , i ,this->n_starts[i_n_start]);}
             if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-                printf(" YES\n");
                 in_N = true;
             }
             if(in_N) {
@@ -265,6 +307,23 @@ unsigned int fastafs_seq::n_twobits()
     return (n + 3)/ 4;
 }
 
+
+//@brief calculates the number of paddings found in a sequence of length N with 
+unsigned int fastafs_seq::n_padding(unsigned int offset, unsigned int position_until,unsigned int padding) {
+    // if debug:
+    //   if offset > position_until
+    //      throw error
+    // end if
+    
+    unsigned int n = (position_until + 1) / (padding + 1);
+    
+    // minus all the n's that occurred before offset
+    if (offset > 0) {
+        n -= fastafs_seq::n_padding(0, offset - 1, padding);
+    }
+    
+    return n;
+}
 
 
 fastafs::fastafs(std::string arg_name) : 
