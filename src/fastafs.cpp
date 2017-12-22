@@ -177,13 +177,24 @@ nnACTG
 
     // 3. gaan met die loop
     
-    
-    
-    
 
-                 i = 0;        // pos in file ACTG N \n
-    unsigned int i_in_file = 0;// pos in nucleotides ACTG N
-    unsigned int i_in_seq = 0; // pos in ACTG
+
+
+                 i = start_pos_after_header;        // pos in file ACTG N \n
+    unsigned int i_in_file = start_nucleotide;// pos in nucleotides ACTG N
+    unsigned int i_in_seq = start_actg_nuc; // pos in ACTG
+    
+    
+    chunk_offset = i_in_seq % 4;
+    // load new twobit chunk when needed
+    
+    if(chunk_offset != 0) {
+        fh->read(byte_tmp, 1);
+        t.data = byte_tmp[0];
+        chunk = t.get();
+    }
+    
+    
     for(; written < len_to_copy; i_in_file++) {
         
         if((i_in_file % (padding+1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
