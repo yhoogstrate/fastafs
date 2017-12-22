@@ -86,7 +86,7 @@ else()
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-link_libraries(openssl)
+#link_libraries(openssl)
 link_libraries(crypto)
 link_libraries(fuse)
 
