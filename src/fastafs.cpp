@@ -123,24 +123,20 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char* buffer, off_t star
 
     // 1. zoek nucleotide om te beginnen a.d.h.v. start_pos + copy len (minus geschreven header lengte)
     unsigned int start_pos_after_header = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th char after ">header\n"
-    printf("\toffsets in file [ACTG N \\n]: (%u)\n", start_pos_after_header);
+    //printf("\toffsets in file [ACTG N \\n]: (%u)\n", start_pos_after_header);
     
     
     unsigned int removal_pre = fastafs_seq::n_padding(0, start_pos_after_header - 1, padding);// het aantal N's VOOR deze positie
     unsigned int start_nucleotide = start_pos_after_header - removal_pre;
-    printf("\tnucleotides in file [ACTG N]: {-%u} => (%u)\n",removal_pre, start_nucleotide);
+    //printf("\tnucleotides in file [ACTG N]: {-%u} => (%u)\n",removal_pre, start_nucleotide);
 
     
     unsigned int ns_until_start;
     bool in_N = this->get_n_offset(start_nucleotide , &ns_until_start);
     unsigned int start_actg_nuc = start_nucleotide - ns_until_start;
-    printf("\tACTG nucleotides until start nuc [ACTG]: {%u - %u} = (%u)\n",start_nucleotide, ns_until_start, start_actg_nuc);
-    if(in_N) {
-        printf("\tin_N!!!\n");
-    }
+    //printf("\tACTG nucleotides until start nuc [ACTG]: {%u - %u} = (%u)\n",start_nucleotide, ns_until_start, start_actg_nuc);
     unsigned int twobit_offset = start_actg_nuc / 4;
 
-    //printf("twobit_offset = %u\n", twobit_offset);
     
     // 2. subtract aantal N's van start pos & set is_N: bepaal 2bit & zet file allocatie goed
 
@@ -471,17 +467,13 @@ int fastafs::view_fasta_chunk(unsigned int padding, char* buffer, size_t buffer_
                 
                 //printf("    read(&buffer[%i], %i, min(%i,%i)= %i)\n",                    i_buffer,                    file_offset + i_buffer - total_fa_size,                    (unsigned int) buffer_size - i_buffer, seq_true_fasta_size - file_offset,                    std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size- ( (unsigned int) file_offset + i_buffer - total_fa_size ))                    );
                 
-                tmppp = this->data[i]->view_fasta_chunk(
+                written += this->data[i]->view_fasta_chunk(
                     padding,
                     &buffer[i_buffer],
                     file_offset + i_buffer - total_fa_size,
                     std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size- ( (unsigned int) file_offset + i_buffer - total_fa_size ) ),
                     &file
                     );
-                
-                //printf("    [written = %u]\n", tmppp);
-                
-                written += tmppp;
                 
                 while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
                     //printf("%i ", file_offset + i_buffer - total_fa_size);
