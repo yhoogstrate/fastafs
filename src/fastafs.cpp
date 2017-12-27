@@ -178,6 +178,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 		}
 	}
 	
+	delete[] byte_tmp;
 	
 	return written;
 }
@@ -291,7 +292,7 @@ fastafs::fastafs(std::string arg_name) :
 fastafs::~fastafs()
 {
 	for(unsigned int i = 0; i < this->data.size(); i++) {
-		delete[] this->data[i];
+		delete this->data[i];
 	}
 }
 
