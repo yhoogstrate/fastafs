@@ -18,9 +18,12 @@
 void usage(char **argv)
 {
 	std::cout << "usage: " << PACKAGE << " [--version] [--help]" << std::endl << std::endl;
+	std::cout <<      "  [generic operations]" << std::endl;
 	std::cout <<      "    list       overview of FASTAFS database" << std::endl;
+	std::cout <<      std::endl;
+	std::cout <<      "  [single fastafs operations]" << std::endl;
 	std::cout <<      "    cache      adds FASTA file to cache" << std::endl;
-	std::cout <<      "    view       view FASTAFS as FASTA" << std::endl;
+	std::cout <<      "    view       view FASTAFS as FASTA file" << std::endl;
 	std::cout <<      "    info       view FASTAFS information" << std::endl;
 	std::cout <<      "    mount      mount FASTAFS as FASTA file" << std::endl;
 	std::cout << std::endl;

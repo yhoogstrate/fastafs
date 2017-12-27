@@ -37,8 +37,9 @@ std::string get_mtab()
 
 
 
-char *human_readable_fs(unsigned int size, char *buf)
+char *human_readable_fs(unsigned int bitsize, char *buf)
 {
+	float size = (float) bitsize;
 	unsigned int i = 0;
 	const char *units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 	while (size > 1024) {

@@ -159,7 +159,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
 		BOOST_CHECK_EQUAL(num_Ns, 4);
 		BOOST_CHECK_EQUAL(in_N, false);
 	}
-	
 }
 
 
@@ -325,7 +324,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 		BOOST_CHECK_EQUAL(std_buffer.compare(substr_file), 0);
 	}
 	
-	delete buffer;
+	delete[] buffer;
 }
 
 

@@ -96,11 +96,11 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 	}
 	
 	
-	for(i = start_pos_in_fasta + written - 1; i < (unsigned int) this->name.size() and written < len_to_copy; i++) {
+	for(i = (unsigned int) start_pos_in_fasta + written - 1; i < (unsigned int) this->name.size() and written < len_to_copy; i++) {
 		buffer[written++] = this->name[i];
 	}
 	
-	if(start_pos_in_fasta < this->name.size() + 2 and written < len_to_copy) {
+	if(start_pos_in_fasta < (unsigned int) this->name.size() + 2 and written < len_to_copy) {
 		buffer[written++] = '\n';
 	}
 	
@@ -111,11 +111,10 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 	unsigned int chunk_offset;
 	unsigned int i_n_end = 0;
 	unsigned int i_n_start = 0;
-	unsigned int num_full_padding_blocks = 0;
 	unsigned int num_paddings = (this->n + padding - 1) / padding;
 	
 	// 1. zoek nucleotide om te beginnen a.d.h.v. start_pos + copy len (minus geschreven header lengte)
-	unsigned int i_in_file = (written + start_pos_in_fasta) - (this->name.size() + 2); // how many'th char after ">header\n"
+	unsigned int i_in_file = (written +  (unsigned int)  start_pos_in_fasta) - ( (unsigned int)  this->name.size() + 2); // how many'th char after ">header\n"
 	//printf("\toffsets in file [ACTG N \\n]: (%u)\n", i_in_file);
 	
 	
@@ -179,6 +178,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 		}
 	}
 	
+	delete[] byte_tmp;
 	
 	return written;
 }
