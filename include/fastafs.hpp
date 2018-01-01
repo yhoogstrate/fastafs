@@ -62,8 +62,6 @@ class fastafs
 		
 		
 		void info();
-		
-		void mount();
 };
 
 #endif

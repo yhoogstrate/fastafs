@@ -497,12 +497,6 @@ unsigned int fastafs::n()
 
 
 
-void fastafs::mount()
-{
-}
-
-
-
 std::string fastafs::basename()
 {
 	return "";
