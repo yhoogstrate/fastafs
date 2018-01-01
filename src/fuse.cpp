@@ -67,25 +67,25 @@ static int do_getattr( const char *path, struct stat *st )
 
 static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi )
 {
-	//printf(" [ context: ] %s\n", f->name.c_str());
-
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
 	std::string virtual_fasta_filename = f->name + ".fa";
 	std::string virtual_faidx_filename = f->name + ".fa.fai";
-	
+
+	printf(" [ context: ] %s\n", f->name.c_str());
+
 	filler(buffer, ".", NULL, 0); // Current Directory
 	filler(buffer, "..", NULL, 0); // Parent Directory
 	
-	if ( strcmp( path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
-		filler(buffer, virtual_fasta_filename.c_str(), NULL, 0 );
-		filler(buffer, virtual_faidx_filename.c_str(), NULL, 0 );
+	if (strcmp( path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
+		filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
+		filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
 	}
 	
 	return 0;
 }
 
 
-static int do_read( const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
+static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
 {
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
 	std::string virtual_fasta_filename = "/" + f->name + ".fa";
@@ -96,7 +96,7 @@ static int do_read( const char *path, char *buffer, size_t size, off_t offset, s
 		return f->view_fasta_chunk(4, buffer, size, offset);
 	}
 	else if ( strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
-		return f->view_fasta_chunk(4, buffer, size, offset);
+		return f->view_faidx_chunk(4, buffer, size, offset);
 	} else {
 		return -1;
 	}
