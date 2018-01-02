@@ -36,10 +36,9 @@ void fasta_to_fastafs_seq::add_N()
 
 void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 {
+	// 9,123,866,399  ???:fasta_to_fastafs_seq::add_nucleotide(unsigned char) [/home/youri/.local/bin/fastafs]
 	switch((this->n - this->N) % 4) {
 		case 0:
-			//delete this->twobit_data;
-			//this->twobit_data = new twobit_byte();
 			this->twobit_data.set(6, nucleotide);
 			break;
 		case 1:
@@ -52,9 +51,6 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 			this->twobit_data.set(0, nucleotide);
 			this->twobits.push_back(this->twobit_data.data);
 			
-			//delete this->twobit_data;
-			//this->twobit_data = new twobit_byte();
-			
 			break;
 #if DEBUG
 		default:
@@ -62,6 +58,14 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 			break;
 #endif //DEBUG
 	}
+	
+	/*
+	unsigned int offset = 6 -(2* ((this->n - this->N) % 4) ) ;
+	this->twobit_data.set(offset, nucleotide);
+	if(offset == 3){
+		this->twobits.push_back(this->twobit_data.data);
+	}
+	*/
 	
 	if(this->previous_was_N) {
 		this->n_ends.push_back(this->n - 1);
@@ -208,10 +212,8 @@ int fasta_to_fastafs::cache(void)
 	std::string sequence = "";
 	
 	if (myfile.is_open()) {
-		while(getline (myfile, line)) {
+		while(getline(myfile, line)) {
 			if (line[0] == '>') {
-				line.erase(0, 1);// erases first part, quicker would be pointer from first char
-				
 				if(s != nullptr) {
 					s->close_reading();
 					
@@ -219,6 +221,7 @@ int fasta_to_fastafs::cache(void)
 					s = nullptr;
 				}
 				
+				line.erase(0, 1);// erases first part, quicker would be pointer from first char
 				s = new fasta_to_fastafs_seq();
 				s->name = line;
 			} else {
@@ -265,7 +268,6 @@ int fasta_to_fastafs::cache(void)
 		
 		this->data.push_back(s);
 		s = nullptr;
-		
 	}
 	return 0;
 }
@@ -361,13 +363,13 @@ void fasta_to_fastafs::write(std::string filename)
 		twobit_out_stream.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
 		
 		//s->n_starts
-		for(unsigned int j = 0; j < this->data[i]->n_starts.size(); j++) {
+		for(unsigned int j = 0; j < this->data[i]->n_starts.size(); ++j) {
 			uint_to_fourbytes(ch3, this->data[i]->n_starts[j]);
 			twobit_out_stream.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
 		}
 		
 		//s->n_ends
-		for(unsigned int j = 0; j < this->data[i]->n_ends.size(); j++) {
+		for(unsigned int j = 0; j < this->data[i]->n_ends.size(); ++j) {
 			uint_to_fourbytes(ch3, this->data[i]->n_ends[j]);
 			twobit_out_stream.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
 		}
@@ -377,12 +379,17 @@ void fasta_to_fastafs::write(std::string filename)
 		twobit_out_stream.write( reinterpret_cast<char *>(&four_bytes), 4 );
 		
 		// @todo this->data[i].write_twobit_data(fstream);
-		for(unsigned int j = 0; j < this->data[i]->twobits.size(); j++) {
-			byte = (unsigned char) this->data[i]->twobits[j];
-			twobit_out_stream.write((char *) &byte, (size_t) 1);
+		for(unsigned int j = 0; j < this->data[i]->twobits.size(); ++j) {
+			twobit_out_stream.write((char *) &this->data[i]->twobits[j], (size_t) 1);
 		}
+		
+		/*
+		// this is slower for some reason
+		for(std::vector<unsigned char>::iterator j = this->data[i]->twobits.begin(); j != this->data[i]->twobits.end(); ++j) {
+			twobit_out_stream.write((char *)&(*j), (size_t) 1);
+		}
+		*/
 	}
 	
 	twobit_out_stream.close();
-	
 }
