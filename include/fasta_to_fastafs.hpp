@@ -12,6 +12,8 @@ class fasta_to_fastafs_seq : public fastafs_seq
 	private:
 		twobit_byte twobit_data;
 		
+		std::string tmp_str = "";
+		
 		bool previous_was_N;
 		
 	public:
