@@ -36,6 +36,7 @@ void fasta_to_fastafs_seq::add_N()
 
 void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 {
+	/*
 	// 9,123,866,399  ???:fasta_to_fastafs_seq::add_nucleotide(unsigned char) [/home/youri/.local/bin/fastafs]
 	switch((this->n - this->N) % 4) {
 		case 0:
@@ -58,14 +59,14 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 			break;
 #endif //DEBUG
 	}
+	*/
 	
-	/*
 	unsigned int offset = 6 -(2* ((this->n - this->N) % 4) ) ;
+	
 	this->twobit_data.set(offset, nucleotide);
-	if(offset == 3){
+	if(offset == 0){
 		this->twobits.push_back(this->twobit_data.data);
 	}
-	*/
 	
 	if(this->previous_was_N) {
 		this->n_ends.push_back(this->n - 1);
