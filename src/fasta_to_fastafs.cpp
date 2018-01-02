@@ -47,7 +47,7 @@ void fasta_to_fastafs_seq::add_N()
 
 void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 {
-	switch( (this->n - this->N) % 4) {
+	switch((this->n - this->N) % 4) {
 		case 0:
 			delete this->twobit_data;
 			this->twobit_data = new twobit_byte();
@@ -62,8 +62,10 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 		case 3:
 			this->twobit_data->set(0, nucleotide);
 			this->twobits.push_back(this->twobit_data->data);
-			delete this->twobit_data;
-			this->twobit_data = new twobit_byte();
+			
+			//delete this->twobit_data;
+			//this->twobit_data = new twobit_byte();
+			
 			break;
 #if DEBUG
 		default:
