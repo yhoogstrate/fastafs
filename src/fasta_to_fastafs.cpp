@@ -13,23 +13,12 @@
 
 fasta_to_fastafs_seq::fasta_to_fastafs_seq(void) :
 	fastafs_seq(),
-	twobit_data(nullptr),
 	previous_was_N(false),
 	N(0)
 {
 }
 
-/**
- */
-#if DEBUG
-fasta_to_fastafs_seq::~fasta_to_fastafs_seq(void)
-{
-	if(this->twobit_data != nullptr) {
-		//throw std::runtime_error("2bit/fasta sequence was opened for insertion but not flushed");
-		exit(1);
-	}
-}
-#endif //DEBUG
+
 
 
 void fasta_to_fastafs_seq::add_N()
@@ -49,19 +38,19 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
 {
 	switch((this->n - this->N) % 4) {
 		case 0:
-			delete this->twobit_data;
-			this->twobit_data = new twobit_byte();
-			this->twobit_data->set(6, nucleotide);
+			//delete this->twobit_data;
+			//this->twobit_data = new twobit_byte();
+			this->twobit_data.set(6, nucleotide);
 			break;
 		case 1:
-			this->twobit_data->set(4, nucleotide);
+			this->twobit_data.set(4, nucleotide);
 			break;
 		case 2:
-			this->twobit_data->set(2, nucleotide);
+			this->twobit_data.set(2, nucleotide);
 			break;
 		case 3:
-			this->twobit_data->set(0, nucleotide);
-			this->twobits.push_back(this->twobit_data->data);
+			this->twobit_data.set(0, nucleotide);
+			this->twobits.push_back(this->twobit_data.data);
 			
 			//delete this->twobit_data;
 			//this->twobit_data = new twobit_byte();
@@ -102,19 +91,19 @@ void fasta_to_fastafs_seq::close_reading()
 		// if i = 1, last three 2bits need to be set to 00
 		// 3 - i = 2,
 		for(i = 3 - (signed int) sticky_end; i >= 0; i--) {
-			this->twobit_data->set((unsigned char) (i * 2), 0);
+			this->twobit_data.set((unsigned char) (i * 2), 0);
 		}
 		
 		// insert sticky-ended twobit
-		this->twobits.push_back(this->twobit_data->data);
+		this->twobits.push_back(this->twobit_data.data);
 	}
 	
 	if(this->previous_was_N) {
 		this->n_ends.push_back(this->n - 1);
 	}
 	
-	delete this->twobit_data;
-	this->twobit_data = nullptr;
+	//delete this->twobit_data;
+	//this->twobit_data = nullptr;
 }
 
 
