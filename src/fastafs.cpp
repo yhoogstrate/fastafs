@@ -485,32 +485,29 @@ int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_
 			offset += 1;// '>'
 			offset += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
 			
-			contents += "[" + data[i]->name + "]\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
+			contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
 			
 			offset += this->data[i]->n; // ACTG NNN
 			offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
 		}
 		
+		/*
 		std::cout << " ------ \n";
 		std::cout << contents ;
 		std::cout << " ------ \n";
+		*/
 		
 		// buffer = 100
 		// file_offset = 10
 		// contents.size = 50
-		
-		printf("buffer size = %u,  content size = %u\n",buffer_size, contents.size());
-		
-		while(written < buffer_size and written + file_offset <= contents.size()) {
-			printf("[%i]\n", written);
-			buffer[written] = contents[written++];
+		while(written < buffer_size and written + file_offset < contents.size()) {
+			buffer[written] = contents[written];
+			written++;
 		}
 		
 	} else {
 		throw std::runtime_error("could not load fastafs: " + this->filename);
 	}
-	
-	printf("written: %i\n", written);
 	
 	return written;
 }
