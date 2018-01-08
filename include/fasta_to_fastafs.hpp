@@ -10,7 +10,7 @@
 class fasta_to_fastafs_seq : public fastafs_seq
 {
 	private:
-		twobit_byte *twobit_data;
+		twobit_byte twobit_data;
 		
 		bool previous_was_N;
 		
@@ -20,7 +20,6 @@ class fasta_to_fastafs_seq : public fastafs_seq
 		unsigned int N;// effective size of unnknown nulceotides (N's) in nt
 		
 		fasta_to_fastafs_seq(void);
-		~fasta_to_fastafs_seq(void);
 		
 		size_t size(void);// size of compressed data, may be longer than 4*this->n
 		

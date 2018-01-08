@@ -67,56 +67,90 @@ static int do_getattr( const char *path, struct stat *st )
 
 static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi )
 {
-	printf( "--> Getting The List of Files of %s\n", path );
-	
-	
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+	std::string virtual_fasta_filename = f->name + ".fa";
+	std::string virtual_faidx_filename = f->name + ".fa.fai";
+
 	printf(" [ context: ] %s\n", f->name.c_str());
-	std::string virtual_filename = f->name + ".fa";
+
+	filler(buffer, ".", NULL, 0); // Current Directory
+	filler(buffer, "..", NULL, 0); // Parent Directory
 	
-	
-	filler( buffer, ".", NULL, 0 ); // Current Directory
-	filler( buffer, "..", NULL, 0 ); // Parent Directory
-	
-	if ( strcmp( path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
-		filler( buffer, virtual_filename.c_str(), NULL, 0 );
+	if (strcmp( path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
+		filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
+		filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
 	}
 	
 	return 0;
 }
 
 
-static int do_read( const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
+static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
 {
-
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
-	std::string virtual_filename = "/" + f->name + ".fa";
+	std::string virtual_fasta_filename = "/" + f->name + ".fa";
+	std::string virtual_faidx_filename = "/" + f->name + ".fa.fai";
 	
 	
-	//char file54Text[] = "Hello World From File54!";
-	//char *selectedText = NULL;
-	
-	
-	if ( strcmp( path, virtual_filename.c_str() ) == 0 ) {
-		//selectedText = file54Text;
+	if ( strcmp(path, virtual_fasta_filename.c_str() ) == 0 ) {
 		return f->view_fasta_chunk(4, buffer, size, offset);
+	}
+	else if ( strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
+		return f->view_faidx_chunk(4, buffer, size, offset);
 	} else {
 		return -1;
 	}
 	
-	//printf( "--> Trying to read %s, %u, %u => %u\n", path, offset, size, strlen( selectedText ) - offset);
-	//-> Trying to read /test.fa, 0, 4096 => 24
-	
-	/// size is size of buffer, so that's always 'safe'
-	//memcpy( buffer, selectedText + offset, size );
-	//return f->view_fasta_chunk(60, buffer, size, offset);
-	
-	//return strlen( selectedText ) - offset;
 }
 
 
 
-fuse_operations operations  = { do_getattr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, do_read, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, do_readdir, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+fuse_operations operations  = {
+	do_getattr, // int (*getattr) (const char *, struct stat *);
+	nullptr,    // int (*readlink) (const char *, char *, size_t);
+	nullptr,    // int (*getdir) (const char *, fuse_dirh_t, fuse_dirfil_t);
+	nullptr,    // int (*mknod) (const char *, mode_t, dev_t);
+	nullptr,    // int (*mkdir) (const char *, mode_t);
+	nullptr,    // int (*unlink) (const char *);
+	nullptr,    // int (*rmdir) (const char *);
+	nullptr,    // int (*symlink) (const char *, const char *);
+	nullptr,    // int (*rename) (const char *, const char *);
+	nullptr,    // int (*link) (const char *, const char *);
+	nullptr,    // int (*chmod) (const char *, mode_t);
+	nullptr,    // int (*chown) (const char *, uid_t, gid_t);
+	nullptr,    // int (*truncate) (const char *, off_t);
+	nullptr,    // int (*utime) (const char *, struct utimbuf *);
+	nullptr,    // int (*open) (const char *, struct fuse_file_info *);
+	do_read,    // int (*read) (const char *, char *, size_t, off_t, struct fuse_file_info *);
+	nullptr,    // int (*write) (const char *, const char *, size_t, off_t, struct fuse_file_info *);
+	nullptr,    // int (*statfs) (const char *, struct statvfs *);
+	nullptr,    // int (*flush) (const char *, struct fuse_file_info *);
+	nullptr,    // int (*release) (const char *, struct fuse_file_info *);
+	nullptr,    // int (*fsync) (const char *, int, struct fuse_file_info *);
+	nullptr,    // int (*setxattr) (const char *, const char *, const char *, size_t, int);
+	nullptr,    // int (*getxattr) (const char *, const char *, char *, size_t);
+	nullptr,    // int (*listxattr) (const char *, char *, size_t);
+	nullptr,    // int (*removexattr) (const char *, const char *);
+	nullptr,    // int (*opendir) (const char *, struct fuse_file_info *);
+	do_readdir, // int (*readdir) (const char *, void *, fuse_fill_dir_t, off_t, struct fuse_file_info *);
+	nullptr,    // int (*releasedir) (const char *, struct fuse_file_info *);
+	nullptr,    // int (*fsyncdir) (const char *, int, struct fuse_file_info *);
+	nullptr,    // void *(*init) (struct fuse_conn_info *conn);
+	nullptr,    // void (*destroy) (void *);
+	nullptr,    // int (*access) (const char *, int);
+	nullptr,    // int (*create) (const char *, mode_t, struct fuse_file_info *);
+	nullptr,    // int (*ftruncate) (const char *, off_t, struct fuse_file_info *);
+	nullptr,    // int (*fgetattr) (const char *, struct stat *, struct fuse_file_info *);
+	nullptr,    // int (*lock) (const char *, struct fuse_file_info *, int cmd, struct flock *);
+	nullptr,    // int (*utimens) (const char *, const struct timespec tv[2]);
+	nullptr,    // int (*bmap) (const char *, size_t blocksize, uint64_t *idx);
+//	nullptr,    // int (*ioctl) (const char *, int cmd, void *arg, struct fuse_file_info *, unsigned int flags, void *data);
+//	nullptr,    // int (*poll) (const char *, struct fuse_file_info *, struct fuse_pollhandle *ph, unsigned *reventsp);
+//	nullptr,    // int (*write_buf) (const char *, struct fuse_bufvec *buf, off_t off, struct fuse_file_info *);
+//	nullptr,    // int (*read_buf) (const char *, struct fuse_bufvec **bufp, size_t size, off_t off, struct fuse_file_info *);
+//	nullptr,    // int (*flock) (const char *, struct fuse_file_info *, int op);
+//	nullptr,    // int (*fallocate) (const char *, int, off_t, off_t, struct fuse_file_info *);
+};
 
 
 fuse::fuse(int argc, char *argv[], fastafs *f)

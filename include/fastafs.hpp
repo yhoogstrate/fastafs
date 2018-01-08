@@ -53,17 +53,13 @@ class fastafs
 		
 		std::string basename();
 		
-		void load(std::string); // loads
-		//void write_2bit_header(fstream);
-		//unsigned int get_index_size();
-		//unsigned int get_sequence_offset(unsigned int);
+		void load(std::string);
 		void view_fasta(unsigned int);
 		int view_fasta_chunk(unsigned int, char *, size_t, off_t );
+		int view_faidx_chunk(unsigned int, char *, size_t, off_t );
 		
 		
 		void info();
-		
-		void mount();
 };
 
 #endif
