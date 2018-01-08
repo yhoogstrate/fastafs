@@ -470,22 +470,47 @@ int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_
 		one	66	5	30	31
 		two	28	98	14	15
 	 */
+	std::string contents = "";
 	unsigned int written = 0;
-
 	unsigned int i;
-	
+	std::string padding_s = std::to_string(padding);
+	std::string padding_s2 = std::to_string(padding + 1);// padding + newline
+
 	std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 	if(file.is_open()) {
 		file.close();
 		
+		unsigned int offset = 0;
 		for(i = 0; i < this->data.size(); i++) {
-			printf("[%s]\t[%i]\t[?]\t[?]\n", this->data[i]->name.c_str());
-			//this->data[i]->n
+			offset += 1;// '>'
+			offset += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
+			
+			contents += "[" + data[i]->name + "]\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
+			
+			offset += this->data[i]->n; // ACTG NNN
+			offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+		}
+		
+		std::cout << " ------ \n";
+		std::cout << contents ;
+		std::cout << " ------ \n";
+		
+		// buffer = 100
+		// file_offset = 10
+		// contents.size = 50
+		
+		printf("buffer size = %u,  content size = %u\n",buffer_size, contents.size());
+		
+		while(written < buffer_size and written + file_offset <= contents.size()) {
+			printf("[%i]\n", written);
+			buffer[written] = contents[written++];
 		}
 		
 	} else {
 		throw std::runtime_error("could not load fastafs: " + this->filename);
 	}
+	
+	printf("written: %i\n", written);
 	
 	return written;
 }
