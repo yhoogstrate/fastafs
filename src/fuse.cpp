@@ -24,14 +24,22 @@
 // more examples: https://libfuse.github.io/doxygen/hello_8c.html
 
 
+
+struct fastafs_fuse_instance {
+	fastafs *f;
+	unsigned int padding;
+};
+
+
+
 static int do_getattr( const char *path, struct stat *st )
 {
-	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+	fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
 
 	char cur_time[100];
 	time_t now = time(0);
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s)\033[0m\n",cur_time, path, f->name.c_str() );
+	printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, path, ffi->f->name.c_str(), ffi->padding);
 	
 	// GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
 	// 		st_uid: 	The user ID of the file’s owner.
@@ -57,17 +65,17 @@ static int do_getattr( const char *path, struct stat *st )
 		st->st_mode = S_IFDIR | 0755;
 		st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
 	} else {
-		std::string virtual_fasta_filename = "/" + f->name + ".fa";
-		std::string virtual_faidx_filename = "/" + f->name + ".fa.fai";
+		std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
+		std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
 
 		st->st_mode = S_IFREG | 0644;
 		st->st_nlink = 1;
 		
 		if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-			st->st_size = f->fasta_filesize(4);
+			st->st_size = ffi->f->fasta_filesize(ffi->padding);
 		}
 		else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
-			st->st_size = f->get_faidx(4).size();
+			st->st_size = ffi->f->get_faidx(ffi->padding).size();
 		}
 	}
 	
@@ -79,15 +87,15 @@ static int do_getattr( const char *path, struct stat *st )
 
 static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+	fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
 
 	char cur_time[100];
 	time_t now = time (0);
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s)\033[0m\n",cur_time, (unsigned int) offset, path, f->name.c_str() );
+	printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, (unsigned int) offset, path, ffi->f->name.c_str(), ffi->padding);
 
-	std::string virtual_fasta_filename = f->name + ".fa";
-	std::string virtual_faidx_filename = f->name + ".fa.fai";
+	std::string virtual_fasta_filename = ffi->f->name + ".fa";
+	std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
 
 	filler(buffer, ".", NULL, 0); // Current Directory
 	filler(buffer, "..", NULL, 0); // Parent Directory
@@ -96,8 +104,8 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 		filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
 		filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
 
-		std::cout << "  - " << virtual_fasta_filename << "\n";
-		std::cout << "  - " << virtual_faidx_filename << "\n";
+		std::cout << "    " << virtual_fasta_filename << "\n";
+		std::cout << "    " << virtual_faidx_filename << "\n";
 	}
 
 	
@@ -107,23 +115,23 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
 {
-	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+	fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
 	
 	char cur_time[100];
 	time_t now = time (0);
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s)\033[0m\n",cur_time, (unsigned int) size, (unsigned int) offset, path, f->name.c_str() );
+	printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, (unsigned int) size, (unsigned int) offset, path, ffi->f->name.c_str(), ffi->padding);
 	
-	std::string virtual_fasta_filename = "/" + f->name + ".fa";
-	std::string virtual_faidx_filename = "/" + f->name + ".fa.fai";
+	std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
+	std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
 	
 	static int written;
 	if(strcmp(path, virtual_fasta_filename.c_str() ) == 0) {
-		written = f->view_fasta_chunk(4, buffer, size, offset);
+		written = ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
 		printf("    return written=%u\n", written);
 	}
 	else if(strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
-		written = f->view_faidx_chunk(4, buffer, size, offset);
+		written = ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
 		printf("    return written=%u\n", written);
 	} else {
 		written = -1;
@@ -182,12 +190,15 @@ fuse_operations operations  = {
 };
 
 
+
 fuse::fuse(int argc, char *argv[], fastafs *f)
 {
 	int argc2 = 3;
 	//[0] = ... on
 	//[1] = <mountpoint>
 	// (char *) "/home/users/u/.local/share/fastaf/file.fastfs",
+
+	fastafs_fuse_instance *ffi = new fastafs_fuse_instance({f, 50});
 	
 	char cur_time[100];
 	time_t now = time (0);
@@ -196,7 +207,7 @@ fuse::fuse(int argc, char *argv[], fastafs *f)
 	for(unsigned int i=0;i<argc;i++){
 		printf(" argv[%u]=%s", i, argv[i]);
 	}
-	printf("   \033[0;35m(fastafs: %s)\033[0m\n",f->name.c_str() );
+	printf("   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",ffi->f->name.c_str(), ffi->padding);
 	
 	
 	char *argv2[] = {(char *) "fasfafs-mnt", (char *) "-f", (char *) argv[argc-1], nullptr};
@@ -207,6 +218,6 @@ fuse::fuse(int argc, char *argv[], fastafs *f)
 		argc2,
 		argv2,
 		&operations,
-		f);
+		ffi);
 		
 }
