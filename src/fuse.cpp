@@ -67,7 +67,7 @@ static int do_getattr( const char *path, struct stat *st )
 			st->st_size = f->fasta_filesize(4);
 		}
 		else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
-			st->st_size = 2048;
+			st->st_size = f->get_faidx(4).size();
 		}
 	}
 	
