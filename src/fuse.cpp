@@ -45,8 +45,8 @@ static int do_getattr( const char *path, struct stat *st )
 	
 	st->st_uid = getuid(); // The owner of the file/directory is the user who mounted the filesystem
 	st->st_gid = getgid(); // The group of the file/directory is the same as the group of the user who mounted the filesystem
-	st->st_atime = time( NULL ); // The last "a"ccess of the file/directory is right now
-	st->st_mtime = time( NULL ); // The last "m"odification of the file/directory is right now
+	st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
+	st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
 	
 	if ( strcmp( path, "/" ) == 0 ) {
 		//st->st_mode = S_IFREG | 0644;
@@ -57,10 +57,21 @@ static int do_getattr( const char *path, struct stat *st )
 		st->st_mode = S_IFDIR | 0755;
 		st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
 	} else {
+		std::string virtual_fasta_filename = "/" + f->name + ".fa";
+		std::string virtual_faidx_filename = "/" + f->name + ".fa.fai";
+
 		st->st_mode = S_IFREG | 0644;
 		st->st_nlink = 1;
-		st->st_size = 1024;
+		
+		if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+			st->st_size = 1024;
+		}
+		else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+			st->st_size = 2048;
+		}
 	}
+	
+	printf("    st_size: %u\n", st->st_size);
 	
 	return 0;
 }
@@ -188,7 +199,7 @@ fuse::fuse(int argc, char *argv[], fastafs *f)
 	printf("   \033[0;35m(fastafs: %s)\033[0m\n",f->name.c_str() );
 	
 	
-	char *argv2[] = {(char *) "fasfafs-mnt", (char *) "-f", (char *) argv[argc-1],  nullptr};
+	char *argv2[] = {(char *) "fasfafs-mnt", (char *) "-f", (char *) argv[argc-1], nullptr};
 	
 	//@todo create a struct that points to fastafs *f as well as some virtual data (virtualized file names etc)
 	
