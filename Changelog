@@ -1,3 +1,8 @@
+2018-01-10  Youri Hoogstrate
+
+	* fastafs mount provides appropriate file size
+	  attributes resulting in correct files
+
 2018-01-08  Youri Hoogstrate
 
     * fastafs mount now also virtualizes faidx files

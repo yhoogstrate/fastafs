@@ -463,16 +463,32 @@ int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_
 }
 
 
+unsigned int fastafs::fasta_filesize(unsigned int padding) {
+	unsigned int n = 0;
 
-int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
-{
-	/*
-		one	66	5	30	31
-		two	28	98	14	15
-	 */
+	std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+	if (file.is_open()) {
+		file.close();
+	
+		for(unsigned int i = 0; i < this->data.size(); i++) {
+			n += 1;// '>'
+			n += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
+			n += this->data[i]->n; // ACTG NNN
+			n += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+		}
+		
+	} else {
+		throw std::runtime_error("could not load fastafs: " + this->filename);
+	}
+	
+
+	return n;
+}
+
+
+std::string fastafs::get_faidx(unsigned int padding) {
+	
 	std::string contents = "";
-	unsigned int written = 0;
-	unsigned int i;
 	std::string padding_s = std::to_string(padding);
 	std::string padding_s2 = std::to_string(padding + 1);// padding + newline
 
@@ -481,7 +497,7 @@ int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_
 		file.close();
 		
 		unsigned int offset = 0;
-		for(i = 0; i < this->data.size(); i++) {
+		for(unsigned int i = 0; i < this->data.size(); i++) {
 			offset += 1;// '>'
 			offset += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
 			
@@ -491,24 +507,29 @@ int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_
 			offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
 		}
 		
-		/*
-		std::cout << " ------ \n";
-		std::cout << contents ;
-		std::cout << " ------ \n";
-		*/
-		
-		// buffer = 100
-		// file_offset = 10
-		// contents.size = 50
-		while(written < buffer_size and written + file_offset < contents.size()) {
-			buffer[written] = contents[written];
-			written++;
-		}
+		//while(written < buffer_size and written + file_offset < contents.size()) {
+		//	buffer[written] = contents[written];
+		//	written++;
+	//	}
 		
 	} else {
 		throw std::runtime_error("could not load fastafs: " + this->filename);
 	}
 	
+	return contents;
+}
+
+int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
+{
+	std::string contents = this->get_faidx(padding);
+
+	unsigned int written = 0;
+	while(written < buffer_size and written + file_offset < contents.size()) {
+		buffer[written] = contents[written];
+		written++;
+	}
+
+
 	return written;
 }
 
