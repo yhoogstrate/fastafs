@@ -20,7 +20,6 @@ class fastafs_seq
 		fastafs_seq();
 		
 		void view_fasta(unsigned int, std::ifstream *);
-		
 		int view_fasta_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);
 		
 		std::string sha1(std::ifstream *);
@@ -58,6 +57,8 @@ class fastafs
 		int view_fasta_chunk(unsigned int, char *, size_t, off_t );
 		int view_faidx_chunk(unsigned int, char *, size_t, off_t );
 		
+		std::string get_faidx(unsigned int);
+		unsigned int fasta_filesize(unsigned int);
 		
 		void info();
 };
