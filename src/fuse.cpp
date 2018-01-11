@@ -25,12 +25,12 @@
 
 static int do_getattr( const char *path, struct stat *st )
 {
-	printf( "[getattr] Called\n" );
-	printf( "\tAttributes of %s requested\n", path );
-	
-	
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
-	printf(" [ context: ] %s\n", f->name.c_str());
+
+	char cur_time[100];
+	time_t now = time(0);
+	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+	printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s)\033[0m\n",cur_time, path, f->name.c_str() );
 	
 	// GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
 	// 		st_uid: 	The user ID of the file’s owner.
@@ -68,15 +68,19 @@ static int do_getattr( const char *path, struct stat *st )
 static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi )
 {
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+
+	char cur_time[100];
+	time_t now = time (0);
+	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+	printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s)\033[0m\n",cur_time, (unsigned int) offset, path, f->name.c_str() );
+
 	std::string virtual_fasta_filename = f->name + ".fa";
 	std::string virtual_faidx_filename = f->name + ".fa.fai";
-
-	printf(" [ context: ] %s\n", f->name.c_str());
 
 	filler(buffer, ".", NULL, 0); // Current Directory
 	filler(buffer, "..", NULL, 0); // Parent Directory
 	
-	if (strcmp( path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
+	if (strcmp(path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
 		filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
 		filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
 	}
@@ -92,7 +96,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 	std::string virtual_faidx_filename = "/" + f->name + ".fa.fai";
 	
 	
-	if ( strcmp(path, virtual_fasta_filename.c_str() ) == 0 ) {
+	if(strcmp(path, virtual_fasta_filename.c_str() ) == 0) {
 		return f->view_fasta_chunk(4, buffer, size, offset);
 	}
 	else if ( strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
@@ -155,12 +159,21 @@ fuse_operations operations  = {
 
 fuse::fuse(int argc, char *argv[], fastafs *f)
 {
-	printf("fusing3\n");
-	
 	int argc2 = 3;
 	//[0] = ... on
 	//[1] = <mountpoint>
 	// (char *) "/home/users/u/.local/share/fastaf/file.fastfs",
+	
+	char cur_time[100];
+	time_t now = time (0);
+	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+	printf("\033[0;32m[%s]\033[0;33m init:\033[0m",cur_time);
+	for(unsigned int i=0;i<argc;i++){
+		printf(" %s", argv[i]);
+	}
+	printf("   \033[0;35m(fastafs: %s)\033[0m\n",f->name.c_str() );
+	
+	
 	char *argv2[] = {(char *) "fasfafs-mnt", (char *) "-f", (char *) "/mnt/fastafs/hg19",  nullptr};
 	
 	//@todo create a struct that points to fastafs *f as well as some virtual data (virtualized file names etc)
