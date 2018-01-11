@@ -1,3 +1,7 @@
+2018-01-08  Youri Hoogstrate
+
+    * fastafs mount now also virtualizes faidx files
+
 2017-12-27  Youri Hoogstrate
 
     * Removal of some minor memory leaks

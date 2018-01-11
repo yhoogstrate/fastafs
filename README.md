@@ -1,5 +1,5 @@
 # fastafs: fuse layer and file system for storing FASTA files
-### in a compressed, non-redundant and accessible manner
+### in a compressed, non-redundant and (randomly) accessible manner
 
 
 DNA sequences are typically stored in the FASTA format. Although very commonly used and easy to read, FASTA files consume vast amounts of diskspace. It is possible to use compression (gzip or 2bit) instead, but such files are binary and not as practical as FASTA. Also, this requires all other software to support each compressed formats which is unfortunately not the case.
