@@ -64,7 +64,7 @@ static int do_getattr( const char *path, struct stat *st )
 		st->st_nlink = 1;
 		
 		if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-			st->st_size = 1024;
+			st->st_size = f->fasta_filesize(4);
 		}
 		else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
 			st->st_size = 2048;
@@ -126,7 +126,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 		written = f->view_faidx_chunk(4, buffer, size, offset);
 		printf("    return written=%u\n", written);
 	} else {
-		written -1;
+		written = -1;
 	}
 	
 	return written;
@@ -207,6 +207,6 @@ fuse::fuse(int argc, char *argv[], fastafs *f)
 		argc2,
 		argv2,
 		&operations,
-		f );
+		f);
 		
 }

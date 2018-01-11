@@ -463,6 +463,28 @@ int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_
 }
 
 
+unsigned int fastafs::fasta_filesize(unsigned int padding) {
+	unsigned int n = 0;
+
+	std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+	if (file.is_open()) {
+		file.close();
+	
+		for(unsigned int i = 0; i < this->data.size(); i++) {
+			n = 1;// '>'
+			n += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
+			n += this->data[i]->n; // ACTG NNN
+			n += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+		}
+		
+	} else {
+		throw std::runtime_error("could not load fastafs: " + this->filename);
+	}
+	
+
+	return n;
+}
+
 
 int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
