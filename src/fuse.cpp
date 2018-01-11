@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <fstream>
 #include <fuse.h>
+#include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +66,7 @@ static int do_getattr( const char *path, struct stat *st )
 }
 
 
-static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi )
+static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
 
@@ -83,7 +84,11 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 	if (strcmp(path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
 		filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
 		filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
+
+		std::cout << "  - " << virtual_fasta_filename << "\n";
+		std::cout << "  - " << virtual_faidx_filename << "\n";
 	}
+
 	
 	return 0;
 }
@@ -92,19 +97,28 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
 {
 	fastafs *f = static_cast<fastafs *>(fuse_get_context()->private_data);
+	
+	char cur_time[100];
+	time_t now = time (0);
+	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+	printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s)\033[0m\n",cur_time, (unsigned int) size, (unsigned int) offset, path, f->name.c_str() );
+	
 	std::string virtual_fasta_filename = "/" + f->name + ".fa";
 	std::string virtual_faidx_filename = "/" + f->name + ".fa.fai";
 	
-	
+	static int written;
 	if(strcmp(path, virtual_fasta_filename.c_str() ) == 0) {
-		return f->view_fasta_chunk(4, buffer, size, offset);
+		written = f->view_fasta_chunk(4, buffer, size, offset);
+		printf("    return written=%u\n", written);
 	}
-	else if ( strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
-		return f->view_faidx_chunk(4, buffer, size, offset);
+	else if(strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
+		written = f->view_faidx_chunk(4, buffer, size, offset);
+		printf("    return written=%u\n", written);
 	} else {
-		return -1;
+		written -1;
 	}
 	
+	return written;
 }
 
 
@@ -167,14 +181,14 @@ fuse::fuse(int argc, char *argv[], fastafs *f)
 	char cur_time[100];
 	time_t now = time (0);
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\033[0;32m[%s]\033[0;33m init:\033[0m",cur_time);
+	printf("\033[0;32m[%s]\033[0;33m init: \033[0m",cur_time);
 	for(unsigned int i=0;i<argc;i++){
-		printf(" %s", argv[i]);
+		printf(" argv[%u]=%s", i, argv[i]);
 	}
 	printf("   \033[0;35m(fastafs: %s)\033[0m\n",f->name.c_str() );
 	
 	
-	char *argv2[] = {(char *) "fasfafs-mnt", (char *) "-f", (char *) "/mnt/fastafs/hg19",  nullptr};
+	char *argv2[] = {(char *) "fasfafs-mnt", (char *) "-f", (char *) argv[argc-1],  nullptr};
 	
 	//@todo create a struct that points to fastafs *f as well as some virtual data (virtualized file names etc)
 	
