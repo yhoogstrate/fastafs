@@ -198,46 +198,53 @@ void fuse(int argc, char *argv[])
 	// part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
 	//  - @todo at some point define that second mount is not really important? if possible
 	char *argv2[argc];
-	int argc2 = argc - 2;
+	int argc2 = argc - 1;
 	argv2[0] = (char *) "fasfafs mount";
 	for(unsigned i = 2; i < argc; i++)
 	{
-		if(i == argc - 2) {
+		if(i == argc - 2 and argv[i][0] != '-') {
 			argv2[i-1] = argv[i+1];
+			argc2 -= 1; 
+			break;
 		}
 		else {
 			argv2[i-1] = argv[i];
 		}
 	}
-	argv2[argc2] = nullptr;
 	
 	
 	// part 2 - print what the planning is
 	char cur_time[100];
 	time_t now = time (0);
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\033[0;32m[%s]\033[0;33m init:\033[0m",cur_time);
+	printf("\033[0;32m[%s]\033[0;33m init:\033[0m [argc=%i]",cur_time, argc);
 	for(unsigned int i=0;i<argc;i++){
 		printf(" argv[%u]=\"%s\"", i, argv[i]);
 	}
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\n\033[0;32m[%s]\033[0;33m init:\033[0m",cur_time);
+	printf("\n\033[0;32m[%s]\033[0;33m init:\033[0m [argc2=%i]",cur_time,argc2);
 	for(unsigned int i=0;i<argc2;i++){
 		printf(" argv2[%u]=\"%s\"", i, argv2[i]);
 	}
 	printf("\n");
-	
-	// plan 3 - depending on the args either run help or bind the actual fastafs object
-	if(argc2 < 2) { // not enought parameters, don't bind fastafs object
 
-		fuse_main(argc2, argv2, &operations, NULL);
+
+	// plan 3 - add "-p/--padding" to args
+	struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
+	//fuse_opt_parse(&args, NULL, NULL, NULL);
+	//fuse_opt_add_arg(&args, "-p/--padding   padding size of FASTA file");
+
+	
+	// plan 4 - depending on the args either run help or bind the actual fastafs object
+	if(argc2 < 2) { // not enought parameters, don't bind fastafs object
+		fuse_main(args.argc, args.argv, &operations, NULL);
 	}
 	else {
 		// @todo -F/--file for straight from fastafs file?
 		database d = database();
 		std::string fname = d.get(argv[argc - 2]);
 		if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
-			fuse_main(argc2, argv2, &operations, NULL);
+			fuse_main(args.argc, args.argv, &operations, NULL);
 		}
 		else { // valid fastafs and bind fastafs object
 			fastafs *f = new fastafs(std::string(argv[argc - 2]));
@@ -248,7 +255,8 @@ void fuse(int argc, char *argv[])
 			strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
 			printf("\033[0;32m[%s]\033[0;33m mounting\033[0m",cur_time);
 			printf("   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",ffi->f->name.c_str(), ffi->padding);
-			fuse_main(argc2, argv2, &operations, ffi);
+			
+			fuse_main(args.argc, args.argv, &operations, ffi);
 		}
 	}
 	
