@@ -46,7 +46,7 @@ static int do_getattr( const char *path, struct stat *st )
 	// 		st_uid: 	The user ID of the file’s owner.
 	//		st_gid: 	The group ID of the file.
 	//		st_atime: 	This is the last access time for the file.
-	//		st_mtime: 	This is the time of the last modification to the contents of the file.
+	//		st_mtime: 	This is the time of the last modification to the padding of the file.
 	//		st_mode: 	Specifies the mode of the file. This includes file type information (see Testing File Type) and the file permission bits (see Permission Bits).
 	//		st_nlink: 	The number of hard links to the file. This count keeps track of how many directories have entries for this file. If the count is ever decremented to zero, then the file itself is discarded as soon
 	//						as no process still holds it open. Symbolic links are not counted in the total.
@@ -192,6 +192,22 @@ fuse_operations operations  = {
 
 
 
+static struct options {
+	//const char *filename;
+	int *padding;
+	int show_help;
+} options;
+
+#define OPTION(t, p)        { t, offsetof(struct options, p), 1 }
+static const struct fuse_opt option_spec[] = {
+	//OPTION("--name=%s", filename),
+	OPTION("--padding=%i", padding),
+	OPTION("-q", show_help),
+	OPTION("--qelp", show_help),
+	FUSE_OPT_END
+};
+
+
 
 void fuse(int argc, char *argv[])
 {
@@ -232,6 +248,8 @@ void fuse(int argc, char *argv[])
 	// plan 3 - add "-p/--padding" to args
 	struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
 	//fuse_opt_parse(&args, NULL, NULL, NULL);
+	fuse_opt_parse(&args, &options, option_spec, NULL);
+	printf("  padding: %i\n", options.padding);
 	//fuse_opt_add_arg(&args, "-p/--padding   padding size of FASTA file");
 
 	
