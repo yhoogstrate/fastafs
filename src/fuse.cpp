@@ -207,6 +207,76 @@ static const struct fuse_opt option_spec[] = {
 	FUSE_OPT_END
 };
 
+void print_fuse_help() {
+	std::cout << "usage: fasfafs <mount: fastafs UID> <mountpoint> [options]\n";
+	std::cout << "\n";
+	std::cout << "general options:\n";
+	std::cout << "    -p=N,--padding=N       padding / FASTA line length\n";
+	std::cout << "    -o opt,[opt...]        mount options\n";
+	std::cout << "    -h   --help            print help\n";
+	std::cout << "    -V   --version         print version\n";
+	std::cout << "\n";
+	std::cout << "FUSE options:\n";
+	std::cout << "    -d   -o debug          enable debug output (implies -f)\n";
+	std::cout << "    -f                     foreground operation\n";
+	std::cout << "    -s                     disable multi-threaded operation\n";
+	std::cout << "\n";
+	std::cout << "    -o allow_other         allow access to other users\n";
+	std::cout << "    -o allow_root          allow access to root\n";
+	std::cout << "    -o auto_unmount        auto unmount on process termination\n";
+	std::cout << "    -o nonempty            allow mounts over non-empty file/dir\n";
+	std::cout << "    -o default_permissions enable permission checking by kernel\n";
+	std::cout << "    -o fsname=NAME         set filesystem name\n";
+	std::cout << "    -o subtype=NAME        set filesystem type\n";
+	std::cout << "    -o large_read          issue large read requests (2.4 only)\n";
+	std::cout << "    -o max_read=N          set maximum size of read requests\n";
+	std::cout << "\n";
+	std::cout << "    -o hard_remove         immediate removal (don't hide files)\n";
+	std::cout << "    -o use_ino             let filesystem set inode numbers\n";
+	std::cout << "    -o readdir_ino         try to fill in d_ino in readdir\n";
+	std::cout << "    -o direct_io           use direct I/O\n";
+	std::cout << "    -o kernel_cache        cache files in kernel\n";
+	std::cout << "    -o [no]auto_cache      enable caching based on modification times (off)\n";
+	std::cout << "    -o umask=M             set file permissions (octal)\n";
+	std::cout << "    -o uid=N               set file owner\n";
+	std::cout << "    -o gid=N               set file group\n";
+	std::cout << "    -o entry_timeout=T     cache timeout for names (1.0s)\n";
+	std::cout << "    -o negative_timeout=T  cache timeout for deleted names (0.0s)\n";
+	std::cout << "    -o attr_timeout=T      cache timeout for attributes (1.0s)\n";
+	std::cout << "    -o ac_attr_timeout=T   auto cache timeout for attributes (attr_timeout)\n";
+	std::cout << "    -o noforget            never forget cached inodes\n";
+	std::cout << "    -o remember=T          remember cached inodes for T seconds (0s)\n";
+	std::cout << "    -o nopath              don't supply path if not necessary\n";
+	std::cout << "    -o intr                allow requests to be interrupted\n";
+	std::cout << "    -o intr_signal=NUM     signal to send on interrupt (10)\n";
+	std::cout << "    -o modules=M1[:M2...]  names of modules to push onto filesystem stack\n";
+	std::cout << "\n";
+	std::cout << "    -o max_write=N         set maximum size of write requests\n";
+	std::cout << "    -o max_readahead=N     set maximum readahead\n";
+	std::cout << "    -o max_background=N    set number of maximum background requests\n";
+	std::cout << "    -o congestion_threshold=N  set kernel's congestion threshold\n";
+	std::cout << "    -o async_read          perform reads asynchronously (default)\n";
+	std::cout << "    -o sync_read           perform reads synchronously\n";
+	std::cout << "    -o atomic_o_trunc      enable atomic open+truncate support\n";
+	std::cout << "    -o big_writes          enable larger than 4kB writes\n";
+	std::cout << "    -o no_remote_lock      disable remote file locking\n";
+	std::cout << "    -o no_remote_flock     disable remote file locking (BSD)\n";
+	std::cout << "    -o no_remote_posix_lock disable remove file locking (POSIX)\n";
+	std::cout << "    -o [no_]splice_write   use splice to write to the fuse device\n";
+	std::cout << "    -o [no_]splice_move    move data while splicing to the fuse device\n";
+	std::cout << "    -o [no_]splice_read    use splice to read from the fuse device\n";
+	std::cout << "\n";
+	std::cout << "Module options:\n";
+	std::cout << "\n";
+	std::cout << "[iconv]\n";
+	std::cout << "    -o from_code=CHARSET   original encoding of file names (default: UTF-8)\n";
+	std::cout << "    -o to_code=CHARSET	    new encoding of the file names (default: UTF-8)\n";
+	std::cout << "\n";
+	std::cout << "[subdir]\n";
+	std::cout << "    -o subdir=DIR	    prepend this directory to all paths (mandatory)\n";
+	std::cout << "    -o [no]rellinks	    transform absolute symlinks to relative\n";
+}
+
 
 
 void fuse(int argc, char *argv[])
@@ -248,6 +318,7 @@ void fuse(int argc, char *argv[])
 	// plan 3 - add "-p/--padding" to args
 	struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
 	//fuse_opt_parse(&args, NULL, NULL, NULL);
+	//fuse_opt_add_arg(&args, "--padding=");
 	fuse_opt_parse(&args, &options, option_spec, NULL);
 	printf("  padding: %i\n", options.padding);
 	//fuse_opt_add_arg(&args, "-p/--padding   padding size of FASTA file");
@@ -255,14 +326,16 @@ void fuse(int argc, char *argv[])
 	
 	// plan 4 - depending on the args either run help or bind the actual fastafs object
 	if(argc2 < 2) { // not enought parameters, don't bind fastafs object
-		fuse_main(args.argc, args.argv, &operations, NULL);
+		print_fuse_help();
+		exit(0);
 	}
 	else {
 		// @todo -F/--file for straight from fastafs file?
 		database d = database();
 		std::string fname = d.get(argv[argc - 2]);
 		if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
-			fuse_main(args.argc, args.argv, &operations, NULL);
+			print_fuse_help();
+			exit(1);
 		}
 		else { // valid fastafs and bind fastafs object
 			fastafs *f = new fastafs(std::string(argv[argc - 2]));
