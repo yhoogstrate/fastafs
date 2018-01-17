@@ -26,13 +26,13 @@
 
 
 
+
 struct fastafs_fuse_instance {
 	fastafs *f;
 	unsigned int padding;
 	int argc_fuse;
 	char *argv_fuse[];
 };
-
 
 
 static int do_getattr( const char *path, struct stat *st )
@@ -194,23 +194,8 @@ fuse_operations operations  = {
 
 
 
-static struct options {
-	//const char *filename;
-	int *padding;
-	int show_help;
-} options;
-
-#define OPTION(t, p)        { t, offsetof(struct options, p), 1 }
-static const struct fuse_opt option_spec[] = {
-	//OPTION("--name=%s", filename),
-	OPTION("--padding=%i", padding),
-	OPTION("-q", show_help),
-	OPTION("--qelp", show_help),
-	FUSE_OPT_END
-};
-
 void print_fuse_help() {
-	std::cout << "usage: fasfafs <mount: fastafs UID> <mountpoint> [options]\n";
+	std::cout << "usage: fasfafs <mounullptrnt: fastafs UID> <mountpoint> [options]\n";
 	std::cout << "\n";
 	std::cout << "general options:\n";
 	std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
@@ -282,9 +267,25 @@ void print_fuse_help() {
 
 fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 	// Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
+	
+	
+	//char *argv_fuse[];
+	
+	char **argv_test = (char **) malloc(sizeof(char*) * argc);
 
-	fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
+	//fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
+	fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, *argv_test});
+	printf("argc=%i",argc);
+	
 	argv_fuse[0] = (char *) "fasfafs mount";
+	//ffi->argv_fuse[0] = "test test test test test test ";
+	//ffi->argv_fuse[1] = "testtest test test test test ";
+	ffi->argv_fuse[0] = argv[0];
+	ffi->argv_fuse[1] = argv[1];
+	ffi->argv_fuse[1] = argv[2];// ok
+	//ffi->argv_fuse[3] = "test";
+	//ffi->argv_fuse[4] = "test";
+	//ffi->argv_fuse[5] = "test";
 	
 	//ffi = new fastafs_fuse_instance({nullptr, 50, 1, *argv2});
 	
@@ -297,6 +298,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 				ffi->padding = atoi(argv[++i]);
 			}
 			else { // arguments that need to be send to fuse
+				argv_test[ffi->argc_fuse] = argv[i];
 				argv_fuse[ffi->argc_fuse++] = argv[i];
 			}
 		}
@@ -317,6 +319,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 			}
 		}
 		else {// mountpoint
+			argv_test[ffi->argc_fuse] = argv[i];
 			argv_fuse[ffi->argc_fuse++] = argv[i];
 		}
 		i++;
@@ -328,6 +331,8 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 }
 
 
+
+
 void fuse(int argc, char *argv[])
 {
 	// part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
@@ -335,7 +340,6 @@ void fuse(int argc, char *argv[])
 	char *argv2[argc];
 	
 	fastafs_fuse_instance *ffi = parse_args(argc, argv, argv2);
-	int argc2 = ffi->argc_fuse;
 	
 
 	// part 2 - print what the planning is
@@ -347,13 +351,16 @@ void fuse(int argc, char *argv[])
 		printf(" argv[%u]=\"%s\"", i, argv[i]);
 	}
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]",cur_time,argc2);
-	for(unsigned int i=0;i<argc2;i++){
+	printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]",cur_time,ffi->argc_fuse);
+	for(unsigned int i=0;i<ffi->argc_fuse;i++){
 		printf(" argv[%u]=\"%s\"", i, argv2[i]);
 	}
 	printf("\n");
 
-	if(ffi->f == nullptr) {
+	printf("ffi->argv_fuse[0] = %s\n", ffi->argv_fuse[0]);
+
+
+	if(ffi->f == nullptr) { // no fastafs was loaded
 		print_fuse_help();
 		exit(0);
 	}
