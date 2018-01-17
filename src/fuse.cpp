@@ -280,13 +280,11 @@ void print_fuse_help() {
 }
 
 
-fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse, fastafs_fuse_instance *ffi) {
+fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 	// Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
 
-	ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
-	
+	fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
 	argv_fuse[0] = (char *) "fasfafs mount";
-	//char *argv2[argc];
 	
 	//ffi = new fastafs_fuse_instance({nullptr, 50, 1, *argv2});
 	
@@ -344,8 +342,8 @@ void fuse(int argc, char *argv[])
 	//  - @todo at some point define that second mount is not really important? if possible
 	char *argv2[argc];
 	
-	fastafs_fuse_instance *ffi1 = parse_args(argc, argv, argv2, ffi1);
-	int argc2 = ffi1->argc_fuse;
+	fastafs_fuse_instance *ffi = parse_args(argc, argv, argv2);
+	int argc2 = ffi->argc_fuse;
 	
 
 	
@@ -365,7 +363,15 @@ void fuse(int argc, char *argv[])
 	}
 	printf("\n");
 
+	if(ffi->f == nullptr) {
+		print_fuse_help();
+		exit(0);
+	}
+	else {
+		fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
+	}
 
+/*
 	// plan 3 - add "-p/--padding" to args
 	struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
 	
@@ -395,7 +401,7 @@ void fuse(int argc, char *argv[])
 			fuse_main(args.argc, args.argv, &operations, ffi);
 		}
 	}
-	
+	*/
 	//http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
 
 	
