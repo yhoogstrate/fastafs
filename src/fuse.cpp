@@ -293,21 +293,16 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 		printf("\nprocessing argv[%i] = '%s';", i, argv[i]);
 		
 		if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
-			if(strcmp(argv[i],"-p")==0 or strcmp(argv[i],"--padding")==0){
-				unsigned int padding = atoi(argv[++i]);
-				printf(" PADDINGGGGG = %i", padding);
-				ffi->padding = padding;
+			if(strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0){
+				ffi->padding = atoi(argv[++i]);
 			}
-			else {
-				printf("   fuse argument, append to argv_fuse");
+			else { // arguments that need to be send to fuse
 				argv_fuse[ffi->argc_fuse++] = argv[i];
 			}
 		}
 		//else if(i < argc - 2) { // all arguments that one argument "--lowercase" switches etc
 		//}
-		else if(i == argc - 2) {
-			printf("   ***** fastafs file! << exclude >>");
-			
+		else if(i == argc - 2) { // this refers to the fastafs object
 			database d = database();
 			std::string fname = d.get(argv[i]);
 			if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
@@ -322,10 +317,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 			}
 		}
 		else {// mountpoint
-			printf("   fuse argument, append to argv_fuse");
-			
 			argv_fuse[ffi->argc_fuse++] = argv[i];
-
 		}
 		i++;
 	}
@@ -352,14 +344,14 @@ void fuse(int argc, char *argv[])
 	char cur_time[100];
 	time_t now = time (0);
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\033[0;32m[%s]\033[0;33m init:\033[0m [argc=%i]",cur_time, argc);
+	printf("\033[0;32m[%s]\033[0;33m init (recv arguments):\033[0m [argc=%i]",cur_time, argc);
 	for(unsigned int i=0;i<argc;i++){
 		printf(" argv[%u]=\"%s\"", i, argv[i]);
 	}
 	strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-	printf("\n\033[0;32m[%s]\033[0;33m init:\033[0m [argc2=%i]",cur_time,argc2);
+	printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]",cur_time,argc2);
 	for(unsigned int i=0;i<argc2;i++){
-		printf(" argv2[%u]=\"%s\"", i, argv2[i]);
+		printf(" argv[%u]=\"%s\"", i, argv2[i]);
 	}
 	printf("\n");
 
