@@ -338,8 +338,6 @@ void fuse(int argc, char *argv[])
 	int argc2 = ffi->argc_fuse;
 	
 
-	
-	
 	// part 2 - print what the planning is
 	char cur_time[100];
 	time_t now = time (0);
@@ -363,45 +361,6 @@ void fuse(int argc, char *argv[])
 		fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
 	}
 
-/*
-	// plan 3 - add "-p/--padding" to args
-	struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
-	
-	// plan 4 - depending on the args either run help or bind the actual fastafs object
-	if(argc2 < 2) { // not enought parameters, don't bind fastafs object
-		print_fuse_help();
-		exit(0);
-	}
-	else {
-		// @todo -F/--file for straight from fastafs file?
-		database d = database();
-		std::string fname = d.get(argv[argc - 2]);
-		if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
-			print_fuse_help();
-			exit(1);
-		}
-		else { // valid fastafs and bind fastafs object
-			fastafs *f = new fastafs(std::string(argv[argc - 2]));
-			f->load(fname);
-			
-			fastafs_fuse_instance *ffi = new fastafs_fuse_instance({f, 50, 0, nullptr});
-			
-			strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-			printf("\033[0;32m[%s]\033[0;33m mounting\033[0m",cur_time);
-			printf("   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",ffi->f->name.c_str(), ffi->padding);
-			
-			fuse_main(args.argc, args.argv, &operations, ffi);
-		}
-	}
-	*/
 	//http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
-
-	
-	//struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
-
-	//fuse_opt_parse(&args, NULL, NULL, NULL);
-	//fuse_opt_add_arg(&args, "-omodules=subdir,subdir=/foo");
-
-	//return fuse_main(args.argc, args.argv, &my_operations, NULL);
 
 }
