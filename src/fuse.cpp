@@ -29,6 +29,8 @@
 struct fastafs_fuse_instance {
 	fastafs *f;
 	unsigned int padding;
+	int argc_fuse;
+	char *argv_fuse[];
 };
 
 
@@ -278,13 +280,15 @@ void print_fuse_help() {
 }
 
 
-int parse_args(int argc, char **argv, char **argv_fuse, fastafs_fuse_instance *ffi) {
+fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse, fastafs_fuse_instance *ffi) {
 	// Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
+
+	ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
 	
 	argv_fuse[0] = (char *) "fasfafs mount";
-	int argc_fuse = 1;
+	//char *argv2[argc];
 	
-	ffi = new fastafs_fuse_instance({nullptr, 50});
+	//ffi = new fastafs_fuse_instance({nullptr, 50, 1, *argv2});
 	
 	unsigned int i = 2;
 	while(i < argc) {
@@ -298,17 +302,31 @@ int parse_args(int argc, char **argv, char **argv_fuse, fastafs_fuse_instance *f
 			}
 			else {
 				printf("   fuse argument, append to argv_fuse");
-				argv_fuse[argc_fuse++] = argv[i];
+				argv_fuse[ffi->argc_fuse++] = argv[i];
 			}
 		}
 		//else if(i < argc - 2) { // all arguments that one argument "--lowercase" switches etc
 		//}
 		else if(i == argc - 2) {
 			printf("   ***** fastafs file! << exclude >>");
+			
+			database d = database();
+			std::string fname = d.get(argv[i]);
+			if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
+				print_fuse_help();
+				exit(1);
+			}
+			else { // valid fastafs and bind fastafs object
+				fastafs *f = new fastafs(std::string(argv[i]));
+				f->load(fname);
+				
+				ffi->f = f;
+			}
 		}
 		else {// mountpoint
 			printf("   fuse argument, append to argv_fuse");
-			argv_fuse[argc_fuse++] = argv[i];
+			
+			argv_fuse[ffi->argc_fuse++] = argv[i];
 
 		}
 		i++;
@@ -316,7 +334,7 @@ int parse_args(int argc, char **argv, char **argv_fuse, fastafs_fuse_instance *f
 	
 	printf("\n");
 	
-	return argc_fuse;
+	return ffi;
 }
 
 
@@ -326,8 +344,8 @@ void fuse(int argc, char *argv[])
 	//  - @todo at some point define that second mount is not really important? if possible
 	char *argv2[argc];
 	
-	fastafs_fuse_instance *ffi1 = nullptr;
-	int argc2 = parse_args(argc, argv, argv2, ffi1);
+	fastafs_fuse_instance *ffi1 = parse_args(argc, argv, argv2, ffi1);
+	int argc2 = ffi1->argc_fuse;
 	
 
 	
@@ -368,7 +386,7 @@ void fuse(int argc, char *argv[])
 			fastafs *f = new fastafs(std::string(argv[argc - 2]));
 			f->load(fname);
 			
-			fastafs_fuse_instance *ffi = new fastafs_fuse_instance({f, 50});
+			fastafs_fuse_instance *ffi = new fastafs_fuse_instance({f, 50, 0, nullptr});
 			
 			strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
 			printf("\033[0;32m[%s]\033[0;33m mounting\033[0m",cur_time);
