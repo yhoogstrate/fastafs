@@ -211,7 +211,7 @@ void print_fuse_help() {
 	std::cout << "usage: fasfafs <mount: fastafs UID> <mountpoint> [options]\n";
 	std::cout << "\n";
 	std::cout << "general options:\n";
-	std::cout << "    -p=N,--padding=N       padding / FASTA line length\n";
+	std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
 	std::cout << "    -o opt,[opt...]        mount options\n";
 	std::cout << "    -h   --help            print help\n";
 	std::cout << "    -V   --version         print version\n";
@@ -278,15 +278,39 @@ void print_fuse_help() {
 }
 
 
-
-void fuse(int argc, char *argv[])
-{
-	// part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
-	//  - @todo at some point define that second mount is not really important? if possible
-	char *argv2[argc];
+int parse_args(int argc, char **argv, char **argv2, fastafs_fuse_instance *ffi) {
+	// Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
 	int argc2 = argc - 1;
+	
+	ffi = new fastafs_fuse_instance({nullptr, 50});
+	
+	unsigned int i = 2;
+	while(i < argc) {
+		printf("\nprocessing argv[%i] = '%s';", i, argv[i]);
+		
+		if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
+			if(strcmp(argv[i],"-p")==0 or strcmp(argv[i],"--padding")==0){
+				printf(" PADDINGGGGG = %s", argv[++i]);
+			}
+			else {
+				printf("   fuse argument, append to argv2");
+			}
+		}
+		//else if(i < argc - 2) { // all arguments that one argument "--lowercase" switches etc
+		//}
+		else if(i == argc - 2) {
+			printf("   ***** fastafs file! << exclude >>");
+		}
+		else {// mountpoint
+			printf("   fuse argument, append to argv2");
+		}
+		i++;
+	}
+	
+	
+	
 	argv2[0] = (char *) "fasfafs mount";
-	for(unsigned i = 2; i < argc; i++)
+	for(i = 2; i < argc; i++)
 	{
 		if(i == argc - 2 and argv[i][0] != '-') {
 			argv2[i-1] = argv[i+1];
@@ -297,6 +321,21 @@ void fuse(int argc, char *argv[])
 			argv2[i-1] = argv[i];
 		}
 	}
+	
+	return argc2;
+}
+
+
+void fuse(int argc, char *argv[])
+{
+	// part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
+	//  - @todo at some point define that second mount is not really important? if possible
+	char *argv2[argc];
+	
+	fastafs_fuse_instance *ffi1 = nullptr;
+	int argc2 = parse_args(argc, argv, argv2, ffi1);
+	
+
 	
 	
 	// part 2 - print what the planning is
@@ -317,12 +356,6 @@ void fuse(int argc, char *argv[])
 
 	// plan 3 - add "-p/--padding" to args
 	struct fuse_args args = FUSE_ARGS_INIT(argc2, argv2);
-	//fuse_opt_parse(&args, NULL, NULL, NULL);
-	//fuse_opt_add_arg(&args, "--padding=");
-	fuse_opt_parse(&args, &options, option_spec, NULL);
-	printf("  padding: %i\n", options.padding);
-	//fuse_opt_add_arg(&args, "-p/--padding   padding size of FASTA file");
-
 	
 	// plan 4 - depending on the args either run help or bind the actual fastafs object
 	if(argc2 < 2) { // not enought parameters, don't bind fastafs object
