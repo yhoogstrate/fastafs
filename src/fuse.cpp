@@ -81,7 +81,7 @@ static int do_getattr( const char *path, struct stat *st )
         }
     }
 
-    printf("    st_size: %u\n", st->st_size);
+    printf("    st_size: %u\n", (unsigned int) st->st_size);
 
     return 0;
 }
@@ -194,7 +194,7 @@ fuse_operations operations  = {
 
 void print_fuse_help()
 {
-    std::cout << "usage: fasfafs <mounullptrnt: fastafs UID> <mountpoint> [options]\n";
+    std::cout << "usage: fasfafs <mount: fastafs UID> <mountpoint> [options]\n";
     std::cout << "\n";
     std::cout << "general options:\n";
     std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
@@ -283,7 +283,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
 
 
-    unsigned int i = 2;
+    int i = 2;
     while(i < argc) {
         //printf("\nprocessing argv[%i] = '%s';", i, argv[i]);
 
@@ -336,12 +336,12 @@ void fuse(int argc, char *argv[])
     time_t now = time (0);
     strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
     printf("\033[0;32m[%s]\033[0;33m init (recv arguments):\033[0m [argc=%i]",cur_time, argc);
-    for(unsigned int i=0; i<argc; i++) {
+    for(int i=0; i<argc; i++) {
         printf(" argv[%u]=\"%s\"", i, argv[i]);
     }
     strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
     printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]",cur_time,ffi->argc_fuse);
-    for(unsigned int i=0; i<ffi->argc_fuse; i++) {
+    for(int i=0; i<ffi->argc_fuse; i++) {
         printf(" argv[%u]=\"%s\"", i, argv2[i]);
     }
     printf("\n");

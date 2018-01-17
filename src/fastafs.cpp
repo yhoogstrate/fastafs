@@ -528,7 +528,7 @@ int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_
     std::string contents = this->get_faidx(padding);
 
     unsigned int written = 0;
-    while(written < buffer_size and written + file_offset < contents.size()) {
+    while(written < buffer_size and written + file_offset < (unsigned int) contents.size()) {
         buffer[written] = contents[written];
         written++;
     }

@@ -61,9 +61,9 @@ void fasta_to_fastafs_seq::add_nucleotide(unsigned char nucleotide)
     }
     */
 
-    unsigned int offset = 6 -(2* ((this->n - this->N) % 4) ) ;
+    unsigned int offset = 6 - (2 * ((this->n - this->N) % 4) ) ;
 
-    this->twobit_data.set(offset, nucleotide);
+    this->twobit_data.set( (unsigned char) offset, nucleotide);
     if(offset == 0) {
         this->twobits.push_back(this->twobit_data.data);
     }
