@@ -268,37 +268,31 @@ void print_fuse_help() {
 fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 	// Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
 	
-	
-	//char *argv_fuse[];
-	
-	char **argv_test = (char **) malloc(sizeof(char*) * argc);
+	//char **argv_test = (char **) malloc(sizeof(char*) * argc);
 
 	//fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
-	fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, *argv_test});
-	printf("argc=%i",argc);
+	fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, nullptr});
+	//printf("argc=%i",argc);
 	
 	argv_fuse[0] = (char *) "fasfafs mount";
 	//ffi->argv_fuse[0] = "test test test test test test ";
 	//ffi->argv_fuse[1] = "testtest test test test test ";
-	ffi->argv_fuse[0] = argv[0];
-	ffi->argv_fuse[1] = argv[1];
-	ffi->argv_fuse[1] = argv[2];// ok
-	//ffi->argv_fuse[3] = "test";
-	//ffi->argv_fuse[4] = "test";
-	//ffi->argv_fuse[5] = "test";
-	
-	//ffi = new fastafs_fuse_instance({nullptr, 50, 1, *argv2});
+	//ffi->argv_fuse[0] = argv[0];
+	//ffi->argv_fuse[1] = argv[1];
+	//ffi->argv_fuse[1] = argv[2];// ok
+
+
 	
 	unsigned int i = 2;
 	while(i < argc) {
-		printf("\nprocessing argv[%i] = '%s';", i, argv[i]);
+		//printf("\nprocessing argv[%i] = '%s';", i, argv[i]);
 		
 		if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
 			if(strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0){
 				ffi->padding = atoi(argv[++i]);
 			}
 			else { // arguments that need to be send to fuse
-				argv_test[ffi->argc_fuse] = argv[i];
+				//argv_test[ffi->argc_fuse] = argv[i];
 				argv_fuse[ffi->argc_fuse++] = argv[i];
 			}
 		}
@@ -319,13 +313,11 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse) {
 			}
 		}
 		else {// mountpoint
-			argv_test[ffi->argc_fuse] = argv[i];
+			//argv_test[ffi->argc_fuse] = argv[i];
 			argv_fuse[ffi->argc_fuse++] = argv[i];
 		}
 		i++;
 	}
-	
-	printf("\n");
 	
 	return ffi;
 }
@@ -356,8 +348,6 @@ void fuse(int argc, char *argv[])
 		printf(" argv[%u]=\"%s\"", i, argv2[i]);
 	}
 	printf("\n");
-
-	printf("ffi->argv_fuse[0] = %s\n", ffi->argv_fuse[0]);
 
 
 	if(ffi->f == nullptr) { // no fastafs was loaded
