@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(fastafs)
 
-set(PROJECT_VERSION "0.0.4")
+set(PROJECT_VERSION "0.0.5")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
