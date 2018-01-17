@@ -278,9 +278,11 @@ void print_fuse_help() {
 }
 
 
-int parse_args(int argc, char **argv, char **argv2, fastafs_fuse_instance *ffi) {
+int parse_args(int argc, char **argv, char **argv_fuse, fastafs_fuse_instance *ffi) {
 	// Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
-	int argc2 = argc - 1;
+	
+	argv_fuse[0] = (char *) "fasfafs mount";
+	int argc_fuse = 1;
 	
 	ffi = new fastafs_fuse_instance({nullptr, 50});
 	
@@ -290,10 +292,13 @@ int parse_args(int argc, char **argv, char **argv2, fastafs_fuse_instance *ffi) 
 		
 		if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
 			if(strcmp(argv[i],"-p")==0 or strcmp(argv[i],"--padding")==0){
-				printf(" PADDINGGGGG = %s", argv[++i]);
+				unsigned int padding = atoi(argv[++i]);
+				printf(" PADDINGGGGG = %i", padding);
+				ffi->padding = padding;
 			}
 			else {
-				printf("   fuse argument, append to argv2");
+				printf("   fuse argument, append to argv_fuse");
+				argv_fuse[argc_fuse++] = argv[i];
 			}
 		}
 		//else if(i < argc - 2) { // all arguments that one argument "--lowercase" switches etc
@@ -302,27 +307,16 @@ int parse_args(int argc, char **argv, char **argv2, fastafs_fuse_instance *ffi) 
 			printf("   ***** fastafs file! << exclude >>");
 		}
 		else {// mountpoint
-			printf("   fuse argument, append to argv2");
+			printf("   fuse argument, append to argv_fuse");
+			argv_fuse[argc_fuse++] = argv[i];
+
 		}
 		i++;
 	}
 	
+	printf("\n");
 	
-	
-	argv2[0] = (char *) "fasfafs mount";
-	for(i = 2; i < argc; i++)
-	{
-		if(i == argc - 2 and argv[i][0] != '-') {
-			argv2[i-1] = argv[i+1];
-			argc2 -= 1; 
-			break;
-		}
-		else {
-			argv2[i-1] = argv[i];
-		}
-	}
-	
-	return argc2;
+	return argc_fuse;
 }
 
 
