@@ -31,7 +31,7 @@ struct fastafs_fuse_instance {
     fastafs *f;
     unsigned int padding;
     int argc_fuse;
-    char *argv_fuse[];
+    //char *argv_fuse[];
 };
 
 
@@ -271,17 +271,12 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     //char **argv_test = (char **) malloc(sizeof(char*) * argc);
 
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
-    fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, nullptr});
+    fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 0});
     //printf("argc=%i",argc);
 
-    argv_fuse[0] = (char *) "fasfafs mount";
-    //ffi->argv_fuse[0] = "test test test test test test ";
-    //ffi->argv_fuse[1] = "testtest test test test test ";
+    argv_fuse[ffi->argc_fuse++] = (char *) "fasfafs mount";
     //ffi->argv_fuse[0] = argv[0];
     //ffi->argv_fuse[1] = argv[1];
-    //ffi->argv_fuse[1] = argv[2];// ok
-
-
 
     int i = 2;
     while(i < argc) {
