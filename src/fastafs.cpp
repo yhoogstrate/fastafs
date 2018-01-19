@@ -464,7 +464,6 @@ int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_
     return written;
 }
 
-
 unsigned int fastafs::fasta_filesize(unsigned int padding)
 {
     unsigned int n = 0;
