@@ -14,3 +14,5 @@ cmake_install.cmake
 .directory
 /*.2bit
 tmp/
+repeats.txt
+build/
