@@ -35,26 +35,38 @@ def find_matching_subseqs(shortest, longest, min_subseq_len):
                     traceback2[(s, l)] = previous[s - 1]
                 current[s] = 0
         
-        previous, current = current, previous
+        # omdat pas in de stap wanneer de mismatch plaatsvind wordt bepaald of er een lange match was, moet er eigenlijk buiten het grid gelopen worden
+        if previous[s]>= min_subseq_len:
+            traceback2[(s, l)] = (previous[s], '!')
         
+        #print(current)
+        previous, current = current, previous
+    
+    previous, current = current, previous # undo last switch
+    
+    #print(current)
+    #print("")
+    
     for s in range(size_s):
         #print("*",current[s])
         if current[s] >= min_subseq_len: # in de laatste rij betekend een mismatch dat beide suffixen matchen
             #print ("!")
-            traceback2[(s, l)] = current[s]
+            traceback2[(s, l)] = (current[s],'*')
 
 
     return traceback2
 
-print (find_matching_subseqs(shortest, longest, 12))
+print ('>>',find_matching_subseqs(shortest, longest, 12))
 print ("")
-print (find_matching_subseqs('gAAAc', 'tAAAg', 3))
-print (find_matching_subseqs('AAAc', 'tAAAg', 3))
+print ('>>',find_matching_subseqs('gAAAc', 'tAAAg', 3))
+print ('>>',find_matching_subseqs('AAAc', 'tAAAg', 3))
 
 # failing
-print (find_matching_subseqs('gAAA', 'tAAAg', 3))
-print (find_matching_subseqs('AAA', 'tAAAg', 3))
-print (find_matching_subseqs('AAA', 'AAA', 3))
+print ('>>',find_matching_subseqs('gAAA', 'tAAAg', 3))
+print ('>>',find_matching_subseqs('AAA', 'tAAAg', 3))
+
+# working
+print ('>>',find_matching_subseqs('AAA', 'AAA', 3))
 
 
 """
