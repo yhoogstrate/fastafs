@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
     //std::string shortest = "GCCTGCTAGCTGCTGCTAGCTAGCTAGCAACGCCGTATCGATCGTCGTGCTAGTAG";
     //std::string longest = "ATCGATCGATCGATCGACTGCCTGCTAGCTGCTGCTAGCTAGCTAGCA GGCGCGCTAGCATGCATCGATCAGCGCCGTATCGATCGTCGTGCTAGTAGCGATCGA";
     std::string shortest = "AGCCC";
-    std::string longest = "AGCCC";
+    std::string longest = "aaaAGCCC";
     
     
     const unsigned int size_s = shortest.size();
@@ -128,6 +128,15 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
             if(longest[l] == shortest[s]) {
                 if(s == 0) {
                     current[s] = 1; // als deze 1 is, betekend het dat het matchen 1 positie terug is gestart - s-1 bestaat nog niet
+                }
+                // de else if hieronder kan slimmer, door nog een losse for-for te maken (nu moet er in de hele loop extra ge-ift worden
+                else if(l == size_l - 1) // in de laatste rij betekend een mismatch dat beide suffixen matchen
+                {
+                    unsigned int len = previous[s-1] ;
+                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n",(s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, len            );
+                    assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); // len of both subseqs must be identical
+                    traceback[s][l] = len ;
+                    traceback2[{s, l}] = len;
                 }
                 else {
                     current[s] = previous[s-1] + 1;
