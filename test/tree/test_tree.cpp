@@ -178,15 +178,18 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
         //std::cout << "\n\n";
     }
 
-    exit(1);
-
     // traceback - or just take the longest, remove anything overlapping the longest, and proceed with the next?
     //             -> suboptimal, we can add scores to jumps that represent bytes too
     // one jump will cost lets say 40 bytes
     unsigned int jump_penalty = 0; // 
     unsigned int diag, i;
     unsigned int height,cut;
+    
+    printf("%u*%u*2=%u\n",size_s , size_l, size_s * size_l * 2);
+    exit(1);
+    
     unsigned int route[size_s][size_l][2];
+    
     
     unsigned int score0, score1, score2, score3, scoremax;
     
@@ -203,7 +206,7 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
             l = diag - i;
             s = i;
             
-            //printf("diag[%u, %u] -> [%u,%u]", diag, i , s , l);
+            printf("diag[%u, %u] -> [%u,%u]\n", diag, i , s , l);
             
             if(s == 0) {
                 traceback[s][l] = 0;
@@ -261,9 +264,15 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
             
         }
         //printf("\n");
+        
+        if(diag == 2) {
+            exit(1);
+        }
     }
     // do [0][0] separate
     
+    exit(1);
+
     // traceback
     unsigned int s_tmp, l_tmp, len;
  
