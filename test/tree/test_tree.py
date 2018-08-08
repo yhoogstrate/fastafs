@@ -23,31 +23,38 @@ def find_matching_subseqs(shortest, longest, min_subseq_len):
 
     l, s = 0, 0
     for l in range(size_l):
+        #print (" -> " ,l )
         for s in range(size_s):
             if longest[l] == shortest[s]:
                 if s == 0:
                     current[s] = 1; # als deze 1 is, betekend het dat het matchen 1 positie terug is gestart - s-1 bestaat nog niet
-
-                # de elif hieronder kan slimmer, door nog een losse for-for te maken (nu moet er in de hele loop extra ge-ift worden
-                elif l == size_l - 1 and current[s]+1 >= min_subseq_len: # in de laatste rij betekend een mismatch dat beide suffixen matchen
-                    #print("s:[%u, %u] ~ l:[%u,%u] (%u)\n" % ( (s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, previous[s-1] ) )
-                    # assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); # len of both subseqs must be identical
-                    #traceback[s][l] = previous[s - 1] # len
-                    traceback2[(s, l)] = previous[s - 1] # len
-
                 else:
                     current[s] = previous[s - 1] + 1
-
             else:
                 if s > 0 and previous[s - 1] >= min_subseq_len:
-                    #traceback[s][l] = previous[s - 1]
                     traceback2[(s, l)] = previous[s - 1]
                 current[s] = 0
-
+        
         previous, current = current, previous
+        
+    for s in range(size_s):
+        #print("*",current[s])
+        if current[s] >= min_subseq_len: # in de laatste rij betekend een mismatch dat beide suffixen matchen
+            #print ("!")
+            traceback2[(s, l)] = current[s]
+
+
     return traceback2
 
 print (find_matching_subseqs(shortest, longest, 12))
+print ("")
+print (find_matching_subseqs('gAAAc', 'tAAAg', 3))
+print (find_matching_subseqs('AAAc', 'tAAAg', 3))
+
+# failing
+print (find_matching_subseqs('gAAA', 'tAAAg', 3))
+print (find_matching_subseqs('AAA', 'tAAAg', 3))
+print (find_matching_subseqs('AAA', 'AAA', 3))
 
 
 """
