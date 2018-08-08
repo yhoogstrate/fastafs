@@ -10,46 +10,40 @@ longest = "ATCGATCGATCGATCGACTGCCTGCTAGCTGCTGCTAGCTAGCTAGCA GGCGCGCTAGCATGCATCGA
 
 
 
-size_s = shortest.size()
-size_l = longest.size()
+def find_matching_subseqs(shortest, longest, min_subseq_len):
+    size_s = len(shortest)
+    size_l = len(longest)
 
-previous = [0] * size_s
-current = [0] * size_s
+    previous = [0] * size_s
+    current = [0] * size_s
 
-std::vector<> traceback; # can be implemented by much sparser structure since most values are empty
-traceback.resize(size_s + 1, (size_l + 1, 0))
-#traceback[l][s] = size-of-match ; 
-traceback2 = {
-#traceback2[{1,2}] = 1
+    traceback = [[0] * size_s] * size_l
+    traceback2 = {}
 
 
-def find_matching_subseqs(shortest, longest):
     l, s = 0, 0
-    for l = 0 ; l < size_l; l++:
-        for s = 0; s < size_s; s++:
+    for l in range(size_l):
+        for s in range(size_s):
             if longest[l] == shortest[s]:
                 if s == 0:
                     current[s] = 1; # als deze 1 is, betekend het dat het matchen 1 positie terug is gestart - s-1 bestaat nog niet
-                }
+
                 # de elif hieronder kan slimmer, door nog een losse for-for te maken (nu moet er in de hele loop extra ge-ift worden
-                elif l == size_l - 1 and current[s]+1 >= min_subseq_len) # in de laatste rij betekend een mismatch dat beide suffixen matchen
-                {
-                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n",(s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, len            )
+                elif l == size_l - 1 and current[s]+1 >= min_subseq_len: # in de laatste rij betekend een mismatch dat beide suffixen matchen
+                    print("s:[%u, %u] ~ l:[%u,%u] (%u)\n" % ( (s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, previous[s-1] ) )
                     # assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); # len of both subseqs must be identical
                     traceback[s][l] = previous[s-1] # len
                     traceback2[(s, l)] = previous[s-1] # len
-                }
+
                 else:
-                    current[s] = previous[s-1] + 1
-                }
-            }
+                    current[s] = previous[s - 1] + 1
+
             else:
-                if s > 0 and previous[s-1] >= min_subseq_len:
-                    #len = previous[s-1]
-                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n",(s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, len            )
+                if s > 0 and previous[s - 1] >= min_subseq_len:
+                    print("s:[%u, %u] ~ l:[%u,%u] (%u)\n" % ( (s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, previous[s-1] ) )
                     #assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); # len of both subseqs must be identical
                     traceback[s][l] = previous[s-1]
-                    traceback2[{s, l}] = previous[s-1]
+                    traceback2[(s, l)] = previous[s-1]
                     
                     #intervals.push_back(    Interval<std::size_t, int>(s, l, intervals.size() + 1)    )
                     
@@ -70,9 +64,8 @@ def find_matching_subseqs(shortest, longest):
         #std::swap(previous, current)
         previous, current = current, previous
         #std::cout << "\n\n"
-    }
 
-
+find_matching_subseqs(shortest, longest, 12)
 
 
 """
