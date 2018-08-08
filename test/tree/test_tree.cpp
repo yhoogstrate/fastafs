@@ -5,15 +5,15 @@
 
 #include "config.hpp"
 
-#include "IntervalTree.hpp"
+//#include "IntervalTree.hpp"
 
 //#include "fasta_to_fastafs.hpp"
 //#include "fastafs.hpp"
 
 
-typedef IntervalTree<std::size_t, bool> intervalTree;
-typedef intervalTree::interval interval;
-typedef intervalTree::interval_vector intervalVector;
+//typedef IntervalTree<std::size_t, bool> intervalTree;
+//typedef intervalTree::interval interval;
+//typedef intervalTree::interval_vector intervalVector;
 
 
 BOOST_AUTO_TEST_SUITE(Testing)
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
     //std::string longest = "GTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCATCGATCGATCGACTACATCGATCGATCGATCGATCGATCGATCGTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCCTAACCCTAACCCTAACCCTAACCCTAACCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCCTAACCCTAACCCTAAACCCTAAACCCTAACCCTAACCCTAACCCTAACCCTAACCCCAACCCCAACCCCAACCCCAACCCCAACCCCAACCCTAACCCCTAACCCTAACCCTAACCCTACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCCTAACCCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCCCTAACCCTAACCCTAACCCTAACCCTCGCGGTACCCTCAGCCGGCCCGCCCGCCCGGGTCTGACCTGAGGAGAACTGTGCTCCGCCTTCAGAGTACCACCGAAATCTGTGCAGAGGACAACGCAGCTCCGCCCTCGCGGTGCTCTCCGGGTCTGTGCTGAGGAGAACGCAACTCCGCCGTTGCAAAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGACACATGCTAGCGCGTCGGGGTGGAGGCGTGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGACACATGCTACCGCGTCCAGGGGTGGAGGCGTGGCGCAGGCGCAGAGAGGCGCACCGCGCCGGCGCAGGCGCAGAGACACATGCTAGCGCGTCCAGGGGTGGAGGCGTGGCGCAGGCGCAGAGACGCAAGCCTACGGGCGGGGGTTGGGGGGGCGTGTGTTGCAGGAGCAAAGTCGCACGGCGCCGGGCTGGGGCGGGGGGAGGGTGGCGCCGTGCACGCGCAGAAACTCACGTCACGGTGGCGCGGCGCAGAGACGGGTAGAACCTCAGTAATCCGAAAAGCCGGGATCGACCGCCCCTTGCTTGCAGCCGGGCACTACAGGACCCGCTTGCTCACGGTGCTGTGCCAGGGCGCCCCCTGCTGGCGACTAGGGCAACTGCAGGGCTCTCTTGCTTAGAGTGGTGGCCAGCGCCCCCTGCTGGCGCCGGGGCACTGCAGGGCCCTCTTGCTTACTGTATAGTGGTGGCACGCCGCCTGCTGGCAGCTAGGGACATTGCAGGGTCCTCTTGCTCAAGGTGTAGTGGCAGCACGCCCACCTGCTGGCAGCTGGGGACACTGCCGGGCCCTCTTGCTCCAACAGTACTGGCGGATTATAGGGAAACACCCGGAGCATATGCTGTTTGGTCTCAGTAGACTCCTAAATATGGGATTCCTGGGTTTAAAAGTAAAAAATAAATATGTTTAATTTGTGAACTGATTACCATCAGAATTGTACTGTTCTGTATCCCACCAGCAATGTCTAGGAATGCCTGTTTCTCCACAAAGTGTTTACTTTTGGATTTTTGCCAGTCTAACAGGTGAAGCCCTGGAGATTCTTATTAGTGATTTGGGCTGGGGCCTGGCCATGTGTATTTTTTTAAATTTCCACTGATGATTTTGCTGCATGGCCGGTGTTGAGAATGACTGCGCAAATTTGCCGGATTTCCTTTGCTGTTCCTGCATGTAGTTTAAACGAGATTGCCAGCACCGGGTATCATTCACCATTTTTCTTTTCGTTAACTTGCCGTCAGCCTTTTCTTTGACCTCTTCTTTCTGTTCATGTGTATTTGCTGTCTCTTAGCCCAGACTTCCCGTGTCCTTTCCACCGGGCCTTTGAGAGGTCACAGGGTCTTGATGCTGTGGTCTTCATCTGCAGGTGTCTGACTTCCAGCAACTGCTGGCCTGTGCCAGGGTGCAAGCTGAGCACTGGAGTGGAGTTTTCCTGTGGAGAGGAGCCATGCCTAGAGTGGGATGGGCCATTGTTCATCTTCTGGCCCCTGTTGTCTGCATGTAACTTAATACCACAACCAGGCATAGGGGAAAGATTGGAGGAAAGATGAGTGAGAGCATCAACTTCTCTCACAACCTAGGCCAGTAAGTAGTGCTTGTGCTCATCTCCTTGGCTGTGATACGTGGCCGGCCCTCGCTCCAGCAGCTGGACCCCTACCTGCCGTCTGCTGCCATCGGAGCCCAAAGCCGGGCTGTGACTGCTCAGACCAGCCGGCTGGAGGGAGGGGCTCAGCAGGTCTGGCTTTGGCCCTGGGAGAGCAGGTGGAAGATCAGGCAGGCCATCGCTGCCACAGAACCCAGTGGATTGGCCTAGGTGGGATCTCTGAGCTCAACAAGCCCTCTCTGGGTGGTAGGTGCAGAGACGGGAGGGGCAGAGCCGCAGGCACAGCCAAGAGGGCTGAAGAAATGGTAGAACGGAGCAGCTGGTGATGTGTGGGCCCACCGGCCCCAGGCTCCTGTCTCCCCCCAGGTGTGTGGTGATGCCAGGCATGCCCTTCCCCAGCATCAGGTCTCCAGAGCTGCAGAAGACGACGGCCGACTTGGATCACACTCTTGTGAGTGTCCCCAGTGTTGCAGAGGTGAGAGGAGAGTAGACAGTGAGTGGGAGTGGCGTCGCCCCTAGGGCTCTACGGGGCCGGCGTCTCCTGTCTCCTGGAGAGGCTTCGATGCCCCTCCACACCCTCTTGATCTTCCCTGTGATGTCATCTGGAGCCCTGCTGCTTGCGGTGGCCTATAAAGCCTCCTAGTCTGGCTCCAAGGCCTGGCAGAGTCTTTCCCAGGGAAAGCTACAAGCAGCAAACAGTCTGCATGGGTCATCCCCTTCACTCCCAGCTCAGAGCCCAGGCCAGGGGCCCCCAAGAAAGGCTCTGGTGGAGAACCTGTGCATGAAGGCTGTCAACCAGTCCATAGGCAAGCCTGGCTGCCTCCAGCTGGGTCGACAGACAGGGGCTGGAGAAGGGGAGAAGAGGAAAGTGAGGTTGCCTGCCCTGTCTCCTACCTGAGGCTGAGGAAGGAGAAGGGGATGCACTGTTGGGGAGGCAGCTGTAACTCAAAGCCTTAGCCTCTGTTCCCACGAAGGCAGGGCCATCAGGCACCAAAGGGATTCTGCCAGCATAGTGCTCCTGGACCAGTGATACACCCGGCACCCTGTCCTGGACACGCTGTTGGCCTGGATCTGAGCCCTGGTGGAGGTCAAAGCCACCTTTGGTTCTGCCATTGCTGCTGTGTGGAAGTTATCGACTAGCTACGACTGAGCTAGCATGCATGCTACGATCGACTGATCGACACTCCTGCCTTTTCCTTTCCCTAGAGCCTCCACCACCCCGAGATCACATTTCTCACTGCCTTTTGTCTGCCCAGTTTCACCAGAAGTAGGCCTCTTCCTGACAGGCAGCTGCACCACTGCCTGGCGCTGTGCCCTTCCTTTGCTCTGCCCGCTGGAGACGGTGTTTGTCATGGGCCTGGTCTGCAGGGATCCTGCTACAAAGGTGAAACCCAGGAGAGTGTGGAGTCCAGAGTGTTGCCAGGACCCAGGCACAGGCATTAGTGCCCGTTGGAGAAAACAGGGGAATCCCGAAGAAATGGTGGGTCCTGGCCATCCGTGAGATCTTCCCAGGGCAGCTCCCCTCTGTGGAATCCAATCTGTCTTCCATCCTGC";
     //std::string shortest = "GCCTGCTAGCTGCTGCTAGCTAGCTAGCAACGCCGTATCGATCGTCGTGCTAGTAG";
     //std::string longest = "ATCGATCGATCGATCGACTGCCTGCTAGCTGCTGCTAGCTAGCTAGCA GGCGCGCTAGCATGCATCGATCAGCGCCGTATCGATCGTCGTGCTAGTAGCGATCGA";
-    std::string shortest = "aGCCa";
+    std::string shortest = "aGCCC";
     std::string longest = "AGCCAT";
     
     
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
     std::vector<unsigned int> current(size_s, 0);
 
     std::vector<std::vector<unsigned int>> traceback; // can be implemented by much sparser structure since most values are empty
-    traceback.resize(size_s, std::vector<unsigned int>(size_l, 0));
+    traceback.resize(size_s + 1, std::vector<unsigned int>(size_l + 1, 0));
     //traceback[l][s] = size-of-match ; 
     std::map<std::array<unsigned int, 2>, unsigned int> traceback2;
     //traceback2[{1,2}] = 1;
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
     unsigned int height,cut;
     unsigned int route[size_s][size_l][2];
     
-    unsigned int score0, score1, score2, score3;
+    unsigned int score0, score1, score2, score3, scoremax;
     
     for(diag = 1 ; diag < size_l + size_s - 1; diag++) {
         height = std::min(diag + 1, size_s);
@@ -187,17 +187,19 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
             l = diag - i;
             s = i;
             
-            printf("diag[%u, %u] -> [%u,%u]", diag, i , l , s);
+            printf("diag[%u, %u] -> [%u,%u]", diag, i , s , l);
             
             if(s == 0) {
                 traceback[s][l] = 0;
                 route[s][l][0] = s;
                 route[s][l][1] = l - 1;
+                printf("   boundary 0,-1   ");
             }
             else if(l == 0) {
                 traceback[s][l] = 0;
                 route[s][l][0] = s - 1;
                 route[s][l][1] = l;
+                printf("   boundary -1,0   ");
             }
             else {
                 if(traceback[s][l] != 0) {
@@ -211,34 +213,76 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
                 score1 = traceback[s - 1][l - 1];
                 score2 = traceback[s - 1][l];
                 score3 = traceback[s][l - 1];
-                traceback[s][l]  = std::max(std::max(score0, score1) , std::max(score2, score3));
+                scoremax  = std::max(std::max(score0, score1) , std::max(score2, score3));
                 
                 printf("   max( %u   , %u  , %u)   ", score1, score2, score3);
 
-                if(traceback[s][l]  == score0) {
+                if(scoremax  == score0) {
                     route[s][l][0] = s - traceback[s][l];
                     route[s][l][1] = l - traceback[s][l];
+                    printf("    match (%u,%u)   ",route[s][l][0], route[s][l][1]);
                 }
-                else if (traceback[s][l] == score1) {
+                else if (scoremax == score1) {
                     route[s][l][0] = s - 1;
                     route[s][l][1] = l - 1;
+                    printf("    mm -1,-1   ");
                 }
-                else if (traceback[s][l] == score2) {
+                else if (scoremax == score2) {
                     route[s][l][0] = s - 1;
                     route[s][l][1] = l;
+                    printf("    mm -1,0   ");
                 }
                 else {
                     route[s][l][0] = s;
                     route[s][l][1] = l - 1;
+                    printf("    mm 0,-1   ");                
                 }
+                traceback[s][l] = scoremax;
             }
             
+
             printf("   = %u\n", traceback[s][l]);
             
         }
         printf("\n");
     }
     // do [0][0] separate
+    
+    // traceback
+    bool t = true;
+    unsigned int ss, ll;
+ 
+    s = size_s - 1;
+    l = size_l - 1;
+    
+    printf("[%u,%u] -> [%u,%u] *\n", s, l, route[s][l][0], route[s][l][1]);
+    ss = route[s][l][0];
+    ll = route[s][l][1];
+    s = ss;
+    l = ll;
+    
+    printf("[%u,%u] -> [%u,%u] *\n", s, l, route[s][l][0], route[s][l][1]);
+    ss = route[s][l][0];
+    ll = route[s][l][1];
+    s = ss;
+    l = ll;
+
+    printf("[%u,%u] -> [%u,%u] *\n", s, l, route[s][l][0], route[s][l][1]);
+    ss = route[s][l][0];
+    ll = route[s][l][1];
+    s = ss;
+    l = ll;
+
+
+/*
+    s = route[s][l][0];
+    l = route[s][l][1];
+    printf("[%u,%u]\n",s, l);
+
+    s = route[s][l][0];
+    l = route[s][l][1];
+    printf("[%u,%u]\n",s, l);
+*/
 }
 
 
