@@ -17,7 +17,7 @@ def find_matching_subseqs(shortest, longest, min_subseq_len):
     previous = [0] * size_s
     current = [0] * size_s
 
-    traceback = [[0] * size_s] * size_l
+    #traceback = [[0] * size_s] * size_l
     traceback2 = {}
 
 
@@ -30,42 +30,24 @@ def find_matching_subseqs(shortest, longest, min_subseq_len):
 
                 # de elif hieronder kan slimmer, door nog een losse for-for te maken (nu moet er in de hele loop extra ge-ift worden
                 elif l == size_l - 1 and current[s]+1 >= min_subseq_len: # in de laatste rij betekend een mismatch dat beide suffixen matchen
-                    print("s:[%u, %u] ~ l:[%u,%u] (%u)\n" % ( (s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, previous[s-1] ) )
+                    #print("s:[%u, %u] ~ l:[%u,%u] (%u)\n" % ( (s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, previous[s-1] ) )
                     # assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); # len of both subseqs must be identical
-                    traceback[s][l] = previous[s-1] # len
-                    traceback2[(s, l)] = previous[s-1] # len
+                    #traceback[s][l] = previous[s - 1] # len
+                    traceback2[(s, l)] = previous[s - 1] # len
 
                 else:
                     current[s] = previous[s - 1] + 1
 
             else:
                 if s > 0 and previous[s - 1] >= min_subseq_len:
-                    print("s:[%u, %u] ~ l:[%u,%u] (%u)\n" % ( (s-1) - previous[s-1] +1 , s-1, (l-1) - previous[s-1] + 1, l-1, previous[s-1] ) )
-                    #assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); # len of both subseqs must be identical
-                    traceback[s][l] = previous[s-1]
-                    traceback2[(s, l)] = previous[s-1]
-                    
-                    #intervals.push_back(    Interval<std::size_t, int>(s, l, intervals.size() + 1)    )
-                    
-                    """
-                    for j = (s-1) - previous[s-1]+1; j <= s-1; j++:
-                        std::cout << shortest[l]
-                    }
-                    std::cout << "\n"
-                    for j = (l-1) - previous[s-1] + 1; j <= l-1; j++:
-                        std::cout << longest[l]
-                    }
-                    std::cout << "\n"
-                    std::cout << "\n"
-                    """
-
+                    #traceback[s][l] = previous[s - 1]
+                    traceback2[(s, l)] = previous[s - 1]
                 current[s] = 0
 
-        #std::swap(previous, current)
         previous, current = current, previous
-        #std::cout << "\n\n"
+    return traceback2
 
-find_matching_subseqs(shortest, longest, 12)
+print (find_matching_subseqs(shortest, longest, 12))
 
 
 """
