@@ -183,6 +183,17 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
     return written;
 }
 
+/*
+CRAM specification:
+
+M5 (sequence MD5 checksum) field of @SQ sequence record in the BAM header is required and UR (URI
+for the sequence fasta optionally gzipped file) field is strongly advised. The rule for calculating MD5 is
+ - to remove any non-base symbols (like \n, sequence name or length and spaces) and
+ - upper case the rest.
+
+meaning: md5s([ACTGN]+)
+
+*/
 std::string fastafs_seq::sha1(std::ifstream *fh)
 {
     char chunk[4];
@@ -202,12 +213,13 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
         SHA1_Update(&ctx, chunk, 4);
     }
 
-    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     for(i = 0; i < this->n_twobits(); i++) {
+        //printf("|");
         fh->read(chunk, 1);
         SHA1_Update(&ctx, chunk, 1);
     }
-
+    //printf("\n");
 
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1_Final(hash, &ctx);
