@@ -84,7 +84,14 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 
 
 
-
+/*
+@todo see if this can be a std::ifstream or some kind of stream type of object?
+* padding = number of spaces?
+* char buffer = 
+* start_pos_in_fasta = 
+* len_to_copy = 
+* fh = filestream to fastafs file
+*/
 int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream *fh)
 {
     unsigned int i;
@@ -98,10 +105,12 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 
     for(i = (unsigned int) start_pos_in_fasta + written - 1; i < (unsigned int) this->name.size() and written < len_to_copy; i++) {
         buffer[written++] = this->name[i];
+        printf("written1\n");
     }
 
     if(start_pos_in_fasta < (unsigned int) this->name.size() + 2 and written < len_to_copy) {
         buffer[written++] = '\n';
+        printf("written2\n");
     }
 
 
@@ -144,16 +153,19 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
         chunk = t.get();
     }
 
-
+    // NO CHECK FOR OUT OF BOUND SO FAR - 
+    // SHOUD BE: while(written < min(len to copy, maximum possible copy length) )
     for(; written < len_to_copy; i_in_file++) {
         if((i_in_file % (padding + 1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
+            printf("written3\n");
         } else {
             if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
                 in_N = true;
             }
             if(in_N) {
                 buffer[written++] = 'N';
+                printf("written4\n");
 
                 if(i == this->n_ends[i_n_end]) {
                     i_n_end++;
@@ -170,6 +182,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
                 }
 
                 buffer[written++] = chunk[chunk_offset];
+                printf("written5\n");
 
                 i_in_seq++;
             }
@@ -193,6 +206,9 @@ for the sequence fasta optionally gzipped file) field is strongly advised. The r
 
 meaning: md5s([ACTGN]+)
 
+
+current trick seems:
+md5(str(size) + str of Ns:((1,5)) + compressed content)
 */
 std::string fastafs_seq::sha1(std::ifstream *fh)
 {
@@ -215,11 +231,54 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 
     fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     for(i = 0; i < this->n_twobits(); i++) {
-        //printf("|");
         fh->read(chunk, 1);
         SHA1_Update(&ctx, chunk, 1);
     }
-    //printf("\n");
+    printf("[");
+    unsigned int qq = 1;// read size
+    unsigned int nn = 0;// counter
+    unsigned int cc = 1;// chunk size
+
+
+    //for(i = 0; i < this->data.size(); i++) {
+        //// lines below need to be calculated by member function of the sequences themselves
+        //seq_true_fasta_size = 1;// '>'
+        //seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
+        //seq_true_fasta_size += this->data[i]->n; // ACTG NNN
+        //seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+        //// determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
+        //if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
+        
+
+//* padding = number of spaces?
+//* char buffer = 
+//* start_pos_in_fasta = 
+//* len_to_copy = 
+//* fh = filestream to fastafs file
+
+    nn = 1112232323;
+    while(qq > 0) {
+            qq = this->view_fasta_chunk(
+                           4,
+                           chunk,
+                           nn,
+                           1,
+                           fh);
+            nn += qq;
+            printf("[%i: %i]\n", qq, nn);
+        }
+            //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
+                //i_buffer++;
+            //}
+        //}
+
+        //// update for next iteration
+        //total_fa_size += seq_true_fasta_size;
+    //}
+
+
+    printf("]\n");
 
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1_Final(hash, &ctx);
