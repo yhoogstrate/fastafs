@@ -116,12 +116,10 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 
     for(i = (unsigned int) start_pos_in_fasta + written - 1; i < (unsigned int) this->name.size() and written < len_to_copy; i++) {
         buffer[written++] = this->name[i];
-        printf("written1\n");
     }
 
     if(start_pos_in_fasta < (unsigned int) this->name.size() + 2 and written < len_to_copy) {
         buffer[written++] = '\n';
-        printf("written2\n");
     }
 
 
@@ -151,7 +149,6 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 
 
     // 2. subtract aantal N's van start pos & set is_N: bepaal 2bit & zet file allocatie goed
-
     fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + twobit_offset, fh->beg);
     i = start_nucleotide;              // pos in nucleotides ACTG N
 
@@ -165,18 +162,21 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
     }
 
     // NO CHECK FOR OUT OF BOUND SO FAR - 
-    // SHOUD BE: while(written < min(len to copy, maximum possible copy length) )
+    size_t max_len_to_copy = 0;
+    if(this->fasta_filesize(padding) > start_pos_in_fasta) {
+        max_len_to_copy = this->fasta_filesize(padding) - start_pos_in_fasta;
+    }
+    len_to_copy = std::min(len_to_copy, max_len_to_copy);
+
     for(; written < len_to_copy; i_in_file++) {
         if((i_in_file % (padding + 1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
-            printf("written3\n");
         } else {
             if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
                 in_N = true;
             }
             if(in_N) {
                 buffer[written++] = 'N';
-                printf("written4\n");
 
                 if(i == this->n_ends[i_n_end]) {
                     i_n_end++;
@@ -193,7 +193,6 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
                 }
 
                 buffer[written++] = chunk[chunk_offset];
-                printf("written5\n");
 
                 i_in_seq++;
             }
@@ -264,7 +263,7 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 
 //* padding = number of spaces?
 //* char buffer = 
-//* start_pos_in_fasta = 
+//* start_pos_in_fasta = 0 of 1 based? probably 0
 //* len_to_copy = 
 //* fh = filestream to fastafs file
 
@@ -555,10 +554,13 @@ unsigned int fastafs::fasta_filesize(unsigned int padding)
         file.close();
 
         for(unsigned int i = 0; i < this->data.size(); i++) {
+            n += this->data[i]->fasta_filesize(padding);
+            /*
             n += 1;// '>'
             n += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
             n += this->data[i]->n; // ACTG NNN
             n += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+            */
         }
 
     } else {

@@ -12,7 +12,7 @@
 BOOST_AUTO_TEST_SUITE(Testing)
 
 
-BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
+BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
@@ -35,9 +35,27 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
     // >  c  h  r  1 \n  T  T  T  T  C  C  C  C  A  A  A  A  G  G  G \n  G \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(15), 24);
 
-    // then: check returncodes of:
-    // 2: fastafs[chr1].view_fasta_chunk();
-    // and require 0 when eof is reached
+
+
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+
+        // then: check returncodes:
+        unsigned int ret;
+        char chunk[4];
+
+        for(unsigned int i = 0; i < 23; i++) {
+            ret = fs.data[0]->view_fasta_chunk(100, chunk, i, 1, &file);
+            BOOST_CHECK_EQUAL(ret, 1);
+        }
+        for(unsigned int i = 23; i < 23 + 5; i++) {
+            ret = fs.data[0]->view_fasta_chunk(100, chunk, i, 1, &file);
+            BOOST_CHECK_EQUAL(ret, 0);
+        }
+        file.close();
+    }
+
+
 }
 
 
