@@ -83,6 +83,17 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 }
 
 
+unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
+{
+    unsigned int n = 1; // >
+    n += (unsigned int ) this->name.size() + 1;// "chr1\n"
+    n += this->n; // ACTG NNN
+    n += (this->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+    return n;
+}
+
+
 
 /*
 @todo see if this can be a std::ifstream or some kind of stream type of object?
