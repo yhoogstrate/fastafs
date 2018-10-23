@@ -203,6 +203,9 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 
     delete[] byte_tmp;
 
+    fh->clear();
+    //fh->seekg(0, std::ios::beg);
+
     return written;
 }
 
