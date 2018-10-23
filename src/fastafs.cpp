@@ -98,9 +98,9 @@ unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 /*
 @todo see if this can be a std::ifstream or some kind of stream type of object?
 * padding = number of spaces?
-* char buffer = 
-* start_pos_in_fasta = 
-* len_to_copy = 
+* char buffer =
+* start_pos_in_fasta =
+* len_to_copy =
 * fh = filestream to fastafs file
 */
 int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream *fh)
@@ -161,7 +161,7 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
         chunk = t.get();
     }
 
-    // NO CHECK FOR OUT OF BOUND SO FAR - 
+    // NO CHECK FOR OUT OF BOUND SO FAR -
     size_t max_len_to_copy = 0;
     if(this->fasta_filesize(padding) > start_pos_in_fasta) {
         max_len_to_copy = this->fasta_filesize(padding) - start_pos_in_fasta;
@@ -251,40 +251,40 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 
 
     //for(i = 0; i < this->data.size(); i++) {
-        //// lines below need to be calculated by member function of the sequences themselves
-        //seq_true_fasta_size = 1;// '>'
-        //seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
-        //seq_true_fasta_size += this->data[i]->n; // ACTG NNN
-        //seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+    //// lines below need to be calculated by member function of the sequences themselves
+    //seq_true_fasta_size = 1;// '>'
+    //seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
+    //seq_true_fasta_size += this->data[i]->n; // ACTG NNN
+    //seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
 
-        //// determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
-        //if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
-        
+    //// determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
+    //if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
+
 
 //* padding = number of spaces?
-//* char buffer = 
+//* char buffer =
 //* start_pos_in_fasta = 0 of 1 based? probably 0
-//* len_to_copy = 
+//* len_to_copy =
 //* fh = filestream to fastafs file
 
     nn = 1112232323;
     while(qq > 0) {
-            qq = this->view_fasta_chunk(
-                           4,
-                           chunk,
-                           nn,
-                           1,
-                           fh);
-            nn += qq;
-            printf("[%i: %i]\n", qq, nn);
-        }
-            //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-                //i_buffer++;
-            //}
-        //}
+        qq = this->view_fasta_chunk(
+                 4,
+                 chunk,
+                 nn,
+                 1,
+                 fh);
+        nn += qq;
+        printf("[%i: %i]\n", qq, nn);
+    }
+    //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
+    //i_buffer++;
+    //}
+    //}
 
-        //// update for next iteration
-        //total_fa_size += seq_true_fasta_size;
+    //// update for next iteration
+    //total_fa_size += seq_true_fasta_size;
     //}
 
 
