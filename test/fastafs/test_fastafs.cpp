@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
-    
+
 
     // then: check returncodes:
     unsigned int ret;
@@ -170,6 +170,29 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
     file.close();
 }
+
+
+BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
+{
+    // 1: create FASTAFS file
+    std::string fastafs_file = "tmp/test.fastafs";
+
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    f.cache();
+    f.write(fastafs_file);
+
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    BOOST_REQUIRE(fs.data.size() > 0);
+
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
+    //TTTTCCCCAAAAGGGG == 2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f
+
+    
+}
+
 
 
 
