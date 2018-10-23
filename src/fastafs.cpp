@@ -83,8 +83,26 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 }
 
 
+unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
+{
+    unsigned int n = 1; // >
+    n += (unsigned int ) this->name.size() + 1;// "chr1\n"
+    n += this->n; // ACTG NNN
+    n += (this->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+    return n;
+}
 
 
+
+/*
+@todo see if this can be a std::ifstream or some kind of stream type of object?
+* padding = number of spaces?
+* char buffer =
+* start_pos_in_fasta =
+* len_to_copy =
+* fh = filestream to fastafs file
+*/
 int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream *fh)
 {
     unsigned int i;
@@ -131,7 +149,6 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 
 
     // 2. subtract aantal N's van start pos & set is_N: bepaal 2bit & zet file allocatie goed
-
     fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + twobit_offset, fh->beg);
     i = start_nucleotide;              // pos in nucleotides ACTG N
 
@@ -144,6 +161,12 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
         chunk = t.get();
     }
 
+    // NO CHECK FOR OUT OF BOUND SO FAR -
+    size_t max_len_to_copy = 0;
+    if(this->fasta_filesize(padding) > start_pos_in_fasta) {
+        max_len_to_copy = this->fasta_filesize(padding) - start_pos_in_fasta;
+    }
+    len_to_copy = std::min(len_to_copy, max_len_to_copy);
 
     for(; written < len_to_copy; i_in_file++) {
         if((i_in_file % (padding + 1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
@@ -180,9 +203,26 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 
     delete[] byte_tmp;
 
+    fh->clear();
+    //fh->seekg(0, std::ios::beg);
+
     return written;
 }
 
+/*
+CRAM specification:
+
+M5 (sequence MD5 checksum) field of @SQ sequence record in the BAM header is required and UR (URI
+for the sequence fasta optionally gzipped file) field is strongly advised. The rule for calculating MD5 is
+ - to remove any non-base symbols (like \n, sequence name or length and spaces) and
+ - upper case the rest.
+
+meaning: md5s([ACTGN]+)
+
+
+current trick seems:
+md5(str(size) + str of Ns:((1,5)) + compressed content)
+*/
 std::string fastafs_seq::sha1(std::ifstream *fh)
 {
     char chunk[4];
@@ -202,12 +242,56 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
         SHA1_Update(&ctx, chunk, 4);
     }
 
-    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
     for(i = 0; i < this->n_twobits(); i++) {
         fh->read(chunk, 1);
         SHA1_Update(&ctx, chunk, 1);
     }
+    printf("[");
+    unsigned int qq = 1;// read size
+    unsigned int nn = 0;// counter
+    unsigned int cc = 1;// chunk size
 
+
+    //for(i = 0; i < this->data.size(); i++) {
+    //// lines below need to be calculated by member function of the sequences themselves
+    //seq_true_fasta_size = 1;// '>'
+    //seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
+    //seq_true_fasta_size += this->data[i]->n; // ACTG NNN
+    //seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+    //// determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
+    //if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
+
+
+//* padding = number of spaces?
+//* char buffer =
+//* start_pos_in_fasta = 0 of 1 based? probably 0
+//* len_to_copy =
+//* fh = filestream to fastafs file
+
+    nn = 1112232323;
+    while(qq > 0) {
+        qq = this->view_fasta_chunk(
+                 4,
+                 chunk,
+                 nn,
+                 1,
+                 fh);
+        nn += qq;
+        printf("[%i: %i]\n", qq, nn);
+    }
+    //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
+    //i_buffer++;
+    //}
+    //}
+
+    //// update for next iteration
+    //total_fa_size += seq_true_fasta_size;
+    //}
+
+
+    printf("]\n");
 
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1_Final(hash, &ctx);
@@ -473,10 +557,13 @@ unsigned int fastafs::fasta_filesize(unsigned int padding)
         file.close();
 
         for(unsigned int i = 0; i < this->data.size(); i++) {
+            n += this->data[i]->fasta_filesize(padding);
+            /*
             n += 1;// '>'
             n += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
             n += this->data[i]->n; // ACTG NNN
             n += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+            */
         }
 
     } else {

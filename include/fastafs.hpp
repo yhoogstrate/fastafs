@@ -21,12 +21,13 @@ public:
 
     void view_fasta(unsigned int, std::ifstream *);
     int view_fasta_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);
+    unsigned int fasta_filesize(unsigned int padding);
 
     std::string sha1(std::ifstream *);
 
     unsigned int n_twobits();
 
-    static unsigned int n_padding(unsigned int, unsigned int, unsigned int  );
+    static unsigned int n_padding(unsigned int, unsigned int, unsigned int);
     bool get_n_offset(unsigned int, unsigned int *);
 };
 
