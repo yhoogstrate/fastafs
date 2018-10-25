@@ -87,6 +87,10 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 
 unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 {
+    if(padding == 0) {
+        padding = this->n;
+    }
+    
     unsigned int n = 1; // >
     n += (unsigned int ) this->name.size() + 1;// "chr1\n"
     n += this->n; // ACTG NNN
@@ -109,6 +113,10 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 {
     unsigned int i;
     unsigned int written = 0;
+    
+    if(padding == 0) {
+        padding = this->n;
+    }
 
     // then close line
     if( start_pos_in_fasta == 0 and written < len_to_copy) {
