@@ -79,6 +79,8 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
         std::cout << "\n";
     }
 
+    fh->clear(); // because gseek was done before
+
     delete[] byte_tmp;
 }
 
@@ -301,6 +303,9 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
     }
     outputBuffer[40] = 0;
+
+    fh->clear(); // because gseek was done before
+
     return std::string(outputBuffer);
 }
 

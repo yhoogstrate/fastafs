@@ -29,6 +29,15 @@ void usage(char **argv)
     std::cout << std::endl;
 }
 
+void usage_view(char **argv)
+{
+    std::cout << "usage: " << PACKAGE << " view [OPTION]... [FASTAFS-ID/FILE]" << std::endl << std::endl;
+    std::cout << std::endl;
+    std::cout << "  -f, --file                 View fastafs file from disk, not from database (cache)" << std::endl;
+    std::cout << "  -p, --padding              Number of nucleotides before delimited with a newline [default=60]" << std::endl;
+    std::cout << std::endl;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -61,7 +70,7 @@ int main(int argc, char *argv[])
                 bool from_file = false;
 
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0) {
+                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                 }
@@ -80,7 +89,7 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                f.view_fasta(60);
+                f.view_fasta(60);//@todo make argument parsing
             }
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
