@@ -279,17 +279,19 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 //* start_pos_in_fasta = 0 of 1 based? probably 0
 //* len_to_copy =
 //* fh = filestream to fastafs file
-
-    nn = 1112232323;
+    fh->clear();
+    nn = 0;
     while(qq > 0) {
         qq = this->view_fasta_chunk(
-                 4,
+                 0,
                  chunk,
                  nn,
                  1,
                  fh);
         nn += qq;
-        printf("[%i: %i]\n", qq, nn);
+        if(qq > 0) {
+            printf("[%i: %i]: [%c]\n", qq, nn, chunk[0]);
+        }
     }
     //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
     //i_buffer++;
