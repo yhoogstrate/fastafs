@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
     BOOST_REQUIRE(file.is_open());
     
-    //printf("[%s]\n", fs.data[0]->sha1(*file).c_str());
+    printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
     fs.data[0]->sha1(&file);
     //TTTTCCCCAAAAGGGG == 2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f
 

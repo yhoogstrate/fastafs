@@ -241,22 +241,22 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     SHA_CTX ctx;
     SHA1_Init(&ctx);
 
-    uint_to_fourbytes(chunk, this->n);
-    SHA1_Update(&ctx, chunk, 4);
+    //uint_to_fourbytes(chunk, this->n);
+    //SHA1_Update(&ctx, chunk, 4);
 
-    for(i = 0; i < this->n_starts.size(); i++) {
-        uint_to_fourbytes(chunk, this->n_starts[i]);
-        SHA1_Update(&ctx, chunk, 4);
+    //for(i = 0; i < this->n_starts.size(); i++) {
+    //    uint_to_fourbytes(chunk, this->n_starts[i]);
+    //    SHA1_Update(&ctx, chunk, 4);
 
-        uint_to_fourbytes(chunk, this->n_ends[i]);
-        SHA1_Update(&ctx, chunk, 4);
-    }
+    //    uint_to_fourbytes(chunk, this->n_ends[i]);
+    //    SHA1_Update(&ctx, chunk, 4);
+    //}
 
-    fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
-    for(i = 0; i < this->n_twobits(); i++) {
-        fh->read(chunk, 1);
-        SHA1_Update(&ctx, chunk, 1);
-    }
+    //fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    //for(i = 0; i < this->n_twobits(); i++) {
+    //    fh->read(chunk, 1);
+    //    SHA1_Update(&ctx, chunk, 1);
+    //}
     printf("[");
     unsigned int qq = 1;// read size
     unsigned int nn = 0;// counter
@@ -280,8 +280,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 //* len_to_copy =
 //* fh = filestream to fastafs file
     fh->clear();
-    nn = 0;
-    while(qq > 0) {
+    nn = this->name.size() + 2;
+    while(qq > 0 && nn < this->n + this->name.size() + 2) {
         qq = this->view_fasta_chunk(
                  0,
                  chunk,
@@ -290,6 +290,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
                  fh);
         nn += qq;
         if(qq > 0) {
+            
+            SHA1_Update(&ctx, chunk, 1);
             printf("[%i: %i]: [%c]\n", qq, nn, chunk[0]);
         }
     }
