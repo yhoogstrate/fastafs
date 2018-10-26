@@ -79,12 +79,18 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
         std::cout << "\n";
     }
 
+    fh->clear(); // because gseek was done before
+
     delete[] byte_tmp;
 }
 
 
 unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 {
+    if(padding == 0) {
+        padding = this->n;
+    }
+    
     unsigned int n = 1; // >
     n += (unsigned int ) this->name.size() + 1;// "chr1\n"
     n += this->n; // ACTG NNN
@@ -107,6 +113,10 @@ int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t star
 {
     unsigned int i;
     unsigned int written = 0;
+    
+    if(padding == 0) {
+        padding = this->n;
+    }
 
     // then close line
     if( start_pos_in_fasta == 0 and written < len_to_copy) {
@@ -231,26 +241,26 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     SHA_CTX ctx;
     SHA1_Init(&ctx);
 
-    uint_to_fourbytes(chunk, this->n);
-    SHA1_Update(&ctx, chunk, 4);
+    //uint_to_fourbytes(chunk, this->n);
+    //SHA1_Update(&ctx, chunk, 4);
 
-    for(i = 0; i < this->n_starts.size(); i++) {
-        uint_to_fourbytes(chunk, this->n_starts[i]);
-        SHA1_Update(&ctx, chunk, 4);
+    //for(i = 0; i < this->n_starts.size(); i++) {
+    //    uint_to_fourbytes(chunk, this->n_starts[i]);
+    //    SHA1_Update(&ctx, chunk, 4);
 
-        uint_to_fourbytes(chunk, this->n_ends[i]);
-        SHA1_Update(&ctx, chunk, 4);
-    }
+    //    uint_to_fourbytes(chunk, this->n_ends[i]);
+    //    SHA1_Update(&ctx, chunk, 4);
+    //}
 
-    fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
-    for(i = 0; i < this->n_twobits(); i++) {
-        fh->read(chunk, 1);
-        SHA1_Update(&ctx, chunk, 1);
-    }
-    printf("[");
-    unsigned int qq = 1;// read size
+    //fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
+    //for(i = 0; i < this->n_twobits(); i++) {
+    //    fh->read(chunk, 1);
+    //    SHA1_Update(&ctx, chunk, 1);
+    //}
+    //printf("[");
+    //unsigned int qq = 1;// read size
     unsigned int nn = 0;// counter
-    unsigned int cc = 1;// chunk size
+    //unsigned int cc = 1;// chunk size
 
 
     //for(i = 0; i < this->data.size(); i++) {
@@ -269,29 +279,12 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 //* start_pos_in_fasta = 0 of 1 based? probably 0
 //* len_to_copy =
 //* fh = filestream to fastafs file
-
-    nn = 1112232323;
-    while(qq > 0) {
-        qq = this->view_fasta_chunk(
-                 4,
-                 chunk,
-                 nn,
-                 1,
-                 fh);
-        nn += qq;
-        printf("[%i: %i]\n", qq, nn);
+    fh->clear();
+    nn = this->name.size() + 2;// name plus '>' + newline
+    while(nn < this->n + this->name.size() + 2) {
+        nn += this->view_fasta_chunk(0, chunk, nn, 1, fh);
+        SHA1_Update(&ctx, chunk, 1);
     }
-    //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-    //i_buffer++;
-    //}
-    //}
-
-    //// update for next iteration
-    //total_fa_size += seq_true_fasta_size;
-    //}
-
-
-    printf("]\n");
 
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1_Final(hash, &ctx);
@@ -301,6 +294,9 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
     }
     outputBuffer[40] = 0;
+
+    fh->clear(); // because gseek was done before
+
     return std::string(outputBuffer);
 }
 

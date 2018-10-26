@@ -15,7 +15,7 @@
 // https://github.com/samtools/samtools/blob/develop/faidx.c
 
 
-void usage(char **argv)
+void usage()
 {
     std::cout << "usage: " << PACKAGE << " [--version] [--help]" << std::endl << std::endl;
     std::cout <<      "  [generic operations]" << std::endl;
@@ -29,12 +29,22 @@ void usage(char **argv)
     std::cout << std::endl;
 }
 
+void usage_view(void)
+{
+    std::cout << "usage: " << PACKAGE << " view [OPTION]... [FASTAFS-ID/FILE]" << std::endl << std::endl;
+    std::cout << "  -f, --file                 View fastafs file from disk, not from database (cache)" << std::endl;
+    std::cout << "  -p, --padding              Number of nucleotides before delimited with a newline [default=60]" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  -h, --help                 Display this help and exit";
+    std::cout << std::endl;
+}
+
 
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
         if (strcmp(argv[1], "--help") == 0 or strcmp(argv[1], "-h") == 0) {
-            usage(argv);
+            usage();
         } else if (strcmp(argv[1], "--version") == 0) {
             std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "\n\n";
             std::cout << "Copyright (C) 2017 Youri Hoogstrate." << "\n";
@@ -58,10 +68,14 @@ int main(int argc, char *argv[])
             }
         } else if (strcmp(argv[1], "view") == 0) {
             if(argc > 2) {
+                if (strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
+                    usage_view();
+                    exit(0);
+                }
                 bool from_file = false;
 
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0) {
+                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                 }
@@ -80,7 +94,11 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                f.view_fasta(60);
+                f.view_fasta(60);//@todo make argument parsing
+            }
+            else {
+                usage_view();
+                exit(1);
             }
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
@@ -119,11 +137,11 @@ int main(int argc, char *argv[])
             d.list();
         } else {
             std::cerr << PACKAGE << ": '" << argv[1] << "' is not a " << PACKAGE << " command. See '" << PACKAGE << " --help':" << std::endl << std::endl;
-            usage(argv);
+            usage();
             return 1;
         }
     } else {
-        usage(argv);
+        usage();
         return 1;
     }
 
