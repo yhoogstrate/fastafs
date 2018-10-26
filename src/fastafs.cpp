@@ -257,10 +257,10 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     //    fh->read(chunk, 1);
     //    SHA1_Update(&ctx, chunk, 1);
     //}
-    printf("[");
-    unsigned int qq = 1;// read size
+    //printf("[");
+    //unsigned int qq = 1;// read size
     unsigned int nn = 0;// counter
-    unsigned int cc = 1;// chunk size
+    //unsigned int cc = 1;// chunk size
 
 
     //for(i = 0; i < this->data.size(); i++) {
@@ -280,32 +280,11 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 //* len_to_copy =
 //* fh = filestream to fastafs file
     fh->clear();
-    nn = this->name.size() + 2;
-    while(qq > 0 && nn < this->n + this->name.size() + 2) {
-        qq = this->view_fasta_chunk(
-                 0,
-                 chunk,
-                 nn,
-                 1,
-                 fh);
-        nn += qq;
-        if(qq > 0) {
-            
-            SHA1_Update(&ctx, chunk, 1);
-            printf("[%i: %i]: [%c]\n", qq, nn, chunk[0]);
-        }
+    nn = this->name.size() + 2;// name plus '>' + newline
+    while(nn < this->n + this->name.size() + 2) {
+        nn += this->view_fasta_chunk(0, chunk, nn, 1, fh);
+        SHA1_Update(&ctx, chunk, 1);
     }
-    //while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-    //i_buffer++;
-    //}
-    //}
-
-    //// update for next iteration
-    //total_fa_size += seq_true_fasta_size;
-    //}
-
-
-    printf("]\n");
 
     unsigned char hash[SHA_DIGEST_LENGTH];
     SHA1_Final(hash, &ctx);

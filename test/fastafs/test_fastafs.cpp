@@ -175,11 +175,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
 
     // then: check returncodes:
     unsigned int ret;
-    char chunk[4];
-
-    chunk[1] = '\0';
-    chunk[2] = '\1';
-    chunk[3] = '\2';
+    char chunk[1];
 
     unsigned int i = 0;
 
@@ -269,17 +265,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
-    printf("[%i]\n", fs.data.size());
+    //printf("[%i]\n", fs.data.size());
     BOOST_REQUIRE(fs.data.size() > 0);
 
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
     BOOST_REQUIRE(file.is_open());
     
-    printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
+    //printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
     fs.data[0]->sha1(&file);
-    //TTTTCCCCAAAAGGGG == 2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f
 
-    
+    BOOST_CHECK_EQUAL(fs.data[0]->sha1(&file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
 }
 
 
