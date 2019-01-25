@@ -1,9 +1,11 @@
 
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
+#include <stdio.h>
+#include <string.h>
 
 #include <openssl/sha.h>
 
@@ -236,49 +238,11 @@ md5(str(size) + str of Ns:((1,5)) + compressed content)
 std::string fastafs_seq::sha1(std::ifstream *fh)
 {
     char chunk[4];
-    unsigned int i;
 
     SHA_CTX ctx;
     SHA1_Init(&ctx);
-
-    //uint_to_fourbytes(chunk, this->n);
-    //SHA1_Update(&ctx, chunk, 4);
-
-    //for(i = 0; i < this->n_starts.size(); i++) {
-    //    uint_to_fourbytes(chunk, this->n_starts[i]);
-    //    SHA1_Update(&ctx, chunk, 4);
-
-    //    uint_to_fourbytes(chunk, this->n_ends[i]);
-    //    SHA1_Update(&ctx, chunk, 4);
-    //}
-
-    //fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
-    //for(i = 0; i < this->n_twobits(); i++) {
-    //    fh->read(chunk, 1);
-    //    SHA1_Update(&ctx, chunk, 1);
-    //}
-    //printf("[");
-    //unsigned int qq = 1;// read size
     unsigned int nn = 0;// counter
-    //unsigned int cc = 1;// chunk size
 
-
-    //for(i = 0; i < this->data.size(); i++) {
-    //// lines below need to be calculated by member function of the sequences themselves
-    //seq_true_fasta_size = 1;// '>'
-    //seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
-    //seq_true_fasta_size += this->data[i]->n; // ACTG NNN
-    //seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-
-    //// determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
-    //if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
-
-
-//* padding = number of spaces?
-//* char buffer =
-//* start_pos_in_fasta = 0 of 1 based? probably 0
-//* len_to_copy =
-//* fh = filestream to fastafs file
     fh->clear();
     nn = this->name.size() + 2;// name plus '>' + newline
     while(nn < this->n + this->name.size() + 2) {
@@ -291,15 +255,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 
     fh->clear(); // because gseek was done before
 
-
-// replace with:  sha1_digest_to_hash()
     char sha1_hash[41];
     sha1_digest_to_hash(sha1_digest, sha1_hash);
-    
-//    for(i = 0; i < SHA_DIGEST_LENGTH; i++) {
-//        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-//    }
-//    outputBuffer[40] = 0;
     
     return std::string(sha1_hash);
 }
@@ -398,16 +355,10 @@ void fastafs::load(std::string afilename)
             file.seekg (0, std::ios::beg);
             file.read (memblock, 16);
             memblock[16] = '\0';
-            memblock[17] = '\0';
-            memblock[18] = '\0';
-            memblock[19] = '\0';
-            memblock[20] = '\0';
-
+  
             char twobit_magic[5] = TWOBIT_MAGIC;
 
-
             unsigned int i;
-
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
@@ -437,22 +388,22 @@ void fastafs::load(std::string afilename)
 
                 // SHA1 digest
                 file.read(memblock, 20);
+                //s->sha1_digest = memblock;
+                //strncpy(*s->sha1_digest, memblock);
                 for(int j = 0; j < 20 ; j ++)
                 {
                     s->sha1_digest[j] = memblock[j];
                 }
-                char sha1_hash[41] = "";
-                sha1_digest_to_hash(s->sha1_digest, sha1_hash);
-                printf("sha1 from file: [%s]\n", sha1_hash);
+
+                //char sha1_hash[41] = "";
+                //sha1_digest_to_hash(s->sha1_digest, sha1_hash);
+                //printf("sha1 from file: [%s]\n", sha1_hash);
 
                 file.read(memblock, 4);
                 s->data_position = fourbytes_to_uint(memblock, 0);
 
                 this->data.push_back(s);
-
             }
-
-
 
             for(i = 0; i < n_seq; i ++ ) {
                 s = this->data[i];
