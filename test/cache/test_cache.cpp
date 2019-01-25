@@ -210,8 +210,8 @@ BOOST_AUTO_TEST_CASE(test_cache)
     fastafs f2 = fastafs("test");
     f2.load("tmp/test_cachce_test.fastafs");
     
-    unsigned int padding = 60;
-    unsigned int write_size = 32;
+    const unsigned int padding = 60;
+    const unsigned int write_size = 32;
     char buffer[write_size + 1] = "";
     buffer[32] = '\0';
     
