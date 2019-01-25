@@ -15,6 +15,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <boost/lexical_cast.hpp>
 
 
 #include "fuse.hpp"
@@ -284,7 +285,15 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
         if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
             if(strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) {
-                ffi->padding = atoi(argv[++i]);
+                try {
+                    ffi->padding = boost::lexical_cast<unsigned int>(argv[++i]);
+                }
+                catch(std::exception const & e)
+                {
+                     std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
+                     exit(1);
+                }
+
             } else { // arguments that need to be send to fuse
                 //argv_test[ffi->argc_fuse] = argv[i];
                 argv_fuse[ffi->argc_fuse++] = argv[i];

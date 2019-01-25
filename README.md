@@ -1,10 +1,18 @@
 # fastafs: fuse layer and file system for storing FASTA files
 ### in a compressed, non-redundant and (randomly) accessible manner
 
-
 DNA sequences are typically stored in the FASTA format. Although very commonly used and easy to read, FASTA files consume vast amounts of diskspace. It is possible to use compression (gzip or 2bit) instead, but such files are binary and not as practical as FASTA. Also, this requires all other software to support each compressed formats which is unfortunately not the case.
 
 Here we propose a solution; a mixture of 2bit and random access compression on FASTA files in a readonly FUSE file system. By simply mounting the highly compressed archives as a FASTA file, we only virtualize the large FASTA file. Additional advantages are the interface that will crc check the files and search for duplicate entries.
+
+### installation and compilation ###
+
+Currently the package uses cmake for compilation
+Required dependencies are:
+
+ - libboost (for parsing integer values in an appropriate way)
+ - libopenssl (for generating SHA hashes)
+ - libfuse (for access to the fuse layer system and file virtualization)
 
 ### usage ###
 ##### fastafs cache: adding files to fastafs
