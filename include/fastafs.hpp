@@ -64,6 +64,7 @@ public:
     unsigned int fasta_filesize(unsigned int);
 
     void info();
+    int check_integrity();
 };
 
 #endif

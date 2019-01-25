@@ -25,7 +25,8 @@ void usage()
     std::cout <<      "    cache      adds FASTA file to cache" << std::endl;
     std::cout <<      "    view       view FASTAFS as FASTA file" << std::endl;
     std::cout <<      "    info       view FASTAFS information" << std::endl;
-    std::cout <<      "    mount      mount FASTAFS as FASTA file" << std::endl;
+    std::cout <<      "    mount      mount FASTAFS as FASTA/2BIT file" << std::endl;
+    std::cout <<      "    check      checks file integrity of FASTAFS file" << std::endl;
     std::cout << std::endl;
 }
 
@@ -39,6 +40,19 @@ void usage_view(void)
     std::cout << std::endl;
 }
 
+void usage_info(void)
+{
+    std::cout << "usage: " << PACKAGE << " info [<options>] <fastafs-id>\n\n";
+    std::cout << "    -f               use filename instead  of name or ID\n";
+    std::cout << "\n";
+}
+
+void usage_check(void)
+{
+    std::cout << "usage: " << PACKAGE << " check [<options>] <fastafs-id>\n\n";
+    std::cout << "    -f               use filename instead  of name or ID\n";
+    std::cout << "\n";
+}
 
 int main(int argc, char *argv[])
 {
@@ -126,15 +140,41 @@ int main(int argc, char *argv[])
                 f.load(fname);
                 f.info();
             } else {
-                std::cout << "usage: " << PACKAGE << " info [<options>] <fastafs-id>\n\n";
-                std::cout << "    -f               use filename instead  of name or ID\n";
-                std::cout << "\n";
+                usage_info();
             }
         } else if (strcmp(argv[1], "mount") == 0) {
             fuse(argc, argv);
         } else if (strcmp(argv[1], "list") == 0) {
             database d = database();
             d.list();
+        } else if (strcmp(argv[1], "check") == 0) {
+            if(argc > 2) {
+                bool from_file = false;
+
+                for(int i = 2; i < argc - 1; i++) {
+                    if (strcmp(argv[i], "-f") == 0) {
+                        from_file = true;
+                    }
+                }
+
+                std::string fname;
+                if(from_file) {
+                    fname = std::string(argv[argc - 1]);
+                } else {
+                    database d = database();
+                    fname = d.get(argv[argc - 1]);
+                    if(fname.size() == 0) {
+                        std::cout << "Invalid FASTAFS requested\n";
+                        exit(1);
+                    }
+                }
+
+                fastafs f = fastafs(std::string(argv[argc - 1]));
+                f.load(fname);
+                return f.check_integrity();
+            } else {
+                usage_check();
+            }
         } else {
             std::cerr << PACKAGE << ": '" << argv[1] << "' is not a " << PACKAGE << " command. See '" << PACKAGE << " --help':" << std::endl << std::endl;
             usage();
@@ -144,8 +184,6 @@ int main(int argc, char *argv[])
         usage();
         return 1;
     }
-
-
 
     return 0;
 }

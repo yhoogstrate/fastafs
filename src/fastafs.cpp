@@ -585,6 +585,9 @@ void fastafs::info()
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
+    
+    char sha1_hash[41] = "";
+    sha1_hash[40] = '\0';
 
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
@@ -593,10 +596,45 @@ void fastafs::info()
 
         for(unsigned int i = 0; i < this->data.size(); i++) {
             //this->data[i]->view(padding, &file);
-            printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, this->data[i]->sha1(&file).c_str());
+            sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
+            printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);//this->data[i]->sha1(&file).c_str()
         }
         file.close();
     }
+}
+
+
+int fastafs::check_integrity()
+{
+    if(this->filename.size() == 0) {
+        throw std::invalid_argument("No filename found");
+    }
+    
+    int retcode = 0;
+    char sha1_hash[41] = "";
+    sha1_hash[40] = '\0';
+    std::string old_hash;
+
+    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+        for(unsigned int i = 0; i < this->data.size(); i++) {
+            sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
+            old_hash = std::string(sha1_hash);
+            
+            if(old_hash.compare(this->data[i]->sha1(&file)) == 0)
+            {
+                printf("OK\t%s\n",this->data[i]->name.c_str());
+            }
+            else
+            {
+                printf("ERROR\t%s\t%s != %s\n",this->data[i]->name.c_str(), sha1_hash,this->data[i]->sha1(&file).c_str());
+                retcode = 1;
+            }
+        }
+        file.close();
+    }
+    
+    return retcode;
 }
 
 
