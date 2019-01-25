@@ -18,7 +18,7 @@ set(BUILD_DIR      "../bin")
 set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 
 
-add_executable(test_cache          cache/test_cache.cpp ../src/twobit_byte.cpp)
+add_executable(test_cache          cache/test_cache.cpp ../src/fasta_to_fastafs.cpp ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)
 add_executable(test_view           view/test_view.cpp ../src/fasta_to_fastafs.cpp ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)
 add_executable(test_tree           tree/test_tree.cpp)
 add_executable(test_fastafs        fastafs/test_fastafs.cpp ../src/fasta_to_fastafs.cpp ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)

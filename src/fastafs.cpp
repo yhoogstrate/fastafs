@@ -378,7 +378,6 @@ fastafs::~fastafs()
 
 void fastafs::load(std::string afilename)
 {
-
     std::streampos size;
     char *memblock;
 

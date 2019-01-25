@@ -4,7 +4,8 @@
 
 #include "config.hpp"
 
-#include "twobit_byte.hpp"
+//#include "twobit_byte.hpp"
+#include "fasta_to_fastafs.hpp"
 
 
 
@@ -191,5 +192,47 @@ BOOST_AUTO_TEST_CASE(Test_size)
 
     BOOST_CHECK_EQUAL(sizeof(b.data), 1);
 }
+
+
+
+
+/**
+ * @brief
+ *
+ * @test
+ */
+BOOST_AUTO_TEST_CASE(test_cache)
+{
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    f.cache();
+    f.write("tmp/test_cachce_test.fastafs");
+
+    fastafs f2 = fastafs("test");
+    f2.load("tmp/test_cachce_test.fastafs");
+    
+    unsigned int padding = 60;
+    unsigned int write_size = 32;
+    char buffer[write_size + 1] = "";
+    buffer[32] = '\0';
+    
+    unsigned int written = 0;
+    unsigned int w = 0;
+    std::string output = "";
+    while(written < f2.fasta_filesize(padding)) {
+        w = f2.view_fasta_chunk(padding, buffer, write_size, written);
+        output.append(buffer, w);
+        written += w;
+    }
+
+    std::string uppercase = ">chr1\nTTTTCCCCAAAAGGGG\n>chr2\nACTGACTGNNNNACTG\n>chr3.1\nACTGACTGAAAAC\n>chr3.2\nACTGACTGAAAACC\n>chr3.3\nACTGACTGAAAACCC\n>chr4\nACTGNNNN\n>chr5\nNNACTG\n";
+    std::string mixedcase = ">chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n";
+
+    // check case insensitive; without masking included
+    BOOST_CHECK_EQUAL(output.compare(uppercase) == 0 or output.compare(mixedcasecase) == 0);
+}
+
+
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
