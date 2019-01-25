@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
     std::string mixedcase = ">chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n";
 
     // check case insensitive; without masking included
-    BOOST_CHECK_EQUAL(output.compare(uppercase) == 0 or output.compare(mixedcasecase) == 0);
+    BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
 }
 
 

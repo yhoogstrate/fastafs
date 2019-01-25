@@ -390,9 +390,6 @@ void fastafs::load(std::string afilename)
             file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
-            // magic
-            // version
-            //
             memblock = new char [17];
             file.seekg (0, std::ios::beg);
             file.read (memblock, 16);
@@ -418,7 +415,6 @@ void fastafs::load(std::string afilename)
 
             unsigned int n_seq = fourbytes_to_uint(memblock, 8);
 
-
             unsigned char j;
             fastafs_seq *s;
             for(i = 0; i < n_seq; i ++ ) {
@@ -431,7 +427,11 @@ void fastafs::load(std::string afilename)
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
 
-
+                // SHA1 sum
+                file.read(memblock, 5);
+                file.read(memblock, 5);
+                file.read(memblock, 5);
+                file.read(memblock, 5);
 
                 file.read(memblock, 4);
                 s->data_position = fourbytes_to_uint(memblock, 0);
@@ -453,7 +453,6 @@ void fastafs::load(std::string afilename)
 
                 file.read(memblock, 4);
                 unsigned int N_regions = fourbytes_to_uint(memblock, 0);
-
 
                 for(j = 0 ; N_regions > j  ; j ++) {
                     file.read(memblock, 4);

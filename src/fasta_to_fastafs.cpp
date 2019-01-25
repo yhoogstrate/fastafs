@@ -285,7 +285,11 @@ void fasta_to_fastafs::print(void)
 
 unsigned int fasta_to_fastafs::get_index_size()
 {
-    unsigned int n = (unsigned int) this->data.size() * 5;// one byte to describe each size + 32bits to describe offset
+    // each sequence header has:
+    // 1  byte  for length of name
+    // 20 bytes for SHA1 sum
+    // 4  bytes for file-offset
+    unsigned int n = (unsigned int) this->data.size() * (1 + 20 + 4);// one byte to describe each size + 32bits to describe offset
 
     for(unsigned int i = 0; i < this->data.size(); i++) {
         n += (unsigned int) this->data[i]->name.size();
@@ -297,7 +301,7 @@ unsigned int fasta_to_fastafs::get_index_size()
 unsigned int fasta_to_fastafs::get_sequence_offset(unsigned int sequence)
 {
     unsigned int n = 4 + 4 + 4 + 4 + this->get_index_size();
-
+    
     for(unsigned int i = 0; i < sequence; i++) {
         n += 4; // dna_size
         n += 4; // n_block_count
@@ -336,6 +340,7 @@ void fasta_to_fastafs::write(std::string filename)
         uint_to_fourbytes(ch3, (unsigned int) this->data.size());
         twobit_out_stream.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
 
+        // should become crc32 sum of all bytes written, to be updated after write
         char ch4[] = "\0\0\0\0";
         twobit_out_stream.write(reinterpret_cast<char *> (&ch4), (size_t) 4);
 
@@ -348,6 +353,9 @@ void fasta_to_fastafs::write(std::string filename)
                 byte = (unsigned char) this->data[i]->name[j];
                 twobit_out_stream.write((char *) &byte, (size_t) 1);
             }
+
+            char sha1_placeholder[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+            twobit_out_stream.write(reinterpret_cast<char *> (&sha1_placeholder), (size_t) 20);
 
             uint_to_fourbytes(ch3, this->get_sequence_offset(i));
             twobit_out_stream.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
