@@ -10,6 +10,15 @@ Partially, yes. It simply is yet another format.
 Backwards compatibility was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not within 2bit.
 However, the fastafs file is not intended for analysis but purely for storage and can then virtualize both FA and 2bit files.
 
+### installation and compilation ###
+
+Currently the package uses cmake for compilation
+Required dependencies are:
+
+ - libboost (for parsing integer values in an appropriate way)
+ - libopenssl (for generating SHA hashes)
+ - libfuse (for access to the fuse layer system and file virtualization)
+
 ### usage ###
 ##### fastafs cache: adding files to fastafs
 We can add files to the fastafs database by running:

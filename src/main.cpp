@@ -4,6 +4,7 @@
 #include <vector>
 #include <string.h>
 
+#include <boost/lexical_cast.hpp>
 
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
@@ -81,6 +82,8 @@ int main(int argc, char *argv[])
                 std::cout << "\n";
             }
         } else if (strcmp(argv[1], "view") == 0) {
+            unsigned int padding = 60;
+
             if(argc > 2) {
                 if (strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
                     usage_view();
@@ -88,9 +91,26 @@ int main(int argc, char *argv[])
                 }
                 bool from_file = false;
 
+                bool skip_argument = false;
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
-                        from_file = true;
+                    if(skip_argument) {
+                        skip_argument = false;
+                    }
+                    else {
+                        if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
+                            from_file = true;
+                        }
+                        else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i+1 < argc-1) {
+                            try {
+                                padding = boost::lexical_cast<unsigned int>(argv[++i]);
+                            }
+                            catch(std::exception const & e)
+                            {
+                                 std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
+                                 exit(1);
+                            }
+                            skip_argument = true;// skip next argument, as it is the padding value
+                        }
                     }
                 }
 
@@ -108,7 +128,7 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                f.view_fasta(60);//@todo make argument parsing
+                f.view_fasta(padding);//@todo make argument parsing
             }
             else {
                 usage_view();
