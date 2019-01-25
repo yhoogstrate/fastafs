@@ -1,6 +1,8 @@
 
 #include <vector>
 
+#include <openssl/sha.h>
+
 #include "config.hpp"
 #include "utils.hpp"
 
@@ -30,6 +32,8 @@ public:
     void close_reading();
 
     //void print(void);
+    SHA_CTX ctx;
+    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
 };
 
 

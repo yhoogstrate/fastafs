@@ -1,6 +1,8 @@
 
 #include <iostream>
 
+#include <openssl/sha.h>
+
 #include "config.hpp"
 
 unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
@@ -48,4 +50,18 @@ char *human_readable_fs(unsigned int bitsize, char *buf)
     }
     sprintf(buf, "%.*f %s", i, size, units[i]);
     return buf;
+}
+
+
+void sha1_digest_to_hash(unsigned char *digest, char *hash) {
+    
+    //unsigned char hash[SHA_DIGEST_LENGTH];
+    //SHA1_Final(hash, &ctx);
+
+    for(unsigned int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+        sprintf(hash + (i * 2), "%02x", digest[i]);
+    }
+    hash[40] = 0;
+
+    //return void;
 }

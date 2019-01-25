@@ -1,6 +1,8 @@
 
 #include <vector>
 
+#include <openssl/sha.h>
+
 #include "utils.hpp"
 
 #ifndef FASTAFS_HPP
@@ -14,7 +16,7 @@ public:
     unsigned int n;// number nucleotides
     std::vector<unsigned int> n_starts;
     std::vector<unsigned int> n_ends;
-
+    unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented
 
     fastafs_seq();

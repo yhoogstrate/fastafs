@@ -286,18 +286,22 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
         SHA1_Update(&ctx, chunk, 1);
     }
 
-    unsigned char hash[SHA_DIGEST_LENGTH];
-    SHA1_Final(hash, &ctx);
-
-    char outputBuffer[41];
-    for(i = 0; i < SHA_DIGEST_LENGTH; i++) {
-        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-    }
-    outputBuffer[40] = 0;
+    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+    SHA1_Final(sha1_digest, &ctx);
 
     fh->clear(); // because gseek was done before
 
-    return std::string(outputBuffer);
+
+// replace with:  sha1_digest_to_hash()
+    char sha1_hash[41];
+    sha1_digest_to_hash(sha1_digest, sha1_hash);
+    
+//    for(i = 0; i < SHA_DIGEST_LENGTH; i++) {
+//        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+//    }
+//    outputBuffer[40] = 0;
+    
+    return std::string(sha1_hash);
 }
 
 unsigned int fastafs_seq::n_twobits()
@@ -390,10 +394,14 @@ void fastafs::load(std::string afilename)
             file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
-            memblock = new char [17];
+            memblock = new char [20+1];//sha1 is 20b
             file.seekg (0, std::ios::beg);
             file.read (memblock, 16);
             memblock[16] = '\0';
+            memblock[17] = '\0';
+            memblock[18] = '\0';
+            memblock[19] = '\0';
+            memblock[20] = '\0';
 
             char twobit_magic[5] = TWOBIT_MAGIC;
 
@@ -427,11 +435,15 @@ void fastafs::load(std::string afilename)
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
 
-                // SHA1 sum
-                file.read(memblock, 5);
-                file.read(memblock, 5);
-                file.read(memblock, 5);
-                file.read(memblock, 5);
+                // SHA1 digest
+                file.read(memblock, 20);
+                for(int j = 0; j < 20 ; j ++)
+                {
+                    s->sha1_digest[j] = memblock[j];
+                }
+                char sha1_hash[41] = "";
+                sha1_digest_to_hash(s->sha1_digest, sha1_hash);
+                printf("sha1 from file: [%s]\n", sha1_hash);
 
                 file.read(memblock, 4);
                 s->data_position = fourbytes_to_uint(memblock, 0);
@@ -470,7 +482,6 @@ void fastafs::load(std::string afilename)
 
 
             file.close();
-
 
             delete[] memblock;
         }

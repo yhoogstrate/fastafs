@@ -4,6 +4,7 @@
 #include "config.hpp"
 
 #include "fasta_to_fastafs.hpp"
+#include "utils.hpp"
 
 
 
@@ -16,6 +17,7 @@ fasta_to_fastafs_seq::fasta_to_fastafs_seq(void) :
     previous_was_N(false),
     N(0)
 {
+    SHA1_Init(&this->ctx);
 }
 
 
@@ -107,6 +109,10 @@ void fasta_to_fastafs_seq::close_reading()
         this->n_ends.push_back(this->n - 1);
     }
 
+    SHA1_Final(this->sha1_digest, &this->ctx);
+    char sha1_hash[41] = "";
+    sha1_digest_to_hash(this->sha1_digest, sha1_hash);
+    printf("-> [%s]\n",sha1_hash);
     //delete this->twobit_data;
     //this->twobit_data = nullptr;
 }
@@ -212,6 +218,12 @@ int fasta_to_fastafs::cache(void)
     std::ifstream myfile (this->filename.c_str());
     std::string sequence = "";
 
+    static char nt[2] = "T";
+    static char nc[2] = "C";
+    static char na[2] = "A";
+    static char ng[2] = "G";
+    static char nn[2] = "N";
+
     if (myfile.is_open()) {
         while(getline(myfile, line)) {
             if (line[0] == '>') {
@@ -234,22 +246,27 @@ int fasta_to_fastafs::cache(void)
                     case 'u':
                     case 'U':
                         s->add_nucleotide(NUCLEOTIDE_T);
+                        SHA1_Update(&s->ctx, nt, 1);
                         break;
                     case 'c':
                     case 'C':
                         s->add_nucleotide(NUCLEOTIDE_C);
+                        SHA1_Update(&s->ctx, nc, 1);
                         break;
                     case 'a':
                     case 'A':
                         s->add_nucleotide(NUCLEOTIDE_A);
+                        SHA1_Update(&s->ctx, na, 1);
                         break;
                     case 'g':
                     case 'G':
                         s->add_nucleotide(NUCLEOTIDE_G);
+                        SHA1_Update(&s->ctx, ng, 1);
                         break;
                     case 'n':
                     case 'N':
                         s->add_N();
+                        SHA1_Update(&s->ctx, nn, 1);
                         break;
                     default:
                         std::cerr << "invalid chars in FASTA file" << std::endl;
@@ -354,8 +371,9 @@ void fasta_to_fastafs::write(std::string filename)
                 twobit_out_stream.write((char *) &byte, (size_t) 1);
             }
 
-            char sha1_placeholder[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-            twobit_out_stream.write(reinterpret_cast<char *> (&sha1_placeholder), (size_t) 20);
+            //char sha1_placeholder[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+            //twobit_out_stream.write(reinterpret_cast<char *> (&sha1_placeholder), (size_t) 20);
+            twobit_out_stream.write(reinterpret_cast<char *> (&this->data[i]->sha1_digest), (size_t) 20);
 
             uint_to_fourbytes(ch3, this->get_sequence_offset(i));
             twobit_out_stream.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
