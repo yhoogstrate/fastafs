@@ -130,10 +130,10 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
     static int written;
     if(strcmp(path, virtual_fasta_filename.c_str() ) == 0) {
-        written = ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
+        written = (signed int) ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
         printf("    return written=%u\n", written);
     } else if(strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
-        written = ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
+        written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         printf("    return written=%u\n", written);
     } else {
         written = -1;

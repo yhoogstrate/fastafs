@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
  */
 BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 {
-    signed int written;
+    unsigned int written;
 
     std::string fastafs_file = "tmp/test.fastafs";
 

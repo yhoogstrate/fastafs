@@ -111,7 +111,7 @@ unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 * len_to_copy =
 * fh = filestream to fastafs file
 */
-int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream *fh)
+unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream *fh)
 {
     unsigned int i;
     unsigned int written = 0;
@@ -461,7 +461,7 @@ void fastafs::view_fasta(unsigned int padding)
 }
 
 
-int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
+unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
     unsigned int written = 0;
     unsigned int total_fa_size = 0, i_buffer = 0;
@@ -565,7 +565,9 @@ std::string fastafs::get_faidx(unsigned int padding)
     return contents;
 }
 
-int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
+
+
+unsigned int fastafs::view_faidx_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
     std::string contents = this->get_faidx(padding);
 
