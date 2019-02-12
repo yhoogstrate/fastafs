@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
 
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
     f.cache();
     f.write(fastafs_file);
 
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
 
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
     f.cache();
     f.write(fastafs_file);
 
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
 
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
     f.cache();
     f.write(fastafs_file);
 
@@ -275,6 +275,33 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     fs.data[0]->sha1(&file);
 
     BOOST_CHECK_EQUAL(fs.data[0]->sha1(&file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
+}
+
+
+
+
+/**
+ * @description test contains a sequence that intially failed chunked_view with chunk size > 1
+ */
+BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
+{
+
+    // 1: create FASTAFS file
+    std::string fastafs_file = "tmp/test.fastafs";
+
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test_002.fa");
+    f.cache();
+    f.write(fastafs_file);
+
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    BOOST_REQUIRE(fs.data.size() > 0);
+
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    BOOST_REQUIRE(file.is_open());
+    
+    BOOST_CHECK_EQUAL(fs.check_integrity(false), 0);
 }
 
 

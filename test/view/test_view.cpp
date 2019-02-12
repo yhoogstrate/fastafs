@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
 
     std::string fastafs_file = "tmp/test.fastafs";
 
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
     f.cache();
     f.write(fastafs_file);
 
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
     std::string fastafs_file = "tmp/test.fastafs";
 
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
     f.cache();
     f.write(fastafs_file);
 

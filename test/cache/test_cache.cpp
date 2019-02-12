@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(Test_size)
  */
 BOOST_AUTO_TEST_CASE(test_cache)
 {
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/cache/test.fa");
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
     f.cache();
     f.write("tmp/test_cachce_test.fastafs");
 

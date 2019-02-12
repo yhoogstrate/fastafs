@@ -184,14 +184,32 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         if((i_in_file % (padding + 1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
             buffer[written++] = '\n';
         } else {
+            // bereken in welk N block we zitten
+            if(this->n_starts.size() > 0) {
+                // i_n_start moet opgeteld worden zolang:
+                //    - i_n_start < this->n_starts.size()
+                //    - this->n_starts[i_n_start] < i
+                while(i_n_start < (this->n_starts.size() - 1) and this->n_starts[i_n_start] < i) {
+                    i_n_start++;
+                    //printf(" -> %i > %i and %i == %i\n",this->n_starts.size() , i_n_start, i , this->n_starts[i_n_start]);
+                }
+
+                while(i_n_end < (this->n_ends.size() - 1) and this->n_ends[i_n_end] < i) {
+                    i_n_end++;
+                    //printf(" -> %i > %i and %i == %i\n",this->n_ends.size() , i_n_end, i , this->n_ends[i_n_end]);
+                }
+
+            }
             if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
                 in_N = true;
             }
             if(in_N) {
+                //printf(" -> %i > %i and %i == %i\n",this->n_ends.size() , i_n_end, i , this->n_ends[i_n_end]);
+                
+                
                 buffer[written++] = 'N';
-
                 if(i == this->n_ends[i_n_end]) {
-                    i_n_end++;
+                    //i_n_end++;
                     in_N = false;
                 }
             } else {
@@ -231,24 +249,59 @@ for the sequence fasta optionally gzipped file) field is strongly advised. The r
 
 meaning: md5s([ACTGN]+)
 
+// ww -l = 149998
+* 
+* need = 74999
 
-current trick seems:
-md5(str(size) + str of Ns:((1,5)) + compressed content)
+
+chunk size 1:
+fastafs check short  1.49s user 2.79s system 99% cpu 4.282 total
+fastafs check short  1.53s user 2.73s system 99% cpu 4.269 total
+
+chunk size 1024:
+??
 */
 std::string fastafs_seq::sha1(std::ifstream *fh)
 {
-    char chunk[4];
+    const size_t header_offset = this->name.size() + 2;
+    //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
+    const unsigned long chunksize = 1024*1024;// seems to not matter that much
+    char chunk[chunksize + 2];
+    chunk[chunksize] = '\0';
 
     SHA_CTX ctx;
     SHA1_Init(&ctx);
-    unsigned int nn = 0;// counter
 
     fh->clear();
-    nn = this->name.size() + 2;// name plus '>' + newline
-    while(nn < this->n + this->name.size() + 2) {
-        nn += this->view_fasta_chunk(0, chunk, nn, 1, fh);
-        SHA1_Update(&ctx, chunk, 1);
+
+    // "(a/b)*b + a%b shall equal a"
+    // full iterations = this->n / chunk_size; do this number of iterations looped
+    signed long n_iterations = (unsigned int) this->n / chunksize;
+    signed int remaining_bytes = this->n % chunksize;
+    // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
+    
+    unsigned long nbases = 0;
+    
+    for(unsigned long i = 0; i < n_iterations; i++) {
+        this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
+        //printf("[%s] - %i\n", chunk, chunksize);
+        SHA1_Update(&ctx, chunk, chunksize);
+        
+        nbases += chunksize;
     }
+    
+    if(remaining_bytes > 0)
+    {
+        this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);
+        SHA1_Update(&ctx, chunk, remaining_bytes);
+        nbases += remaining_bytes;
+        
+        chunk[remaining_bytes] = '\0';
+        //printf("[%s] - %i (last chunk)\n", chunk, remaining_bytes);
+    }
+    
+    //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
+    //printf("nbases=%i\n", nbases);
 
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];
     SHA1_Final(sha1_digest, &ctx);
@@ -606,7 +659,7 @@ void fastafs::info()
 }
 
 
-int fastafs::check_integrity()
+int fastafs::check_integrity(bool ena_verify_checksum)
 {
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
@@ -622,20 +675,21 @@ int fastafs::check_integrity()
         for(unsigned int i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);
+            std::string new_hash = this->data[i]->sha1(&file);
             
-            if(old_hash.compare(this->data[i]->sha1(&file)) == 0)
+            if(old_hash.compare(new_hash) == 0)
             {
                 printf("OK\t%s\n",this->data[i]->name.c_str());
             }
             else
             {
-                printf("ERROR\t%s\t%s != %s\n",this->data[i]->name.c_str(), sha1_hash,this->data[i]->sha1(&file).c_str());
+                printf("ERROR\t%s\t%s != %s\n",this->data[i]->name.c_str(), sha1_hash, new_hash.c_str());
                 retcode = 1;
             }
         }
         file.close();
     }
-    
+
     return retcode;
 }
 

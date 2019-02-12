@@ -170,10 +170,14 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "check") == 0) {
             if(argc > 2) {
                 bool from_file = false;
+                bool ena_verify_checksum = false;
 
                 for(int i = 2; i < argc - 1; i++) {
                     if (strcmp(argv[i], "-f") == 0) {
                         from_file = true;
+                    }
+                    else if(strcmp(argv[i], "-e") == 0 or strcmp(argv[i], "--ena-verify") == 0) {
+                        ena_verify_checksum = true;
                     }
                 }
 
@@ -191,7 +195,7 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                return f.check_integrity();
+                return f.check_integrity(ena_verify_checksum);
             } else {
                 usage_check();
             }
