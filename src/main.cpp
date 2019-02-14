@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                             catch(std::exception const & e)
                             {
                                  std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
-                                 exit(1);
+                                 return EINVAL;
                             }
                             skip_argument = true;// skip next argument, as it is the padding value
                         }
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
                     fname = d.get(argv[argc - 1]);
                     if(fname.size() == 0) {
                         std::cout << "Invalid FASTAFS requested\n";
-                        exit(1);
+                        return EINVAL;
                     }
                 }
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
             }
             else {
                 usage_view();
-                exit(1);
+                return EINVAL;
             }
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
                     fname = d.get(argv[argc - 1]);
                     if(fname.size() == 0) {
                         std::cout << "Invalid FASTAFS requested\n";
-                        exit(1);
+                        return EINVAL;
                     }
                 }
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
                     fname = d.get(argv[argc - 1]);
                     if(fname.size() == 0) {
                         std::cout << "Invalid FASTAFS requested\n";
-                        exit(1);
+                        return EINVAL;
                     }
                 }
 
@@ -202,11 +202,11 @@ int main(int argc, char *argv[])
         } else {
             std::cerr << PACKAGE << ": '" << argv[1] << "' is not a " << PACKAGE << " command. See '" << PACKAGE << " --help':" << std::endl << std::endl;
             usage();
-            return 1;
+            return EINVAL;
         }
     } else {
         usage();
-        return 1;
+        return EINVAL;
     }
 
     return 0;

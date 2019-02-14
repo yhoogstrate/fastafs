@@ -684,7 +684,7 @@ int fastafs::check_integrity(bool ena_verify_checksum)
             else
             {
                 printf("ERROR\t%s\t%s != %s\n",this->data[i]->name.c_str(), sha1_hash, new_hash.c_str());
-                retcode = 1;
+                retcode = EIO;
             }
         }
         file.close();
