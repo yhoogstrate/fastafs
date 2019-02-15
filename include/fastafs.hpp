@@ -63,8 +63,8 @@ public:
     std::string get_faidx(unsigned int);
     unsigned int fasta_filesize(unsigned int);
 
-    void info();
-    int check_integrity(bool);
+    int info(bool);
+    int check_integrity();
 };
 
 #endif

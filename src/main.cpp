@@ -137,39 +137,6 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
                 bool from_file = false;
-
-                for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0) {
-                        from_file = true;
-                    }
-                }
-
-                std::string fname;
-                if(from_file) {
-                    fname = std::string(argv[argc - 1]);
-                } else {
-                    database d = database();
-                    fname = d.get(argv[argc - 1]);
-                    if(fname.size() == 0) {
-                        std::cout << "Invalid FASTAFS requested\n";
-                        return EINVAL;
-                    }
-                }
-
-                fastafs f = fastafs(std::string(argv[argc - 1]));
-                f.load(fname);
-                f.info();
-            } else {
-                usage_info();
-            }
-        } else if (strcmp(argv[1], "mount") == 0) {
-            fuse(argc, argv);
-        } else if (strcmp(argv[1], "list") == 0) {
-            database d = database();
-            d.list();
-        } else if (strcmp(argv[1], "check") == 0) {
-            if(argc > 2) {
-                bool from_file = false;
                 bool ena_verify_checksum = false;
 
                 for(int i = 2; i < argc - 1; i++) {
@@ -195,7 +162,40 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                return f.check_integrity(ena_verify_checksum);
+                return f.info(ena_verify_checksum);
+            } else {
+                usage_info();
+            }
+        } else if (strcmp(argv[1], "mount") == 0) {
+            fuse(argc, argv);
+        } else if (strcmp(argv[1], "list") == 0) {
+            database d = database();
+            d.list();
+        } else if (strcmp(argv[1], "check") == 0) {
+            if(argc > 2) {
+                bool from_file = false;
+
+                for(int i = 2; i < argc - 1; i++) {
+                    if (strcmp(argv[i], "-f") == 0) {
+                        from_file = true;
+                    }
+                }
+
+                std::string fname;
+                if(from_file) {
+                    fname = std::string(argv[argc - 1]);
+                } else {
+                    database d = database();
+                    fname = d.get(argv[argc - 1]);
+                    if(fname.size() == 0) {
+                        std::cout << "Invalid FASTAFS requested\n";
+                        return EINVAL;
+                    }
+                }
+
+                fastafs f = fastafs(std::string(argv[argc - 1]));
+                f.load(fname);
+                return f.check_integrity();
             } else {
                 usage_check();
             }
