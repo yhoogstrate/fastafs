@@ -710,7 +710,7 @@ int fastafs::info(bool ena_verify_checksum)
             if(ena_verify_checksum) {
                 //wget header of:
                 //https://www.ebi.ac.uk/ena/cram/sha1/<sha1>
-                std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
+                //std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
                 
                 SSL *ssl;
                 int sock_ssl = 0;
@@ -718,7 +718,7 @@ int fastafs::info(bool ena_verify_checksum)
                 //struct sockadfiledr_in address; 
                 int sock = 0, valread; 
                 struct sockaddr_in serv_addr; 
-                std::string hello2 = "GET /ena/cram/sha1/zz" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
+                std::string hello2 = "GET /ena/cram/sha1/" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
                 //char *hello = &hello2.c_str();
                 char buffer[1024] = {0}; 
                 if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
@@ -745,11 +745,10 @@ int fastafs::info(bool ena_verify_checksum)
                     return -1; 
                 }
                 
-                // https://stackoverflow.com/questions/41229601/openssl-in-c-socket-connection-https-client
                 SSL_library_init();
                 SSLeay_add_ssl_algorithms();
                 SSL_load_error_strings();
-                const SSL_METHOD *meth = TLSv1_2_client_method();
+                const SSL_METHOD *meth = TLS_client_method();// defining version specificity in here often results in deprecation warnings over time
                 SSL_CTX *ctx = SSL_CTX_new (meth);
                 ssl = SSL_new (ctx);
                 if (!ssl) {
@@ -768,20 +767,22 @@ int fastafs::info(bool ena_verify_checksum)
                     return -1;
                 }
                 
-                printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
+                //printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
                 SSL_write(ssl , hello2.c_str() , hello2.length()  ); 
-                printf("Hello message sent\n\n"); 
+                //printf("Hello message sent\n\n"); 
                 
                 valread = SSL_read(ssl, buffer, 32);
-                printf("%s\n",buffer );
-                
-                //send(sock , hello2.c_str() , hello2.length() , 0 ); 
-                //printf("Hello message sent\n\n"); 
-                //valread = read( sock , buffer, 1024); 
-                //printf("%s\n",buffer );
+                if (std::string(buffer).find(" 200 ") != -1) { // sequence is in ENA
+                    printf("    >%-24s%-12i%s   https://www.ebi.ac.uk/ena/cram/sha1/%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash, sha1_hash);
+                }
+                else {
+                    printf("    >%-24s%-12i%s   ---\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
+                }
             }
-            
-            printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);//this->data[i]->sha1(&file).c_str()
+            else
+            {
+                printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
+            }
         }
         
         file.close();
