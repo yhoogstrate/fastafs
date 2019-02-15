@@ -8,20 +8,21 @@
 
 #include <openssl/sha.h>
 
-//#include <sys/socket.h>
-//#include <sys/types.h>
-//#include <netinet/in.h>
-//#include <netdb.h>
-//#include <stdlib.h>
-//#include <unistd.h>
-//#include <errno.h>
-//#include <arpa/inet.h> 
-//#include <stdio.h>
-//#include <sys/socket.h>
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
-//#include <openssl/ssl.h>
-//#include <openssl/err.h>
+// SSL requests to ENA
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <arpa/inet.h> 
+#include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 
 #include "config.hpp"
@@ -706,85 +707,87 @@ int fastafs::info(bool ena_verify_checksum)
         for(unsigned int i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
 
-            //if(ena_verify_checksum) {
-                ////wget header of:
-                ////https://www.ebi.ac.uk/ena/cram/sha1/<sha1>
-                //std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
+            if(ena_verify_checksum) {
+                //wget header of:
+                //https://www.ebi.ac.uk/ena/cram/sha1/<sha1>
+                std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
                 
-                //SSL *ssl;
-                //int sock_ssl = 0;
+                SSL *ssl;
+                int sock_ssl = 0;
 
                 //struct sockadfiledr_in address; 
-                //int sock = 0, valread; 
-                //struct sockaddr_in serv_addr; 
-                //std::string hello2 = "GET /ena/cram/sha1/zz" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
-                ////char *hello = &hello2.c_str();
-                //char buffer[1024] = {0}; 
-                //if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-                //{ 
-                    //printf("\n Socket creation error \n"); 
-                    //return -1; 
-                //} 
+                int sock = 0, valread; 
+                struct sockaddr_in serv_addr; 
+                std::string hello2 = "GET /ena/cram/sha1/zz" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
+                //char *hello = &hello2.c_str();
+                char buffer[1024] = {0}; 
+                if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+                { 
+                    printf("\n Socket creation error \n"); 
+                    return -1; 
+                } 
                
-                //memset(&serv_addr, '0', sizeof(serv_addr)); 
+                memset(&serv_addr, '0', sizeof(serv_addr)); 
                
-                //serv_addr.sin_family = AF_INET; 
-                //serv_addr.sin_port = htons(443); 
+                serv_addr.sin_family = AF_INET; 
+                serv_addr.sin_port = htons(443); 
                    
-                //// Convert IPv4 and IPv6 addresses from text to binary form 
-                //if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr)<=0)  
-                //{ 
-                    //printf("\nInvalid address/ Address not supported \n"); 
-                    //return -1; 
-                //} 
+                // Convert IPv4 and IPv6 addresses from text to binary form 
+                if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr)<=0)  
+                { 
+                    printf("\nInvalid address/ Address not supported \n"); 
+                    return -1; 
+                } 
                
-                //if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
-                //{ 
-                    //printf("\nConnection Failed \n"); 
-                    //return -1; 
-                //}
+                if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+                { 
+                    printf("\nConnection Failed \n"); 
+                    return -1; 
+                }
                 
-                //// https://stackoverflow.com/questions/41229601/openssl-in-c-socket-connection-https-client
-                //SSL_library_init();
-                //SSLeay_add_ssl_algorithms();
-                //SSL_load_error_strings();
-                //const SSL_METHOD *meth = TLSv1_2_client_method();
-                //SSL_CTX *ctx = SSL_CTX_new (meth);
-                //ssl = SSL_new (ctx);
-                //if (!ssl) {
-                    //printf("Error creating SSL.\n");
-                    ////log_ssl();
-                    //return -1;
-                //}
+                // https://stackoverflow.com/questions/41229601/openssl-in-c-socket-connection-https-client
+                SSL_library_init();
+                SSLeay_add_ssl_algorithms();
+                SSL_load_error_strings();
+                const SSL_METHOD *meth = TLSv1_2_client_method();
+                SSL_CTX *ctx = SSL_CTX_new (meth);
+                ssl = SSL_new (ctx);
+                if (!ssl) {
+                    printf("Error creating SSL.\n");
+                    //log_ssl();
+                    return -1;
+                }
                 
-                //sock_ssl = SSL_get_fd(ssl);
-                //SSL_set_fd(ssl, sock);
-                //int err = SSL_connect(ssl);
-                //if (err <= 0) {
-                    //printf("Error creating SSL connection.  err=%x\n", err);
-                    ////log_ssl();
-                    //fflush(stdout);
-                    //return -1;
-                //}
+                sock_ssl = SSL_get_fd(ssl);
+                SSL_set_fd(ssl, sock);
+                int err = SSL_connect(ssl);
+                if (err <= 0) {
+                    printf("Error creating SSL connection.  err=%x\n", err);
+                    //log_ssl();
+                    fflush(stdout);
+                    return -1;
+                }
                 
-                //printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
-                //SSL_write(ssl , hello2.c_str() , hello2.length()  ); 
+                printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
+                SSL_write(ssl , hello2.c_str() , hello2.length()  ); 
+                printf("Hello message sent\n\n"); 
+                
+                valread = SSL_read(ssl, buffer, 32);
+                printf("%s\n",buffer );
+                
+                //send(sock , hello2.c_str() , hello2.length() , 0 ); 
                 //printf("Hello message sent\n\n"); 
-                
-                //valread = SSL_read(ssl, buffer, 32);
+                //valread = read( sock , buffer, 1024); 
                 //printf("%s\n",buffer );
-                
-                ////send(sock , hello2.c_str() , hello2.length() , 0 ); 
-                ////printf("Hello message sent\n\n"); 
-                ////valread = read( sock , buffer, 1024); 
-                ////printf("%s\n",buffer );
-            //}
+            }
             
             printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);//this->data[i]->sha1(&file).c_str()
         }
         
         file.close();
     }
+    
+    return 0;
 }
 
 
