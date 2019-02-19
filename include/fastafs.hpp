@@ -23,9 +23,7 @@ public:
 
     unsigned int fasta_filesize(unsigned int padding);
     void view_fasta(unsigned int, std::ifstream *);
-    unsigned int view_fasta_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);
-
-    unsigned int view_ucsc2bit_chunk(char *, off_t, size_t, std::ifstream *);
+    unsigned int view_fasta_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
 
     std::string sha1(std::ifstream *);
 
@@ -61,6 +59,7 @@ public:
     void view_fasta(unsigned int);
     unsigned int view_fasta_chunk(unsigned int, char *, size_t, off_t );
     unsigned int view_faidx_chunk(unsigned int, char *, size_t, off_t );
+    unsigned int view_ucsc2bit_chunk(char *, size_t, off_t);
 
     std::string get_faidx(unsigned int);
     unsigned int fasta_filesize(unsigned int);

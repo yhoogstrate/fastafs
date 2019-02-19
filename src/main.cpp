@@ -33,9 +33,11 @@ void usage()
 
 void usage_view(void)
 {
-    std::cout << "usage: " << PACKAGE << " view [OPTION]... [FASTAFS-ID/FILE]" << std::endl << std::endl;
+    std::cout << "usage: " << PACKAGE << " view [OPTION]... [FASTAFS-ID/FILE]" << std::endl;
+    std::cout << "View FASTAFS file in FASTA format" << std::endl << std::endl;
     std::cout << "  -f, --file                 View fastafs file from disk, not from database (cache)" << std::endl;
     std::cout << "  -p, --padding              Number of nucleotides before delimited with a newline [default=60]" << std::endl;
+    std::cout << "  -2, --2bit                 View in UCSC twoBit/2bit format (http://genome.ucsc.edu/FAQ/FAQformat.html#format7)" << std::endl;
     std::cout << std::endl;
     std::cout << "  -h, --help                 Display this help and exit";
     std::cout << std::endl;

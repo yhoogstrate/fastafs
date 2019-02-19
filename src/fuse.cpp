@@ -71,6 +71,7 @@ static int do_getattr( const char *path, struct stat *st )
     } else {
         std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
         std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
+        std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
 
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
@@ -79,6 +80,8 @@ static int do_getattr( const char *path, struct stat *st )
             st->st_size = ffi->f->fasta_filesize(ffi->padding);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             st->st_size = ffi->f->get_faidx(ffi->padding).size();
+        } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
+            st->st_size = 8;
         }
     }
 
@@ -99,6 +102,7 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 
     std::string virtual_fasta_filename = ffi->f->name + ".fa";
     std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
+    std::string virtual_ucsc2bit_filename = ffi->f->name + ".2bit";
 
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
@@ -106,6 +110,7 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
     if (strcmp(path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
         filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
         filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
+        filler(buffer, virtual_ucsc2bit_filename.c_str(), NULL, 0);
 
         std::cout << "    " << virtual_fasta_filename << "\n";
         std::cout << "    " << virtual_faidx_filename << "\n";
@@ -127,6 +132,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
     std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
     std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
+    std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
 
     static int written;
     if(strcmp(path, virtual_fasta_filename.c_str() ) == 0) {
@@ -134,6 +140,9 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         printf("    return written=%u\n", written);
     } else if(strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
         written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
+        printf("    return written=%u\n", written);
+    } else if(strcmp(path, virtual_ucsc2bit_filename.c_str() ) == 0 ) {
+        written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
         printf("    return written=%u\n", written);
     } else {
         written = -1;
@@ -267,6 +276,7 @@ void print_fuse_help()
 
 fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 {
+    printf("parse args\n");
     // Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
 
     //char **argv_test = (char **) malloc(sizeof(char*) * argc);
@@ -355,6 +365,7 @@ void fuse(int argc, char *argv[])
         print_fuse_help();
         exit(0);
     } else {
+        printf("RUNNING FUSE CODE\n");
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
     }
 

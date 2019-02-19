@@ -254,26 +254,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
 
 
-//http://genome.ucsc.edu/FAQ/FAQformat.html#format7
-unsigned int fastafs_seq::view_ucsc2bit_chunk(char *buffer, off_t start_pos_in_ucsc2bit, size_t len_to_copy, std::ifstream *fh)
-{
-    unsigned int written = 0;
-    unsigned int pos = start_pos_in_ucsc2bit;
-    
-    // bytes 0-8:
-    const std::string header = TWOBIT_MAGIC TWOBIT_VERSION ;
-    while(written < len_to_copy and pos < 8 ) // and i < (end_of_file - 1)
-    {
-        buffer[pos] = header_init[pos++];
-        written++;
-    }
-
-    // sequence count
-    
-    
-    return written;
-}
-
 
 
 /*
@@ -593,6 +573,42 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
     return written;
 }
+
+
+
+
+
+//http://genome.ucsc.edu/FAQ/FAQformat.html#format7
+unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
+{
+    unsigned int written = 0;
+    unsigned int pos = file_offset;
+    
+    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+        // bytes 0-8:
+        const std::string header_init = TWOBIT_MAGIC TWOBIT_VERSION ;
+        while(written < buffer_size and pos < 8 )// while bytes need to be copied and end of 2bit file is not yet reached
+        {
+            buffer[pos] = header_init[pos++];
+            written++;
+        }
+
+        // sequence count
+        
+    
+        file.close();
+    } else {
+        throw std::runtime_error("could not load fastafs: " + this->filename);
+    }
+
+    return written;
+}
+
+
+
+
+
 
 unsigned int fastafs::fasta_filesize(unsigned int padding)
 {
