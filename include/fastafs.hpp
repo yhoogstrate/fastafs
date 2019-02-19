@@ -21,9 +21,11 @@ public:
 
     fastafs_seq();
 
+    unsigned int fasta_filesize(unsigned int padding);
     void view_fasta(unsigned int, std::ifstream *);
     unsigned int view_fasta_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);
-    unsigned int fasta_filesize(unsigned int padding);
+
+    unsigned int view_ucsc2bit_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);
 
     std::string sha1(std::ifstream *);
 

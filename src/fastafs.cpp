@@ -36,6 +36,20 @@ fastafs_seq::fastafs_seq(): n(0)
 {
 }
 
+unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
+{
+    if(padding == 0) {
+        padding = this->n;
+    }
+    
+    unsigned int n = 1; // >
+    n += (unsigned int ) this->name.size() + 1;// "chr1\n"
+    n += this->n; // ACTG NNN
+    n += (this->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+
+    return n;
+}
+
 void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 {
 #if DEBUG
@@ -102,23 +116,6 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
     delete[] byte_tmp;
 }
 
-
-unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
-{
-    if(padding == 0) {
-        padding = this->n;
-    }
-    
-    unsigned int n = 1; // >
-    n += (unsigned int ) this->name.size() + 1;// "chr1\n"
-    n += this->n; // ACTG NNN
-    n += (this->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-
-    return n;
-}
-
-
-
 /*
 @todo see if this can be a std::ifstream or some kind of stream type of object?
 * padding = number of spaces?
@@ -129,8 +126,8 @@ unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 */
 unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t len_to_copy, std::ifstream *fh)
 {
-    unsigned int i;
     unsigned int written = 0;
+    unsigned int i;
     
     if(padding == 0) {
         padding = this->n;
@@ -254,6 +251,15 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
     return written;
 }
+
+
+unsigned int view_ucsc2bit_chunk(unsigned int, char *, off_t, size_t, std::ifstream *) {
+    unsigned int written = 0;
+    
+    return written;
+}
+
+
 
 /*
 CRAM specification:
