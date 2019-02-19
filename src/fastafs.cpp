@@ -253,8 +253,23 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 }
 
 
-unsigned int view_ucsc2bit_chunk(unsigned int, char *, off_t, size_t, std::ifstream *) {
+
+//http://genome.ucsc.edu/FAQ/FAQformat.html#format7
+unsigned int fastafs_seq::view_ucsc2bit_chunk(char *buffer, off_t start_pos_in_ucsc2bit, size_t len_to_copy, std::ifstream *fh)
+{
     unsigned int written = 0;
+    unsigned int pos = start_pos_in_ucsc2bit;
+    
+    // bytes 0-8:
+    const std::string header = TWOBIT_MAGIC TWOBIT_VERSION ;
+    while(written < len_to_copy and pos < 8 ) // and i < (end_of_file - 1)
+    {
+        buffer[pos] = header_init[pos++];
+        written++;
+    }
+
+    // sequence count
+    
     
     return written;
 }
