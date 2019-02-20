@@ -81,7 +81,7 @@ static int do_getattr( const char *path, struct stat *st )
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             st->st_size = ffi->f->get_faidx(ffi->padding).size();
         } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
-            st->st_size = 8 + 4;
+            st->st_size = ffi->f->ucsc2bit_filesize();
         }
     }
 

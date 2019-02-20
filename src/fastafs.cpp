@@ -576,7 +576,38 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 }
 
 
-
+unsigned int fastafs::ucsc2bit_filesize(void)
+{
+    unsigned int i,j;
+    
+    unsigned int nn = 4 + 4 + 4 + 4;
+    unsigned int nn_actg;
+    for(i = 0; i < this->data.size(); i++) {
+        nn += 4; // namesize
+        nn += this->data[i]->name.size();
+        nn += 4; // offset in file
+        
+        nn_actg = this->data[i]->n;
+        for(j = 0; j < this->data[i]->n_starts.size(); j++)
+        {
+            nn_actg -= this->data[i]->n_ends[j] - this->data[i]->n_starts[j];
+        }
+        
+        nn += nn_actg / 4;
+        if(nn_actg % 4 > 0){
+            nn++;
+        }
+        
+        nn += 4;// n blocks
+        // total size for storing N blocks:
+        nn += this->data[i]->n_starts.size() * (4 * 2); // both start and end
+        
+        nn += 4;// n masked regions - so far always 0 
+        nn += 4;// 'reserved' - always 0 for now
+    }
+    
+    return nn;
+}
 
 
 //http://genome.ucsc.edu/FAQ/FAQformat.html#format7
