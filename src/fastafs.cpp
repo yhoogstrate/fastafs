@@ -591,7 +591,8 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         const std::string header_init = TWOBIT_MAGIC TWOBIT_VERSION ;
         while(written < buffer_size and pos < 8 )// while bytes need to be copied and end of 2bit file is not yet reached
         {
-            buffer[pos] = header_init[pos++];
+            buffer[pos] = header_init[pos];
+            pos++;
             written++;
         }
 
