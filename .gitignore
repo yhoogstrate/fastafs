@@ -16,3 +16,4 @@ cmake_install.cmake
 tmp/
 repeats.txt
 build/
+xcheck.sh

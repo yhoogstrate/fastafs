@@ -29,6 +29,7 @@
 
 #include "twobit_byte.hpp"
 #include "fastafs.hpp"
+#include "utils.hpp"
 
 
 
@@ -595,7 +596,15 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         }
 
         // sequence count
-        
+        //char n_seq[5] = "abcd";
+        char n_seq[4];
+        uint_to_fourbytes(n_seq, (unsigned int) this->data.size());// @possble that this conversion is different than in the ucsc kent code
+        while(written < buffer_size and pos < (8+4) )
+        {
+            buffer[pos] = n_seq[pos - 8];
+            pos++;
+            written++;
+        }
     
         file.close();
     } else {
