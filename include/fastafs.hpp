@@ -14,8 +14,8 @@ public:
     std::string name;//may not exceed 255 chars in current datatype
     unsigned int data_position;
     unsigned int n;// number nucleotides
-    std::vector<unsigned int> n_starts;// start positions (0-based)
-    std::vector<unsigned int> n_ends;// end positions (1-based)
+    std::vector<unsigned int> n_starts;// start positions 0-based)
+    std::vector<unsigned int> n_ends;// end positions (is 0-based, must become 1-based)
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented
 

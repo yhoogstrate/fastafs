@@ -585,12 +585,16 @@ unsigned int fastafs::ucsc2bit_filesize(void)
     for(i = 0; i < this->data.size(); i++) {
         nn += 4; // namesize
         nn += this->data[i]->name.size();
+        printf("namesize = %i\n", this->data[i]->name.size());
         nn += 4; // offset in file
         
         nn_actg = this->data[i]->n;
+        printf("nn_actg = %i\n",nn_actg);
         for(j = 0; j < this->data[i]->n_starts.size(); j++)
         {
-            nn_actg -= this->data[i]->n_ends[j] - this->data[i]->n_starts[j];
+            printf(" [(%i - %i) + 1] = %i \n", this->data[i]->n_ends[j], this->data[i]->n_starts[j] , (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1);
+            nn_actg -= (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1;
+            printf("nn_actg = %i\n",nn_actg);
         }
         
         nn += nn_actg / 4;
