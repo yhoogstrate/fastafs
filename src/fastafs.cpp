@@ -674,6 +674,17 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 j++;
             }
             
+            unsigned int offset = 0;
+            j = 0;
+            uint_to_fourbytes_ucsc2bit(n_seq, offset);
+            while(written < buffer_size and j < 4)
+            {
+                buffer[pos] = n_seq[j];
+                pos++;
+                written++;
+                j++;
+            }
+            
         }
     
         file.close();
