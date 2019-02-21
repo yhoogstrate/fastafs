@@ -24,6 +24,16 @@ void uint_to_fourbytes(char *chars, unsigned int n)
 }
 
 
+// ucsc2bit is somehow stringreverted
+void uint_to_fourbytes_ucsc2bit(char *chars, unsigned int n)
+{
+    chars[3] = (signed char) ((n >> 24) & 0xFF);
+    chars[2] = (signed char) ((n >> 16) & 0xFF);
+    chars[1] = (signed char) ((n >> 8) & 0xFF);
+    chars[0] = (signed char) (n & 0xFF);
+}
+
+
 
 /**
  * @brief parses mtab and searches for al fastafs mounts

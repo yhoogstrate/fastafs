@@ -625,6 +625,7 @@ unsigned int fastafs::ucsc2bit_filesize(void)
 //http://genome.ucsc.edu/FAQ/FAQformat.html#format7
 unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
 {
+    unsigned int eof = this->ucsc2bit_filesize();
     unsigned int written = 0;
     unsigned int pos = file_offset;
     
@@ -639,15 +640,40 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             written++;
         }
 
-        // sequence count
-        //char n_seq[5] = "abcd";
         char n_seq[4];
-        uint_to_fourbytes(n_seq, (unsigned int) this->data.size());// @possble that this conversion is different than in the ucsc kent code
-        while(written < buffer_size and pos < (8+4) )
+        uint_to_fourbytes_ucsc2bit(n_seq, (unsigned int) this->data.size());
+        while(written < buffer_size and pos < (8 + 4))
         {
             buffer[pos] = n_seq[pos - 8];
             pos++;
             written++;
+        }
+
+        while(written < buffer_size and pos < (8 + 4 + 4))
+        {
+            buffer[pos] = '\0';
+            pos++;
+            written++;
+        }
+        
+        for(unsigned int i = 0; i < this->data.size();i++) 
+        {
+            if(written < buffer_size)
+            {
+                buffer[pos] = (unsigned char) this->data[i]->name.size();
+                pos++;
+                written++;
+            }
+            
+            unsigned int j = 0;
+            while(written < buffer_size and j < this->data[i]->name.size())
+            {
+                buffer[pos] = this->data[i]->name[j];
+                pos++;
+                written++;
+                j++;
+            }
+            
         }
     
         file.close();
