@@ -580,34 +580,42 @@ unsigned int fastafs::ucsc2bit_filesize(void)
 {
     unsigned int i,j;
     
-    unsigned int nn = 4 + 4 + 4 + 4;
+    unsigned int nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
     unsigned int nn_actg;
+
     for(i = 0; i < this->data.size(); i++) {
-        nn += 4; // namesize
+        nn += 1; // namesize
+        nn += 4; // offset in file
+
+        nn += 4;// dna size
+        nn += 4;// n blocks
+        nn += this->data[i]->n_starts.size() * (4 * 2); // both start and end
+
+        nn += 4;// n masked regions - so far always 0 
+        nn += 4;// reserved
+        
         nn += this->data[i]->name.size();
         printf("namesize = %i\n", this->data[i]->name.size());
-        nn += 4; // offset in file
         
         nn_actg = this->data[i]->n;
         printf("nn_actg = %i\n",nn_actg);
-        for(j = 0; j < this->data[i]->n_starts.size(); j++)
-        {
-            printf(" [(%i - %i) + 1] = %i \n", this->data[i]->n_ends[j], this->data[i]->n_starts[j] , (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1);
-            nn_actg -= (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1;
-            printf("nn_actg = %i\n",nn_actg);
-        }
         
+        // Ns are also written down to disk, as 0's !
+        //for(j = 0; j < this->data[i]->n_starts.size(); j++)
+        //{
+            //printf(" [(%i - %i) + 1] = %i \n", this->data[i]->n_ends[j], this->data[i]->n_starts[j] , (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1);
+            //nn_actg -= (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1;
+            //printf("nn_actg = %i\n",nn_actg);
+        //}
+        
+        printf("packedDNA size=%i\n",nn_actg / 4);
         nn += nn_actg / 4;
         if(nn_actg % 4 > 0){
+            printf("   + 1\n");
             nn++;
         }
         
-        nn += 4;// n blocks
         // total size for storing N blocks:
-        nn += this->data[i]->n_starts.size() * (4 * 2); // both start and end
-        
-        nn += 4;// n masked regions - so far always 0 
-        nn += 4;// 'reserved' - always 0 for now
     }
     
     return nn;
