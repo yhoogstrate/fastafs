@@ -661,14 +661,20 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             written++;
         }
         
-        for(unsigned int i = 0; i < this->data.size();i++) 
+        unsigned int header_block_len = 4+4+4+4 + (this->data.size() * (1 + 4));
+        unsigned int header_offset_previous = 0;
+        for(unsigned int i = 0; i < this->data.size(); i++) 
         {
-            if(written < buffer_size)
-            {
-                buffer[pos] = (unsigned char) this->data[i]->name.size();
-                pos++;
-                written++;
-            }
+            header_block_len += this->data[i]->name.size();
+        }
+
+        unsigned int i = 0;
+        while(written < buffer_size and i < this->data.size()) 
+        {
+            // single byte can be written, as the while loop has returned true
+            buffer[pos] = (unsigned char) this->data[i]->name.size();
+            pos++;
+            written++;
             
             unsigned int j = 0;
             while(written < buffer_size and j < this->data[i]->name.size())
@@ -679,7 +685,8 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 j++;
             }
             
-            unsigned int offset = 0;
+            printf("first block size [85] = %i , %i\n", header_block_len, pos);
+            unsigned int offset = header_block_len + header_offset_previous;
             j = 0;
             uint_to_fourbytes_ucsc2bit(n_seq, offset);
             while(written < buffer_size and j < 4)
@@ -690,6 +697,12 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 j++;
             }
             
+            header_offset_previous += this->data[i]->n / 4;
+            if(this->data[i]->n % 4 == 0){
+                header_offset_previous++;
+            }
+            
+            i++;
         }
     
         file.close();
