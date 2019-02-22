@@ -27,8 +27,8 @@ addons:
           - libfuse-dev
           - gcc
           - g++
-          - clang
-
+          - clang-6.0
+          - libstdc++-7-dev
 
 install:
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo apt-get install -qq valgrind astyle; fi
@@ -36,7 +36,7 @@ install:
 #  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew upgrade boost; fi
 #  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install doxygen valgrind astyle openssl; fi
   
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8" CMAKE_CXX_COMPILER="g++-4.8" CMAKE_C_COMPILER="gcc-4.8"; fi ; ./build-debug.sh
+  - ./build-debug.sh
 
 #matrix:
 #    exclude:
