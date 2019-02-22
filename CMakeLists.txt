@@ -125,6 +125,7 @@ add_test(test_cache          "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view           "${BUILD_TEST_DIR}/test_view")
 add_test(test_tree           "${BUILD_TEST_DIR}/test_tree")
 add_test(test_fastafs        "${BUILD_TEST_DIR}/test_fastafs")
+add_test(test_fastafs        "${BUILD_TEST_DIR}/test_ucsc2bit")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'
