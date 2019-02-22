@@ -595,27 +595,15 @@ unsigned int fastafs::ucsc2bit_filesize(void)
         nn += 4;// reserved
         
         nn += this->data[i]->name.size();
-        //printf("namesize = %i\n", this->data[i]->name.size());
-        
+
+        /*
         nn_actg = this->data[i]->n;
-        //printf("nn_actg = %i\n",nn_actg);
-        
-        // Ns are also written down to disk, as 0's !
-        //for(j = 0; j < this->data[i]->n_starts.size(); j++)
-        //{
-            //printf(" [(%i - %i) + 1] = %i \n", this->data[i]->n_ends[j], this->data[i]->n_starts[j] , (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1);
-            //nn_actg -= (this->data[i]->n_ends[j] - this->data[i]->n_starts[j]) + 1;
-            //printf("nn_actg = %i\n",nn_actg);
-        //}
-        
-        //printf("packedDNA size=%i\n",nn_actg / 4);
         nn += nn_actg / 4;
         if(nn_actg % 4 > 0){
-            //printf("   + 1\n");
             nn++;
-        }
+        }*/
         
-        // total size for storing N blocks:
+        nn += (this->data[i]->n + 3) / 4; // math.ceil hack
     }
     
     return nn;
@@ -669,6 +657,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         }
 
         unsigned int i = 0;
+        unsigned int j;
         while(written < buffer_size and i < this->data.size()) 
         {
             // single byte can be written, as the while loop has returned true
@@ -676,7 +665,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             pos++;
             written++;
             
-            unsigned int j = 0;
+            j = 0;
             while(written < buffer_size and j < this->data[i]->name.size())
             {
                 buffer[pos] = this->data[i]->name[j];
@@ -706,6 +695,50 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
             printf("[+%i -> %i]\n",header_offset_previous, 85 + header_offset_previous);
             
+            i++;
+        }
+
+        i = 0;
+        while(i < this->data.size()) // last one is EOF
+        {
+            printf("open loop\n");
+            j = 0;
+            uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n);
+            while(written < buffer_size and j < 4)
+            {
+                buffer[pos] = n_seq[j];
+                pos++;
+                written++;
+                j++;
+            }
+
+            j = 0;
+            uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts.size());
+            while(written < buffer_size and j < 4)
+            {
+                buffer[pos] = n_seq[j];
+                pos++;
+                written++;
+                j++;
+            }
+            
+            j = 0;
+            while(written < buffer_size and j < 8) // m-blocks = 0000 and reserved too
+            {
+                buffer[pos] = '\0';
+                pos++;
+                written++;
+                j++;
+            }
+            
+            j = 0;
+            while(written < buffer_size and j <   (this->data[i]->n+3)/4  ) // m-blocks = 0000 and reserved too
+            {
+                buffer[pos] = '\11';
+                pos++;
+                written++;
+                j++;
+            }
             i++;
         }
     

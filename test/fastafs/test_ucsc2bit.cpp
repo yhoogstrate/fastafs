@@ -151,7 +151,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
     BOOST_REQUIRE(file.is_open());
-    
+
+
     // check ucsc2bit header:
     char buffer[1024 + 1];
     std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\00\00\00"s "\00\00\00\00"s // literals bypass a char* conversion and preserve nullbytes
@@ -161,7 +162,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                             "\x06"s "chr3.2"s "\x99\00\00\00"s
                             "\x06"s "chr3.3"s "\xAD\00\00\00"s
                             "\x04"s "chr4"s "\xC1\00\00\00"s
-                            "\x04"s "chr5"s "\xDB\00\00\00"s;
+                            "\x04"s "chr5"s "\xDB\00\00\00"s
+                            "\x10\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s "\00\x55\xAA\xFF"s;
     unsigned int complen;
 
     // test header
@@ -249,6 +251,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
+
+    // test ... + sequence 1 data-block (without sequence)
+    complen += 4*3;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    //complen += 16/4;
+    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
 
     // debug
