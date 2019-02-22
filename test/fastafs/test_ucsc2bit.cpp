@@ -41,10 +41,20 @@ is:
 0000003c: 00110011 00101110 00110011 10101101 00000000 00000000  3.3...
 00000042: 00000000 00000100 01100011 01101000 01110010 00110100  ..chr4
 00000048: 11000001 00000000 00000000 00000000 00000100 01100011  .....c
+
+          h        r        5      ] [ offset5 = ??
 0000004e: 01101000 01110010 00110101 11011011 00000000 00000000  hr5...
+
+                 ] [ dna size = 16                   ] [ n block
 00000054: 00000000 00010000 00000000 00000000 00000000 00000000  ......
+
+          = 0                      ] [ m block = 4             
 0000005a: 00000000 00000000 00000000 00000000 00000000 00000000  ......
+
+                 ] [ reserved = 4                    ] [ TTTT
 00000060: 00000000 00000000 00000000 00000000 00000000 00000000  ......
+
+          CCCC     AAAA     GGGG   ]
 00000066: 01010101 10101010 11111111 00010000 00000000 00000000  U.....
 0000006c: 00000000 00000001 00000000 00000000 00000000 00001000  ......
 00000072: 00000000 00000000 00000000 00000100 00000000 00000000  ......
@@ -74,6 +84,9 @@ is:
 padding seq1 = 
 strlen("chr1chr2chr3.1chr3.2chr3.3chr4chr5") = 34
 4+4+4+4 + 34 + (7 * (4+1)) = 85
+
+dnasize=4
+85 + 4 + 4 + (0*8) + 4 + 4 + 4 = 101
 
 */
 
@@ -130,7 +143,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     // check ucsc2bit header:
     char buffer[1024 + 1];
     std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\00\00\00"s "\00\00\00\00"s // literals bypass a char* conversion and preserve nullbytes
-                            "\x04"s "chr1"s "\x55\00\00\00"s;
+                            "\x04"s "chr1"s "\x55\00\00\00"s
+                            "\x04"s "chr2"s "\x69\00\00\00"s;
 
     unsigned int complen;
 
@@ -159,6 +173,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
+    // test ... + sequence 2 name
+    complen += 5;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 2 offset
+    complen += 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
 
 

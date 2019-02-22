@@ -697,10 +697,14 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 j++;
             }
             
+            header_offset_previous += 4 + 4 + 4 + 4;
+            header_offset_previous += 8 * this->data[i]->n_starts.size();
             header_offset_previous += this->data[i]->n / 4;
-            if(this->data[i]->n % 4 == 0){
+            if(this->data[i]->n % 4 != 0)
+            {
                 header_offset_previous++;
             }
+            printf("[+%i -> %i]\n",header_offset_previous, 85 + header_offset_previous);
             
             i++;
         }
