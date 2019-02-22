@@ -1,6 +1,8 @@
 os:
   - linux
 
+dist: xenial
+
 language: cpp
 
 compiler:
@@ -20,8 +22,8 @@ addons:
           - libboost-filesystem-dev
           - libboost-test-dev
           - libfuse-dev
-          - gcc-8
-          - g++-8
+          - gcc
+          - g++
           - clang
           - libstdc++
 
