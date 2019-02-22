@@ -427,13 +427,13 @@ void fastafs::load(std::string afilename)
             file.read (memblock, 16);
             memblock[16] = '\0';
   
-            char twobit_magic[5] = TWOBIT_MAGIC;
+            //char twobit_magic[5] = TWOBIT_MAGIC;
 
             unsigned int i;
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
-                if(memblock[i] != twobit_magic[i]) {
+                if(memblock[i] != UCSC2BIT_MAGIC[i]) {
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
@@ -595,10 +595,10 @@ unsigned int fastafs::ucsc2bit_filesize(void)
         nn += 4;// reserved
         
         nn += this->data[i]->name.size();
-        printf("namesize = %i\n", this->data[i]->name.size());
+        //printf("namesize = %i\n", this->data[i]->name.size());
         
         nn_actg = this->data[i]->n;
-        printf("nn_actg = %i\n",nn_actg);
+        //printf("nn_actg = %i\n",nn_actg);
         
         // Ns are also written down to disk, as 0's !
         //for(j = 0; j < this->data[i]->n_starts.size(); j++)
@@ -608,10 +608,10 @@ unsigned int fastafs::ucsc2bit_filesize(void)
             //printf("nn_actg = %i\n",nn_actg);
         //}
         
-        printf("packedDNA size=%i\n",nn_actg / 4);
+        //printf("packedDNA size=%i\n",nn_actg / 4);
         nn += nn_actg / 4;
         if(nn_actg % 4 > 0){
-            printf("   + 1\n");
+            //printf("   + 1\n");
             nn++;
         }
         
@@ -632,10 +632,15 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         // bytes 0-8:
-        const std::string header_init = TWOBIT_MAGIC TWOBIT_VERSION ;
+        while(written < buffer_size and pos < 4 )// while bytes need to be copied and end of 2bit file is not yet reached
+        {
+            buffer[pos] = UCSC2BIT_MAGIC[pos];
+            pos++;
+            written++;
+        }
         while(written < buffer_size and pos < 8 )// while bytes need to be copied and end of 2bit file is not yet reached
         {
-            buffer[pos] = header_init[pos];
+            buffer[pos] = UCSC2BIT_VERSION[pos - 4];
             pos++;
             written++;
         }

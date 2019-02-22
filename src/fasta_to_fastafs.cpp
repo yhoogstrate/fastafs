@@ -346,11 +346,8 @@ void fasta_to_fastafs::write(std::string filename)
         unsigned int four_bytes;
         unsigned char byte;
 
-        char ch1[] = TWOBIT_MAGIC;
-        twobit_out_stream.write(reinterpret_cast<char *> (&ch1), (size_t) 4);
-
-        char ch2[] = TWOBIT_VERSION;
-        twobit_out_stream.write(reinterpret_cast<char *> (&ch2), (size_t) 4);
+        twobit_out_stream << UCSC2BIT_MAGIC;
+        twobit_out_stream << UCSC2BIT_VERSION;
 
         //four_bytes = (unsigned int) this->data.size();
         //unsigned int n = (unsigned int) this->data.size();

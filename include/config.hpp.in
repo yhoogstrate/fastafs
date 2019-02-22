@@ -36,5 +36,5 @@
 #define NUCLEOTIDE_A 2 // 10
 #define NUCLEOTIDE_G 3 // 11
 
-#define TWOBIT_MAGIC "\x43\x27\x41\x1a";
-#define TWOBIT_VERSION "\x00\x00\x00\x00"
+//#define TWOBIT_MAGIC "\x43\x27\x41\x1a";
+//#define TWOBIT_VERSION "\x00\x00\x00\x00"

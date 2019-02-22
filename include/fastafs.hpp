@@ -70,4 +70,10 @@ public:
     int check_integrity();
 };
 
+
+// Constants:
+using namespace std::literals;
+const std::string UCSC2BIT_MAGIC = "\x43\x27\x41\x1a"s;
+const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
+
 #endif
