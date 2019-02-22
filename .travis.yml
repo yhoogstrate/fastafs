@@ -1,6 +1,5 @@
 os:
   - linux
-#  - osx
 
 language: cpp
 
@@ -10,10 +9,6 @@ compiler:
 
 before_install:
   - mkdir tmp
-#; if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew update; fi
-
-python:
-  - "2.7"
 
 addons:
     apt:
@@ -25,22 +20,16 @@ addons:
           - libboost-filesystem-dev
           - libboost-test-dev
           - libfuse-dev
-          - g++-7
-          - clang-6.0
-          - libstdc++-7-dev
+          - gcc-8
+          - g++-8
+          - clang
+          - libstdc++
 
 install:
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then sudo apt-get install -qq valgrind astyle; fi
-  
-#  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew upgrade boost; fi
-#  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew install doxygen valgrind astyle openssl; fi
-  
+
   - ./build-debug.sh
 
-#matrix:
-#    exclude:
-#        - os: osx
-#          compiler: gcc
 
 
 script:
