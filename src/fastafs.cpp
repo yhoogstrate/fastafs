@@ -732,9 +732,14 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
             
             j = 0;
+            char c;
+            unsigned int nucleotide_pos = 0;
             while(written < buffer_size and j <   (this->data[i]->n+3)/4  ) // m-blocks = 0000 and reserved too
             {
-                buffer[pos] = '\11';
+                for(unsigned int k =0; k < 4; k++) {
+                    // c = as.char n[0:4]
+                }
+                buffer[pos] = '\11';//c
                 pos++;
                 written++;
                 j++;
