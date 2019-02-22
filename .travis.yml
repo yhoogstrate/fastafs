@@ -25,8 +25,7 @@ addons:
           - libboost-filesystem-dev
           - libboost-test-dev
           - libfuse-dev
-          - gcc
-          - g++
+          - g++-7
           - clang-6.0
           - libstdc++-7-dev
 
