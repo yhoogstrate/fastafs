@@ -39,13 +39,48 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         break;
 #if DEBUG
     default:
-        throw std::invalid_argument("twobit_byte::set(,nucleotide) invalid value\n");
+        throw std::invalid_argument("twobit_byte::set(pos, nucleotide) invalid value\n");
         break;
 #endif //DEBUG
     }
 };
 
 
+// input char "AACCCTTGG"
+// N's are treated as 0, for some weird reason
+void twobit_byte::set(char* buffer)
+{
+    for(unsigned char i = 0; i < 4; i++)
+    {
+        switch (buffer[i])
+        {
+            case 't':
+            case 'T':
+            case 'n':
+            case 'N':
+                this->set(i * 2, 0);
+            break;
+            case 'c':
+            case 'C':
+                this->set(i * 2, 1);
+            break;
+            case 'a':
+            case 'A':
+                this->set(i * 2, 2);
+            break;
+            case 'g':
+            case 'G':
+                this->set(i * 2, 3);
+            break;
+
+            #if DEBUG
+                default:
+                    throw std::invalid_argument("twobit_byte::set(char *) invalid value\n");
+                    break;
+            #endif //DEBUG
+        }
+    }
+}
 
 /**
  * @brief fully decodes a twobit byte, not referencing to a hash but allocating a new char*, slower than twobit_byte::get(void) but capable of determining very ends

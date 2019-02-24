@@ -10,6 +10,7 @@ class twobit_byte
 public:
     unsigned char data;
     void set(unsigned char, unsigned char);
+    void set(char*);// string met 4 bytes set
     const char *get(void);
     char *get(unsigned char);
 };
