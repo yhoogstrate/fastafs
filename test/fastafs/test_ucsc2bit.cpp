@@ -66,9 +66,13 @@ is:
                  ] [ reserved = 4                    ] [ TTTT
 00000060: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 
-          CCCC     AAAA     GGGG   ]
+          CCCC     AAAA     GGGG   ] [ dna size = 16           
 00000066: 01010101 10101010 11111111 00010000 00000000 00000000  U.....
+
+*                ] [ n-blocks = 1                    ] [       
 0000006c: 00000000 00000001 00000000 00000000 00000000 00001000  ......
+
+          n-block 1 starts at = 8  ]
 00000072: 00000000 00000000 00000000 00000100 00000000 00000000  ......
 00000078: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 0000007e: 00000000 00000000 00000000 10010011 10010011 00000000  ......
@@ -164,8 +168,11 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                             "\x04"s "chr4"s "\xC1\00\00\00"s
                             "\x04"s "chr5"s "\xDB\00\00\00"s
                             "\x10\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s
-                                "\00\x55\xAA\xFF"s // sequence
-                            ;
+                                "\00\x55"s ; //\xAA\xFF"s // sequence
+                                
+                            ;//"\x10\00\00\00"s "\01\00\00\00"s "\x08\00\00\00"s "\00\00\00\x04"s "\00\00\00\00"s "\00\00\00\00"s
+                               // "\x93\x93\00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \00 \x93
+                            //;
     unsigned int complen;
 
     // test header
@@ -263,10 +270,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
+    // test ... + sequence 2 data-block (without sequence)
+    complen += 4 + 4 ;//+ 4; // + 4 + 4 +4 + 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
 
     // debug
-    for(unsigned int i = 95; i < reference.size(); i++) {
+    for(unsigned int i = 95; i < reference.size() && i < complen; i++) {
         printf("[%i]  ref:%i\t == buf:%i\n",i, (unsigned int) reference[i], (unsigned int) buffer[i]);
     }
 

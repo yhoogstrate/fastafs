@@ -611,6 +611,7 @@ unsigned int fastafs::ucsc2bit_filesize(void)
 
 
 //http://genome.ucsc.edu/FAQ/FAQformat.html#format7
+//https://www.mathsisfun.com/binary-decimal-hexadecimal-converter.html
 unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
 {
     unsigned int eof = this->ucsc2bit_filesize();
@@ -721,6 +722,24 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 j++;
             }
             
+            if(written < buffer_size)
+            {
+                // write n-blocks effectively down!
+                for(unsigned int k = 0; k < this->data[i]->n_starts.size(); k++)
+                {
+                    printf("K!: %i \n",this->data[i]->n_starts[k]);
+                    j = 0;
+                    uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts[k]);
+                    while(written < buffer_size and j < 4)
+                    {
+                        buffer[pos] = n_seq[j];
+                        pos++;
+                        written++;
+                        j++;
+                    }
+                }
+            }
+            
             j = 0;
             while(written < buffer_size and j < 8) // m-blocks = 0000 and reserved too
             {
@@ -733,10 +752,12 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             j = 0;
             char subseq[25];
             twobit_byte t;
-            while(written < buffer_size and j < (this->data[i]->n-1)/4  ) // m-blocks = 0000 and reserved too
+            while(written < buffer_size and j < (this->data[i]->n-1)  ) // m-blocks = 0000 and reserved too
             {
                 printf("%i: ",j);
+                
                 j += this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, 4, &file);
+                printf(" j=%i ",j);
                 t.set(subseq);
                 buffer[pos] = t.data;
                 printf("[%s -> %i]\n",subseq, t.data);
@@ -749,7 +770,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             subseq[1]= '\0';
             subseq[2]= '\0';
             subseq[3]= '\0';
-            if(written < buffer_size and j < (this->data[i]->n+3)/4  ) // m-blocks = 0000 and reserved too
+            if(written < buffer_size and j < (this->data[i]->n+3)  ) // m-blocks = 0000 and reserved too
             {
                 printf("%i: ",j);
                 unsigned int seqlen = this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, 4, &file);
@@ -758,7 +779,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 printf("[%s -> %i] ** last one\n",subseq, t.data);
                 pos++;
                 written++;
-                j += seqlen;
+                j++;
             }
             i++;
         }
