@@ -351,10 +351,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 7 sequence-data-block
-    complen += (6+3)/4 ;
+    complen += (6+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
+    // out of bound check
+    unsigned int written = fs.view_ucsc2bit_chunk(buffer, complen + 4, 0);
+    BOOST_CHECK_EQUAL(written, complen);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    
 
     // debug
     for(unsigned int i = 145; i < reference.size() && i < complen; i++) {
