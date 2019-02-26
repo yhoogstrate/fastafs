@@ -619,6 +619,8 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
     
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
+        char n_seq[4];
+
         // bytes 0-4:
         while(pos < 4)// while bytes need to be copied and end of 2bit file is not yet reached
         {
@@ -640,13 +642,12 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
         }
 
-        char n_seq[4];
         uint_to_fourbytes_ucsc2bit(n_seq, (unsigned int) this->data.size());
         while(pos < (8 + 4))
         {
-            buffer[pos] = n_seq[pos - 8];
+            //printf(".: %i\n", n_seq[pos - 8]);
+            buffer[written++] = n_seq[pos - 8];
             pos++;
-            written++;
             
             if(written >= buffer_size) {
                 return written;

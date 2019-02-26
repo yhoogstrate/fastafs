@@ -450,20 +450,20 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
     
     BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
 
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-    }
-    printf("---\n");
+    //for(unsigned int i = 0; i < complen; i++) {
+        //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+        //if(reference[i + file_offset] != buffer[i])
+        //{
+            //printf("   ERR/MISMATCH");
+        //}
+        //printf("\n");
+    //}
+    //printf("---\n");
 
 
-    // offset 1 byte, starting in the VERSION HEADER:
-    file_offset += 4;
-    complen = 3;
+    // offset 3,8 byte, starting in the VERSION HEADER:
+    file_offset  = 3;
+    complen = 5;
     fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
     BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
 
     // offset 1 byte, starting in the n-seq:
     file_offset += 4;
-    complen = 3;
+    complen = 5;
     fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
     BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
 
     // offset 1 byte, starting in the reserved zero:
     file_offset += 4;
-    complen = 3;
+    complen = 5;
     fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
     BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
