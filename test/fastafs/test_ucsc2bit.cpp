@@ -475,6 +475,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             printf("   ERR/MISMATCH");
         }
         printf("\n");
+        if(i == 0) {
+            printf("\n");
+        }
     }
     printf("---\n");
 
@@ -493,6 +496,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             printf("   ERR/MISMATCH");
         }
         printf("\n");
+        if(i == 0) {
+            printf("\n");
+        }
     }
     printf("---\n");
 
@@ -511,6 +517,30 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             printf("   ERR/MISMATCH");
         }
         printf("\n");
+        if(i == 0) {
+            printf("\n");
+        }
+    }
+    printf("---\n");
+
+
+    // single byte strlen
+    file_offset += 4;
+    complen = 2;
+    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
+    
+    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
+
+    for(unsigned int i = 0; i < complen; i++) {
+        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+        if(reference[i + file_offset] != buffer[i])
+        {
+            printf("   ERR/MISMATCH");
+        }
+        printf("\n");
+        if(i == 0) {
+            printf("\n");
+        }
     }
     printf("---\n");
 
