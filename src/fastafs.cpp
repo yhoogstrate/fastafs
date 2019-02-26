@@ -622,7 +622,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
     if (file.is_open()) {
         char n_seq[4];
 
-        pos_delim += 4;// skip this loop after writing first four bytes
+        pos_limit += 4;// skip this loop after writing first four bytes
         while(pos < pos_limit)
         {
             buffer[written++] = UCSC2BIT_MAGIC[pos];
@@ -633,7 +633,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
         }
 
-        pos_delim += 4;
+        pos_limit += 4;
         while(pos < pos_limit)
         {
             buffer[written++] = UCSC2BIT_VERSION[pos - 4];
@@ -646,7 +646,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
 
         // number sequences
         uint_to_fourbytes_ucsc2bit(n_seq, (unsigned int) this->data.size());
-        pos_delim += 4;
+        pos_limit += 4;
         while(pos < pos_limit)
         {
             buffer[written++] = n_seq[pos - 8];
@@ -658,7 +658,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         }
 
         // 4 x nullbyte
-        pos_delim += 4;
+        pos_limit += 4;
         while(pos < pos_limit)
         {
             buffer[written++] = '\0';
@@ -680,37 +680,48 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         unsigned int j;
         while(i < this->data.size()) 
         {
-            if(pos < ) {
+            // single byte can be written, as the while loop has returned true
+            pos_limit += 1;
+            if(pos < pos_limit) {
                 buffer[written++] = (unsigned char) this->data[i]->name.size();
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
             }
-            
+
+            // sequence name
             j = 0;
-            while(j < this->data[i]->name.size())
+            pos_limit += this->data[i]->name.size();
+            while(j < this->data[i]->name.size() and pos < pos_limit)
             {
                 buffer[written++] = this->data[i]->name[j];
                 pos++;
+                //written++;
                 j++;
                 
                 if(written >= buffer_size) {
                     return written;
                 }
             }
+            
             
             //printf("first block size [85] = %i , %i\n", header_block_len, pos);
             unsigned int offset = header_block_len + header_offset_previous;
             j = 0;
             uint_to_fourbytes_ucsc2bit(n_seq, offset);
-            while(written < buffer_size and j < 4)
+            pos_limit += 4;
+            while(j < 4 and pos < pos_limit)
             {
-                buffer[pos] = n_seq[j];
+                buffer[written++] = n_seq[j];
                 pos++;
-                written++;
+                //written++;
                 j++;
+                
+                if(written >= buffer_size) {
+                    return written;
+                }
             }
             
             header_offset_previous += 4 + 4 + 4 + 4;
@@ -723,6 +734,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             
             i++;
         }
+
 
         i = 0;
         while(i < this->data.size()) // last one is EOF
