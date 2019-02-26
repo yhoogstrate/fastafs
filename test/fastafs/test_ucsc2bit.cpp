@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                             "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                 "\x93\x93\xAA\x54"s// last one is 01 01 01 00
                             "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x00"
+                                "\x93\x00" // ACTG NNNN = 10010011 00000000
                             "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                 "\x09\x30" // NNAC TG?? = 00001001 00110000
                             ;
@@ -202,88 +202,88 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 
     // test header
     complen = 8;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen), 0, complen), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen), 0, complen), 0);
     
     // test ... + n-seq
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + reserved
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 1 name
     complen += 5;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 1 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 2 name
     complen += 5;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 2 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 3 name
     complen += 7;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 3 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 4 name
     complen += 7;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 4 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 5 name
     complen += 7;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 5 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 6 name
     complen += 5;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 6 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 7 name
     complen += 5;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 7 offset
     complen += 4;
-    //fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
     // test ... + sequence 1 data-block (without sequence)
     complen += 4 + 4 + 4 + 4;
