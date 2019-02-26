@@ -675,7 +675,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 j++;
             }
             
-            printf("first block size [85] = %i , %i\n", header_block_len, pos);
+            //printf("first block size [85] = %i , %i\n", header_block_len, pos);
             unsigned int offset = header_block_len + header_offset_previous;
             j = 0;
             uint_to_fourbytes_ucsc2bit(n_seq, offset);
@@ -727,7 +727,6 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 // write n-blocks effectively down!
                 for(unsigned int k = 0; k < this->data[i]->n_starts.size(); k++)
                 {
-                    printf("K!: %i \n",this->data[i]->n_starts[k]);
                     j = 0;
                     uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts[k]);
                     while(written < buffer_size and j < 4)
@@ -764,13 +763,9 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             twobit_byte t;
             while(written < buffer_size and j < (this->data[i]->n/4)*4  ) // m-blocks = 0000 and reserved too
             {
-                printf("%i: ",j);
-                
                 j += this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, 4, &file);
-                printf(" j=%i ",j);
                 t.set(subseq);
                 buffer[pos] = t.data;
-                printf("[%s -> %i -> %u]\n",subseq, t.data, (signed int) t.data);
                 pos++;
                 written++;
             }
@@ -782,14 +777,12 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             subseq[3]= 'N';
             if(written < buffer_size and j < this->data[i]->n) // m-blocks = 0000 and reserved too
             {
-                printf("%i: ",j);
                 unsigned int w = this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, this->data[i]->n - j, &file);
                 t.set(subseq);
                 buffer[pos] = t.data;
-                printf("[%s -> %i] ** last one    [len=%i (written: %i) >> %s]\n",subseq, t.data, this->data[i]->n - j, w, t.get());
                 pos++;
                 written++;
-                j++;
+                j += w;
             }
             i++;
         }

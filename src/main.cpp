@@ -37,7 +37,8 @@ void usage_view(void)
     std::cout << "View FASTAFS file in FASTA format" << std::endl << std::endl;
     std::cout << "  -f, --file           Provide fastafs by file path, not from database (cache)" << std::endl;
     std::cout << "  -p, --padding        Number of nucleotides before delimited with a newline [default=60]" << std::endl;
-    std::cout << "  -2, --2bit           View in UCSC twoBit/2bit format (http://genome.ucsc.edu/FAQ/FAQformat.html#format7)" << std::endl;
+    std::cout << "  -2, --2bit           View in UCSC twoBit/2bit format" << std::endl;
+    std::cout << "                         http://genome.ucsc.edu/FAQ/FAQformat.html#format7" << std::endl;
     std::cout << std::endl;
     std::cout << "  -h, --help           Display this help and exit";
     std::cout << std::endl;
@@ -62,6 +63,7 @@ void usage_check(void)
     std::cout << std::endl;
 }
 
+// @todo: https://www.boost.org/doc/libs/1_69_0/doc/html/program_options/tutorial.html
 int main(int argc, char *argv[])
 {
     if (argc > 1) {

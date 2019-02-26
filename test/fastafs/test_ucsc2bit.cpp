@@ -360,8 +360,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
     
 
-    // debug
-    for(unsigned int i = 145; i < reference.size() && i < complen; i++) {
+    // debug toolkit
+    /*
+    for(unsigned int i = 0; i < reference.size() && i < complen; i++) {
         printf("[%i]  ref:%i ~ %u\t == buf:%i ~ %u",i, (signed char) reference[i], (unsigned char) reference[i], (signed char) buffer[i], (unsigned char) buffer[i]);
         if(reference[i] != buffer[i])
         {
@@ -369,7 +370,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
         }
         printf("\n");
     }
-
+    */
 }
 
 
