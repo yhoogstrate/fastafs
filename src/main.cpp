@@ -35,26 +35,31 @@ void usage_view(void)
 {
     std::cout << "usage: " << PACKAGE << " view [OPTION]... [FASTAFS-ID/FILE]" << std::endl;
     std::cout << "View FASTAFS file in FASTA format" << std::endl << std::endl;
-    std::cout << "  -f, --file                 View fastafs file from disk, not from database (cache)" << std::endl;
-    std::cout << "  -p, --padding              Number of nucleotides before delimited with a newline [default=60]" << std::endl;
-    std::cout << "  -2, --2bit                 View in UCSC twoBit/2bit format (http://genome.ucsc.edu/FAQ/FAQformat.html#format7)" << std::endl;
+    std::cout << "  -f, --file           Provide fastafs by file path, not from database (cache)" << std::endl;
+    std::cout << "  -p, --padding        Number of nucleotides before delimited with a newline [default=60]" << std::endl;
+    std::cout << "  -2, --2bit           View in UCSC twoBit/2bit format (http://genome.ucsc.edu/FAQ/FAQformat.html#format7)" << std::endl;
     std::cout << std::endl;
-    std::cout << "  -h, --help                 Display this help and exit";
+    std::cout << "  -h, --help           Display this help and exit";
     std::cout << std::endl;
 }
 
 void usage_info(void)
 {
     std::cout << "usage: " << PACKAGE << " info [<options>] <fastafs-id>\n\n";
-    std::cout << "    -f               use filename instead  of name or ID\n";
-    std::cout << "\n";
+    std::cout << "  -f, --file           Provide fastafs by file path, not from database (cache)" << std::endl;
+    std::cout << "  -e. --ena-verify     Verify if sha1 checksums of sequences exist in ENA\n";
+    std::cout << std::endl;
+    std::cout << "  -h, --help           Display this help and exit";
+    std::cout << std::endl;
 }
 
 void usage_check(void)
 {
     std::cout << "usage: " << PACKAGE << " check [<options>] <fastafs-id>\n\n";
-    std::cout << "    -f               use filename instead  of name or ID\n";
-    std::cout << "\n";
+    std::cout << "  -f, --file           Provide fastafs by file path, not from database (cache)" << std::endl;
+    std::cout << std::endl;
+    std::cout << "  -h, --help           Display this help and exit";
+    std::cout << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -138,15 +143,24 @@ int main(int argc, char *argv[])
             }
         } else if (strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
+                if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
+                    usage_info();
+                    exit(0);
+                }
+                
                 bool from_file = false;
                 bool ena_verify_checksum = false;
 
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0) {
+                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                     else if(strcmp(argv[i], "-e") == 0 or strcmp(argv[i], "--ena-verify") == 0) {
                         ena_verify_checksum = true;
+                    }
+                    else {
+                        usage_info();
+                        exit(1);
                     }
                 }
 
@@ -178,7 +192,7 @@ int main(int argc, char *argv[])
                 bool from_file = false;
 
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0) {
+                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                 }
