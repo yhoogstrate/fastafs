@@ -142,7 +142,7 @@ dnasize=4
 std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len) {
     std::string s = "";
     
-    for(unsigned int i = pos; i < len; i++) {
+    for(size_t i = pos; i < len; i++) {
         s.push_back(ref[i]);
     }
     
@@ -153,7 +153,7 @@ std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len) {
 std::string std_string_nullbyte_safe(char *ref, size_t len) {
     std::string s = "";
     
-    for(unsigned int i = 0; i < len; i++) {
+    for(size_t i = 0; i < len; i++) {
         s.push_back(ref[i]);
     }
     
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 
     // check ucsc2bit header:
     char buffer[1024 + 1];
-    std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
+    static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
                             "\x04"s "chr1"s   "\x55\x00\x00\x00"s
                             "\x04"s "chr2"s   "\x69\x00\x00\x00"s
                             "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
 
     // check ucsc2bit header:
     char buffer[1024 + 1];
-    std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
+    static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
                             "\x04"s "chr1"s   "\x55\x00\x00\x00"s
                             "\x04"s "chr2"s   "\x69\x00\x00\x00"s
                             "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
@@ -443,17 +443,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                             ;
     unsigned int file_offset, complen;
 
-    // get second byte
+    // offset 1,4 byte, starting in the MAGIC HEADER:
     file_offset = 1;
-    complen = 4;
+    complen = 3;
     fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
-    buffer[0] = reference[0 + file_offset];
-    buffer[1] = reference[1 + file_offset];
-    buffer[2] = reference[2 + file_offset];
-    buffer[3] = reference[3 + file_offset];
-    buffer[4] = '?';
-    
+    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
+
     for(unsigned int i = 0; i < complen; i++) {
         printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
         if(reference[i + file_offset] != buffer[i])
@@ -462,35 +458,62 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
         }
         printf("\n");
     }
+    printf("---\n");
 
-    // replace all the std::string(buffer, ..., ....); with some kind of substring method because nullbytes mess up
-    std::string buf = std_string_nullbyte_safe(buffer, 0 , 4);
-    printf("buf size: %i\n",buf.size());
-    //std::string buf = "\x27\x41\x1a\x00"s;
 
+    // offset 1 byte, starting in the VERSION HEADER:
+    file_offset += 4;
+    complen = 3;
+    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
-    printf("[%i][%i][%i][%i] == [%i][%i][%i][%i]\n",
-        reference[0 + file_offset], reference[1 + file_offset], reference[2 + file_offset], reference[3 + file_offset],
-        buffer[0], buffer[1], buffer[2], buffer[3]
-        );
+    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
 
-    printf("[%i][%i][%i][%i] == [%i][%i][%i][%i]\n",
-        reference[0 + file_offset], reference[1 + file_offset], reference[2 + file_offset], reference[3 + file_offset],
-        buf[0], buf[1], buf[2], buf[3]
-        );
+    for(unsigned int i = 0; i < complen; i++) {
+        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+        if(reference[i + file_offset] != buffer[i])
+        {
+            printf("   ERR/MISMATCH");
+        }
+        printf("\n");
+    }
+    printf("---\n");
 
-    printf("%i\n", reference.compare(1, 4, buf, 0, 4));
-    printf("%i\n", reference.compare(0, 4, buf, 0, 4));
-    printf("%i\n", reference.compare(0, 4, buf, 1, 4));
-    printf("%i\n", reference.compare(1, 5, buf, 0, 4));
-    printf("%i\n", reference.compare(1, 3, buf, 0, 3));
-    printf("%i\n", reference.compare(1, 3, buf, 0, 3));
+
+    // offset 1 byte, starting in the n-seq:
+    file_offset += 4;
+    complen = 3;
+    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
-    //BOOST_CHECK_EQUAL(reference.compare(1, 4, std::string(buffer, 0, 4), 0, 4), 0);
-    //BOOST_CHECK_EQUAL(reference.compare(1, 4, std::string(buffer, 0, 4), 1, 4), 0);
+    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
+
+    for(unsigned int i = 0; i < complen; i++) {
+        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+        if(reference[i + file_offset] != buffer[i])
+        {
+            printf("   ERR/MISMATCH");
+        }
+        printf("\n");
+    }
+    printf("---\n");
+
+
+    // offset 1 byte, starting in the reserved zero:
+    file_offset += 4;
+    complen = 3;
+    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
     
-    //BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std::string(buffer, 0, complen), 0, complen), 0);
-    //BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std::string(buffer, 0, complen), 0, complen), 0);
+    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
+
+    for(unsigned int i = 0; i < complen; i++) {
+        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+        if(reference[i + file_offset] != buffer[i])
+        {
+            printf("   ERR/MISMATCH");
+        }
+        printf("\n");
+    }
+    printf("---\n");
+
 }
 
 
