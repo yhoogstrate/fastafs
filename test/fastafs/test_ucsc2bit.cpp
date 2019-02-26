@@ -82,16 +82,32 @@ is:
 00000096: 10010011 10101010 01000000 00001110 00000000 00000000  ..@...
 0000009c: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 000000a2: 00000000 00000000 00000000 00000000 00000000 00000000  ......
+
+                                              CC??
 000000a8: 00000000 10010011 10010011 10101010 01010000 00001111  ....P.
 000000ae: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 000000b4: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 000000ba: 00000000 00000000 00000000 10010011 10010011 10101010  ......
+
+          CCC?     [ n=8                             ] [nblox=1
 000000c0: 01010100 00001000 00000000 00000000 00000000 00000001  T.....
+
+                                   ] [ n blokc starts = 4      
 000000c6: 00000000 00000000 00000000 00000100 00000000 00000000  ......
+
+                 ] [ n block len = 4                 ] [ m = 0
 000000cc: 00000000 00000100 00000000 00000000 00000000 00000000  ......
+
+                                   ] [ reserved]
 000000d2: 00000000 00000000 00000000 00000000 00000000 00000000  ......
+
+                 ] [ ACTG   NNNN   ] [ n-seq=6  
 000000d8: 00000000 10010011 00000000 00000110 00000000 00000000  ......
+
+                 ] [ n-blocks = 1                    ] [ first
 000000de: 00000000 00000001 00000000 00000000 00000000 00000000  ......
+
+          n black starts at 0      ]
 000000e4: 00000000 00000000 00000000 00000010 00000000 00000000  ......
 000000ea: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 000000f0: 00000000 00000000 00000000 00001001 00110000           ....0
@@ -159,19 +175,28 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 
     // check ucsc2bit header:
     char buffer[1024 + 1];
-    std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\00\00\00"s "\00\00\00\00"s // literals bypass a char* conversion and preserve nullbytes
-                            "\x04"s "chr1"s "\x55\00\00\00"s
-                            "\x04"s "chr2"s "\x69\00\00\00"s
-                            "\x06"s "chr3.1"s "\x85\00\00\00"s
-                            "\x06"s "chr3.2"s "\x99\00\00\00"s
-                            "\x06"s "chr3.3"s "\xAD\00\00\00"s
-                            "\x04"s "chr4"s "\xC1\00\00\00"s
-                            "\x04"s "chr5"s "\xDB\00\00\00"s
-                            "\x10\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s
-                                "\00\x55\xAA\xFF"s // sequence
-                            "\x10\00\00\00"s "\01\00\00\00"s "\x08\00\00\00"s "\x04\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s
-                               "\x93\x93\00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \00 \x93
-                            "\x0D\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s "\00\00\00\00"
+    std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
+                            "\x04"s "chr1"s   "\x55\x00\x00\x00"s
+                            "\x04"s "chr2"s   "\x69\x00\x00\x00"s
+                            "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
+                            "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
+                            "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
+                            "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
+                            "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
+                            "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x00\x55\xAA\xFF"s // sequence
+                            "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
+                            "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\xAA\x40"s// last one is 01 00 00 00
+                            "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\xAA\x50"s// last one is 01 01 00 00
+                            "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\xAA\x54"s// last one is 01 01 01 00
+                            "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x00"
+                            "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x09\x30" // NNAC TG?? = 00001001 00110000
                             ;
     unsigned int complen;
 
@@ -285,6 +310,50 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
+    // test ... + sequence 3 sequence-data-block
+    complen += (13+3)/4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 4 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
+    complen += 4 + 4 + 4 + 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 4 sequence-data-block
+    complen += (14+3)/4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 5 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
+    complen += 4 + 4 + 4 + 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 5 sequence-data-block
+    complen += (15+3)/4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 6 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
+    complen += 4 + 4 + 4 + 4 + 4 + 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 6 sequence-data-block
+    complen += (8+3)/4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 7 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
+    complen += 4 + 4 + 4 + 4 + 4 + 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 7 sequence-data-block
+    complen += (6+3)/4 ;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
 
     // debug

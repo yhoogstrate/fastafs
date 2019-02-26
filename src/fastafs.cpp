@@ -776,17 +776,17 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
             
             // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
-            subseq[0]= '\0';
-            subseq[1]= '\0';
-            subseq[2]= '\0';
-            subseq[3]= '\0';
-            if(written < buffer_size and j < this->data[i]->n  ) // m-blocks = 0000 and reserved too
+            subseq[0]= 'N';
+            subseq[1]= 'N';
+            subseq[2]= 'N';
+            subseq[3]= 'N';
+            if(written < buffer_size and j < this->data[i]->n) // m-blocks = 0000 and reserved too
             {
                 printf("%i: ",j);
-                this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, this->data[i]->n - j, &file);
-                //t.set(subseq);
+                unsigned int w = this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, this->data[i]->n - j, &file);
+                t.set(subseq);
                 buffer[pos] = t.data;
-                printf("[%s -> %i] ** last one\n",subseq, t.data);
+                printf("[%s -> %i] ** last one    [len=%i (written: %i) >> %s]\n",subseq, t.data, this->data[i]->n - j, w, t.get());
                 pos++;
                 written++;
                 j++;
