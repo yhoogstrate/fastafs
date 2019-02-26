@@ -676,7 +676,6 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             header_block_len += this->data[i]->name.size();
         }
 
-        unsigned int j;
         for(unsigned int i = 0; i < this->data.size(); i++) 
         {
             // single byte can be written, as the while loop has returned true
@@ -708,7 +707,6 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             pos_limit += 4;
             while(pos < pos_limit)
             {
-                //printf("%i-%i=%i || %i\n",pos_limit, pos, 4 - (pos_limit - pos), j);
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
                 
@@ -726,98 +724,110 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
         }
 
-
-        unsigned int i = 0;
-        while(i < this->data.size()) // last one is EOF
+        for(unsigned int i = 0; i < this->data.size(); i++) // last one is EOF
         {
-            j = 0;
-            
+            // number nucleotides
             uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n);
             pos_limit += 4;
-            while(written < buffer_size and j < 4)
-            {
-                buffer[written++] = n_seq[j];
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
-                j++;
                 
                 if(written >= buffer_size) {
                     return written;
                 }
             }
 
-            j = 0;
+            // number N blocks
             uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts.size());
-            while(written < buffer_size and j < 4)
-            {
-                buffer[pos] = n_seq[j];
+            pos_limit += 4;
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
-                written++;
-                j++;
-            }
-            
-            if(written < buffer_size)
-            {
-                // write n-blocks effectively down!
-                for(unsigned int k = 0; k < this->data[i]->n_starts.size(); k++)
-                {
-                    j = 0;
-                    uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts[k]);
-                    while(written < buffer_size and j < 4)
-                    {
-                        buffer[pos] = n_seq[j];
-                        pos++;
-                        written++;
-                        j++;
-                    }
-                    
-                    j = 0;
-                    uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_ends[k] - this->data[i]->n_starts[k] + 1);
-                    while(written < buffer_size and j < 4)
-                    {
-                        buffer[pos] = n_seq[j];
-                        pos++;
-                        written++;
-                        j++;
-                    }
+                
+                if(written >= buffer_size) {
+                    return written;
                 }
             }
             
-            j = 0;
-            while(written < buffer_size and j < 8) // m-blocks = 0000 and reserved too
+            // write n-blocks effectively down!
+            for(unsigned int k = 0; k < this->data[i]->n_starts.size(); k++)
             {
-                buffer[pos] = '\0';
+                uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts[k]);
+                pos_limit += 4;
+                while(pos < pos_limit) {
+                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                    pos++;
+                    
+                    if(written >= buffer_size) {
+                        return written;
+                    }
+                }
+                
+                uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_ends[k] - this->data[i]->n_starts[k] + 1);
+                pos_limit += 4;
+                while(pos < pos_limit) {
+                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                    pos++;
+                    
+                    if(written >= buffer_size) {
+                        return written;
+                    }
+                }
+            }
+
+            // m-blocks + reserved block
+            pos_limit += 4 + 4;
+            while(pos < pos_limit) {
+                buffer[written++] = '\0';
                 pos++;
-                written++;
-                j++;
+                
+                if(written >= buffer_size) {
+                    return written;
+                }
             }
             
-            j = 0;
-            char subseq[25];
+            unsigned int full_twobits = this->data[i]->n / 4;
+            //j = 0;
+            //char subseq[25];// @todo replace for n_seq
             twobit_byte t;
-            while(written < buffer_size and j < (this->data[i]->n/4)*4  ) // m-blocks = 0000 and reserved too
+            pos_limit += full_twobits;
+            while(pos < pos_limit)
             {
-                j += this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, 4, &file);
-                t.set(subseq);
-                buffer[pos] = t.data;
+                //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
+                this->data[i]->view_fasta_chunk(0, n_seq, this->data[i]->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
+                t.set(n_seq);
+                buffer[written++] = t.data;
                 pos++;
-                written++;
+                
+                if(written >= buffer_size) {
+                    return written;
+                }
             }
             
             // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
-            subseq[0]= 'N';
-            subseq[1]= 'N';
-            subseq[2]= 'N';
-            subseq[3]= 'N';
-            if(written < buffer_size and j < this->data[i]->n) // m-blocks = 0000 and reserved too
-            {
-                unsigned int w = this->data[i]->view_fasta_chunk(0, subseq, this->data[i]->name.size() + 2 + j, this->data[i]->n - j, &file);
-                t.set(subseq);
-                buffer[pos] = t.data;
-                pos++;
-                written++;
-                j += w;
+            if(full_twobits * 4 < this->data[i]->n) {
+                n_seq[0] = 'N';
+                n_seq[1] = 'N';
+                n_seq[2] = 'N';
+                n_seq[3] = 'N';
+                
+                pos_limit += 1;
+                if(pos < pos_limit)
+                {
+                    //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, this->data[i]->n - (full_twobits * 4),  this->data[i]->n - j);
+                    
+                    this->data[i]->view_fasta_chunk(0, n_seq, this->data[i]->name.size() + 2 + full_twobits * 4, this->data[i]->n - (full_twobits * 4), &file);
+                    t.set(n_seq);
+                    
+                    buffer[written++] = t.data;
+                    pos++;
+
+                    if(written >= buffer_size) {
+                        return written;
+                    }
+                }
             }
-            i++;
         }
     
         file.close();
