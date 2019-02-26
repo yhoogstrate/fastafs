@@ -581,7 +581,6 @@ unsigned int fastafs::ucsc2bit_filesize(void)
     unsigned int i,j;
     
     unsigned int nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
-    unsigned int nn_actg;
 
     for(i = 0; i < this->data.size(); i++) {
         nn += 1; // namesize
