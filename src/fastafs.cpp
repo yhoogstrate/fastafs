@@ -676,12 +676,11 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             header_block_len += this->data[i]->name.size();
         }
 
-        for(unsigned int i = 0; i < this->data.size(); i++) 
-        {
+        for(auto sequence = this->data.begin(); sequence != this->data.end(); sequence++) {
             // single byte can be written, as the while loop has returned true
             pos_limit += 1;
             if(pos < pos_limit) {
-                buffer[written++] = (unsigned char) this->data[i]->name.size();
+                buffer[written++] = (unsigned char) (*sequence)->name.size();
                 pos++;
 
                 if(written >= buffer_size) {
@@ -690,10 +689,10 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
 
             // sequence name
-            pos_limit += this->data[i]->name.size();
+            pos_limit += (*sequence)->name.size();
             while(pos < pos_limit)
             {
-                buffer[written++] = this->data[i]->name[this->data[i]->name.size() - (pos_limit - pos)];
+                buffer[written++] = (*sequence)->name[(*sequence)->name.size() - (pos_limit - pos)];
                 pos++;
                 
                 if(written >= buffer_size) {
@@ -716,18 +715,17 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
             
             header_offset_previous += 4 + 4 + 4 + 4;
-            header_offset_previous += 8 * this->data[i]->n_starts.size();
-            header_offset_previous += this->data[i]->n / 4;
-            if(this->data[i]->n % 4 != 0)
+            header_offset_previous += 8 * (*sequence)->n_starts.size();
+            header_offset_previous += (*sequence)->n / 4;
+            if((*sequence)->n % 4 != 0)
             {
                 header_offset_previous++;
             }
         }
 
-        for(unsigned int i = 0; i < this->data.size(); i++) // last one is EOF
-        {
+        for(auto sequence = this->data.begin(); sequence != this->data.end(); sequence++) {
             // number nucleotides
-            uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n);
+            uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n);
             pos_limit += 4;
             while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
@@ -739,7 +737,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
 
             // number N blocks
-            uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts.size());
+            uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n_starts.size());
             pos_limit += 4;
             while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
@@ -751,9 +749,9 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
             
             // write n-blocks effectively down!
-            for(unsigned int k = 0; k < this->data[i]->n_starts.size(); k++)
+            for(unsigned int k = 0; k < (*sequence)->n_starts.size(); k++)
             {
-                uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_starts[k]);
+                uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n_starts[k]);
                 pos_limit += 4;
                 while(pos < pos_limit) {
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
@@ -764,7 +762,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                     }
                 }
                 
-                uint_to_fourbytes_ucsc2bit(n_seq, this->data[i]->n_ends[k] - this->data[i]->n_starts[k] + 1);
+                uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n_ends[k] - (*sequence)->n_starts[k] + 1);
                 pos_limit += 4;
                 while(pos < pos_limit) {
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
@@ -787,15 +785,14 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 }
             }
             
-            unsigned int full_twobits = this->data[i]->n / 4;
-            //j = 0;
-            //char subseq[25];// @todo replace for n_seq
+            // twobit coded nucleotides (only containing 4 nucleotides each)
+            unsigned int full_twobits = (*sequence)->n / 4;
             twobit_byte t;
             pos_limit += full_twobits;
             while(pos < pos_limit)
             {
                 //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
-                this->data[i]->view_fasta_chunk(0, n_seq, this->data[i]->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
+                (*sequence)->view_fasta_chunk(0, n_seq, (*sequence)->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
@@ -806,7 +803,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
             
             // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
-            if(full_twobits * 4 < this->data[i]->n) {
+            if(full_twobits * 4 < (*sequence)->n) {
                 n_seq[0] = 'N';
                 n_seq[1] = 'N';
                 n_seq[2] = 'N';
@@ -815,9 +812,9 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 pos_limit += 1;
                 if(pos < pos_limit)
                 {
-                    //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, this->data[i]->n - (full_twobits * 4),  this->data[i]->n - j);
+                    //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, (*sequence)->n - (full_twobits * 4),  (*sequence)->n - j);
                     
-                    this->data[i]->view_fasta_chunk(0, n_seq, this->data[i]->name.size() + 2 + full_twobits * 4, this->data[i]->n - (full_twobits * 4), &file);
+                    (*sequence)->view_fasta_chunk(0, n_seq, (*sequence)->name.size() + 2 + full_twobits * 4, (*sequence)->n - (full_twobits * 4), &file);
                     t.set(n_seq);
                     
                     buffer[written++] = t.data;
