@@ -112,7 +112,6 @@ void fasta_to_fastafs_seq::close_reading()
     SHA1_Final(this->sha1_digest, &this->ctx);
     char sha1_hash[41] = "";
     sha1_digest_to_hash(this->sha1_digest, sha1_hash);
-    printf("-> [%s]\n",sha1_hash);
     //delete this->twobit_data;
     //this->twobit_data = nullptr;
 }
