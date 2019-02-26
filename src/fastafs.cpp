@@ -770,7 +770,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 printf(" j=%i ",j);
                 t.set(subseq);
                 buffer[pos] = t.data;
-                printf("[%s -> %i]\n",subseq, t.data);
+                printf("[%s -> %i -> %u]\n",subseq, t.data, (signed int) t.data);
                 pos++;
                 written++;
             }

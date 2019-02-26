@@ -171,6 +171,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                 "\00\x55\xAA\xFF"s // sequence
                             "\x10\00\00\00"s "\01\00\00\00"s "\x08\00\00\00"s "\x04\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s
                                "\x93\x93\00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \00 \x93
+                            "\x0D\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s "\00\00\00\00"
                             ;
     unsigned int complen;
 
@@ -267,17 +268,33 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     // test ... + sequence 1 sequence-data-block
     complen += (16+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
-    // test ... + sequence 2 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved
+    // test ... + sequence 2 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
+    // test ... + sequence 2 sequence-data-block
+    complen += (16+3)/4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+    // test ... + sequence 3 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
+    complen += 4 + 4 + 4 + 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+
+
 
     // debug
-    for(unsigned int i = 95; i < reference.size() && i < complen; i++) {
-        printf("[%i]  ref:%i\t == buf:%i\n",i, (unsigned int) reference[i], (unsigned int) buffer[i]);
+    for(unsigned int i = 145; i < reference.size() && i < complen; i++) {
+        printf("[%i]  ref:%i ~ %u\t == buf:%i ~ %u",i, (signed char) reference[i], (unsigned char) reference[i], (signed char) buffer[i], (unsigned char) buffer[i]);
+        if(reference[i] != buffer[i])
+        {
+            printf("   ERR/MISMATCH");
+        }
+        printf("\n");
     }
 
 }
