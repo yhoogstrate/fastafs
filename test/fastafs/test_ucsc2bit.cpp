@@ -168,11 +168,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                             "\x04"s "chr4"s "\xC1\00\00\00"s
                             "\x04"s "chr5"s "\xDB\00\00\00"s
                             "\x10\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s
-                                "\00\x55"s ; //\xAA\xFF"s // sequence
-                                
-                            ;//"\x10\00\00\00"s "\01\00\00\00"s "\x08\00\00\00"s "\00\00\00\x04"s "\00\00\00\00"s "\00\00\00\00"s
-                               // "\x93\x93\00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \00 \x93
-                            //;
+                                "\00\x55\xAA\xFF"s // sequence
+                            "\x10\00\00\00"s "\01\00\00\00"s "\x08\00\00\00"s "\x04\00\00\00"s "\00\00\00\00"s "\00\00\00\00"s
+                               "\x93\x93\00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \00 \x93
+                            ;
     unsigned int complen;
 
     // test header
@@ -270,8 +269,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     //BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
-    // test ... + sequence 2 data-block (without sequence)
-    complen += 4 + 4 ;//+ 4; // + 4 + 4 +4 + 4;
+    // test ... + sequence 2 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved
+    complen += 4 + 4 + 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
 
