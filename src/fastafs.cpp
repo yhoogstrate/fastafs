@@ -694,7 +694,6 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             {
                 header_offset_previous++;
             }
-            printf("[+%i -> %i]\n",header_offset_previous, 85 + header_offset_previous);
             
             i++;
         }
