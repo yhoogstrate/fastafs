@@ -615,38 +615,55 @@ unsigned int fastafs::ucsc2bit_filesize(void)
 unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
 {
     unsigned int written = 0;
-    unsigned int pos = file_offset; // iterator in file
+    unsigned int pos = file_offset; // iterator in file in bytes
     
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         // bytes 0-8:
-        while(written < buffer_size and pos < 4 )// while bytes need to be copied and end of 2bit file is not yet reached
+        while(pos < 4)// while bytes need to be copied and end of 2bit file is not yet reached
         {
             buffer[pos] = UCSC2BIT_MAGIC[pos];
             pos++;
             written++;
+            
+            if(written >= buffer_size) {
+                return written;
+            }
         }
-        while(written < buffer_size and pos < 8 )// while bytes need to be copied and end of 2bit file is not yet reached
+
+        while(pos < 8)// while bytes need to be copied and end of 2bit file is not yet reached
         {
             buffer[pos] = UCSC2BIT_VERSION[pos - 4];
             pos++;
             written++;
+
+            if(written >= buffer_size) {
+                return written;
+            }
         }
 
         char n_seq[4];
         uint_to_fourbytes_ucsc2bit(n_seq, (unsigned int) this->data.size());
-        while(written < buffer_size and pos < (8 + 4))
+        while(pos < (8 + 4))
         {
             buffer[pos] = n_seq[pos - 8];
             pos++;
             written++;
+            
+            if(written >= buffer_size) {
+                return written;
+            }
         }
 
-        while(written < buffer_size and pos < (8 + 4 + 4))
+        while(pos < (8 + 4 + 4))
         {
             buffer[pos] = '\0';
             pos++;
             written++;
+            
+            if(written >= buffer_size) {
+                return written;
+            }
         }
         
         unsigned int header_block_len = 4+4+4+4 + (this->data.size() * (1 + 4));

@@ -139,6 +139,30 @@ dnasize=4
 
 
 
+std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len) {
+    std::string s = "";
+    
+    for(unsigned int i = pos; i < len; i++) {
+        s.push_back(ref[i]);
+    }
+    
+    return s;
+}
+
+
+std::string std_string_nullbyte_safe(char *ref, size_t len) {
+    std::string s = "";
+    
+    for(unsigned int i = 0; i < len; i++) {
+        s.push_back(ref[i]);
+    }
+    
+    return s;
+}
+
+
+
+
 using namespace std::literals; // https://stackoverflow.com/questions/48255276/why-does-stdstring-x00-report-length-of-0
 
 
@@ -202,162 +226,162 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     // test header
     complen = 8;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen), 0, complen), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen), 0, complen), 0);
     
     // test ... + n-seq
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + reserved
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 1 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 1 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 2 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 2 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 3 name
     complen += 7;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 3 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 4 name
     complen += 7;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 4 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 5 name
     complen += 7;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 5 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 6 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 6 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 7 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 7 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 1 data-block (without sequence)
     complen += 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 1 sequence-data-block
     complen += (16+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 2 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 2 sequence-data-block
     complen += (16+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 3 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 3 sequence-data-block
     complen += (13+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 4 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 4 sequence-data-block
     complen += (14+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 5 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 5 sequence-data-block
     complen += (15+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 6 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 6 sequence-data-block
     complen += (8+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 7 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
     complen += 4 + 4 + 4 + 4 + 4 + 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // test ... + sequence 7 sequence-data-block
     complen += (6+3)/4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // out of bound check
     unsigned int written = fs.view_ucsc2bit_chunk(buffer, complen + 4, 0);
     BOOST_CHECK_EQUAL(written, complen);
-    BOOST_CHECK_EQUAL(reference.compare(0, complen, std::string(buffer, complen)), 0);
+    BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     
 
     // debug toolkit
@@ -371,6 +395,102 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
         printf("\n");
     }
     */
+}
+
+
+BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
+{
+    // 1: create FASTAFS file
+    std::string fastafs_file = "tmp/test.fastafs";
+
+    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
+    f.cache();
+    f.write(fastafs_file);
+
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    BOOST_REQUIRE(fs.data.size() > 0);
+
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    BOOST_REQUIRE(file.is_open());
+
+
+    // check ucsc2bit header:
+    char buffer[1024 + 1];
+    std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
+                            "\x04"s "chr1"s   "\x55\x00\x00\x00"s
+                            "\x04"s "chr2"s   "\x69\x00\x00\x00"s
+                            "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
+                            "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
+                            "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
+                            "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
+                            "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
+                            "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x00\x55\xAA\xFF"s // sequence
+                            "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
+                            "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\xAA\x40"s// last one is 01 00 00 00
+                            "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\xAA\x50"s// last one is 01 01 00 00
+                            "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x93\xAA\x54"s// last one is 01 01 01 00
+                            "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x93\x00" // ACTG NNNN = 10010011 00000000
+                            "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                "\x09\x30" // NNAC TG?? = 00001001 00110000
+                            ;
+    unsigned int file_offset, complen;
+
+    // get second byte
+    file_offset = 1;
+    complen = 4;
+    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
+    
+    buffer[0] = reference[0 + file_offset];
+    buffer[1] = reference[1 + file_offset];
+    buffer[2] = reference[2 + file_offset];
+    buffer[3] = reference[3 + file_offset];
+    buffer[4] = '?';
+    
+    for(unsigned int i = 0; i < complen; i++) {
+        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+        if(reference[i + file_offset] != buffer[i])
+        {
+            printf("   ERR/MISMATCH");
+        }
+        printf("\n");
+    }
+
+    // replace all the std::string(buffer, ..., ....); with some kind of substring method because nullbytes mess up
+    std::string buf = std_string_nullbyte_safe(buffer, 0 , 4);
+    printf("buf size: %i\n",buf.size());
+    //std::string buf = "\x27\x41\x1a\x00"s;
+
+    
+    printf("[%i][%i][%i][%i] == [%i][%i][%i][%i]\n",
+        reference[0 + file_offset], reference[1 + file_offset], reference[2 + file_offset], reference[3 + file_offset],
+        buffer[0], buffer[1], buffer[2], buffer[3]
+        );
+
+    printf("[%i][%i][%i][%i] == [%i][%i][%i][%i]\n",
+        reference[0 + file_offset], reference[1 + file_offset], reference[2 + file_offset], reference[3 + file_offset],
+        buf[0], buf[1], buf[2], buf[3]
+        );
+
+    printf("%i\n", reference.compare(1, 4, buf, 0, 4));
+    printf("%i\n", reference.compare(0, 4, buf, 0, 4));
+    printf("%i\n", reference.compare(0, 4, buf, 1, 4));
+    printf("%i\n", reference.compare(1, 5, buf, 0, 4));
+    printf("%i\n", reference.compare(1, 3, buf, 0, 3));
+    printf("%i\n", reference.compare(1, 3, buf, 0, 3));
+    
+    //BOOST_CHECK_EQUAL(reference.compare(1, 4, std::string(buffer, 0, 4), 0, 4), 0);
+    //BOOST_CHECK_EQUAL(reference.compare(1, 4, std::string(buffer, 0, 4), 1, 4), 0);
+    
+    //BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std::string(buffer, 0, complen), 0, complen), 0);
+    //BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std::string(buffer, 0, complen), 0, complen), 0);
 }
 
 
