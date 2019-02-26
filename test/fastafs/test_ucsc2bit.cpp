@@ -156,7 +156,6 @@ BOOST_AUTO_TEST_CASE(init)
  */
 BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 {
-    //const char UCSC2BIT_HEADER[9] = TWOBIT_MAGIC TWOBIT_VERSION "\0";
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
 
