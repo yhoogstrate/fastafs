@@ -614,9 +614,8 @@ unsigned int fastafs::ucsc2bit_filesize(void)
 //https://www.mathsisfun.com/binary-decimal-hexadecimal-converter.html
 unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
 {
-    unsigned int eof = this->ucsc2bit_filesize();
     unsigned int written = 0;
-    unsigned int pos = file_offset;
+    unsigned int pos = file_offset; // iterator in file
     
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
