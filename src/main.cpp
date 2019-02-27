@@ -104,19 +104,15 @@ int main(int argc, char *argv[])
                 for(int i = 2; i < argc - 1; i++) {
                     if(skip_argument) {
                         skip_argument = false;
-                    }
-                    else {
+                    } else {
                         if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                             from_file = true;
-                        }
-                        else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i+1 < argc-1) {
+                        } else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i+1 < argc-1) {
                             try {
                                 padding = boost::lexical_cast<unsigned int>(argv[++i]);
-                            }
-                            catch(std::exception const & e)
-                            {
-                                 std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
-                                 return EINVAL;
+                            } catch(std::exception const & e) {
+                                std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
+                                return EINVAL;
                             }
                             skip_argument = true;// skip next argument, as it is the padding value
                         }
@@ -138,8 +134,7 @@ int main(int argc, char *argv[])
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
                 f.view_fasta(padding);//@todo make argument parsing
-            }
-            else {
+            } else {
                 usage_view();
                 return EINVAL;
             }
@@ -149,18 +144,16 @@ int main(int argc, char *argv[])
                     usage_info();
                     exit(0);
                 }
-                
+
                 bool from_file = false;
                 bool ena_verify_checksum = false;
 
                 for(int i = 2; i < argc - 1; i++) {
                     if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
-                    }
-                    else if(strcmp(argv[i], "-e") == 0 or strcmp(argv[i], "--ena-verify") == 0) {
+                    } else if(strcmp(argv[i], "-e") == 0 or strcmp(argv[i], "--ena-verify") == 0) {
                         ena_verify_checksum = true;
-                    }
-                    else {
+                    } else {
                         usage_info();
                         exit(1);
                     }

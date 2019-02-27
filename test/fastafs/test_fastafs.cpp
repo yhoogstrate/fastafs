@@ -268,9 +268,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     //printf("[%i]\n", fs.data.size());
     BOOST_REQUIRE(fs.data.size() > 0);
 
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
-    
+
     //printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
     fs.data[0]->sha1(&file);
 
@@ -298,9 +298,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
 
     BOOST_REQUIRE(fs.data.size() > 0);
 
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
-    
+
     BOOST_CHECK_EQUAL(fs.check_integrity(), 0);
 }
 

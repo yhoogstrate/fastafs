@@ -14,7 +14,7 @@ ACTGACTGAAAACCC
 >chr4
 ACTGNNNN
 >chr5
-NNACTG 
+NNACTG
 
 is:
           [ magic                           ] [ version
@@ -26,7 +26,7 @@ is:
           [ reserved: 4 x \0                ] n-name=7 [ c
 0000000c: 00000000 00000000 00000000 00000000 00000100 01100011  .....c
 
-          h        r        1      ] [ offset chr1 = 85        
+          h        r        1      ] [ offset chr1 = 85
 00000012: 01101000 01110010 00110001 01010101 00000000 00000000  hr1U..
 
                  ] [len=4 ] [ c      h        r        2      ]
@@ -41,7 +41,7 @@ is:
           = 133 \x85               ]
 0000002a: 00000000 00000000 00000000 00000110 01100011 01101000  ....ch
 
-                                              [ offset = 153   
+                                              [ offset = 153
 00000030: 01110010 00110011 00101110 00110010 10011001 00000000  r3.2..
 
           \x99
@@ -60,16 +60,16 @@ is:
                  ] [ dna size = 16                   ] [ n block
 00000054: 00000000 00010000 00000000 00000000 00000000 00000000  ......
 
-          = 0                      ] [ m block = 4             
+          = 0                      ] [ m block = 4
 0000005a: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 
                  ] [ reserved = 4                    ] [ TTTT
 00000060: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 
-          CCCC     AAAA     GGGG   ] [ dna size = 16           
+          CCCC     AAAA     GGGG   ] [ dna size = 16
 00000066: 01010101 10101010 11111111 00010000 00000000 00000000  U.....
 
-*                ] [ n-blocks = 1                    ] [       
+*                ] [ n-blocks = 1                    ] [
 0000006c: 00000000 00000001 00000000 00000000 00000000 00001000  ......
 
           n-block 1 starts at = 8  ]
@@ -92,7 +92,7 @@ is:
           CCC?     [ n=8                             ] [nblox=1
 000000c0: 01010100 00001000 00000000 00000000 00000000 00000001  T.....
 
-                                   ] [ n blokc starts = 4      
+                                   ] [ n blokc starts = 4
 000000c6: 00000000 00000000 00000000 00000100 00000000 00000000  ......
 
                  ] [ n block len = 4                 ] [ m = 0
@@ -101,7 +101,7 @@ is:
                                    ] [ reserved]
 000000d2: 00000000 00000000 00000000 00000000 00000000 00000000  ......
 
-                 ] [ ACTG   NNNN   ] [ n-seq=6  
+                 ] [ ACTG   NNNN   ] [ n-seq=6
 000000d8: 00000000 10010011 00000000 00000110 00000000 00000000  ......
 
                  ] [ n-blocks = 1                    ] [ first
@@ -130,29 +130,6 @@ is:
 
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
-
-
-
-std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len) {
-    std::string s = "";
-    
-    for(size_t i = pos; i < len; i++) {
-        s.push_back(ref[i]);
-    }
-    
-    return s;
-}
-
-
-std::string std_string_nullbyte_safe(char *ref, size_t len) {
-    std::string s = "";
-    
-    for(size_t i = 0; i < len; i++) {
-        s.push_back(ref[i]);
-    }
-    
-    return s;
-}
 
 
 
@@ -186,42 +163,42 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 
     BOOST_REQUIRE(fs.data.size() > 0);
 
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
 
     // check ucsc2bit header:
     char buffer[1024 + 1];
     static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
-                            "\x04"s "chr1"s   "\x55\x00\x00\x00"s
-                            "\x04"s "chr2"s   "\x69\x00\x00\x00"s
-                            "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
-                            "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
-                            "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
-                            "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
-                            "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
-                            "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x00\x55\xAA\xFF"s // sequence
-                            "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
-                            "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\xAA\x40"s// last one is 01 00 00 00
-                            "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\xAA\x50"s// last one is 01 01 00 00
-                            "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\xAA\x54"s// last one is 01 01 01 00
-                            "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x00" // ACTG NNNN = 10010011 00000000
-                            "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x09\x30" // NNAC TG?? = 00001001 00110000
-                            ;
+                                   "\x04"s "chr1"s   "\x55\x00\x00\x00"s
+                                   "\x04"s "chr2"s   "\x69\x00\x00\x00"s
+                                   "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
+                                   "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
+                                   "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
+                                   "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
+                                   "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
+                                   "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x00\x55\xAA\xFF"s // sequence
+                                   "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
+                                   "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\xAA\x40"s// last one is 01 00 00 00
+                                   "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\xAA\x50"s// last one is 01 01 00 00
+                                   "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\xAA\x54"s// last one is 01 01 01 00
+                                   "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x00" // ACTG NNNN = 10010011 00000000
+                                   "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x09\x30" // NNAC TG?? = 00001001 00110000
+                                   ;
     unsigned int complen;
 
     // test header
     complen = 8;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen), 0, complen), 0);
-    
+
     // test ... + n-seq
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
@@ -376,7 +353,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     unsigned int written = fs.view_ucsc2bit_chunk(buffer, complen + 4, 0);
     BOOST_CHECK_EQUAL(written, complen);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-    
+
 
     // debug toolkit
     /*
@@ -406,35 +383,35 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
 
     BOOST_REQUIRE(fs.data.size() > 0);
 
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);    
+    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
 
     // check ucsc2bit header:
     char buffer[1024 + 1];
     static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
-                            "\x04"s "chr1"s   "\x55\x00\x00\x00"s
-                            "\x04"s "chr2"s   "\x69\x00\x00\x00"s
-                            "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
-                            "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
-                            "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
-                            "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
-                            "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
-                            "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x00\x55\xAA\xFF"s // sequence
-                            "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
-                            "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\xAA\x40"s// last one is 01 00 00 00
-                            "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\xAA\x50"s// last one is 01 01 00 00
-                            "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x93\xAA\x54"s// last one is 01 01 01 00
-                            "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x93\x00" // ACTG NNNN = 10010011 00000000
-                            "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                "\x09\x30" // NNAC TG?? = 00001001 00110000
-                            ;
+                                   "\x04"s "chr1"s   "\x55\x00\x00\x00"s
+                                   "\x04"s "chr2"s   "\x69\x00\x00\x00"s
+                                   "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
+                                   "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
+                                   "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
+                                   "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
+                                   "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
+                                   "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x00\x55\xAA\xFF"s // sequence
+                                   "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
+                                   "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\xAA\x40"s// last one is 01 00 00 00
+                                   "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\xAA\x50"s// last one is 01 01 00 00
+                                   "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x93\xAA\x54"s// last one is 01 01 01 00
+                                   "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x93\x00" // ACTG NNNN = 10010011 00000000
+                                   "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   "\x09\x30" // NNAC TG?? = 00001001 00110000
+                                   ;
     unsigned int file_offset, complen;
 
     // voor lengte 1...(245-1)
@@ -442,20 +419,20 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
     for(complen = 1; complen < reference.size(); complen++) {
         for(unsigned int file_offset = 0; file_offset < reference.size() - complen - 1 ; file_offset++ ) {
             fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-            BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
+            BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0, complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
         }
     }
-    
+
     //for(unsigned int i = 0; i < complen; i++) {
-        //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        //if(reference[i + file_offset] != buffer[i])
-        //{
-            //printf("   ERR/MISMATCH");
-        //}
-        //printf("\n");
-        //if(i == 0) {
-            //printf("\n");
-        //}
+    //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
+    //if(reference[i + file_offset] != buffer[i])
+    //{
+    //printf("   ERR/MISMATCH");
+    //}
+    //printf("\n");
+    //if(i == 0) {
+    //printf("\n");
+    //}
     //}
     //printf("---\n");
 }

@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8)
 project(fastafs)
 
 # Do this once in a while - find different bugs
-SET (CMAKE_CXX_COMPILER             "clang++")
+set(CMAKE_CXX_COMPILER             "clang++")
 
 set(PROJECT_VERSION "0.0.6")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
@@ -121,12 +121,13 @@ enable_testing()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-add_test(test_twobit_byte    "${BUILD_TEST_DIR}/test_twobit_byte")
-add_test(test_cache          "${BUILD_TEST_DIR}/test_cache")
-add_test(test_view           "${BUILD_TEST_DIR}/test_view")
-add_test(test_tree           "${BUILD_TEST_DIR}/test_tree")
-add_test(test_fastafs        "${BUILD_TEST_DIR}/test_fastafs")
-add_test(test_ucsc2bit       "${BUILD_TEST_DIR}/test_ucsc2bit")
+add_test(test_twobit_byte        "${BUILD_TEST_DIR}/test_twobit_byte")
+add_test(test_cache              "${BUILD_TEST_DIR}/test_cache")
+add_test(test_view               "${BUILD_TEST_DIR}/test_view")
+add_test(test_tree               "${BUILD_TEST_DIR}/test_tree")
+add_test(test_fastafs            "${BUILD_TEST_DIR}/test_fastafs")
+add_test(test_ucsc2bit           "${BUILD_TEST_DIR}/test_ucsc2bit")
+add_test(test_ucsc2bit_to_fasta  "${BUILD_TEST_DIR}/test_ucsc2bit_to_fasta")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'

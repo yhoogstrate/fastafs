@@ -64,8 +64,9 @@ char *human_readable_fs(unsigned int bitsize, char *buf)
 }
 
 
-void sha1_digest_to_hash(unsigned char *digest, char *hash) {
-    
+void sha1_digest_to_hash(unsigned char *digest, char *hash)
+{
+
     //unsigned char hash[SHA_DIGEST_LENGTH];
     //SHA1_Final(hash, &ctx);
 
@@ -76,3 +77,28 @@ void sha1_digest_to_hash(unsigned char *digest, char *hash) {
 
     //return void;
 }
+
+
+std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len)
+{
+    std::string s = "";
+
+    for(size_t i = pos; i < len; i++) {
+        s.push_back(ref[i]);
+    }
+
+    return s;
+}
+
+
+std::string std_string_nullbyte_safe(char *ref, size_t len)
+{
+    std::string s = "";
+
+    for(size_t i = 0; i < len; i++) {
+        s.push_back(ref[i]);
+    }
+
+    return s;
+}
+

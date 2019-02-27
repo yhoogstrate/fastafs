@@ -59,7 +59,7 @@ public:
     void view_fasta(unsigned int);
     unsigned int view_fasta_chunk(unsigned int, char *, size_t, off_t );
     unsigned int view_faidx_chunk(unsigned int, char *, size_t, off_t );
-    
+
     unsigned int view_ucsc2bit_chunk(char *, size_t, off_t);
     unsigned int ucsc2bit_filesize(void);
 

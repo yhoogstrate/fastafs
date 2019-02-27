@@ -51,34 +51,32 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 void twobit_byte::set(char* buffer)
 {
     const std::array< unsigned char, 4> bit_offsets = {6, 4, 2, 0};
-    for(unsigned char i = 0; i < 4; i++)
-    {
-        switch (buffer[i])
-        {
-            case 't':
-            case 'T':
-            case 'n':
-            case 'N':
-                this->set(bit_offsets[i], 0);
+    for(unsigned char i = 0; i < 4; i++) {
+        switch (buffer[i]) {
+        case 't':
+        case 'T':
+        case 'n':
+        case 'N':
+            this->set(bit_offsets[i], 0);
             break;
-            case 'c':
-            case 'C':
-                this->set(bit_offsets[i], 1);
+        case 'c':
+        case 'C':
+            this->set(bit_offsets[i], 1);
             break;
-            case 'a':
-            case 'A':
-                this->set(bit_offsets[i], 2);
+        case 'a':
+        case 'A':
+            this->set(bit_offsets[i], 2);
             break;
-            case 'g':
-            case 'G':
-                this->set(bit_offsets[i], 3);
+        case 'g':
+        case 'G':
+            this->set(bit_offsets[i], 3);
             break;
 
-            #if DEBUG
-                default:
-                    throw std::invalid_argument("twobit_byte::set(char *) invalid value\n");
-                    break;
-            #endif //DEBUG
+#if DEBUG
+        default:
+            throw std::invalid_argument("twobit_byte::set(char *) invalid value\n");
+            break;
+#endif //DEBUG
         }
     }
 }

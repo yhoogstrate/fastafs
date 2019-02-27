@@ -317,7 +317,7 @@ unsigned int fasta_to_fastafs::get_index_size()
 unsigned int fasta_to_fastafs::get_sequence_offset(unsigned int sequence)
 {
     unsigned int n = 4 + 4 + 4 + 4 + this->get_index_size();
-    
+
     for(unsigned int i = 0; i < sequence; i++) {
         n += 4; // dna_size
         n += 4; // n_block_count
@@ -341,7 +341,7 @@ void fasta_to_fastafs::write(std::string filename)
     std::fstream twobit_out_stream(filename.c_str(), std::ios :: out | std::ios :: binary);
     if(twobit_out_stream.is_open()) {
         //uint32_t crc = 0;
-        
+
         unsigned int four_bytes;
         unsigned char byte;
 

@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -42,7 +42,7 @@ unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
     if(padding == 0) {
         padding = this->n;
     }
-    
+
     unsigned int n = 1; // >
     n += (unsigned int ) this->name.size() + 1;// "chr1\n"
     n += this->n; // ACTG NNN
@@ -129,7 +129,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 {
     unsigned int written = 0;
     unsigned int i;
-    
+
     if(padding == 0) {
         padding = this->n;
     }
@@ -219,8 +219,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
             }
             if(in_N) {
                 //printf(" -> %i > %i and %i == %i\n",this->n_ends.size() , i_n_end, i , this->n_ends[i_n_end]);
-                
-                
+
+
                 buffer[written++] = 'N';
                 if(i == this->n_ends[i_n_end]) {
                     //i_n_end++;
@@ -268,7 +268,7 @@ for the sequence fasta optionally gzipped file) field is strongly advised. The r
 meaning: md5s([ACTGN]+)
 
 // ww -l = 149998
-* 
+*
 * need = 74999
 
 
@@ -297,27 +297,26 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     signed long n_iterations = (unsigned int) this->n / chunksize;
     signed int remaining_bytes = this->n % chunksize;
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
-    
+
     unsigned long nbases = 0;
-    
+
     for(unsigned long i = 0; i < n_iterations; i++) {
         this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
         //printf("[%s] - %i\n", chunk, chunksize);
         SHA1_Update(&ctx, chunk, chunksize);
-        
+
         nbases += chunksize;
     }
-    
-    if(remaining_bytes > 0)
-    {
+
+    if(remaining_bytes > 0) {
         this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);
         SHA1_Update(&ctx, chunk, remaining_bytes);
         nbases += remaining_bytes;
-        
+
         chunk[remaining_bytes] = '\0';
         //printf("[%s] - %i (last chunk)\n", chunk, remaining_bytes);
     }
-    
+
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
     //printf("nbases=%i\n", nbases);
 
@@ -328,7 +327,7 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 
     char sha1_hash[41];
     sha1_digest_to_hash(sha1_digest, sha1_hash);
-    
+
     return std::string(sha1_hash);
 }
 
@@ -426,7 +425,7 @@ void fastafs::load(std::string afilename)
             file.seekg (0, std::ios::beg);
             file.read (memblock, 16);
             memblock[16] = '\0';
-  
+
             //char twobit_magic[5] = TWOBIT_MAGIC;
 
             unsigned int i;
@@ -461,8 +460,7 @@ void fastafs::load(std::string afilename)
                 file.read(memblock, 20);
                 //s->sha1_digest = memblock;
                 //strncpy(*s->sha1_digest, memblock);
-                for(int j = 0; j < 20 ; j ++)
-                {
+                for(int j = 0; j < 20 ; j ++) {
                     s->sha1_digest[j] = memblock[j];
                 }
 
@@ -579,7 +577,7 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 unsigned int fastafs::ucsc2bit_filesize(void)
 {
     unsigned int i,j;
-    
+
     unsigned int nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
 
     for(i = 0; i < this->data.size(); i++) {
@@ -590,9 +588,9 @@ unsigned int fastafs::ucsc2bit_filesize(void)
         nn += 4;// n blocks
         nn += this->data[i]->n_starts.size() * (4 * 2); // both start and end
 
-        nn += 4;// n masked regions - so far always 0 
+        nn += 4;// n masked regions - so far always 0
         nn += 4;// reserved
-        
+
         nn += this->data[i]->name.size();
 
         /*
@@ -601,10 +599,10 @@ unsigned int fastafs::ucsc2bit_filesize(void)
         if(nn_actg % 4 > 0){
             nn++;
         }*/
-        
+
         nn += (this->data[i]->n + 3) / 4; // math.ceil hack
     }
-    
+
     return nn;
 }
 
@@ -616,25 +614,23 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
     unsigned int written = 0;
     unsigned int pos = file_offset; // iterator in file in bytes
     unsigned int pos_limit = 0; // some counter to keep track of when writing needs to stop for given loop
-    
+
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         char n_seq[4];
 
         pos_limit += 4;// skip this loop after writing first four bytes
-        while(pos < pos_limit)
-        {
+        while(pos < pos_limit) {
             buffer[written++] = UCSC2BIT_MAGIC[pos];
             pos++;
-            
+
             if(written >= buffer_size) {
                 return written;
             }
         }
 
         pos_limit += 4;
-        while(pos < pos_limit)
-        {
+        while(pos < pos_limit) {
             buffer[written++] = UCSC2BIT_VERSION[pos - 4];
             pos++;
 
@@ -646,11 +642,10 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         // number sequences
         uint_to_fourbytes_ucsc2bit(n_seq, (unsigned int) this->data.size());
         pos_limit += 4;
-        while(pos < pos_limit)
-        {
+        while(pos < pos_limit) {
             buffer[written++] = n_seq[pos - 8];
             pos++;
-            
+
             if(written >= buffer_size) {
                 return written;
             }
@@ -658,20 +653,18 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
 
         // 4 x nullbyte
         pos_limit += 4;
-        while(pos < pos_limit)
-        {
+        while(pos < pos_limit) {
             buffer[written++] = '\0';
             pos++;
-            
+
             if(written >= buffer_size) {
                 return written;
             }
         }
-        
+
         unsigned int header_block_len = 4+4+4+4 + (this->data.size() * (1 + 4));
         unsigned int header_offset_previous = 0;
-        for(unsigned int i = 0; i < this->data.size(); i++) 
-        {
+        for(unsigned int i = 0; i < this->data.size(); i++) {
             header_block_len += this->data[i]->name.size();
         }
 
@@ -689,35 +682,32 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
 
             // sequence name
             pos_limit += (*sequence)->name.size();
-            while(pos < pos_limit)
-            {
+            while(pos < pos_limit) {
                 buffer[written++] = (*sequence)->name[(*sequence)->name.size() - (pos_limit - pos)];
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
             }
-            
+
             // file offset
             unsigned int offset = header_block_len + header_offset_previous;
             uint_to_fourbytes_ucsc2bit(n_seq, offset);
             pos_limit += 4;
-            while(pos < pos_limit)
-            {
+            while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
             }
-            
+
             header_offset_previous += 4 + 4 + 4 + 4;
             header_offset_previous += 8 * (*sequence)->n_starts.size();
             header_offset_previous += (*sequence)->n / 4;
-            if((*sequence)->n % 4 != 0)
-            {
+            if((*sequence)->n % 4 != 0) {
                 header_offset_previous++;
             }
         }
@@ -729,7 +719,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
@@ -741,32 +731,31 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
             }
-            
+
             // write n-blocks effectively down!
-            for(unsigned int k = 0; k < (*sequence)->n_starts.size(); k++)
-            {
+            for(unsigned int k = 0; k < (*sequence)->n_starts.size(); k++) {
                 uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n_starts[k]);
                 pos_limit += 4;
                 while(pos < pos_limit) {
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
-                    
+
                     if(written >= buffer_size) {
                         return written;
                     }
                 }
-                
+
                 uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n_ends[k] - (*sequence)->n_starts[k] + 1);
                 pos_limit += 4;
                 while(pos < pos_limit) {
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
-                    
+
                     if(written >= buffer_size) {
                         return written;
                     }
@@ -778,44 +767,42 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             while(pos < pos_limit) {
                 buffer[written++] = '\0';
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
             }
-            
+
             // twobit coded nucleotides (only containing 4 nucleotides each)
             unsigned int full_twobits = (*sequence)->n / 4;
             twobit_byte t;
             pos_limit += full_twobits;
-            while(pos < pos_limit)
-            {
+            while(pos < pos_limit) {
                 //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
                 (*sequence)->view_fasta_chunk(0, n_seq, (*sequence)->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
-                
+
                 if(written >= buffer_size) {
                     return written;
                 }
             }
-            
+
             // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
             if(full_twobits * 4 < (*sequence)->n) {
                 n_seq[0] = 'N';
                 n_seq[1] = 'N';
                 n_seq[2] = 'N';
                 n_seq[3] = 'N';
-                
+
                 pos_limit += 1;
-                if(pos < pos_limit)
-                {
+                if(pos < pos_limit) {
                     //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, (*sequence)->n - (full_twobits * 4),  (*sequence)->n - j);
-                    
+
                     (*sequence)->view_fasta_chunk(0, n_seq, (*sequence)->name.size() + 2 + full_twobits * 4, (*sequence)->n - (full_twobits * 4), &file);
                     t.set(n_seq);
-                    
+
                     buffer[written++] = t.data;
                     pos++;
 
@@ -825,7 +812,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
                 }
             }
         }
-    
+
         file.close();
     } else {
         throw std::runtime_error("could not load fastafs: " + this->filename);
@@ -926,9 +913,9 @@ Date: Fri, 15 Feb 2019 11:20:13 GMT
 Location: https://www.ebi.ac.uk/ena/cram/sha1/7716832754e642d068e6fbd8f792821ca5544309
 Connection: Keep-Alive
 Content-Length: 0
-* 
-* 
-good response:* 
+*
+*
+good response:*
 * HTTP/1.0 200 OK
 Cache-Control: max-age=31536000
 X-Cache: MISS from pg-ena-cram-1.ebi.ac.uk
@@ -961,7 +948,7 @@ int fastafs::info(bool ena_verify_checksum)
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
-    
+
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
 
@@ -977,40 +964,37 @@ int fastafs::info(bool ena_verify_checksum)
                 //wget header of:
                 //https://www.ebi.ac.uk/ena/cram/sha1/<sha1>
                 //std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
-                
+
                 SSL *ssl;
                 int sock_ssl = 0;
 
-                //struct sockadfiledr_in address; 
-                int sock = 0, valread; 
-                struct sockaddr_in serv_addr; 
+                //struct sockadfiledr_in address;
+                int sock = 0, valread;
+                struct sockaddr_in serv_addr;
                 std::string hello2 = "GET /ena/cram/sha1/" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
                 //char *hello = &hello2.c_str();
-                char buffer[1024] = {0}; 
-                if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-                { 
-                    printf("\n Socket creation error \n"); 
-                    return -1; 
-                } 
-               
-                memset(&serv_addr, '0', sizeof(serv_addr)); 
-               
-                serv_addr.sin_family = AF_INET; 
-                serv_addr.sin_port = htons(443); 
-                   
-                // Convert IPv4 and IPv6 addresses from text to binary form 
-                if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr)<=0)  
-                { 
-                    printf("\nInvalid address/ Address not supported \n"); 
-                    return -1; 
-                } 
-               
-                if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
-                { 
-                    printf("\nConnection Failed \n"); 
-                    return -1; 
+                char buffer[1024] = {0};
+                if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+                    printf("\n Socket creation error \n");
+                    return -1;
                 }
-                
+
+                memset(&serv_addr, '0', sizeof(serv_addr));
+
+                serv_addr.sin_family = AF_INET;
+                serv_addr.sin_port = htons(443);
+
+                // Convert IPv4 and IPv6 addresses from text to binary form
+                if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr)<=0) {
+                    printf("\nInvalid address/ Address not supported \n");
+                    return -1;
+                }
+
+                if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+                    printf("\nConnection Failed \n");
+                    return -1;
+                }
+
                 SSL_library_init();
                 SSLeay_add_ssl_algorithms();
                 SSL_load_error_strings();
@@ -1022,7 +1006,7 @@ int fastafs::info(bool ena_verify_checksum)
                     //log_ssl();
                     return -1;
                 }
-                
+
                 sock_ssl = SSL_get_fd(ssl);
                 SSL_set_fd(ssl, sock);
                 int err = SSL_connect(ssl);
@@ -1032,28 +1016,25 @@ int fastafs::info(bool ena_verify_checksum)
                     fflush(stdout);
                     return -1;
                 }
-                
+
                 //printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
-                SSL_write(ssl , hello2.c_str() , hello2.length()  ); 
-                //printf("Hello message sent\n\n"); 
-                
+                SSL_write(ssl, hello2.c_str(), hello2.length()  );
+                //printf("Hello message sent\n\n");
+
                 valread = SSL_read(ssl, buffer, 32);
                 if (std::string(buffer).find(" 200 ") != -1) { // sequence is in ENA
                     printf("    >%-24s%-12i%s   https://www.ebi.ac.uk/ena/cram/sha1/%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash, sha1_hash);
-                }
-                else {
+                } else {
                     printf("    >%-24s%-12i%s   ---\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
                 }
-            }
-            else
-            {
+            } else {
                 printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
             }
         }
-        
+
         file.close();
     }
-    
+
     return 0;
 }
 
@@ -1063,7 +1044,7 @@ int fastafs::check_integrity()
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
-    
+
     int retcode = 0;
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
@@ -1075,13 +1056,10 @@ int fastafs::check_integrity()
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);
             std::string new_hash = this->data[i]->sha1(&file);
-            
-            if(old_hash.compare(new_hash) == 0)
-            {
+
+            if(old_hash.compare(new_hash) == 0) {
                 printf("OK\t%s\n",this->data[i]->name.c_str());
-            }
-            else
-            {
+            } else {
                 printf("ERROR\t%s\t%s != %s\n",this->data[i]->name.c_str(), sha1_hash, new_hash.c_str());
                 retcode = EIO;
             }
