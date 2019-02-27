@@ -443,13 +443,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                             ;
     unsigned int file_offset, complen;
 
-    // offset 1,4 byte, starting in the MAGIC HEADER:
-    file_offset = 1;
-    complen = 3;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
+    // voor lengte 1...(245-1)
+    //  voor i = 0, 245-lengte
+    for(complen = 1; complen < reference.size(); complen++) {
+        for(unsigned int file_offset = 0; file_offset < reference.size() - complen - 1 ; file_offset++ ) {
+            fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
+            BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
+        }
+    }
     
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
     //for(unsigned int i = 0; i < complen; i++) {
         //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
         //if(reference[i + file_offset] != buffer[i])
@@ -457,254 +459,11 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             //printf("   ERR/MISMATCH");
         //}
         //printf("\n");
+        //if(i == 0) {
+            //printf("\n");
+        //}
     //}
     //printf("---\n");
-
-
-    // offset 3,8 byte, starting in the VERSION HEADER:
-    file_offset  = 3;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
-
-    // offset 1 byte, starting in the n-seq:
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
-
-    // offset 1 byte, starting in the reserved zero:
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
-
-    // single byte strlen
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
-    // single byte strlen
-    file_offset += 1;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
-    // file offset to find data blocks
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
-
-    // seq 2
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 1;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-
-    // seq 3
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 1;
-    complen = 7;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 6;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    // seq 4
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 1;
-    complen = 7;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 6;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    // seq 5
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 1;
-    complen = 7;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 6;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    // seq 6
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 1;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    // seq 7
-    file_offset += 4;
-    complen = 2;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 1;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-
-    // sequence block sequence 1
-    //                             "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-    //                            "\x00\x55\xAA\xFF"s // sequence
-    // n:
-    file_offset += 4;
-    complen = 5;
-    fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
-    BOOST_CHECK_EQUAL(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0 , complen), 0, complen), 0);
-
-    for(unsigned int i = 0; i < complen; i++) {
-        printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
-        if(reference[i + file_offset] != buffer[i])
-        {
-            printf("   ERR/MISMATCH");
-        }
-        printf("\n");
-        if(i == 0) {
-            printf("\n");
-        }
-    }
-    printf("---\n");
-
 }
 
 
