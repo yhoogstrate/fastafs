@@ -576,7 +576,7 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
 unsigned int fastafs::ucsc2bit_filesize(void)
 {
-    unsigned int i,j;
+    unsigned int i;
 
     unsigned int nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
 
@@ -966,10 +966,10 @@ int fastafs::info(bool ena_verify_checksum)
                 //std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
 
                 SSL *ssl;
-                int sock_ssl = 0;
+                //int sock_ssl = 0;
 
                 //struct sockadfiledr_in address;
-                int sock = 0, valread;
+                int sock = 0;
                 struct sockaddr_in serv_addr;
                 std::string hello2 = "GET /ena/cram/sha1/" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
                 //char *hello = &hello2.c_str();
@@ -1007,7 +1007,7 @@ int fastafs::info(bool ena_verify_checksum)
                     return -1;
                 }
 
-                sock_ssl = SSL_get_fd(ssl);
+                int sock_ssl = SSL_get_fd(ssl);
                 SSL_set_fd(ssl, sock);
                 int err = SSL_connect(ssl);
                 if (err <= 0) {
@@ -1021,7 +1021,7 @@ int fastafs::info(bool ena_verify_checksum)
                 SSL_write(ssl, hello2.c_str(), hello2.length()  );
                 //printf("Hello message sent\n\n");
 
-                valread = SSL_read(ssl, buffer, 32);
+                int NNvalread = SSL_read(ssl, buffer, 32);
                 if (std::string(buffer).find(" 200 ") != -1) { // sequence is in ENA
                     printf("    >%-24s%-12i%s   https://www.ebi.ac.uk/ena/cram/sha1/%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash, sha1_hash);
                 } else {
