@@ -12,7 +12,7 @@
 #include <vector>
 
 
-struct twobit_seq_info {
+struct ucsc2bit_seq_header {
     unsigned char name_size;
     char *name;
     unsigned int offset;// in file, in bytes
@@ -62,10 +62,10 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
     // 04 ucsc2bit_to_fasta
     fastafs fs_new = fastafs("");
-    std::vector<twobit_seq_info *> data;
+    std::vector<ucsc2bit_seq_header *> data;
     unsigned int i, j, n;
     unsigned char c;
-    twobit_seq_info *s;
+    ucsc2bit_seq_header *s;
 
     std::ifstream fh_twobit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
     if(fh_twobit.is_open()) {
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         
         fh_twobit.seekg(16);
         for(i = 0 ; i < n; i ++) {
-            s = new twobit_seq_info();
+            s = new ucsc2bit_seq_header();
             fh_twobit.read(buffer, 1);
             s->name_size = buffer[0];
             
