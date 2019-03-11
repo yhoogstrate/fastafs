@@ -63,14 +63,13 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     // 04 ucsc2bit_to_fasta
     fastafs fs_new = fastafs("");
     std::vector<twobit_seq_info *> data;
-    unsigned int i, j, n, file_offset;
+    unsigned int i, j, n;
     unsigned char c;
     twobit_seq_info *s;
-    file_offset = 0;
-    
+
     std::ifstream fh_twobit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
     if(fh_twobit.is_open()) {
-        fh_twobit.read(buffer, 12); file_offset += 16;
+        fh_twobit.read(buffer, 12);
 
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
         printf("[%d]\n",n);
@@ -78,17 +77,15 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         fh_twobit.seekg(16);
         for(i = 0 ; i < n; i ++) {
             s = new twobit_seq_info();
-            fh_twobit.read(buffer, 1); file_offset += 1;
+            fh_twobit.read(buffer, 1);
             s->name_size = buffer[0];
             
-            fh_twobit.read(buffer, s->name_size); file_offset += s->name_size;
+            fh_twobit.read(buffer, s->name_size);
             s->name = new char[s->name_size + 1];
             strncpy(s->name, buffer, s->name_size);
             s->name[s->name_size] = '\0';
-            //printf("name size: [%c / %i / %d]\n", s->name_size, s->name_size, s->name_size);
-            //printf("name: [%s]\n", s->name);
 
-            fh_twobit.read(buffer, 4); file_offset += 4;
+            fh_twobit.read(buffer, 4);
             s->offset = fourbytes_to_uint_ucsc2bit(buffer, 0);
             
             data.push_back(s);
@@ -98,23 +95,23 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             s = data[i];
             printf("name: [%s]\n", s->name);
 
-            fh_twobit.read(buffer, 4); file_offset += 4;
+            fh_twobit.read(buffer, 4);
             s->dna_size = fourbytes_to_uint_ucsc2bit(buffer, 0);
             unsigned int n_fastafs_twobits = s->dna_size;
             printf("2bit bytes: %u\n", n_fastafs_twobits);
 
-            fh_twobit.read(buffer, 4); file_offset += 4;
+            fh_twobit.read(buffer, 4);
             s->n_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
             
             printf("n-blocks: [%u]\n", s->n_blocks);
             
             for(j = 0; j < s->n_blocks; j++) {
-                fh_twobit.read(buffer, 4); file_offset += 4;
+                fh_twobit.read(buffer, 4);
                 s->n_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
 
             for(j = 0; j < s->n_blocks; j++) {
-                fh_twobit.read(buffer, 4); file_offset += 4;
+                fh_twobit.read(buffer, 4);
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
                 
                 n_fastafs_twobits -= s->n_block_sizes.back();
@@ -122,18 +119,18 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
             }
 
-            fh_twobit.read(buffer, 4); file_offset += 4;
+            fh_twobit.read(buffer, 4);
             s->m_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
             
             printf("m-blocks: [%u]\n", s->m_blocks);
             
             for(j = 0; j < s->m_blocks; j++) {
-                fh_twobit.read(buffer, 4); file_offset += 4;
+                fh_twobit.read(buffer, 4);
                 s->m_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
 
             for(j = 0; j < s->m_blocks; j++) {
-                fh_twobit.read(buffer, 4); file_offset += 4;
+                fh_twobit.read(buffer, 4);
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
             
@@ -147,6 +144,9 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             printf("\n");
             printf("\n");
 
+
+            delete[] s->name;
+            delete s;
         }
     }
     
