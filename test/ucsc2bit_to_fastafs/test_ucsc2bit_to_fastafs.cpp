@@ -18,8 +18,8 @@ struct twobit_seq_info {
     unsigned int offset;// in file, in bytes
     
     unsigned int dna_size;
+
     unsigned int n_blocks;
-    
     std::vector<unsigned int> n_block_starts;
     std::vector<unsigned int> n_block_sizes;
     
@@ -96,11 +96,12 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         
         for(i = 0 ; i < n; i ++) {
             s = data[i];
-            //printf("name size: [%c / %i / %d]\n", s->name_size, s->name_size, s->name_size);
             printf("name: [%s]\n", s->name);
 
             fh_twobit.read(buffer, 4); file_offset += 4;
             s->dna_size = fourbytes_to_uint_ucsc2bit(buffer, 0);
+            unsigned int n_fastafs_twobits = s->dna_size;
+            printf("2bit bytes: %u\n", n_fastafs_twobits);
 
             fh_twobit.read(buffer, 4); file_offset += 4;
             s->n_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
@@ -115,6 +116,10 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             for(j = 0; j < s->n_blocks; j++) {
                 fh_twobit.read(buffer, 4); file_offset += 4;
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
+                
+                n_fastafs_twobits -= s->n_block_sizes.back();
+                printf("2bit bytes: %u\n", n_fastafs_twobits);
+
             }
 
             fh_twobit.read(buffer, 4); file_offset += 4;
@@ -138,6 +143,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                 printf(".");
             }
             
+            printf("\neffective fasafs n-2bits: %u\n", (n_fastafs_twobits + 3) / 4);
             printf("\n");
             printf("\n");
 
