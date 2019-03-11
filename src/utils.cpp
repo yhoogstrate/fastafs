@@ -14,6 +14,29 @@ unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
     return u;
 }
 
+/*
+for some reason, ucsc2bit writes down an int in reversed order.
+
+the equivalent of 1 (one) is as follows:
+00000001 00000000 00000000 00000000
+
+the equivalent of 128 in their encoding is as follows:
+10000000 00000000 00000000 00000000
+
+the equivalent of 129 in their encoding is as follows:
+10000000 00000001 00000000 00000000
+
+
+The function below decodes these 4 charred strings into an unsigned integer
+*/
+unsigned int fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
+{
+
+    unsigned int u = ((unsigned char) chars[3 + offset] << 24) | ((unsigned char) chars[2 + offset] << 16) | ((unsigned char)  chars[1 + offset] << 8) | ((unsigned char) chars[0 + offset]);
+
+    return u;
+}
+
 
 void uint_to_fourbytes(char *chars, unsigned int n)
 {
