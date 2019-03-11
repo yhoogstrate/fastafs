@@ -9,6 +9,26 @@
 #include "fastafs.hpp"
 //#include "ucsc2bit_to_fastafs.hpp"
 
+#include <vector>
+
+
+struct twobit_seq_info {
+    unsigned char name_size;
+    char *name;
+    unsigned int offset;// in file, in bytes
+    
+    unsigned int dna_size;
+    unsigned int n_blocks;
+    
+    std::vector<unsigned int> n_block_starts;
+    std::vector<unsigned int> n_block_sizes;
+    
+    unsigned int m_blocks;
+    std::vector<unsigned int> m_block_starts;
+    std::vector<unsigned int> m_block_sizes;
+    
+    // dna can be deduced realtime during iteration
+};
 
 
 BOOST_AUTO_TEST_SUITE(Testing)
@@ -41,9 +61,41 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     }
 
     // 04 ucsc2bit_to_fasta
-    // comp fasta with initial fasta
+    fastafs fs_new = fastafs("");
+    std::vector<twobit_seq_info *> data;
+    unsigned int i, n, file_offset;
+    unsigned char c;
+    twobit_seq_info *s;
+    file_offset = 0;
+    
+    std::ifstream fh_twobit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
+    if(fh_twobit.is_open()) {
+        fh_twobit.read(buffer, 16); file_offset += 16;
+        
+        n = fourbytes_to_uint_ucsc2bit(buffer, 8);
+        printf("[%d]\n",n);
+        
+        for(i = 0 ; i < n; i ++) {
+            s = new twobit_seq_info();
+            fh_twobit.read(buffer, 1); file_offset += 1;
+            s->name_size = buffer[0];
+            
+            fh_twobit.read(buffer, s->name_size); file_offset += s->name_size;
+            s->name = new char[s->name_size + 1];
+            strncpy(s->name, buffer, s->name_size);
+            s->name[s->name_size] = '\0';
+            printf("name size: [%c / %i / %d]\n", s->name_size, s->name_size, s->name_size);
+            printf("name: [%s]\n", s->name);
 
-    printf("todo");
+            fh_twobit.read(buffer, 4); file_offset += 4;
+            s->offset = fourbytes_to_uint_ucsc2bit(buffer, 0);
+            
+            
+            data.push_back(s);
+        }
+    }
+    
+    // @todo DELETE ALL IN s in vector, and their names
 }
 
 
