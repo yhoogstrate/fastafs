@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(test_twobit_conversions)
     twobit_byte t;
     unsigned int i;
 
-    for(i = 0; i < 6; i ++) {
+    for(i = 0; i < 5; i++) {// iterate over 0, 1, 2, 3 and 4
         buf[i] = '\0';
     }
 
