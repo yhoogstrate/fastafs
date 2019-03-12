@@ -13,4 +13,6 @@ public:
     void set(char*);// string met 4 bytes set
     const char *get(void);
     char *get(unsigned char);
+
+    static unsigned char iterator_to_offset(unsigned int);
 };

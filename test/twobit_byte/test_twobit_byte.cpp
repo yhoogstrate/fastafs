@@ -56,6 +56,24 @@ BOOST_AUTO_TEST_CASE(test_twobit_conversions)
     BOOST_CHECK_EQUAL(t.data, 16);
 }
 
+BOOST_AUTO_TEST_CASE(test_twobit_static_offset_conversion_test)
+{
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(0) , 6);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(1) , 4);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(2) , 2);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(3) , 0);
+    
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(4) , 6);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(5) , 4);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(6) , 2);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(7) , 0);
+    
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(8) , 6);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(9) , 4);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(10) , 2);
+    BOOST_CHECK_EQUAL(twobit_byte::iterator_to_offset(11) , 0);
+}
+
 
 
 

@@ -134,21 +134,92 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
             
-            fh_twobit.seekg(s->offset);
+            // seekg(getg + 4);
+            fh_twobit.read(buffer, 4);
+            //fh_twobit.seekg(s->offset);
             
             /*
              full twobits:
              nuc=16: 4
              nuc=15: 3 (+ 3 left) = 15 / 4
              */
-            twobit_byte t = twobit_byte();
-            for(j = 0; j < (n_fastafs_twobits) / 4; j++) {
-                printf(".... -> .\n");
+            twobit_byte t_in = twobit_byte();
+            const char *decoded_in;
+            twobit_byte t_out = twobit_byte();
+            
+            unsigned int k = 0; // iterator in fastafs format
+            unsigned int next_n;
+            unsigned int n_n = 0;
+            unsigned int n_ahead = 0; // number of n's ahead
+            if(s->n_blocks > n_n) {
+                //printf("n start: %u\n",s->n_block_starts[n_n]);
+                next_n = s->n_block_starts[n_n];
+                //n_ahead = s->n_block_sizes[n_n];
+            }
+            else {
+                next_n = s->dna_size + 1; // otherwise -1
+            }
+            for(j = 0; j < s->dna_size; j++) {
+                if(j % 4 == 0) {
+                    //printf("[setting t_in]\n");
+                    fh_twobit.read(buffer, 1);
+                    t_in.data = buffer[0];
+                    decoded_in = t_in.get();// pointer to the right value?
+                }
+                
+                // check if N
+                if(j == next_n) // new next block has opened
+                {
+                    n_ahead = s->n_block_sizes[n_n];
+                }
+                if(n_ahead > 0) {// we are in an N block on an N base
+                    n_ahead -= 1;
+
+                    if(n_ahead == 0) {
+                        n_n++;
+                        if(s->n_blocks > n_n) {
+                            //printf("n start: %u\n",s->n_block_starts[n_n]);
+                            next_n = s->n_block_starts[n_n];
+                            n_ahead = 0;
+                        }
+                    }
+                }
+                else {
+                    // 0 ->
+                    //printf("2bit.set(%c , %i -> %i)\n", decoded_in[j % 4], k , twobit_byte::iterator_to_offset(k) );
+                    switch(decoded_in[j % 4]) {
+                        case 't':
+                        case 'T':
+                        case 'u':
+                        case 'U':
+                            t_out.set(twobit_byte::iterator_to_offset(k), 0);
+                            break;
+                        case 'c':
+                        case 'C':
+                            t_out.set(twobit_byte::iterator_to_offset(k), 1);
+                            break;
+                        case 'a':
+                        case 'A':
+                            t_out.set(twobit_byte::iterator_to_offset(k), 2);
+                            break;
+                        case 'g':
+                        case 'G':
+                            t_out.set(twobit_byte::iterator_to_offset(k), 3);
+                            break;
+                    }
+                    //t_out.set(twobit_byte::iterator_to_offset(k), decoded_in[j % 4]);
+                    if(k % 4 == 3) {
+                        printf("?");// binary fake representation of t_out.data
+                    }
+                    k++;
+                }
             }
             
-            printf("\neffective fasafs n-2bits: %u\n", (n_fastafs_twobits + 3) / 4);
-            printf("\n");
-            printf("\n");
+            //printf("remaining nuceotides in last 2bit: k % 4 = %i\n",k % 4);
+            printf("%c", t_out.get(k % 4));
+            
+            //printf("\n");
+            //printf("\n");
 
 
             delete[] s->name;
