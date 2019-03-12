@@ -136,8 +136,8 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             
             fh_twobit.seekg(s->offset);
             
-            for(j = 0; j < s->dna_size; j++) {
-                printf(".");
+            for(j = 0; j < (n_fastafs_twobits + 3) / 4; j++) {
+                printf(".... -> .\n");
             }
             
             printf("\neffective fasafs n-2bits: %u\n", (n_fastafs_twobits + 3) / 4);

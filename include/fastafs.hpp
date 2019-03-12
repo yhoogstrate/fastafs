@@ -61,7 +61,7 @@ public:
     unsigned int view_faidx_chunk(unsigned int, char *, size_t, off_t );
 
     unsigned int view_ucsc2bit_chunk(char *, size_t, off_t);
-    unsigned int ucsc2bit_filesize(void);
+    off_t ucsc2bit_filesize(void);
 
     std::string get_faidx(unsigned int);
     unsigned int fasta_filesize(unsigned int);

@@ -574,11 +574,10 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 }
 
 
-unsigned int fastafs::ucsc2bit_filesize(void)
+off_t fastafs::ucsc2bit_filesize(void)
 {
-    unsigned int i;
-
-    unsigned int nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
+    off_t i;
+    off_t nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
 
     for(i = 0; i < this->data.size(); i++) {
         nn += 1; // namesize
@@ -1000,14 +999,14 @@ int fastafs::info(bool ena_verify_checksum)
                 SSL_load_error_strings();
                 const SSL_METHOD *meth = TLS_client_method();// defining version specificity in here often results in deprecation warnings over time
                 SSL_CTX *ctx = SSL_CTX_new (meth);
-                ssl = SSL_new (ctx);
+                ssl = SSL_new(ctx);
                 if (!ssl) {
                     printf("Error creating SSL.\n");
                     //log_ssl();
                     return -1;
                 }
 
-                int sock_ssl = SSL_get_fd(ssl);
+                //int sock_ssl = SSL_get_fd(ssl);
                 SSL_set_fd(ssl, sock);
                 int err = SSL_connect(ssl);
                 if (err <= 0) {
@@ -1017,12 +1016,13 @@ int fastafs::info(bool ena_verify_checksum)
                     return -1;
                 }
 
-                //printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
-                SSL_write(ssl, hello2.c_str(), hello2.length()  );
-                //printf("Hello message sent\n\n");
+                SSL_write(ssl, hello2.c_str(), hello2.length());
 
                 int NNvalread = SSL_read(ssl, buffer, 32);
-                if (std::string(buffer).find(" 200 ") != -1) { // sequence is in ENA
+                if(NNvalread < 0) {
+                    printf("    >%-24s%-12i%s   <connection error>\n", this->data[i]->name.c_str(), this->data[i]->n);
+                }
+                else if(std::string(buffer).find(" 200 ") != (size_t) -1) { // sequence is in ENA
                     printf("    >%-24s%-12i%s   https://www.ebi.ac.uk/ena/cram/sha1/%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash, sha1_hash);
                 } else {
                     printf("    >%-24s%-12i%s   ---\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
