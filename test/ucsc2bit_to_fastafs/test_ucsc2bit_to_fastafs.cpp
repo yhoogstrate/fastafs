@@ -26,12 +26,16 @@ struct ucsc2bit_seq_header {
     unsigned int m_blocks;
     std::vector<unsigned int> m_block_starts;
     std::vector<unsigned int> m_block_sizes;
-    
+};
+
+struct ucsc2bit_seq_header_conversion_data {
     // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
     SHA_CTX ctx;
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+    
+    off_t header_position; // file positions where sha1 and offsets are stored
+    off_t file_offset; // file positions where sequence data blocks start
 };
-
 
 
 static char nt[2] = "T";
@@ -73,13 +77,15 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     // 04 ucsc2bit_to_fasta
     fastafs fs_new = fastafs("");
     std::vector<ucsc2bit_seq_header *> data;
+    std::vector<ucsc2bit_seq_header_conversion_data *> data2;
     unsigned int i, j, n;
     ucsc2bit_seq_header *s;
+    ucsc2bit_seq_header_conversion_data *t;
 
-    std::ifstream fh_twobit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
+    std::ifstream fh_ucsc2bit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
     std::ofstream fh_fastafs (fastafs_file.c_str(), std::ios::out | std::ios::binary);
-    if(fh_twobit.is_open() and fh_fastafs.is_open()) {
-        fh_twobit.read(buffer, 12);
+    if(fh_ucsc2bit.is_open() and fh_fastafs.is_open()) {
+        fh_ucsc2bit.read(buffer, 12);
 
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
         
@@ -91,39 +97,47 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         fh_fastafs << "\x00\x00\x00\x00"s;
         
         
-        fh_twobit.seekg(16);
+        fh_ucsc2bit.seekg(16);
         for(i = 0 ; i < n; i ++) {
             s = new ucsc2bit_seq_header();
-            fh_twobit.read(buffer, 1);
-            s->name_size = buffer[0];
-            //header_size += 1 + s->name_size + 20 + 4;
+            t = new ucsc2bit_seq_header_conversion_data();
             
-            fh_twobit.read(buffer, s->name_size);
+            data.push_back(s);
+            data2.push_back(t);
+
+            fh_ucsc2bit.read(buffer, 1);
+            s->name_size = buffer[0];
+            
+            fh_ucsc2bit.read(buffer, s->name_size);
             s->name = new char[s->name_size + 1];
             strncpy(s->name, buffer, s->name_size);
             s->name[s->name_size] = '\0';
 
-            fh_twobit.read(buffer, 4);
+            fh_ucsc2bit.read(buffer, 4);
             s->offset = fourbytes_to_uint_ucsc2bit(buffer, 0);
             
-            data.push_back(s);
             
-            SHA1_Init(&s->ctx);
+            SHA1_Init(&t->ctx);
 
             fh_fastafs.write((char *) &s->name_size, (size_t) 1); // name size
             fh_fastafs.write(s->name, (size_t) s->name_size);// name
+            
+            t->header_position = fh_fastafs.tellp();
+            
+            //@todo nullbytes instead
             fh_fastafs << "ssssssssssSSSSSSSSSS"s;//sha1 placeholder, overwrite later with gseek etc
             fh_fastafs << "oooo"s;//file offset placeholder, can only be rewritten after m and n blocks are filled
         }
 
         
         for(i = 0 ; i < n; i ++) {
-            // use seekg to get file offset?
-            printf("file offset: %i \n", fh_fastafs.tellp());
-
             // seq-len
             s = data[i];
-            fh_twobit.read(buffer, 4);
+            t = data2[i];
+            
+            t->file_offset = fh_fastafs.tellp();
+            
+            fh_ucsc2bit.read(buffer, 4);
             s->dna_size = fourbytes_to_uint_ucsc2bit(buffer, 0);
             
             uint_to_fourbytes(buffer, s->dna_size);
@@ -131,14 +145,14 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
 
             // parse N blocks
-            fh_twobit.read(buffer, 4);
+            fh_ucsc2bit.read(buffer, 4);
             s->n_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
 
             uint_to_fourbytes(buffer, s->n_blocks);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
             for(j = 0; j < s->n_blocks; j++) {
-                fh_twobit.read(buffer, 4);
+                fh_ucsc2bit.read(buffer, 4);
                 s->n_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
                 
                 uint_to_fourbytes(buffer, s->n_block_starts.back());
@@ -146,7 +160,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             }
 
             for(j = 0; j < s->n_blocks; j++) {
-                fh_twobit.read(buffer, 4);
+                fh_ucsc2bit.read(buffer, 4);
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
 
                 uint_to_fourbytes(buffer, s->n_block_starts.back() + s->n_block_sizes.back() - 1);
@@ -154,14 +168,14 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             }
 
             // parse M blocks
-            fh_twobit.read(buffer, 4);
+            fh_ucsc2bit.read(buffer, 4);
             s->m_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
 
             uint_to_fourbytes(buffer, s->m_blocks);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
             for(j = 0; j < s->m_blocks; j++) {
-                fh_twobit.read(buffer, 4);
+                fh_ucsc2bit.read(buffer, 4);
                 s->m_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
                 
                 uint_to_fourbytes(buffer, s->m_block_starts.back());
@@ -169,7 +183,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             }
 
             for(j = 0; j < s->m_blocks; j++) {
-                fh_twobit.read(buffer, 4);
+                fh_ucsc2bit.read(buffer, 4);
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
                 
                 uint_to_fourbytes(buffer, s->m_block_starts.back() + s->m_block_sizes.back() - 1);
@@ -177,7 +191,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             }
 
             // parse and convert sequence
-            fh_twobit.read(buffer, 4);
+            fh_ucsc2bit.read(buffer, 4);
             twobit_byte t_in = twobit_byte();
             const char *decoded_in;
 
@@ -195,7 +209,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             }
             for(j = 0; j < s->dna_size; j++) {
                 if(j % 4 == 0) {
-                    fh_twobit.read(buffer, 1);
+                    fh_ucsc2bit.read(buffer, 1);
                     t_in.data = buffer[0];
                     decoded_in = t_in.get();// pointer to the right value?
                 }
@@ -206,7 +220,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                     n_ahead = s->n_block_sizes[n_n];
                 }
                 if(n_ahead > 0) {// we are in an N block on an N base
-                    SHA1_Update(&s->ctx, nn, 1);
+                    SHA1_Update(&t->ctx, nn, 1);
                     
                     n_ahead -= 1;
 
@@ -225,25 +239,25 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                         case 'u':
                         case 'U':
                             t_out.set(twobit_byte::iterator_to_offset(k), 0);
-                            SHA1_Update(&s->ctx, nt, 1);
+                            SHA1_Update(&t->ctx, nt, 1);
 
                             break;
                         case 'c':
                         case 'C':
                             t_out.set(twobit_byte::iterator_to_offset(k), 1);
-                            SHA1_Update(&s->ctx, nc, 1);
+                            SHA1_Update(&t->ctx, nc, 1);
                             
                             break;
                         case 'a':
                         case 'A':
                             t_out.set(twobit_byte::iterator_to_offset(k), 2);
-                            SHA1_Update(&s->ctx, na, 1);
+                            SHA1_Update(&t->ctx, na, 1);
 
                             break;
                         case 'g':
                         case 'G':
                             t_out.set(twobit_byte::iterator_to_offset(k), 3);
-                            SHA1_Update(&s->ctx, ng, 1);
+                            SHA1_Update(&t->ctx, ng, 1);
 
                             break;
                     }
@@ -262,13 +276,34 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
             }
             
-            SHA1_Final(s->sha1_digest, &s->ctx);
-
+            SHA1_Final(t->sha1_digest, &t->ctx);
 
             delete[] s->name;
             delete s;
         }
+
+        // re-write headers (file offsets and sha1 sums)
+        for(i = 0 ; i < n; i ++) {
+            t = data2[i];
+            
+            printf("changing to: %i\n", t->header_position);
+            // go to t->header_position
+            //printf("seekg: %i\n",
+            fh_fastafs.seekp(t->header_position, std::ios::beg);
+
+            //fh_fastafs << t->sha1_digest; // this way can be nasty if last bytes are nullbytes
+            fh_fastafs.write(reinterpret_cast<char *> (&t->sha1_digest), (size_t) 20);
+            
+            
+            uint_to_fourbytes(buffer, t->file_offset);
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+
+            delete t;
+        }
     }
+    
+    fh_fastafs.close();
+    fh_ucsc2bit.close();
 }
 
 
