@@ -286,15 +286,11 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         for(i = 0 ; i < n; i ++) {
             t = data2[i];
             
-            printf("changing to: %i\n", t->header_position);
-            // go to t->header_position
-            //printf("seekg: %i\n",
             fh_fastafs.seekp(t->header_position, std::ios::beg);
 
             //fh_fastafs << t->sha1_digest; // this way can be nasty if last bytes are nullbytes
             fh_fastafs.write(reinterpret_cast<char *> (&t->sha1_digest), (size_t) 20);
-            
-            
+
             uint_to_fourbytes(buffer, t->file_offset);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
