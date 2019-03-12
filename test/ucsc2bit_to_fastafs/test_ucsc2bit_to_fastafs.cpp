@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
 
 BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 {
-    std::string fastafs_file = "tmp/test.fastafs";
+    std::string fastafs_file = "tmp/test.regenerated.fastafs";
     std::string ucsc2bit_file = "tmp/test.2bit";
 
     // 01 fasta_to_fastafs()
@@ -68,11 +68,11 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     ucsc2bit_seq_header *s;
 
     std::ifstream fh_twobit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
-    if(fh_twobit.is_open()) {
+    std::ofstream fh_fastafs (fastafs_file.c_str(), std::ios::out | std::ios::binary);
+    if(fh_twobit.is_open() and fh_fastafs.is_open()) {
         fh_twobit.read(buffer, 12);
 
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
-        //printf("[%d]\n",n);
         
         fh_twobit.seekg(16);
         for(i = 0 ; i < n; i ++) {
@@ -91,9 +91,18 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             data.push_back(s);
         }
         
+        fh_fastafs << UCSC2BIT_MAGIC;
+        fh_fastafs << UCSC2BIT_VERSION;
+        
+        uint_to_fourbytes(buffer, (unsigned int) data.size());
+        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+
+        fh_fastafs << "\x00\x00\x00\x00"s;
+
         for(i = 0 ; i < n; i ++) {
             s = data[i];
-            printf("name: [%s]\n", s->name);
+            fh_fastafs.write((char *) &s->name_size, (size_t) 1); // name size
+            fh_fastafs.write(s->name, (size_t) s->name_size);// name
 
             fh_twobit.read(buffer, 4);
             s->dna_size = fourbytes_to_uint_ucsc2bit(buffer, 0);
@@ -211,7 +220,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             }
             
             //printf("remaining nuceotides in last 2bit: k % 4 = %i\n",k % 4);
-            printf("%c", t_out.get(k % 4));
+            //printf("%c", t_out.get(k % 4));
             
             delete[] s->name;
             delete s;
