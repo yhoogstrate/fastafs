@@ -27,8 +27,18 @@ struct ucsc2bit_seq_header {
     std::vector<unsigned int> m_block_starts;
     std::vector<unsigned int> m_block_sizes;
     
-    // dna can be deduced realtime during iteration
+    // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
+    SHA_CTX ctx;
+    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
 };
+
+
+
+static char nt[2] = "T";
+static char nc[2] = "C";
+static char na[2] = "A";
+static char ng[2] = "G";
+static char nn[2] = "N";
 
 
 BOOST_AUTO_TEST_SUITE(Testing)
@@ -64,7 +74,6 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     fastafs fs_new = fastafs("");
     std::vector<ucsc2bit_seq_header *> data;
     unsigned int i, j, n;
-    unsigned char c;
     ucsc2bit_seq_header *s;
 
     std::ifstream fh_twobit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
@@ -74,11 +83,20 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
         
+        // write fastafs header
+        fh_fastafs << UCSC2BIT_MAGIC;
+        fh_fastafs << UCSC2BIT_VERSION;
+        uint_to_fourbytes(buffer, n);
+        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs << "\x00\x00\x00\x00"s;
+        
+        
         fh_twobit.seekg(16);
         for(i = 0 ; i < n; i ++) {
             s = new ucsc2bit_seq_header();
             fh_twobit.read(buffer, 1);
             s->name_size = buffer[0];
+            //header_size += 1 + s->name_size + 20 + 4;
             
             fh_twobit.read(buffer, s->name_size);
             s->name = new char[s->name_size + 1];
@@ -89,63 +107,76 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             s->offset = fourbytes_to_uint_ucsc2bit(buffer, 0);
             
             data.push_back(s);
-        }
-        
-        fh_fastafs << UCSC2BIT_MAGIC;
-        fh_fastafs << UCSC2BIT_VERSION;
-        
-        uint_to_fourbytes(buffer, (unsigned int) data.size());
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            
+            SHA1_Init(&s->ctx);
 
-        fh_fastafs << "\x00\x00\x00\x00"s;
-
-        for(i = 0 ; i < n; i ++) {
-            s = data[i];
             fh_fastafs.write((char *) &s->name_size, (size_t) 1); // name size
             fh_fastafs.write(s->name, (size_t) s->name_size);// name
+            fh_fastafs << "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"s;//sha1 placeholder, overwrite later with gseek etc
+            fh_fastafs << "\x00\x00\x00\x00"s;//file offset placeholder, can only be rewritten after m and n blocks are filled
+        }
 
+        
+        for(i = 0 ; i < n; i ++) {
+            // use seekg to get file offset?
+
+            // seq-len
+            s = data[i];
             fh_twobit.read(buffer, 4);
             s->dna_size = fourbytes_to_uint_ucsc2bit(buffer, 0);
-            unsigned int n_fastafs_twobits = s->dna_size;
-            printf("2bit bytes: %u\n", n_fastafs_twobits);
+            
+            uint_to_fourbytes(buffer, s->dna_size);
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
+
+            // parse N blocks
             fh_twobit.read(buffer, 4);
             s->n_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
-            
-            printf("n-blocks: [%u]\n", s->n_blocks);
-            
+
+            uint_to_fourbytes(buffer, s->n_blocks);
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+
             for(j = 0; j < s->n_blocks; j++) {
                 fh_twobit.read(buffer, 4);
                 s->n_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
+                
+                uint_to_fourbytes(buffer, s->n_block_starts.back());
+                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             }
 
             for(j = 0; j < s->n_blocks; j++) {
                 fh_twobit.read(buffer, 4);
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
-                
-                n_fastafs_twobits -= s->n_block_sizes.back();
-                printf("2bit bytes: %u\n", n_fastafs_twobits);
 
+                uint_to_fourbytes(buffer, s->n_block_starts.back() + s->n_block_sizes.back());
+                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             }
 
+            // parse M blocks
             fh_twobit.read(buffer, 4);
             s->m_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
-            
-            printf("m-blocks: [%u]\n", s->m_blocks);
-            
+
+            uint_to_fourbytes(buffer, s->m_blocks);
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+
             for(j = 0; j < s->m_blocks; j++) {
                 fh_twobit.read(buffer, 4);
                 s->m_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
+                
+                uint_to_fourbytes(buffer, s->m_block_starts.back());
+                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             }
 
             for(j = 0; j < s->m_blocks; j++) {
                 fh_twobit.read(buffer, 4);
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
+                
+                uint_to_fourbytes(buffer, s->m_block_starts.back() + s->m_block_sizes.back());
+                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             }
-            
-            fh_twobit.read(buffer, 4);
-            
 
+            // parse and convert sequence
+            fh_twobit.read(buffer, 4);
             twobit_byte t_in = twobit_byte();
             const char *decoded_in;
 
@@ -156,16 +187,13 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             unsigned int n_n = 0;
             unsigned int n_ahead = 0; // number of n's ahead
             if(s->n_blocks > n_n) {
-                //printf("n start: %u\n",s->n_block_starts[n_n]);
                 next_n = s->n_block_starts[n_n];
-                //n_ahead = s->n_block_sizes[n_n];
             }
             else {
                 next_n = s->dna_size + 1; // otherwise -1
             }
             for(j = 0; j < s->dna_size; j++) {
                 if(j % 4 == 0) {
-                    //printf("[setting t_in]\n");
                     fh_twobit.read(buffer, 1);
                     t_in.data = buffer[0];
                     decoded_in = t_in.get();// pointer to the right value?
@@ -177,12 +205,13 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                     n_ahead = s->n_block_sizes[n_n];
                 }
                 if(n_ahead > 0) {// we are in an N block on an N base
+                    SHA1_Update(&s->ctx, nn, 1);
+                    
                     n_ahead -= 1;
 
                     if(n_ahead == 0) {
                         n_n++;
                         if(s->n_blocks > n_n) {
-                            //printf("n start: %u\n",s->n_block_starts[n_n]);
                             next_n = s->n_block_starts[n_n];
                             n_ahead = 0;
                         }
@@ -197,30 +226,42 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                         case 'u':
                         case 'U':
                             t_out.set(twobit_byte::iterator_to_offset(k), 0);
+                            SHA1_Update(&s->ctx, nt, 1);
+
                             break;
                         case 'c':
                         case 'C':
                             t_out.set(twobit_byte::iterator_to_offset(k), 1);
+                            SHA1_Update(&s->ctx, nc, 1);
+                            
                             break;
                         case 'a':
                         case 'A':
                             t_out.set(twobit_byte::iterator_to_offset(k), 2);
+                            SHA1_Update(&s->ctx, na, 1);
+
                             break;
                         case 'g':
                         case 'G':
                             t_out.set(twobit_byte::iterator_to_offset(k), 3);
+                            SHA1_Update(&s->ctx, ng, 1);
+
                             break;
                     }
                     //t_out.set(twobit_byte::iterator_to_offset(k), decoded_in[j % 4]);
                     if(k % 4 == 3) {
+                        fh_fastafs.write((char *) &t_out.data, (size_t) 1); // name size
                         printf("?");// binary fake representation of t_out.data
                     }
                     k++;
                 }
             }
             
-            //printf("remaining nuceotides in last 2bit: k % 4 = %i\n",k % 4);
-            //printf("%c", t_out.get(k % 4));
+            if(k % 4 != 0) {
+                //printf("remaining nuceotides in last 2bit: k % 4 = %i\n",k % 4);
+                //printf("%c", t_out.get(k % 4));
+                fh_fastafs.write((char *) t_out.get(k % 4), (size_t) 1); // name size
+            }
             
             delete[] s->name;
             delete s;

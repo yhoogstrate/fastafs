@@ -245,7 +245,7 @@ int fasta_to_fastafs::cache(void)
                     case 'u':
                     case 'U':
                         s->add_nucleotide(NUCLEOTIDE_T);
-                        SHA1_Update(&s->ctx, nt, 1);
+                        SHA1_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
                         break;
                     case 'c':
                     case 'C':
