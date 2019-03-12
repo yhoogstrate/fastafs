@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         fh_twobit.read(buffer, 12);
 
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
-        printf("[%d]\n",n);
+        //printf("[%d]\n",n);
         
         fh_twobit.seekg(16);
         for(i = 0 ; i < n; i ++) {
@@ -134,19 +134,14 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
             
-            // seekg(getg + 4);
             fh_twobit.read(buffer, 4);
-            //fh_twobit.seekg(s->offset);
             
-            /*
-             full twobits:
-             nuc=16: 4
-             nuc=15: 3 (+ 3 left) = 15 / 4
-             */
+
             twobit_byte t_in = twobit_byte();
             const char *decoded_in;
+
             twobit_byte t_out = twobit_byte();
-            
+
             unsigned int k = 0; // iterator in fastafs format
             unsigned int next_n;
             unsigned int n_n = 0;
@@ -218,16 +213,10 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             //printf("remaining nuceotides in last 2bit: k % 4 = %i\n",k % 4);
             printf("%c", t_out.get(k % 4));
             
-            //printf("\n");
-            //printf("\n");
-
-
             delete[] s->name;
             delete s;
         }
     }
-    
-    // @todo DELETE ALL IN s in vector, and their names
 }
 
 
