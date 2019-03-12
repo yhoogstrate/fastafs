@@ -119,6 +119,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
         
         for(i = 0 ; i < n; i ++) {
             // use seekg to get file offset?
+            printf("file offset: %i \n", fh_fastafs.tellp());
 
             // seq-len
             s = data[i];
@@ -217,9 +218,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                         }
                     }
                 }
-                else {
-                    // 0 ->
-                    //printf("2bit.set(%c , %i -> %i)\n", decoded_in[j % 4], k , twobit_byte::iterator_to_offset(k) );
+                else { // non-N char
                     switch(decoded_in[j % 4]) {
                         case 't':
                         case 'T':
@@ -248,10 +247,8 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
                             break;
                     }
-                    //t_out.set(twobit_byte::iterator_to_offset(k), decoded_in[j % 4]);
                     if(k % 4 == 3) {
                         fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
-                        printf("[%u] ", t_out.data);// binary fake representation of t_out.data
                     }
                     k++;
                 }
@@ -262,15 +259,14 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                     t_out.set(twobit_byte::iterator_to_offset(j), 0);
                 }
                 fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
-                printf("[%u] ", t_out.data);// binary fake representation of t_out.data
 
-                //fh_fastafs << "?";
             }
             
+            SHA1_Final(s->sha1_digest, &s->ctx);
+
+
             delete[] s->name;
             delete s;
-            
-            printf("\n");
         }
     }
 }
