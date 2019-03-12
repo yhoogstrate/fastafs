@@ -101,7 +101,8 @@ void twobit_byte::set(char* buffer)
 }
 
 /**
- * @brief fully decodes a twobit byte, not referencing to a hash but allocating a new char*, slower than twobit_byte::get(void) but capable of determining very ends
+ * @brief fully decodes a twobit byte, not referencing to a hash but allocating a new char*,
+ * slower than twobit_byte::get(void) but capable of determining very ends
 **/
 char *twobit_byte::get(unsigned char length)
 {

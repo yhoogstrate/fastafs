@@ -112,8 +112,8 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
             fh_fastafs.write((char *) &s->name_size, (size_t) 1); // name size
             fh_fastafs.write(s->name, (size_t) s->name_size);// name
-            fh_fastafs << "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"s;//sha1 placeholder, overwrite later with gseek etc
-            fh_fastafs << "\x00\x00\x00\x00"s;//file offset placeholder, can only be rewritten after m and n blocks are filled
+            fh_fastafs << "ssssssssssSSSSSSSSSS"s;//sha1 placeholder, overwrite later with gseek etc
+            fh_fastafs << "oooo"s;//file offset placeholder, can only be rewritten after m and n blocks are filled
         }
 
         
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                 fh_twobit.read(buffer, 4);
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
 
-                uint_to_fourbytes(buffer, s->n_block_starts.back() + s->n_block_sizes.back());
+                uint_to_fourbytes(buffer, s->n_block_starts.back() + s->n_block_sizes.back() - 1);
                 fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             }
 
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                 fh_twobit.read(buffer, 4);
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
                 
-                uint_to_fourbytes(buffer, s->m_block_starts.back() + s->m_block_sizes.back());
+                uint_to_fourbytes(buffer, s->m_block_starts.back() + s->m_block_sizes.back() - 1);
                 fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             }
 
@@ -250,21 +250,27 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
                     }
                     //t_out.set(twobit_byte::iterator_to_offset(k), decoded_in[j % 4]);
                     if(k % 4 == 3) {
-                        fh_fastafs.write((char *) &t_out.data, (size_t) 1); // name size
-                        printf("?");// binary fake representation of t_out.data
+                        fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
+                        printf("[%u] ", t_out.data);// binary fake representation of t_out.data
                     }
                     k++;
                 }
             }
             
             if(k % 4 != 0) {
-                //printf("remaining nuceotides in last 2bit: k % 4 = %i\n",k % 4);
-                //printf("%c", t_out.get(k % 4));
-                fh_fastafs.write((char *) t_out.get(k % 4), (size_t) 1); // name size
+                for(j = k % 4; j < 4; j++) {
+                    t_out.set(twobit_byte::iterator_to_offset(j), 0);
+                }
+                fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
+                printf("[%u] ", t_out.data);// binary fake representation of t_out.data
+
+                //fh_fastafs << "?";
             }
             
             delete[] s->name;
             delete s;
+            
+            printf("\n");
         }
     }
 }
