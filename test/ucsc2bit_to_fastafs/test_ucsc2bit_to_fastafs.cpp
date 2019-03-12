@@ -136,7 +136,13 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
             
             fh_twobit.seekg(s->offset);
             
-            for(j = 0; j < (n_fastafs_twobits + 3) / 4; j++) {
+            /*
+             full twobits:
+             nuc=16: 4
+             nuc=15: 3 (+ 3 left) = 15 / 4
+             */
+            twobit_byte t = twobit_byte();
+            for(j = 0; j < (n_fastafs_twobits) / 4; j++) {
                 printf(".... -> .\n");
             }
             

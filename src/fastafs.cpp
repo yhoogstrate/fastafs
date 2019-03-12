@@ -294,7 +294,7 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
 
     // "(a/b)*b + a%b shall equal a"
     // full iterations = this->n / chunk_size; do this number of iterations looped
-    signed long n_iterations = (unsigned int) this->n / chunksize;
+    unsigned long n_iterations = (unsigned long) this->n / chunksize;
     signed int remaining_bytes = this->n % chunksize;
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
 
@@ -576,9 +576,9 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
 off_t fastafs::ucsc2bit_filesize(void)
 {
-    off_t i;
     off_t nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
 
+    size_t i;// auto iterator?
     for(i = 0; i < this->data.size(); i++) {
         nn += 1; // namesize
         nn += 4; // offset in file
@@ -661,7 +661,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
         }
 
-        unsigned int header_block_len = 4+4+4+4 + (this->data.size() * (1 + 4));
+        unsigned int header_block_len = 4+4+4+4 + ((unsigned int) this->data.size() * (1 + 4));
         unsigned int header_offset_previous = 0;
         for(unsigned int i = 0; i < this->data.size(); i++) {
             header_block_len += this->data[i]->name.size();
