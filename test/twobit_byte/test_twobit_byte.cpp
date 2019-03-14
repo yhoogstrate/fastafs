@@ -12,17 +12,11 @@ BOOST_AUTO_TEST_SUITE(Testing)
 
 BOOST_AUTO_TEST_CASE(test_twobit_conversions)
 {
-    char buf[5];
     char seq[5];
     seq[4] = '\0';
 
     twobit_byte t;
-    unsigned int i;
-
-    for(i = 0; i < 5; i++) {// iterate over 0, 1, 2, 3 and 4
-        buf[i] = '\0';
-    }
-
+ 
     seq[0] = 'A';
     seq[1] = 'A';
     seq[2] = 'A';

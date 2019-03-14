@@ -33,7 +33,7 @@ public:
 
     //void print(void);
     SHA_CTX ctx;
-    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+    //unsigned char sha1_digest[SHA_DIGEST_LENGTH];
 };
 
 

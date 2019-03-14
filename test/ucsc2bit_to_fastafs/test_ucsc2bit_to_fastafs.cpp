@@ -45,8 +45,14 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     // 04 ucsc2bit_to_fasta
     ucsc2bit_to_fastafs(ucsc2bit_file, fastafs_file2);
 
-    //@todo add byte precise comparison
+    // - comparison based on iterators: <https://stackoverflow.com/questions/15022036/how-to-compare-files-with-boost-test>
+    std::ifstream ifs1(fastafs_file);
+    std::ifstream ifs2(fastafs_file2);
 
+    std::istream_iterator<char> b1(ifs1), e1;
+    std::istream_iterator<char> b2(ifs2), e2;
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(b1, e1, b2, e2);
 }
 
 

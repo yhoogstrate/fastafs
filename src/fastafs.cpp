@@ -1020,7 +1020,7 @@ int fastafs::info(bool ena_verify_checksum)
 
                 int NNvalread = SSL_read(ssl, buffer, 32);
                 if(NNvalread < 0) {
-                    printf("    >%-24s%-12i%s   <connection error>\n", this->data[i]->name.c_str(), this->data[i]->n);
+                    printf("    >%-24s%-12i%s   <connection error>\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
                 } else if(std::string(buffer).find(" 200 ") != (size_t) -1) { // sequence is in ENA
                     printf("    >%-24s%-12i%s   https://www.ebi.ac.uk/ena/cram/sha1/%s\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash, sha1_hash);
                 } else {

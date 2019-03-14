@@ -9,16 +9,17 @@
 
 
 
-static char nt[2] = "T";
-static char nc[2] = "C";
-static char na[2] = "A";
-static char ng[2] = "G";
-static char nn[2] = "N";
-
 
 
 void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 {
+    const char nt[2] = "T";
+    const char nc[2] = "C";
+    const char na[2] = "A";
+    const char ng[2] = "G";
+    const char nn[2] = "N";
+
+
     char buffer[16 +  1];
 
     fastafs fs_new = fastafs("");
