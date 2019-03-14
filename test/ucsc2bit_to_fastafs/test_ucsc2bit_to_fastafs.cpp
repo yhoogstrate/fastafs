@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     ucsc2bit_to_fastafs(ucsc2bit_file, fastafs_file2);
 
     //@todo add byte precise comparison
-    
+
 }
 
 
