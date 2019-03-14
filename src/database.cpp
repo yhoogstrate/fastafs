@@ -54,7 +54,7 @@ void database::list()
     std::ifstream infile(this->idx);
     std::string line;
     while (std::getline(infile, line)) {
-        std::istringstream iss(line);
+        //std::istringstream iss(line);
 
         std::string fname = this->path + "/" + line + ".fastafs";
 
@@ -105,7 +105,7 @@ std::string database::get(std::string fastafs_name_or_id)
     std::ifstream infile(this->idx);
     std::string line;
     while (std::getline(infile, line)) {
-        std::istringstream iss(line);
+        //std::istringstream iss(line);
 
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
