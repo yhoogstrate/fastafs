@@ -20,9 +20,10 @@ const char twobit_byte::twobit_hash[256][5] = {"TTTT", "TTTC", "TTTA", "TTTG", "
  6        2
  7        0
 
+not sure what the quickest way is - this way all calculations are done as ints, not as chars
  */
 unsigned char twobit_byte::iterator_to_offset(unsigned int iterator) {
-    return (3 - (iterator % 4)) * 2;
+    return (unsigned char) ((3 - (iterator % 4)) * 2);
 }
 
 // @todo, offset needs to be second parameter

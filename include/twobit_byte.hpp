@@ -1,6 +1,8 @@
 
-#include <array>
+#ifndef TWOBIT_BYTE_HPP
+#define TWOBIT_BYTE_HPP
 
+#include <array>
 #include "config.hpp"
 
 class twobit_byte
@@ -16,3 +18,5 @@ public:
 
     static unsigned char iterator_to_offset(unsigned int);
 };
+
+#endif

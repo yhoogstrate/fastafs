@@ -1,6 +1,8 @@
 
-#include <vector>
+#include <stdio.h>
+#include <string.h>
 
+#include <vector>
 #include <openssl/sha.h>
 
 #include "config.hpp"
@@ -9,48 +11,37 @@
 #include "fastafs.hpp"
 #include "twobit_byte.hpp"
 
-//class ucsc2bit_to_fastafs_seq : public fastafs_seq
-//{
-//private:
-//twobit_byte twobit_data;
-
-//bool previous_was_N;
-
-//public:
-//std::vector<unsigned char> twobits;
-
-//unsigned int N;// effective size of unnknown nulceotides (N's) in nt
-
-//ucsc2bit_to_fastafs_seq(void);
-
-//size_t size(void);// size of compressed data, may be longer than 4*this->n
-
-//void add_N();
-//void add_nucleotide(unsigned char);
-//void add_twobit(twobit_byte &);
-//void flush_reading();
-//void close_reading();
-
-////void print(void);
-//SHA_CTX ctx;
-//unsigned char sha1_digest[SHA_DIGEST_LENGTH];
-//};
 
 
+struct ucsc2bit_seq_header {
+    unsigned char name_size;
+    char *name;
+    unsigned int offset;// in file, in bytes
+    
+    unsigned int dna_size;
 
-//class ucsc2bit_to_fastafs
-//{
-//std::string name;
-//std::string filename;
+    unsigned int n_blocks;
+    std::vector<unsigned int> n_block_starts;
+    std::vector<unsigned int> n_block_sizes;
+    
+    unsigned int m_blocks;
+    std::vector<unsigned int> m_block_starts;
+    std::vector<unsigned int> m_block_sizes;
+};
 
-//std::vector<ucsc2bit_to_fastafs_seq *> data;
+struct ucsc2bit_seq_header_conversion_data {
+    // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
+    SHA_CTX ctx;
+    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+    
+    off_t header_position; // file positions where sha1 and offsets are stored
+    off_t file_offset; // file positions where sequence data blocks start
+};
 
-//public:
-//ucsc2bit_to_fastafs(std::string, std::string);
-//~ucsc2bit_to_fastafs();
-//int cache(void);
-////void print();
-//void write(std::string);
-//unsigned int get_index_size();
-//unsigned int get_sequence_offset(unsigned int);
-//};
+
+// think of having this as a off_t returning function, returning the written bytes
+void ucsc2bit_to_fastafs(std::string, std::string);
+
+
+
+
