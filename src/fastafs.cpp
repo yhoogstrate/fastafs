@@ -176,7 +176,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     std::vector<unsigned int> n_ends_w(this->n_ends);// workable type for this func
     n_starts_w.push_back(this->n);
     n_ends_w.push_back(this->n);
-    unsigned int n_block = 0;
+    unsigned int n_block = n_starts_w.size() - 1; /// last element, iterate back :)
     for(unsigned int i = 0; i < n_starts_w.size(); i++) {
         printf("n-block{%i}: [%i, %i]\n",i, n_starts_w[i], n_ends_w[i]);
     }
@@ -197,20 +197,10 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // using nucleotide position, calculate the n_block iterator and the line iterator
     unsigned int line_i = nucleotide_pos / padding;
     
-    // calculate n_block    
-    // n_block[0] = [0,2]
-    // n_block[1] = [6,7]
-    // n_block[2] = [15,0]
-    // pos = 0: n_block blijft 0
-    // pos = 1: n_block blijft 0
-    // pos = 2: n_block blijft 0
-    // pos = 3: n_block wordt 1
-    // pos = 4: n_block wordt 1
-    // zolang pos <= n_blocks_end
-    printf("=> nblock=%i\n", n_block);
-    while(nucleotide_pos < n_ends_w[n_block]) {
-        n_block++;
-        printf("=> nblock=%i\n", n_block);
+    printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
+    while(nucleotide_pos < n_ends_w[n_block] and n_block > 0) { // iterate back
+        n_block--;
+        printf("updated nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     }
     printf("current n-block = %i: [%i, %i]\n",n_block, n_starts_w[n_block], n_ends_w[n_block]);
     
