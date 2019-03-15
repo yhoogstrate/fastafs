@@ -16,6 +16,9 @@ public:
     unsigned int n;// number nucleotides
     std::vector<unsigned int> n_starts;// start positions 0-based)
     std::vector<unsigned int> n_ends;// end positions (is 0-based, must become 1-based)
+    
+    std::vector<std::pair<unsigned int, unsigned int>> m_blocks;// @ todo check if unsiged int[2] is not more efficient / less bloated
+    
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented
 
@@ -57,8 +60,8 @@ public:
 
     void load(std::string);
     void view_fasta(unsigned int);
-    unsigned int view_fasta_chunk(unsigned int, char *, size_t, off_t );
-    unsigned int view_faidx_chunk(unsigned int, char *, size_t, off_t );
+    unsigned int view_fasta_chunk(unsigned int, char *, size_t, off_t);
+    unsigned int view_faidx_chunk(unsigned int, char *, size_t, off_t);
 
     unsigned int view_ucsc2bit_chunk(char *, size_t, off_t);
     off_t ucsc2bit_filesize(void);

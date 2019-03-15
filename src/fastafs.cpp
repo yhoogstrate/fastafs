@@ -172,6 +172,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         }
     }
 
+    // @todo put all this temporary data into a struct?
+    // if fuse accepts something like file-call transactions ~ probably: fuse_file_info::fh is the fh id, test when this value changes, and wach out for seek()s
     std::vector<unsigned int> n_starts_w(this->n_starts);// workable type for this func
     std::vector<unsigned int> n_ends_w(this->n_ends);// workable type for this func
     n_starts_w.push_back(this->n);
@@ -193,39 +195,71 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     unsigned int n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    unsigned int file_offset = (this->nucleotide_pos - n_passed) % 4;
+    unsigned int file_offset = this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + (this->m_blocks.size() * 8) ;
+    file_offset += (nucleotide_pos - n_passed) / 4;
+    fh->seekg((unsigned int) file_offset, fh->beg);
     
+    /*
+     0  0  0  0  1  1  1  1 << desired offset from starting point
+     A  C  T  G  A  C  T  G
+    * 
     
-    //gseek to:  file position = offset + ((this->nucleotide_pos - n_passed) % 4)
+    handigste is om file pointer naar de byte ervoor te zetten
+    vervolgens wanneer twobit_offset gelijk is aan nul, lees je de volgende byte
+    * nooit out of bound
+    
+    */
+    twobit_byte t = twobit_byte();
+    char *byte_tmp = new char [2];
+    const char *chunk;
+    
+    unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
+    printf("twobit_offset = %i\n", twobit_offset);
+    if(twobit_offset != 0) {
+        fh->read(byte_tmp, 1);
+        t.data = byte_tmp[0];
+        chunk = t.get();
+    }
 
+    
     printf("nucleotide-pos: %i\n", nucleotide_pos);
-    printf("\n");
-    printf("\n");
+    //printf("\n");
+    //printf("\n");
         
     // using nucleotide position, calculate the n_block iterator and the line iterator
     unsigned int line_i = nucleotide_pos / padding;
     
     // since the n_blocks are sorted, a split search could technically become faster
     // complexity is now N, which could be reduced to log(n)
-    printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
+    //printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     while(nucleotide_pos < n_ends_w[n_block] and n_block > 0) { // iterate back
         n_block--;
-        printf("updated nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
+        //printf("updated nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     }
-    printf("current n-block = %i: [%i, %i]\n",n_block, n_starts_w[n_block], n_ends_w[n_block]);
+    //printf("current n-block = %i: [%i, %i]\n",n_block, n_starts_w[n_block], n_ends_w[n_block]);
     
-    twobit_byte t = twobit_byte();
     while(line_i < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         pos_limit += std::min(padding, this->n - nucleotide_pos);// only last line needs to be smaller
         
         // write nucleotides
         while(pos < pos_limit) {
-            printf("%i ",nucleotide_pos);
+            //printf("%i ",nucleotide_pos);
             if(nucleotide_pos >= n_starts_w[n_block]) {
                 buffer[written++] = 'N';
             }
             else {
-                buffer[written++] = '?';
+                if(twobit_offset % 4 == 0) {
+                    printf("Reading new byte [%i]!\n",fh->tellg());
+                    fh->read(byte_tmp, 1);
+                    t.data = byte_tmp[0];
+                    chunk = t.get();
+                }
+                
+                //buffer[written++] = '?';
+                buffer[written++] = chunk[twobit_offset];
+                
+                twobit_offset++;
+                twobit_offset = twobit_offset % 4;
             }
             
             if(nucleotide_pos == n_ends_w[n_block]) {

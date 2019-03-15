@@ -365,9 +365,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     // pretend the following sequence:
     
     // NNxxNxNNxxxN
-    // sequence is: "NNxxNxNNxxxN"
-    // starts:       0   4 6    11
-    // ends:          1  4  7   11
+    std::string seq = "NNxxNxNNxxxN";
+    // starts:         0   4 6    11
+    // ends:            1  4  7   11
     fastafs_seq f = fastafs_seq();
     
     f.n = seq.size();
