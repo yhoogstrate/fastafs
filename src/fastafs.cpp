@@ -188,7 +188,15 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     unsigned int offset_from_sequence_line = pos - pos_limit;
     unsigned int newlines_passed = (offset_from_sequence_line + 1) / (padding + 1);
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-
+    
+    // calculate file position for next twobit
+    // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
+    unsigned int n_passed = 0;
+    this->get_n_offset(nucleotide_pos, &n_passed);
+    unsigned int file_offset = (this->nucleotide_pos - n_passed) % 4;
+    
+    
+    //gseek to:  file position = offset + ((this->nucleotide_pos - n_passed) % 4)
 
     printf("nucleotide-pos: %i\n", nucleotide_pos);
     printf("\n");
@@ -197,6 +205,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // using nucleotide position, calculate the n_block iterator and the line iterator
     unsigned int line_i = nucleotide_pos / padding;
     
+    // since the n_blocks are sorted, a split search could technically become faster
+    // complexity is now N, which could be reduced to log(n)
     printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     while(nucleotide_pos < n_ends_w[n_block] and n_block > 0) { // iterate back
         n_block--;
@@ -204,6 +214,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     }
     printf("current n-block = %i: [%i, %i]\n",n_block, n_starts_w[n_block], n_ends_w[n_block]);
     
+    twobit_byte t = twobit_byte();
     while(line_i < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         pos_limit += std::min(padding, this->n - nucleotide_pos);// only last line needs to be smaller
         

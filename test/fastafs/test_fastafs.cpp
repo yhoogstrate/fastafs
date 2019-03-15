@@ -365,9 +365,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     // pretend the following sequence:
     
     // NNxxNxNNxxxN
-    std::string seq = "NNxxNxNNxxxN";
-    // starts:         0   4 6    11
-    // ends:            1  4  7   11
+    // sequence is: "NNxxNxNNxxxN"
+    // starts:       0   4 6    11
+    // ends:          1  4  7   11
     fastafs_seq f = fastafs_seq();
     
     f.n = seq.size();
@@ -449,7 +449,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, true);
     
-    // i could test 12, but that behavious is not yet defined, and doesn't need to?
+    // I could test 12, but that behavious is not yet defined, and doesn't need to?
 }
 
 

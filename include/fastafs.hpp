@@ -12,7 +12,7 @@ class fastafs_seq
 {
 public:
     std::string name;//may not exceed 255 chars in current datatype
-    unsigned int data_position;
+    unsigned int data_position;// file offset to start reading sequence data
     unsigned int n;// number nucleotides
     std::vector<unsigned int> n_starts;// start positions 0-based)
     std::vector<unsigned int> n_ends;// end positions (is 0-based, must become 1-based)
