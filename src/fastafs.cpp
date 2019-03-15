@@ -179,11 +179,11 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     n_starts_w.push_back(this->n);
     n_ends_w.push_back(this->n);
     unsigned int n_block = n_starts_w.size() - 1; /// last element, iterate back :)
-    for(unsigned int i = 0; i < n_starts_w.size(); i++) {
-        printf("n-block{%i}: [%i, %i]\n",i, n_starts_w[i], n_ends_w[i]);
-    }
-    printf("\n");
-    printf("pos=%i\npos_limit=%i\nheader-line=%i\n",pos, pos_limit, 1 + 1 + this->name.size());
+    //for(unsigned int i = 0; i < n_starts_w.size(); i++) {
+//        printf("n-block{%i}: [%i, %i]\n",i, n_starts_w[i], n_ends_w[i]);
+    //}
+    //printf("\n");
+    //printf("pos=%i\npos_limit=%i\nheader-line=%i\n",pos, pos_limit, 1 + 1 + this->name.size());
     
     // calculate total number of full nucleotide lines
     unsigned int total_sequence_containing_lines = (this->n + padding - 1);//this->n / padding;
@@ -195,8 +195,10 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     unsigned int n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    unsigned int file_offset = this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + (this->m_blocks.size() * 8) ;
+    unsigned int file_offset = this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8);// + (this->m_blocks.size() * 8) ;
+    printf("base file offset: %d\n",file_offset);
     file_offset += (nucleotide_pos - n_passed) / 4;
+    printf("____ file offset: %d\n",file_offset);
     fh->seekg((unsigned int) file_offset, fh->beg);
     
     /*
@@ -217,8 +219,15 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     printf("twobit_offset = %i\n", twobit_offset);
     if(twobit_offset != 0) {
         fh->read(byte_tmp, 1);
+        
+        if (fh)
+           std::cout << "all characters read successfully.";
+         else
+           std::cout << "error: only " << fh->gcount() << " could be read";
+        
         t.data = byte_tmp[0];
         chunk = t.get();
+        printf("[init] Reading new byte [%i] => %d: %s !\n",fh->tellg(), t.data, chunk);
     }
 
     
@@ -249,10 +258,15 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
             }
             else {
                 if(twobit_offset % 4 == 0) {
-                    printf("Reading new byte [%i]!\n",fh->tellg());
                     fh->read(byte_tmp, 1);
+                    if (fh)
+                       std::cout << "all " << fh->gcount() << " characters read successfully.\n";
+                     else
+                       std::cout << "error: only " << fh->gcount() << " could be read\n";
                     t.data = byte_tmp[0];
+                    //t.data = '\0';
                     chunk = t.get();
+                    printf("[upd8] Reading new byte [%i] => %d / %i / %d [%c|%c|%c|%c:%c]\n",fh->tellg(),  (unsigned int) byte_tmp[0],  byte_tmp[0], byte_tmp[0], chunk[0], chunk[1], chunk[2], chunk[3],chunk[4]);
                 }
                 
                 //buffer[written++] = '?';
@@ -263,9 +277,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
             }
             
             if(nucleotide_pos == n_ends_w[n_block]) {
-                printf(" i need to disable the n block!\n");
                 n_block++;
-                printf("current n-block = %i: [%i, %i]\n",n_block, n_starts_w[n_block], n_ends_w[n_block]);
             }
 
             pos++;
