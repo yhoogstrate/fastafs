@@ -214,6 +214,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     twobit_byte t = twobit_byte();
     char *byte_tmp = new char [2];
     const char *chunk;
+    chunk = twobit_byte::twobit_hash[0];
+    printf("has been set to: [%c|%c|%c|%c|%c]\n",chunk[0],chunk[1],chunk[2],chunk[3],chunk[4]);
     
     unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
     printf("twobit_offset = %i\n", twobit_offset);
@@ -266,7 +268,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                     t.data = byte_tmp[0];
                     //t.data = '\0';
                     chunk = t.get();
-                    printf("[upd8] Reading new byte [%i] => %d / %i / %d [%c|%c|%c|%c:%c]\n",fh->tellg(),  (unsigned int) byte_tmp[0],  byte_tmp[0], byte_tmp[0], chunk[0], chunk[1], chunk[2], chunk[3],chunk[4]);
+                    printf("[upd8] Reading new byte [%i] => %d / %i / %d",fh->tellg(),  (unsigned int) byte_tmp[0],  byte_tmp[0], byte_tmp[0]);
+                    printf(" [ %c | %c | %c | %c : %c ]\n",chunk[0], chunk[1], chunk[2], chunk[3],chunk[4]);
                 }
                 
                 //buffer[written++] = '?';
