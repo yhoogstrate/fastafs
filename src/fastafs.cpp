@@ -284,14 +284,16 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     while(line_i < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         printf(" - %d < %d      ( %d / %d) ** in loop writing this number of nucleotides to buffer: %d\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding, std::min(padding, this->n - nucleotide_pos));
     
-        pos_limit += std::min(padding, this->n - nucleotide_pos);// only last line needs to be smaller
-        
+        printf("n: %d   -   nucelotide_pos: %d =    %d\n" ,  this->n ,  nucleotide_pos,  this->n - nucleotide_pos);
+    
+        //pos_limit += std::min(padding, this->n - nucleotide_pos);// only last line needs to be smaller
+        pos_limit += std::min(padding, this->n - (line_i * padding));// only last line needs to be smaller ~ calculate from the beginning of line_i
         
         // write nucleotides
         while(pos < pos_limit) {
-            //printf("%i ",nucleotide_pos);
+            printf("%d < %d [pos < pos_limit]\n",pos, pos_limit);
+
             if(nucleotide_pos >= n_starts_w[n_block]) {
-                
                 buffer[written++] = 'N';
             }
             else {
@@ -314,7 +316,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 //buffer[written++] = '?';
                 //printf("written: [ACTG] char\n");
                 buffer[written++] = chunk[twobit_offset];
-                printf("%c",chunk[twobit_offset]);
+                //printf("%c",chunk[twobit_offset]);
                 
                 twobit_offset++;
                 twobit_offset = twobit_offset % 4;
