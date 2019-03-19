@@ -157,7 +157,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // sequence name
     pos_limit += this->name.size();
     while(pos < pos_limit) {
-        //printf("written: name\n");
         buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
         pos++;
 
@@ -259,23 +258,17 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         chunk = t.get();
         //printf("[init] Reading new byte [%i] => %d !\n",fh->tellg(), t.data);
     }
-    else {
-        //printf("twobit offset == 0?\n");
-    }
+
     
-    //printf("nucleotide-pos: %i\n", nucleotide_pos);
-    //printf("\n");
-    //printf("\n");
-        
+
     // using nucleotide position, calculate the n_block iterator and the line iterator
     unsigned int line_i = newlines_passed;//offset_from_sequence_line / padding;
     
     // since the n_blocks are sorted, a split search could technically become faster
     // complexity is now N, which could be reduced to log(n)
-    printf("[init] => current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     while(n_block > 0 and nucleotide_pos <= n_ends_w[n_block - 1]) { // iterate back
         n_block--;
-        printf("[iter] => current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
+        //printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     }
     
     pos_limit += line_i * (padding + 1);
@@ -304,10 +297,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                        std::cout << "error: only " << fh->gcount() << " could be read\n";
                        */
                     t.data = byte_tmp[0];
-                    //t.data = '\0';
                     chunk = t.get();
-                    //printf("[upd8] Reading new byte [%i] => %d / %i / %d",fh->tellg(),  (unsigned int) byte_tmp[0],  byte_tmp[0], byte_tmp[0]);
-                    //printf(" [ %c | %c | %c | %c : %c ]\n",chunk[0], chunk[1], chunk[2], chunk[3],chunk[4]);
                 }
                 
                 //buffer[written++] = '?';
@@ -337,7 +327,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
 
         if(pos < pos_limit) {
-            //printf("\n");
             buffer[written++] = '\n';
             pos++;
 
@@ -359,110 +348,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
     fh->clear();
     return written;
-
-/*
-    char *byte_tmp = new char [4];
-    const char *chunk;
-    twobit_byte t = twobit_byte();
-    unsigned int chunk_offset;
-    unsigned int i_n_end = 0;
-    unsigned int i_n_start = 0;
-    unsigned int num_paddings = (this->n + padding - 1) / padding;
-
-    // 1. zoek nucleotide om te beginnen a.d.h.v. start_pos + copy len (minus geschreven header lengte)
-    unsigned int i_in_file = (written +  (unsigned int)  start_pos_in_fasta) - ( (unsigned int)  this->name.size() + 2); // how many'th char after ">header\n"
-    //printf("\toffsets in file [ACTG N \\n]: (%u)\n", i_in_file);
-
-
-    unsigned int removal_pre = fastafs_seq::n_padding(0, i_in_file - 1, padding);// het aantal N's VOOR deze positie
-    unsigned int start_nucleotide = i_in_file - removal_pre;
-    //printf("\tnucleotides in file [ACTG N]: {-%u} => (%u)\n",removal_pre, start_nucleotide);
-
-
-    unsigned int ns_until_start;
-    bool in_N = this->get_n_offset(start_nucleotide, &ns_until_start);
-    unsigned int i_in_seq = start_nucleotide - ns_until_start;
-    //printf("\tACTG nucleotides until start nuc [ACTG]: {%u - %u} = (%u)\n",start_nucleotide, ns_until_start, i_in_seq);
-    unsigned int twobit_offset = i_in_seq / 4;
-
-
-    // 2. subtract aantal N's van start pos & set is_N: bepaal 2bit & zet file allocatie goed
-    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + twobit_offset, fh->beg);
-    i = start_nucleotide;              // pos in nucleotides ACTG N
-
-    // 3. gaan met die loop
-
-    chunk_offset = i_in_seq % 4;// load first twobit chunk [when needed]
-    if(chunk_offset != 0) {
-        fh->read(byte_tmp, 1);
-        t.data = byte_tmp[0];
-        chunk = t.get();
-    }
-
-    // NO CHECK FOR OUT OF BOUND SO FAR -
-    size_t max_buffer_size = 0;
-    if(this->fasta_filesize(padding) > start_pos_in_fasta) {
-        max_buffer_size = this->fasta_filesize(padding) - start_pos_in_fasta;
-    }
-    buffer_size = std::min(buffer_size, max_buffer_size);
-
-    for(; written < buffer_size; i_in_file++) {
-        if((i_in_file % (padding + 1) == padding) or (i_in_file == this->n + num_paddings - 1)) {
-            buffer[written++] = '\n';
-        } else {
-            // bereken in welk N block we zitten
-            if(this->n_starts.size() > 0) {
-                // i_n_start moet opgeteld worden zolang:
-                //    - i_n_start < this->n_starts.size()
-                //    - this->n_starts[i_n_start] < i
-                while(i_n_start < (this->n_starts.size() - 1) and this->n_starts[i_n_start] < i) {
-                    i_n_start++;
-                    //printf(" -> %i > %i and %i == %i\n",this->n_starts.size() , i_n_start, i , this->n_starts[i_n_start]);
-                }
-
-                while(i_n_end < (this->n_ends.size() - 1) and this->n_ends[i_n_end] < i) {
-                    i_n_end++;
-                    //printf(" -> %i > %i and %i == %i\n",this->n_ends.size() , i_n_end, i , this->n_ends[i_n_end]);
-                }
-
-            }
-            if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-                in_N = true;
-            }
-            if(in_N) {
-                //printf(" -> %i > %i and %i == %i\n",this->n_ends.size() , i_n_end, i , this->n_ends[i_n_end]);
-
-
-                buffer[written++] = 'N';
-                if(i == this->n_ends[i_n_end]) {
-                    //i_n_end++;
-                    in_N = false;
-                }
-            } else {
-                chunk_offset = i_in_seq % 4;
-                // load new twobit chunk when needed
-
-                if(chunk_offset == 0) {
-                    fh->read(byte_tmp, 1);
-                    t.data = byte_tmp[0];
-                    chunk = t.get();
-                }
-
-                buffer[written++] = chunk[chunk_offset];
-
-                i_in_seq++;
-            }
-
-            i++;
-        }
-    }
-
-    delete[] byte_tmp;
-
-    fh->clear();
-    //fh->seekg(0, std::ios::beg);
-    return written;
-    */
 }
 
 

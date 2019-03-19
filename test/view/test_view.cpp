@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
-    char *buffer = new char[128];// buffer needs to be c buffer because of the fuse layer
+    char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
     std::string std_buffer;
 
 
@@ -329,29 +329,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     //XXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
     BOOST_CHECK_EQUAL(written, 100);
     BOOST_CHECK_EQUAL(std_buffer.compare("\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3"), 0);
-    flush_buffer(buffer, 128, '?');
-
-    //{
-        //std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
-        //unsigned int offset = 45;
-        //std::cout << "\n\n\n\n\nflushing\n\n\n\n\n\n\n";
-        
-        //std::string substr_file = full_file.substr(offset, 100);
-        
-        //written = fs.view_fasta_chunk(4, buffer, 100, offset);
-        //std_buffer = std::string(buffer, 100);
-        
-        ////>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
-        ////XXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
-        //BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset );
-        //std::cout << "------------------------- REF:" << std::endl;
-        //std::cout << substr_file << std::endl;
-        //std::cout << "-------------------------" << std::endl;
-        //std::cout << std_buffer << std::endl;
-        //std::cout << "------------------------- RETURNED:" << std::endl;
-        //BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << offset );
-        //flush_buffer(buffer, 100, '?');
-    //}
+    flush_buffer(buffer, 100, '?');
 
     std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
     //std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
@@ -368,6 +346,42 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
     delete[] buffer;
 }
+
+
+
+//BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
+//{
+    //unsigned int written;
+
+    //std::string fastafs_file = "tmp/test.fastafs";
+
+    //fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
+    //f.cache();
+    //f.write(fastafs_file);
+
+
+    //fastafs fs = fastafs("test");
+    //fs.load(fastafs_file);
+
+    //char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
+    //std::string std_buffer;
+
+
+    //std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
+    ////std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
+    //for(unsigned int offset = 0; offset < 62; ++offset) {
+        //std::string substr_file = full_file.substr(offset, 100);
+
+        //written = fs.view_fasta_chunk(4, buffer, 100, offset);
+        //std_buffer = std::string(buffer, substr_file.size());
+
+        //BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset );
+        //BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << offset );
+        //flush_buffer(buffer, 100, '?');
+    //}
+
+    //delete[] buffer;
+//}
 
 
 
