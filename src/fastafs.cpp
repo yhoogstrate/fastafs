@@ -240,7 +240,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     char *byte_tmp = new char [2];
     const char *chunk;
     chunk = twobit_byte::twobit_hash[0];
-    //printf("has been set to: [%c|%c|%c|%c|%c]\n",chunk[0],chunk[1],chunk[2],chunk[3],chunk[4]);
     
     unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
 
