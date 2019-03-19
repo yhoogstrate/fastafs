@@ -141,7 +141,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         padding = this->n;
     }
     
-    
     // >
     pos_limit += 1;
     if(pos < pos_limit) {
@@ -251,9 +250,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         //printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     }
     
+    // write sequence
     pos_limit += newlines_passed * (padding + 1);
-    
-    //printf("%d < %d      ( %d / %d)\n",newlines_passed, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding);
     while(newlines_passed < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         //printf(" - %d < %d      ( %d / %d) ** in loop writing this number of nucleotides to buffer: %d\n",newlines_passed, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding, std::min(padding, this->n - nucleotide_pos));
     
