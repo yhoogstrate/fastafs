@@ -128,6 +128,12 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
 {
     unsigned int written = 0;
+
+    if(written >= buffer_size) { // requesting a buffer of size=0
+        fh->clear();
+        return written;
+    }
+    printf("pos=%d ?[should be 0?]\n", start_pos_in_fasta);
     
     unsigned int pos = start_pos_in_fasta;
     unsigned int pos_limit = 0;
@@ -135,11 +141,13 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     if(padding == 0) {
         padding = this->n;
     }
-
+    
+    
     // >
     pos_limit += 1;
     if(pos < pos_limit) {
         buffer[written++] = '>';
+        printf("written: >\n");
         pos++;
 
         if(written >= buffer_size) {
@@ -151,6 +159,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // sequence name
     pos_limit += this->name.size();
     while(pos < pos_limit) {
+        //printf("written: name\n");
         buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
         pos++;
 
@@ -163,6 +172,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // \n
     pos_limit += 1;
     if(pos < pos_limit) {
+        printf("written: 'newline' after name\n");
+        
         buffer[written++] = '\n';
         pos++;
 
@@ -280,6 +291,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         while(pos < pos_limit) {
             //printf("%i ",nucleotide_pos);
             if(nucleotide_pos >= n_starts_w[n_block]) {
+                //printf("written: N char\n");
                 buffer[written++] = 'N';
             }
             else {
@@ -300,6 +312,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 }
                 
                 //buffer[written++] = '?';
+                //printf("written: [ACTG] char\n");
                 buffer[written++] = chunk[twobit_offset];
                 
                 twobit_offset++;
@@ -324,6 +337,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
 
         if(pos < pos_limit) {
+            //printf("written: [ACTG] newline \n");
             buffer[written++] = '\n';
             pos++;
 
@@ -333,13 +347,16 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
             }
         }
         
-        //printf("\n");
-        
         line_i++;
     }
 
-    std::cout << "** close **\n";
-    
+    /*
+    #if DEBUG
+    // 
+        throw std::runtime_error("Check if this should happen?");
+    #endif // DEBUG
+    */
+
     fh->clear();
     return written;
 
@@ -731,10 +748,13 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
     unsigned int total_fa_size = 0, i_buffer = 0;
     unsigned int i, seq_true_fasta_size;
 
+    printf("written = %d\n", written);
+
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
 
         for(i = 0; i < this->data.size(); i++) {
+            //printf("\n\n\nsequence: %d\n", i);
             // lines below need to be calculated by member function of the sequences themselves
             seq_true_fasta_size = 1;// '>'
             seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
@@ -743,6 +763,8 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
             // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
             if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
+                printf("new f-off: %d\n", file_offset + i_buffer - total_fa_size);
+                printf("[o] written = %d\n", written);
                 written += this->data[i]->view_fasta_chunk(
                                padding,
                                &buffer[i_buffer],
@@ -750,6 +772,7 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
                                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size - ( (unsigned int) file_offset + i_buffer - total_fa_size ) ),
                                &file
                            );
+                printf("[c] written = %d\n", written);
 
                 while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
                     i_buffer++;
