@@ -185,15 +185,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     n_starts_w.push_back(this->n);
     n_ends_w.push_back(this->n);
     unsigned int n_block = n_starts_w.size() - 1; /// last element, iterate back :)
-    //for(unsigned int i = 0; i < n_starts_w.size(); i++) {
-//        printf("n-block{%i}: [%i, %i]\n",i, n_starts_w[i], n_ends_w[i]);
-    //}
-    //printf("\n");
-    //printf("pos=%i\npos_limit=%i\nheader-line=%i\n",pos, pos_limit, 1 + 1 + this->name.size());
     
-    // calculate total number of full nucleotide lines
-    unsigned int total_sequence_containing_lines = (this->n + padding - 1);//this->n / padding;
-    //printf("total_sequenec_containing_lines = %d \n",total_sequence_containing_lines);
+    unsigned int total_sequence_containing_lines = (this->n + padding - 1);// calculate total number of full nucleotide lines
     unsigned int offset_from_sequence_line = pos - pos_limit;
     /*
     calc newlines passed:
@@ -212,7 +205,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         8   1
         9   1
     */
-    unsigned int newlines_passed = (offset_from_sequence_line) / (padding + 1);
+    unsigned int newlines_passed = (offset_from_sequence_line) / (padding + 1);// number of newlines passed (within the sequence part)
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
     //printf("offset from sequence line: %i %u %d\n", offset_from_sequence_line, offset_from_sequence_line, offset_from_sequence_line);
     //printf("nucleotide_pos = %d | %u |  %i \n",nucleotide_pos, nucleotide_pos, nucleotide_pos);
