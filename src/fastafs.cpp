@@ -133,7 +133,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         fh->clear();
         return written;
     }
-    printf("pos=%d ?[should be 0?]\n", start_pos_in_fasta);
     
     unsigned int pos = start_pos_in_fasta;
     unsigned int pos_limit = 0;
@@ -147,7 +146,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     pos_limit += 1;
     if(pos < pos_limit) {
         buffer[written++] = '>';
-        printf("written: >\n");
         pos++;
 
         if(written >= buffer_size) {
@@ -172,8 +170,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // \n
     pos_limit += 1;
     if(pos < pos_limit) {
-        printf("written: 'newline' after name\n");
-        
         buffer[written++] = '\n';
         pos++;
 
@@ -219,7 +215,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     */
     unsigned int newlines_passed = (offset_from_sequence_line) / (padding + 1);
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-    std::cout << "** open **\n";
     //printf("offset from sequence line: %i %u %d\n", offset_from_sequence_line, offset_from_sequence_line, offset_from_sequence_line);
     //printf("nucleotide_pos = %d | %u |  %i \n",nucleotide_pos, nucleotide_pos, nucleotide_pos);
     //printf("nuwlines_passed = %d %u %i \n",newlines_passed,newlines_passed,newlines_passed);
@@ -281,17 +276,22 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     while(nucleotide_pos < n_ends_w[n_block] and n_block > 0) { // iterate back
         n_block--;
     }
-    //printf("current n-block = %i: [%i, %i]\n",n_block, n_starts_w[n_block], n_ends_w[n_block]);
     
-    //printf("%d < %d      ( %d / %d)\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding);
+    printf("pos= %d, pos_limit=%d\n",pos, pos_limit);
+    pos_limit += line_i * (padding + 1);
+    
+    printf("%d < %d      ( %d / %d)\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding);
     while(line_i < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+        printf(" - %d < %d      ( %d / %d) ** in loop writing this number of nucleotides to buffer: %d\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding, std::min(padding, this->n - nucleotide_pos));
+    
         pos_limit += std::min(padding, this->n - nucleotide_pos);// only last line needs to be smaller
+        
         
         // write nucleotides
         while(pos < pos_limit) {
             //printf("%i ",nucleotide_pos);
             if(nucleotide_pos >= n_starts_w[n_block]) {
-                //printf("written: N char\n");
+                
                 buffer[written++] = 'N';
             }
             else {
@@ -314,6 +314,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 //buffer[written++] = '?';
                 //printf("written: [ACTG] char\n");
                 buffer[written++] = chunk[twobit_offset];
+                printf("%c",chunk[twobit_offset]);
                 
                 twobit_offset++;
                 twobit_offset = twobit_offset % 4;
@@ -337,7 +338,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
 
         if(pos < pos_limit) {
-            //printf("written: [ACTG] newline \n");
+            printf("\n");
             buffer[written++] = '\n';
             pos++;
 
@@ -748,8 +749,6 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
     unsigned int total_fa_size = 0, i_buffer = 0;
     unsigned int i, seq_true_fasta_size;
 
-    printf("written = %d\n", written);
-
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
 
@@ -763,8 +762,6 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
             // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
             if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
-                printf("new f-off: %d\n", file_offset + i_buffer - total_fa_size);
-                printf("[o] written = %d\n", written);
                 written += this->data[i]->view_fasta_chunk(
                                padding,
                                &buffer[i_buffer],
@@ -772,7 +769,6 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
                                std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size - ( (unsigned int) file_offset + i_buffer - total_fa_size ) ),
                                &file
                            );
-                printf("[c] written = %d\n", written);
 
                 while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
                     i_buffer++;
