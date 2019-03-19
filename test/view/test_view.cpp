@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
     //{
         //std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
-        //unsigned int offset = 22;
+        //unsigned int offset = 45;
         //std::cout << "\n\n\n\n\nflushing\n\n\n\n\n\n\n";
         
         //std::string substr_file = full_file.substr(offset, 100);
@@ -366,7 +366,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
         flush_buffer(buffer, 100, '?');
     }
 
-    //delete[] buffer;
+    delete[] buffer;
 }
 
 

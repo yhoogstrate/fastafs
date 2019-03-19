@@ -194,7 +194,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     
     // calculate total number of full nucleotide lines
     unsigned int total_sequence_containing_lines = (this->n + padding - 1);//this->n / padding;
-    printf("total_sequenec_containing_lines = %d \n",total_sequence_containing_lines);
+    //printf("total_sequenec_containing_lines = %d \n",total_sequence_containing_lines);
     unsigned int offset_from_sequence_line = pos - pos_limit;
     /*
     calc newlines passed:
@@ -272,26 +272,23 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     
     // since the n_blocks are sorted, a split search could technically become faster
     // complexity is now N, which could be reduced to log(n)
-    //printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
-    while(nucleotide_pos < n_ends_w[n_block] and n_block > 0) { // iterate back
+    printf("[init] => current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
+    while(n_block > 0 and nucleotide_pos <= n_ends_w[n_block - 1]) { // iterate back
         n_block--;
+        printf("[iter] => current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     }
     
-    printf("pos= %d, pos_limit=%d\n",pos, pos_limit);
     pos_limit += line_i * (padding + 1);
     
-    printf("%d < %d      ( %d / %d)\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding);
+    //printf("%d < %d      ( %d / %d)\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding);
     while(line_i < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
-        printf(" - %d < %d      ( %d / %d) ** in loop writing this number of nucleotides to buffer: %d\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding, std::min(padding, this->n - nucleotide_pos));
+        //printf(" - %d < %d      ( %d / %d) ** in loop writing this number of nucleotides to buffer: %d\n",line_i, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding, std::min(padding, this->n - nucleotide_pos));
     
-        printf("n: %d   -   nucelotide_pos: %d =    %d\n" ,  this->n ,  nucleotide_pos,  this->n - nucleotide_pos);
-    
-        //pos_limit += std::min(padding, this->n - nucleotide_pos);// only last line needs to be smaller
         pos_limit += std::min(padding, this->n - (line_i * padding));// only last line needs to be smaller ~ calculate from the beginning of line_i
         
         // write nucleotides
         while(pos < pos_limit) {
-            printf("%d < %d [pos < pos_limit]\n",pos, pos_limit);
+            //printf("%d < %d [pos < pos_limit]\n",pos, pos_limit);
 
             if(nucleotide_pos >= n_starts_w[n_block]) {
                 buffer[written++] = 'N';
@@ -340,7 +337,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
 
 
         if(pos < pos_limit) {
-            printf("\n");
+            //printf("\n");
             buffer[written++] = '\n';
             pos++;
 
