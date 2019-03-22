@@ -613,49 +613,8 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
     return written;
 }
-/*
-    unsigned int written = 0;
-    unsigned int total_fa_size = 0, i_buffer = 0;
-    unsigned int i, seq_true_fasta_size;
 
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
 
-        for(i = 0; i < this->data.size(); i++) {
-            //printf("\n\n\nsequence: %d\n", i);
-            // lines below need to be calculated by member function of the sequences themselves
-            seq_true_fasta_size = 1;// '>'
-            seq_true_fasta_size += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
-            seq_true_fasta_size += this->data[i]->n; // ACTG NNN
-            seq_true_fasta_size += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-
-            // determine whether and how much there needs to be read between: total_fa_size <=> total_fa_size + seq_true_fasta_size
-            if((file_offset + i_buffer) >= total_fa_size and file_offset < (total_fa_size + seq_true_fasta_size)) {
-                written += this->data[i]->view_fasta_chunk(
-                               padding,
-                               &buffer[i_buffer],
-                               file_offset + i_buffer - total_fa_size,
-                               std::min((unsigned int) buffer_size - i_buffer, seq_true_fasta_size - ( (unsigned int) file_offset + i_buffer - total_fa_size ) ),
-                               &file
-                           );
-
-                while(file_offset + i_buffer < (total_fa_size + seq_true_fasta_size) and i_buffer < buffer_size) {
-                    i_buffer++;
-                }
-            }
-
-            // update for next iteration
-            total_fa_size += seq_true_fasta_size;
-        }
-
-        file.close();
-    } else {
-        throw std::runtime_error("could not load fastafs: " + this->filename);
-    }
-
-    return written;
-}
-*/
 
 off_t fastafs::ucsc2bit_filesize(void)
 {
