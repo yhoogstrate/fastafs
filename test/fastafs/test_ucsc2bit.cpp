@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
-    unsigned int file_offset, complen;
+    unsigned int complen;
 
     // voor lengte 1...(245-1)
     //  voor i = 0, 245-lengte

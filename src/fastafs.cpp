@@ -80,7 +80,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         return written;
     }
     
-    unsigned int pos = start_pos_in_fasta;
+    unsigned int pos = (unsigned int) start_pos_in_fasta;
     unsigned int pos_limit = 0;
 
     if(padding == 0) {
@@ -100,7 +100,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     }
 
     // sequence name
-    pos_limit += this->name.size();
+    pos_limit += (unsigned int) this->name.size();
     while(pos < pos_limit) {
         buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
         pos++;
@@ -129,7 +129,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     std::vector<unsigned int> n_ends_w(this->n_ends);// workable type for this func
     n_starts_w.push_back(this->n);
     n_ends_w.push_back(this->n);
-    unsigned int n_block = n_starts_w.size() - 1; /// last element, iterate back :)
+    size_t n_block = n_starts_w.size() - 1; /// last element, iterate back :)
     
     const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
     /*
@@ -202,7 +202,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 }
                 
                 buffer[written++] = chunk[twobit_offset];
-                twobit_offset = (++twobit_offset) % 4;
+                twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
             }
             
             if(nucleotide_pos == n_ends_w[n_block]) {
@@ -410,8 +410,6 @@ void fastafs::load(std::string afilename)
             file.read (memblock, 16);
             memblock[16] = '\0';
 
-            //char twobit_magic[5] = TWOBIT_MAGIC;
-
             unsigned int i;
 
             // check magic
@@ -500,7 +498,6 @@ void fastafs::load(std::string afilename)
 
 void fastafs::view_fasta(unsigned int padding)
 {
-    unsigned int actual_padding = padding;
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
@@ -509,9 +506,11 @@ void fastafs::view_fasta(unsigned int padding)
     if (file.is_open()) {
         for(unsigned int i = 0; i < this->data.size(); i++) {
             if(padding == 0) {
-                actual_padding = this->data[i]->n;
+                this->data[i]->view_fasta(this->data[i]->n, &file);
             }
-            this->data[i]->view_fasta(padding, &file);
+            else {
+                this->data[i]->view_fasta(padding, &file);
+            }
         }
         file.close();
     }
@@ -525,7 +524,7 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         size_t i = 0;// sequence iterator
-        unsigned int pos = file_offset;
+        unsigned int pos = (unsigned int) file_offset;
         fastafs_seq *seq;
         
         while(i < data.size()) {
@@ -569,28 +568,20 @@ off_t fastafs::ucsc2bit_filesize(void)
 {
     off_t nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
 
-    size_t i;// auto iterator?
-    for(i = 0; i < this->data.size(); i++) {
+    for(auto& sequence : this->data) {
         nn += 1; // namesize
         nn += 4; // offset in file
 
         nn += 4;// dna size
         nn += 4;// n blocks
-        nn += this->data[i]->n_starts.size() * (4 * 2); // both start and end
+        nn += sequence->n_starts.size() * (4 * 2); // both start and end
 
         nn += 4;// n masked regions - so far always 0
         nn += 4;// reserved
 
-        nn += this->data[i]->name.size();
+        nn += sequence->name.size();
 
-        /*
-        nn_actg = this->data[i]->n;
-        nn += nn_actg / 4;
-        if(nn_actg % 4 > 0){
-            nn++;
-        }*/
-
-        nn += (this->data[i]->n + 3) / 4; // math.ceil hack
+        nn += (sequence->n + 3) / 4; // math.ceil hack
     }
 
     return nn;
@@ -602,7 +593,7 @@ off_t fastafs::ucsc2bit_filesize(void)
 unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
 {
     unsigned int written = 0;
-    unsigned int pos = file_offset; // iterator (position, in bytes) in file
+    unsigned int pos = (unsigned int) file_offset; // iterator (position, in bytes) in file
     unsigned int pos_limit = 0; // counter to keep track of when writing needs to stop for given loop
 
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -655,7 +646,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         unsigned int header_block_len = 4+4+4+4 + ((unsigned int) this->data.size() * (1 + 4));
         unsigned int header_offset_previous = 0;
         for(unsigned int i = 0; i < this->data.size(); i++) {
-            header_block_len += this->data[i]->name.size();
+            header_block_len += (unsigned int) this->data[i]->name.size();
         }
 
         for(auto sequence = this->data.begin(); sequence != this->data.end(); sequence++) {
@@ -671,7 +662,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
 
             // sequence name
-            pos_limit += (*sequence)->name.size();
+            pos_limit += (unsigned int) (*sequence)->name.size();
             while(pos < pos_limit) {
                 buffer[written++] = (*sequence)->name[(*sequence)->name.size() - (pos_limit - pos)];
                 pos++;
@@ -695,7 +686,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
 
             header_offset_previous += 4 + 4 + 4 + 4;
-            header_offset_previous += 8 * (*sequence)->n_starts.size();
+            header_offset_previous += 8 * (unsigned int) (*sequence)->n_starts.size();
             header_offset_previous += (*sequence)->n / 4;
             if((*sequence)->n % 4 != 0) {
                 header_offset_previous++;
@@ -716,7 +707,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
             }
 
             // number N blocks
-            uint_to_fourbytes_ucsc2bit(n_seq, (*sequence)->n_starts.size());
+            uint_to_fourbytes_ucsc2bit(n_seq, (unsigned int) (*sequence)->n_starts.size());
             pos_limit += 4;
             while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
@@ -1001,7 +992,7 @@ int fastafs::info(bool ena_verify_checksum)
                     return -1;
                 }
 
-                SSL_write(ssl, hello2.c_str(), hello2.length());
+                SSL_write(ssl, hello2.c_str(), (signed int) hello2.length());
 
                 int NNvalread = SSL_read(ssl, buffer, 32);
                 if(NNvalread < 0) {
