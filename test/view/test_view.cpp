@@ -431,8 +431,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
             flush_buffer(buffer, 2110, '?');
         }
     }
-    
-    std::cout << "---\n";
 
     delete[] buffer;
 }

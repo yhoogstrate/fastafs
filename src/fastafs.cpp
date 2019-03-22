@@ -206,17 +206,12 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     */
     unsigned int newlines_passed = (offset_from_sequence_line) / (padding + 1);// number of newlines passed (within the sequence part)
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-    //printf("offset from sequence line: %i %u %d\n", offset_from_sequence_line, offset_from_sequence_line, offset_from_sequence_line);
-    //printf("nucleotide_pos = %d | %u |  %i \n",nucleotide_pos, nucleotide_pos, nucleotide_pos);
-    //printf("nuwlines_passed = %d %u %i \n",newlines_passed,newlines_passed,newlines_passed);
     
     // calculate file position for next twobit
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     unsigned int n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    unsigned int file_offset = this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8);// + (this->m_blocks.size() * 8) ;
-    file_offset += (nucleotide_pos - n_passed) / 4;
-    fh->seekg((unsigned int) file_offset, fh->beg);
+    fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + ((nucleotide_pos - n_passed) / 4), fh->beg);
     
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
@@ -229,16 +224,11 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     
     */
     twobit_byte t = twobit_byte();
-    char *byte_tmp = new char [2];
-    const char *chunk;
-    chunk = twobit_byte::twobit_hash[0];
-    
+    const char *chunk = twobit_byte::twobit_hash[0];
     unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
 
     if(twobit_offset != 0) {
-        fh->read(byte_tmp, 1);
-        
-        t.data = byte_tmp[0];
+        fh->read((char*) (&t.data), 1);
         chunk = t.get();
     }
 
@@ -247,41 +237,26 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // complexity is now N, which could be reduced to log(n)
     while(n_block > 0 and nucleotide_pos <= n_ends_w[n_block - 1]) { // iterate back
         n_block--;
-        //printf("=> current nblock=%i   %i < %i   [%i, %i] \n", n_block, nucleotide_pos, n_ends_w[n_block], n_starts_w[n_block], n_ends_w[n_block]);
     }
     
     // write sequence
-    pos_limit += newlines_passed * (padding + 1);
+    pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
     while(newlines_passed < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
-        //printf(" - %d < %d      ( %d / %d) ** in loop writing this number of nucleotides to buffer: %d\n",newlines_passed, total_sequence_containing_lines / padding, total_sequence_containing_lines , padding, std::min(padding, this->n - nucleotide_pos));
-    
         pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
         
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            //printf("%d < %d [pos < pos_limit]\n",pos, pos_limit);
-
             if(nucleotide_pos >= n_starts_w[n_block]) {
                 buffer[written++] = 'N';
             }
             else {
                 if(twobit_offset % 4 == 0) {
-                    fh->read(byte_tmp, 1);
-                    /*
-                     * if DEBUG, ERROR ON fh == false
-                    if (fh)
-                       std::cout << "all " << fh->gcount() << " characters read successfully.\n";
-                     else
-                       std::cout << "error: only " << fh->gcount() << " could be read\n";
-                       */
-                    t.data = byte_tmp[0];
+                    fh->read((char*) (&t.data), 1);
                     chunk = t.get();
                 }
                 
                 buffer[written++] = chunk[twobit_offset];
-                
-                twobit_offset++;
-                twobit_offset = twobit_offset % 4;
+                twobit_offset = (++twobit_offset) % 4;
             }
             
             if(nucleotide_pos == n_ends_w[n_block]) {
@@ -311,13 +286,6 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         
         newlines_passed++;
     }
-
-    /*
-    #if DEBUG
-    // 
-        throw std::runtime_error("Check if this should happen?");
-    #endif // DEBUG
-    */
 
     fh->clear();
     return written;
