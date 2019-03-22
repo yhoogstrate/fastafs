@@ -349,6 +349,45 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << offset );
         flush_buffer(buffer, 100, '?');
     }
+    delete[] buffer;
+}
+
+BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
+{
+    unsigned int written;
+
+    std::string test_name = "test";
+    std::string fasta_file = "test/data/" + test_name + ".fa";
+    std::string fastafs_file = "tmp/" + test_name + ".fastafs";
+
+    fasta_to_fastafs f = fasta_to_fastafs(test_name, fasta_file);
+    f.cache();
+    f.write(fastafs_file);
+
+
+    fastafs fs = fastafs(test_name);
+    fs.load(fastafs_file);
+
+    char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
+    flush_buffer(buffer, 100, '?');
+    //std::string std_buffer;
+
+    // test fastafs_seq functions
+
+    std::ifstream fh (fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(fh.is_open());
+
+    // 1   2   3   4   5   6   7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22
+    //[>] [c] [h] [r] [3] [.] [1] [\n] [A] [C] [T] [G] [A] [C] [T] [G] [A] [A] [A] [A] [C] [\n]
+    BOOST_CHECK_EQUAL(fs.data[2]->fasta_filesize(100), 22);
+    //unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
+    written = fs.data[2]->view_fasta_chunk(100, buffer, 0, 100, &fh);
+    BOOST_CHECK_EQUAL(written, 22);
+    
+    std::string std_buffer = std::string(buffer, written);
+    BOOST_CHECK_EQUAL(std_buffer.compare(">chr3.1\nACTGACTGAAAAC\n"), 0);
+    flush_buffer(buffer, 100, '?');
+    fh.close();
 
     delete[] buffer;
 }
@@ -416,6 +455,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
             BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
             
+            /* debug
             if(std_buffer.compare(substr_file) != 0) {
                 printf("   %d:  %d  \n", start_pos, buffer_len);
                 
@@ -426,7 +466,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
                 std::cout << "--------------\n";
                 
                 exit(1);
-            }
+            }*/
             
             flush_buffer(buffer, 2110, '?');
         }

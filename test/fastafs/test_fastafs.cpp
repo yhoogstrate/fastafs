@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
     // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
     // >  c  h  r  1 \n  T  T  T  T  C  C  C  C  A  A  A  A  G  G  G  G \n
-    BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(0), 23);
+    BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(fs.data[0]->n), 23);
 
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     // ends:            1  4  7   11
     fastafs_seq f = fastafs_seq();
     
-    f.n = seq.size();
+    f.n = (unsigned int) seq.size();
     f.n_starts = {0, 4, 6, 11};
     f.n_ends = {1, 4, 7, 11};
     

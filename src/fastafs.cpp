@@ -39,82 +39,28 @@ fastafs_seq::fastafs_seq(): n(0)
 
 unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 {
-    if(padding == 0) {
-        padding = this->n;
-    }
-
-    unsigned int n = 1; // >
-    n += (unsigned int ) this->name.size() + 1;// "chr1\n"
-    n += this->n; // ACTG NNN
-    n += (this->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-
-    return n;
+    #if DEBUG
+        if(padding == 0) {
+            throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
+        }
+    #endif
+    
+    //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
+    return 1 + (unsigned int ) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
 
 void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 {
-#if DEBUG
-    if(this->n_starts.size() != this->n_ends.size()) {
-        throw std::invalid_argument("unequal number of start and end positions for N regions\n");
+    char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
+    unsigned int offset = 0;
+    
+    unsigned int written = this->view_fasta_chunk(padding, buffer, offset, READ_BUFFER_SIZE, fh);
+    while(written > 0) {
+        std::cout << std::string(buffer, written);
+        offset += written;
+        
+        written = this->view_fasta_chunk(padding, buffer, offset, READ_BUFFER_SIZE, fh);
     }
-#endif //DEBUG
-
-    printf(">");
-    std::cout << this->name << "\n";
-
-    char *byte_tmp = new char [4];
-    unsigned int chunk_offset;
-    const char *chunk;
-
-    bool in_N = false;
-    twobit_byte t = twobit_byte();
-    unsigned int i_n_start = 0;//@todo make iterator
-    unsigned int i_n_end = 0;//@todo make iterator
-    unsigned int i_in_seq = 0;
-    unsigned int i;
-    unsigned int modulo = padding - 1;
-
-    //@todo create func this->get_offset_2bit_data();
-    fh->seekg ((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8), fh->beg);
-    for(i = 0; i < this->n; i++) {
-
-
-        if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-            in_N = true;
-        }
-
-        if(in_N) {
-            std::cout << "N";
-
-            if(i == this->n_ends[i_n_end]) {
-                i_n_end++;
-                in_N = false;
-            }
-        } else {
-            // load new twobit chunk when needed
-            chunk_offset = i_in_seq % 4;
-            if(chunk_offset == 0) {
-
-                fh->read(byte_tmp, 1);
-                t.data = byte_tmp[0];
-                chunk = t.get();
-            }
-            std::cout << chunk[chunk_offset];
-
-            i_in_seq++;
-        }
-
-        if(i % padding == modulo) {
-            std::cout << "\n";
-        }
-    }
-    if(i % padding != 0) {
-        std::cout << "\n";
-    }
-
-    fh->clear(); // because gseek was done before
-
-    delete[] byte_tmp;
 }
 
 /*
@@ -554,13 +500,17 @@ void fastafs::load(std::string afilename)
 
 void fastafs::view_fasta(unsigned int padding)
 {
+    unsigned int actual_padding = padding;
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
-
+    
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         for(unsigned int i = 0; i < this->data.size(); i++) {
+            if(padding == 0) {
+                actual_padding = this->data[i]->n;
+            }
             this->data[i]->view_fasta(padding, &file);
         }
         file.close();
@@ -576,12 +526,14 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
     if (file.is_open()) {
         size_t i = 0;// sequence iterator
         unsigned int pos = file_offset;
+        fastafs_seq *seq;
         
         while(i < data.size()) {
-            const unsigned int sequence_file_size = 1 + ((unsigned int ) this->data[i]->name.size() + 1) + this->data[i]->n  + ((this->data[i]->n + (padding - 1)) / padding);
+            seq = this->data[i];
+            const unsigned int sequence_file_size = seq->fasta_filesize(padding);
             
             if(pos < sequence_file_size) {
-                const unsigned int written_seq = this->data[i]->view_fasta_chunk(
+                const unsigned int written_seq = seq->view_fasta_chunk(
                                padding,
                                &buffer[written],
                                pos,
@@ -874,12 +826,6 @@ unsigned int fastafs::fasta_filesize(unsigned int padding)
 
         for(unsigned int i = 0; i < this->data.size(); i++) {
             n += this->data[i]->fasta_filesize(padding);
-            /*
-            n += 1;// '>'
-            n += (unsigned int ) this->data[i]->name.size() + 1;// "chr1\n"
-            n += this->data[i]->n; // ACTG NNN
-            n += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-            */
         }
 
     } else {

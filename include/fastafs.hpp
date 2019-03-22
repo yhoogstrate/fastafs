@@ -76,10 +76,12 @@ public:
 
 // Constants:
 using namespace std::literals;
-const std::string UCSC2BIT_MAGIC = "\x43\x27\x41\x1a"s;
-const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
+static const std::string UCSC2BIT_MAGIC = "\x43\x27\x41\x1a"s;
+static const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
 
-const std::string FASTAFS_MAGIC = "\x0F\x0A\x46x53"s;
-const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
+static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46x53"s;
+static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
+
+static const int READ_BUFFER_SIZE = 4096;
 
 #endif
