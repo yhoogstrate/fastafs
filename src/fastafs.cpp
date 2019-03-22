@@ -204,7 +204,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         8   1
         9   1
     */
-    unsigned int newlines_passed = (offset_from_sequence_line) / (padding + 1);// number of newlines passed (within the sequence part)
+    unsigned int newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
     
     // calculate file position for next twobit
@@ -571,6 +571,50 @@ void fastafs::view_fasta(unsigned int padding)
 unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
     unsigned int written = 0;
+
+    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+
+        size_t i = 0;// sequence iterator
+        unsigned int pos = file_offset;
+        unsigned int sequence_file_size;
+        unsigned int written_seq;
+        
+        while(i < data.size()) {
+            sequence_file_size = 1 + ((unsigned int ) this->data[i]->name.size() + 1) + this->data[i]->n  + ((this->data[i]->n + (padding - 1)) / padding);
+            
+            if(pos < sequence_file_size) {
+                written_seq = this->data[i]->view_fasta_chunk(
+                               padding,
+                               &buffer[written],
+                               pos,
+                               std::min((unsigned int) buffer_size - written, sequence_file_size),
+                               &file);
+                
+                written += written_seq;
+                pos -= (sequence_file_size - written_seq);
+                
+                if(written == buffer_size) {
+                    file.close();
+                    return written;
+                }
+            }
+            else {
+                pos -= sequence_file_size;
+            }
+            
+            i++;
+        }
+
+        file.close();
+    } else {
+        throw std::runtime_error("could not load fastafs: " + this->filename);
+    }
+
+    return written;
+}
+/*
+    unsigned int written = 0;
     unsigned int total_fa_size = 0, i_buffer = 0;
     unsigned int i, seq_true_fasta_size;
 
@@ -611,7 +655,7 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
     return written;
 }
-
+*/
 
 off_t fastafs::ucsc2bit_filesize(void)
 {
