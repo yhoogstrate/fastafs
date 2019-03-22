@@ -393,30 +393,45 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
     flush_buffer(buffer, 2110, '?');
     
-    //pakt alle volgende substrings:
-    // [................]
-    //  [...............]
-    //   [..............]
-    //    [.............]
-        for(unsigned int offset = 0; offset < 1000; ++offset) {
-        std::string substr_file = full_file.substr(offset, 2108);
+    /* maak alle substrings:
+      [....]
+      [...]
+      [..]
+      [.]
+       [...]
+       [..]
+       [.]
+        [..]
+        [.]
+         [.]
 
-        written = fs.view_fasta_chunk(60, buffer, 2108, offset);
-        printf("size = %d\n", substr_file.size());
-        std_buffer = std::string(buffer, substr_file.size());
-
-        BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset );
-        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << offset );
-        
-        //std::cout << "---- ref: ----\n";
-        //std::cout << substr_file << "\n";
-        //std::cout << "----found:----\n";
-        //std::cout << std_buffer << "\n";
-        //std::cout << "--------------\n";
-        
-        flush_buffer(buffer, 2110, '?');
+     */
+    for(unsigned int start_pos = 0; start_pos < full_file.size(); start_pos++) {
+        for(unsigned int buffer_len = (unsigned int) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
+            std::string substr_file = std::string(full_file, start_pos, buffer_len);
+            
+            written = fs.view_fasta_chunk(60, buffer, buffer_len, start_pos);
+            std_buffer = std::string(buffer, substr_file.size());
+            
+            BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
+            
+            if(std_buffer.compare(substr_file) != 0) {
+                printf("   %d:  %d  \n", start_pos, buffer_len);
+                
+                std::cout << "---- ref: ----\n";
+                std::cout << substr_file << "\n";
+                std::cout << "----found:----\n";
+                std::cout << std_buffer << "\n";
+                std::cout << "--------------\n";
+                
+                exit(1);
+            }
+            
+            flush_buffer(buffer, 2110, '?');
+        }
     }
-
+    
     std::cout << "---\n";
 
     delete[] buffer;
