@@ -185,8 +185,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     n_ends_w.push_back(this->n);
     unsigned int n_block = n_starts_w.size() - 1; /// last element, iterate back :)
     
-    unsigned int total_sequence_containing_lines = (this->n + padding - 1);// calculate total number of full nucleotide lines
-    unsigned int offset_from_sequence_line = pos - pos_limit;
+    const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
     /*
     calc newlines passed:
     >chr1 \n
@@ -204,6 +203,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         8   1
         9   1
     */
+    const unsigned int offset_from_sequence_line = pos - pos_limit;
     unsigned int newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
     
@@ -241,7 +241,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     
     // write sequence
     pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
-    while(newlines_passed < total_sequence_containing_lines / padding) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+    while(newlines_passed < total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
         
         // write nucleotides
@@ -574,17 +574,14 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
 
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
-
         size_t i = 0;// sequence iterator
         unsigned int pos = file_offset;
-        unsigned int sequence_file_size;
-        unsigned int written_seq;
         
         while(i < data.size()) {
-            sequence_file_size = 1 + ((unsigned int ) this->data[i]->name.size() + 1) + this->data[i]->n  + ((this->data[i]->n + (padding - 1)) / padding);
+            const unsigned int sequence_file_size = 1 + ((unsigned int ) this->data[i]->name.size() + 1) + this->data[i]->n  + ((this->data[i]->n + (padding - 1)) / padding);
             
             if(pos < sequence_file_size) {
-                written_seq = this->data[i]->view_fasta_chunk(
+                const unsigned int written_seq = this->data[i]->view_fasta_chunk(
                                padding,
                                &buffer[written],
                                pos,
