@@ -39,12 +39,12 @@ fastafs_seq::fastafs_seq(): n(0)
 
 unsigned int fastafs_seq::fasta_filesize(unsigned int padding)
 {
-    #if DEBUG
-        if(padding == 0) {
-            throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
-        }
-    #endif
-    
+#if DEBUG
+    if(padding == 0) {
+        throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
+    }
+#endif
+
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
     return 1 + (unsigned int ) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
@@ -53,14 +53,37 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 {
     char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
     unsigned int offset = 0;
-    
+
     unsigned int written = this->view_fasta_chunk(padding, buffer, offset, READ_BUFFER_SIZE, fh);
     while(written > 0) {
         std::cout << std::string(buffer, written);
         offset += written;
-        
+
         written = this->view_fasta_chunk(padding, buffer, offset, READ_BUFFER_SIZE, fh);
     }
+}
+
+
+
+
+ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(unsigned int padding)
+{
+    const unsigned int n_seq_lines = (this->n + padding - 1) / padding;
+
+    ffs2f_init_seq* data = new ffs2f_init_seq(this->n_starts.size() + 1, n_seq_lines);
+    unsigned int fasta_header_size = (unsigned int) this->name.size() + 2;
+
+    for(size_t i = 0; i < this->n_starts.size(); i++) {
+        data->n_starts[i] = fasta_header_size + this->n_starts[i] + (this->n_starts[i] / padding);
+        data->n_ends[i] = fasta_header_size + this->n_ends[i] + (this->n_ends[i] / padding);
+    }
+
+    size_t n_block = data->n_starts.size();
+    const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
+    data->n_starts[n_block - 1]  = fasta_header_size + this->n + total_sequence_containing_lines + 1;
+    data->n_ends[n_block - 1] = fasta_header_size + this->n + total_sequence_containing_lines + 1;
+
+    return data;
 }
 
 /*
@@ -71,22 +94,28 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 * len_to_copy =
 * fh = filestream to fastafs file
 */
-unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
+unsigned int fastafs_seq::view_fasta_chunk_cached(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh, ffs2f_init_seq* cache)
 {
+#if DEBUG
+    if(cache == nullptr) {
+        throw std::runtime_error("Empty cache was provided\n");
+    }
+#endif //DEBUG
+
     unsigned int written = 0;
 
     if(written >= buffer_size) { // requesting a buffer of size=0
         fh->clear();
         return written;
     }
-    
+
     unsigned int pos = (unsigned int) start_pos_in_fasta;
     unsigned int pos_limit = 0;
 
     if(padding == 0) {
         padding = this->n;
     }
-    
+
     // >
     pos_limit += 1;
     if(pos < pos_limit) {
@@ -123,15 +152,8 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         }
     }
 
-    // @todo put all this temporary data into a struct?
-    // if fuse accepts something like file-call transactions ~ probably: fuse_file_info::fh is the fh id, test when this value changes, and wach out for seek()s
-    std::vector<unsigned int> n_starts_w(this->n_starts);// workable type for this func
-    std::vector<unsigned int> n_ends_w(this->n_ends);// workable type for this func
-    n_starts_w.push_back(this->n);
-    n_ends_w.push_back(this->n);
-    size_t n_block = n_starts_w.size() - 1; /// last element, iterate back :)
-    
-    const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
+    size_t n_block = cache->n_starts.size();
+
     /*
     calc newlines passed:
     >chr1 \n
@@ -152,22 +174,22 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     const unsigned int offset_from_sequence_line = pos - pos_limit;
     unsigned int newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
     unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-    
+
     // calculate file position for next twobit
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     unsigned int n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
     fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + ((nucleotide_pos - n_passed) / 4), fh->beg);
-    
+
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
      A  C  T  G  A  C  T  G
-    * 
-    
+    *
+
     handigste is om file pointer naar de byte ervoor te zetten
     vervolgens wanneer twobit_offset gelijk is aan nul, lees je de volgende byte
     * nooit out of bound
-    
+
     */
     twobit_byte t = twobit_byte();
     const char *chunk = twobit_byte::twobit_hash[0];
@@ -178,46 +200,41 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         chunk = t.get();
     }
 
-
-    // since the n_blocks are sorted, a split search could technically become faster
-    // complexity is now N, which could be reduced to log(n)
-    while(n_block > 0 and nucleotide_pos <= n_ends_w[n_block - 1]) { // iterate back
+    while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
         n_block--;
     }
-    
+
     // write sequence
     pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
-    while(newlines_passed < total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+    while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
-        
+
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            if(nucleotide_pos >= n_starts_w[n_block]) {
+            if(pos >= cache->n_starts[n_block]) {
                 buffer[written++] = 'N';
-            }
-            else {
+            } else {
                 if(twobit_offset % 4 == 0) {
                     fh->read((char*) (&t.data), 1);
                     chunk = t.get();
                 }
-                
+
                 buffer[written++] = chunk[twobit_offset];
                 twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
             }
-            
-            if(nucleotide_pos == n_ends_w[n_block]) {
+
+            if(pos == cache->n_ends[n_block]) {
                 n_block++;
             }
 
             pos++;
-            nucleotide_pos++;
 
             if(written >= buffer_size) {
                 fh->clear();
                 return written;
             }
         }
-        
+
         // write newline
         pos_limit += 1;
         if(pos < pos_limit) {
@@ -229,7 +246,185 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 return written;
             }
         }
-        
+
+        newlines_passed++;
+    }
+
+    fh->clear();
+    return written;
+}
+
+
+
+/*
+@todo see if this can be a std::ifstream or some kind of stream type of object?
+* padding = number of spaces?
+* char buffer =
+* start_pos_in_fasta =
+* len_to_copy =
+* fh = filestream to fastafs file
+*/
+unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
+{
+    unsigned int written = 0;
+
+    if(written >= buffer_size) { // requesting a buffer of size=0
+        fh->clear();
+        return written;
+    }
+
+    unsigned int pos = (unsigned int) start_pos_in_fasta;
+    unsigned int pos_limit = 0;
+
+    if(padding == 0) {
+        padding = this->n;
+    }
+
+    // >
+    pos_limit += 1;
+    if(pos < pos_limit) {
+        buffer[written++] = '>';
+        pos++;
+
+        if(written >= buffer_size) {
+            fh->clear();
+            return written;
+        }
+    }
+
+    // sequence name
+    pos_limit += (unsigned int) this->name.size();
+    while(pos < pos_limit) {
+        buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
+        pos++;
+
+        if(written >= buffer_size) {
+            fh->clear();
+            return written;
+        }
+    }
+
+    // \n
+    pos_limit += 1;
+    if(pos < pos_limit) {
+        buffer[written++] = '\n';
+        pos++;
+
+        if(written >= buffer_size) {
+            fh->clear();
+            return written;
+        }
+    }
+
+    // convert from nucleotide positions to file positions (by taking newlines/padding into account)
+
+    std::vector<unsigned int> n_starts_w(this->n_starts.size() + 1);
+    std::vector<unsigned int> n_ends_w(this->n_starts.size() + 1);
+
+    for(size_t i = 0; i < this->n_starts.size(); i++) {
+        n_starts_w[i] = pos_limit + this->n_starts[i] + (this->n_starts[i] / padding);
+        n_ends_w[i] = pos_limit + this->n_ends[i] + (this->n_ends[i] / padding);
+    }
+
+    size_t n_block = n_starts_w.size();
+
+    const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
+    n_starts_w[n_block - 1]  = pos_limit + this->n + total_sequence_containing_lines + 1;
+    n_ends_w[n_block - 1] = pos_limit + this->n + total_sequence_containing_lines + 1;
+
+    /*
+    calc newlines passed:
+    >chr1 \n
+        ACTG\n      0 1 2 3 4
+        ACTG\n      5 6 7 8 9
+
+        0   0
+        1   0
+        2   0
+        3   0
+        4   0
+        5   1
+        6   1
+        7   1
+        8   1
+        9   1
+    */
+    const unsigned int offset_from_sequence_line = pos - pos_limit;
+    unsigned int newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
+    unsigned int nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+
+    // calculate file position for next twobit
+    // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
+    unsigned int n_passed = 0;
+    this->get_n_offset(nucleotide_pos, &n_passed);
+    fh->seekg((unsigned int) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + ((nucleotide_pos - n_passed) / 4), fh->beg);
+
+    /*
+     0  0  0  0  1  1  1  1 << desired offset from starting point
+     A  C  T  G  A  C  T  G
+    *
+
+    handigste is om file pointer naar de byte ervoor te zetten
+    vervolgens wanneer twobit_offset gelijk is aan nul, lees je de volgende byte
+    * nooit out of bound
+
+    */
+    twobit_byte t = twobit_byte();
+    const char *chunk = twobit_byte::twobit_hash[0];
+    unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
+
+    if(twobit_offset != 0) {
+        fh->read((char*) (&t.data), 1);
+        chunk = t.get();
+    }
+
+    while(n_block > 0 and pos <= n_ends_w[n_block - 1]) { // iterate back
+        n_block--;
+    }
+
+    // write sequence
+    pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
+    while(newlines_passed < total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+        pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
+
+        // write nucleotides
+        while(pos < pos_limit) {// while next sequence-containing-line is open
+            if(pos >= n_starts_w[n_block]) {
+                buffer[written++] = 'N';
+            } else {
+                if(twobit_offset % 4 == 0) {
+                    fh->read((char*) (&t.data), 1);
+                    chunk = t.get();
+                }
+
+                buffer[written++] = chunk[twobit_offset];
+                twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
+            }
+
+            if(pos == n_ends_w[n_block]) {
+                n_block++;
+            }
+
+            pos++;
+
+            if(written >= buffer_size) {
+                fh->clear();
+                return written;
+            }
+        }
+
+        // write newline
+        pos_limit += 1;
+        if(pos < pos_limit) {
+            buffer[written++] = '\n';
+            pos++;
+
+            if(written >= buffer_size) {
+                fh->clear();
+                return written;
+            }
+        }
+
         newlines_passed++;
     }
 
@@ -501,14 +696,13 @@ void fastafs::view_fasta(unsigned int padding)
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
-    
+
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         for(unsigned int i = 0; i < this->data.size(); i++) {
             if(padding == 0) {
                 this->data[i]->view_fasta(this->data[i]->n, &file);
-            }
-            else {
+            } else {
                 this->data[i]->view_fasta(padding, &file);
             }
         }
@@ -516,6 +710,64 @@ void fastafs::view_fasta(unsigned int padding)
     }
 }
 
+
+
+
+ffs2f_init* fastafs::init_ffs2f(unsigned int padding)
+{
+    ffs2f_init *ddata = new ffs2f_init(this->data.size(), padding);
+
+    for(size_t i = 0; i < this->data.size(); i++) {
+        ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding);
+    }
+
+    return ddata;
+}
+
+unsigned int fastafs::view_fasta_chunk_cached(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
+{
+    unsigned int written = 0;
+
+    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (file.is_open()) {
+        size_t i = 0;// sequence iterator
+        unsigned int pos = (unsigned int) file_offset;
+        fastafs_seq *seq;
+
+        while(i < data.size()) {
+            seq = this->data[i];
+            const unsigned int sequence_file_size = seq->fasta_filesize(cache->padding);
+
+            if(pos < sequence_file_size) {
+                const unsigned int written_seq = seq->view_fasta_chunk_cached(
+                                                     cache->padding,
+                                                     &buffer[written],
+                                                     pos,
+                                                     std::min((unsigned int) buffer_size - written, sequence_file_size),
+                                                     &file,
+                                                     cache->sequences[i]);
+
+                written += written_seq;
+                pos -= (sequence_file_size - written_seq);
+
+                if(written == buffer_size) {
+                    file.close();
+                    return written;
+                }
+            } else {
+                pos -= sequence_file_size;
+            }
+
+            i++;
+        }
+
+        file.close();
+    } else {
+        throw std::runtime_error("could not load fastafs: " + this->filename);
+    }
+
+    return written;
+}
 
 unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
@@ -526,31 +778,30 @@ unsigned int fastafs::view_fasta_chunk(unsigned int padding, char *buffer, size_
         size_t i = 0;// sequence iterator
         unsigned int pos = (unsigned int) file_offset;
         fastafs_seq *seq;
-        
+
         while(i < data.size()) {
             seq = this->data[i];
             const unsigned int sequence_file_size = seq->fasta_filesize(padding);
-            
+
             if(pos < sequence_file_size) {
                 const unsigned int written_seq = seq->view_fasta_chunk(
-                               padding,
-                               &buffer[written],
-                               pos,
-                               std::min((unsigned int) buffer_size - written, sequence_file_size),
-                               &file);
-                
+                                                     padding,
+                                                     &buffer[written],
+                                                     pos,
+                                                     std::min((unsigned int) buffer_size - written, sequence_file_size),
+                                                     &file);
+
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
-                
+
                 if(written == buffer_size) {
                     file.close();
                     return written;
                 }
-            }
-            else {
+            } else {
                 pos -= sequence_file_size;
             }
-            
+
             i++;
         }
 
@@ -656,7 +907,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
         size_t i;
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
-            
+
             // single byte can be written, as the while loop has returned true
             pos_limit += 1;
             if(pos < pos_limit) {
@@ -702,7 +953,7 @@ unsigned int fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_
 
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
-        
+
             // number nucleotides
             uint_to_fourbytes_ucsc2bit(n_seq, sequence->n);
             pos_limit += 4;
