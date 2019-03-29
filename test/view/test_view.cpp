@@ -13,7 +13,8 @@
 
 
 
-void flush_buffer(char *buffer, size_t n, char fill) {
+void flush_buffer(char *buffer, size_t n, char fill)
+{
     for(size_t i = 0; i < n; i++) {
         buffer[i] = fill;
     }
@@ -383,7 +384,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     //unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
     written = fs.data[2]->view_fasta_chunk(100, buffer, 0, 100, &fh);
     BOOST_CHECK_EQUAL(written, 22);
-    
+
     std::string std_buffer = std::string(buffer, written);
     BOOST_CHECK_EQUAL(std_buffer.compare(">chr3.1\nACTGACTGAAAAC\n"), 0);
     flush_buffer(buffer, 100, '?');
@@ -399,7 +400,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     std::string test_name = "test_003";
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";
-    
+
     fasta_to_fastafs f = fasta_to_fastafs(test_name, fasta_file);
     f.cache();
     f.write(fastafs_file);
@@ -415,24 +416,24 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
 
     std::ifstream fh(fasta_file.c_str());
     BOOST_REQUIRE(fh.is_open());
-    
+
     size_t size;
     fh.seekg(0, std::ios::end);
     size = fh.tellg();
-    
+
     BOOST_REQUIRE_EQUAL(size, 2108);
-    
+
     fh.seekg(0, std::ios::beg);
     size = fh.tellg();
-    
+
     fh.read(buffer, 2108);
     fh.close();
 
     std::string full_file = std::string(buffer);
     BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
     flush_buffer(buffer, 2110, '?');
-    
-    
+
+
     ffs2f_init* cache = fs.init_ffs2f(60);
     /* maak alle substrings:
       [....]
@@ -447,31 +448,31 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
          [.]
 
      */
-     
+
     for(unsigned int start_pos = 0; start_pos < full_file.size(); start_pos++) {
         for(unsigned int buffer_len = (unsigned int) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
-            
+
             //written = fs.view_fasta_chunk(60, buffer, buffer_len, start_pos);
             written = fs.view_fasta_chunk_cached(cache, buffer, buffer_len, start_pos);
             std_buffer = std::string(buffer, substr_file.size());
-            
+
             BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
-            
+
             /* debug
             if(std_buffer.compare(substr_file) != 0) {
                 printf("   %d:  %d  \n", start_pos, buffer_len);
-                
+
                 std::cout << "---- ref: ----\n";
                 std::cout << substr_file << "\n";
                 std::cout << "----found:----\n";
                 std::cout << std_buffer << "\n";
                 std::cout << "--------------\n";
-                
+
                 exit(1);
             }*/
-            
+
             flush_buffer(buffer, 2110, '?');
         }
     }

@@ -363,20 +363,20 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
 BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
 {
     // pretend the following sequence:
-    
+
     // NNxxNxNNxxxN
     std::string seq = "NNxxNxNNxxxN";
     // starts:         0   4 6    11
     // ends:            1  4  7   11
     fastafs_seq f = fastafs_seq();
-    
+
     f.n = (unsigned int) seq.size();
     f.n_starts = {0, 4, 6, 11};
     f.n_ends = {1, 4, 7, 11};
-    
+
     unsigned int n_passed;
     bool in_n;
-    
+
     // NNxxNxNNxxxN
     // |
     in_n = f.get_n_offset(0, &n_passed);
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     in_n = f.get_n_offset(2, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 2);
     BOOST_CHECK_EQUAL(in_n, false);
-    
+
     // NNxxNxNNxxxN
     // -- |
     in_n = f.get_n_offset(3, &n_passed);
@@ -406,7 +406,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     in_n = f.get_n_offset(4, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 2);
     BOOST_CHECK_EQUAL(in_n, true);
-    
+
     // NNxxNxNNxxxN
     // --  -|
     in_n = f.get_n_offset(5, &n_passed);
@@ -436,19 +436,19 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     in_n = f.get_n_offset(9, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, false);
-    
+
     // NNxxNxNNxxxN
     // --  - --  |
     in_n = f.get_n_offset(10, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, false);
-    
+
     // NNxxNxNNxxxN
     // --  - --   |
     in_n = f.get_n_offset(11, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, true);
-    
+
     // I could test 12, but that behavious is not yet defined, and doesn't need to?
 }
 

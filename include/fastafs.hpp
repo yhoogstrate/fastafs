@@ -13,17 +13,17 @@ struct ffs2f_init_seq {
     // fasta seq size
     // fasta seq newlines/padding lines
     const unsigned int total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
-    
+
     std::vector<unsigned int> n_starts;
     std::vector<unsigned int> n_ends;
-    
+
     ffs2f_init_seq(size_t size, const unsigned int n_lines): total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
 };
 
 struct ffs2f_init {
     unsigned int padding;
     std::vector<ffs2f_init_seq *> sequences;
-    
+
     ffs2f_init(size_t size, unsigned int padding): padding(padding), sequences(size) {}
 };
 
@@ -38,9 +38,9 @@ public:
     unsigned int n;// number nucleotides
     std::vector<unsigned int> n_starts;// start positions 0-based)
     std::vector<unsigned int> n_ends;// end positions (is 0-based, must become 1-based)
-    
+
     std::vector<std::pair<unsigned int, unsigned int>> m_blocks;// @ todo check if unsiged int[2] is not more efficient / less bloated
-    
+
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented
 

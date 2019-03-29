@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(test_twobit_conversions)
     seq[4] = '\0';
 
     twobit_byte t;
- 
+
     seq[0] = 'A';
     seq[1] = 'A';
     seq[2] = 'A';
