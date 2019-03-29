@@ -124,17 +124,20 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     }
 
     // convert from nucleotide positions to file positions (by taking newlines/padding into account)
-    std::vector<std::array<unsigned int, 2>> n_blocks(this->n_starts.size() + 1);// workable n blocks, adding a last entry to ensure it is not empty
+    
+    std::vector<unsigned int> n_starts_w(this->n_starts.size() + 1);
+    std::vector<unsigned int> n_ends_w(this->n_starts.size() + 1);
+    
     for(size_t i = 0; i < this->n_starts.size(); i++) {
-        n_blocks[i] = {
-            pos_limit + this->n_starts[i] + (this->n_starts[i] / padding),
-            pos_limit + this->n_ends[i] + (this->n_ends[i] / padding)
-            };
+        n_starts_w[i] = pos_limit + this->n_starts[i] + (this->n_starts[i] / padding);
+        n_ends_w[i] = pos_limit + this->n_ends[i] + (this->n_ends[i] / padding);
     }
-    size_t n_block = n_blocks.size();
+
+    size_t n_block = n_starts_w.size();
     
     const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
-    n_blocks[n_block - 1]  = {pos_limit + this->n + total_sequence_containing_lines + 1, pos_limit + this->n + total_sequence_containing_lines + 1};
+    n_starts_w[n_block - 1]  = pos_limit + this->n + total_sequence_containing_lines + 1;
+    n_ends_w[n_block - 1] = pos_limit + this->n + total_sequence_containing_lines + 1;
     
     /*
     calc newlines passed:
@@ -182,7 +185,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         chunk = t.get();
     }
 
-    while(n_block > 0 and pos <= n_blocks[n_block - 1][1]) { // iterate back
+    while(n_block > 0 and pos <= n_ends_w[n_block - 1]) { // iterate back
         n_block--;
     }
     
@@ -193,7 +196,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            if(pos >= n_blocks[n_block][0]) {
+            if(pos >= n_starts_w[n_block]) {
                 buffer[written++] = 'N';
             }
             else {
@@ -206,7 +209,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
             }
             
-            if(pos == n_blocks[n_block][1]) {
+            if(pos == n_ends_w[n_block]) {
                 n_block++;
             }
 
