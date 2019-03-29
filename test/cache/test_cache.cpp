@@ -210,13 +210,13 @@ BOOST_AUTO_TEST_CASE(test_cache)
     fastafs f2 = fastafs("test");
     f2.load("tmp/test_cachce_test.fastafs");
 
-    const unsigned int padding = 60;
-    const unsigned int write_size = 32;
+    const uint32_t padding = 60;
+    const uint32_t write_size = 32;
     char buffer[write_size + 1] = "";
     buffer[32] = '\0';
 
-    unsigned int written = 0;
-    unsigned int w = 0;
+    uint32_t written = 0;
+    uint32_t w = 0;
     std::string output = "";
     while(written < f2.fasta_filesize(padding)) {
         w = f2.view_fasta_chunk(padding, buffer, write_size, written);

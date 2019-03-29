@@ -62,7 +62,7 @@ void database::list()
         f.load(fname);
 
         std::ifstream file (fname, std::ios::in | std::ios::binary | std::ios::ate);
-        unsigned int size = (unsigned int) file.tellg();
+        uint32_t size = (uint32_t) file.tellg();
         file.close();
         //http://fibrevillage.com/sysadmin/278-understanding-the-difference-between-etc-mtab-and-proc-mounts-on-linux
         // /proc/mounts via c? ->/proc/self/mountinfo -> /etc/mtab ?
@@ -71,7 +71,7 @@ void database::list()
                line.c_str(),
                std::string("uid").c_str(),
                std::string("v0-x32-2bit").c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
-               (unsigned int) f.data.size(),
+               (uint32_t) f.data.size(),
                f.n(),
                size,
                (float) 100.0 * (float) size / (float) f.fasta_filesize(50),

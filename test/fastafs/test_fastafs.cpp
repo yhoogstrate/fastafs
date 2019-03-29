@@ -53,14 +53,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
 
     // then: check returncodes:
-    unsigned int ret;
+    uint32_t ret;
     char chunk[4];
 
-    for(unsigned int i = 0; i < 23; i++) {
+    for(uint32_t i = 0; i < 23; i++) {
         ret = fs.data[0]->view_fasta_chunk(100, chunk, i, 1, &file);
         BOOST_CHECK_EQUAL(ret, 1);
     }
-    for(unsigned int i = 23; i < 23 + 5; i++) {
+    for(uint32_t i = 23; i < 23 + 5; i++) {
         ret = fs.data[0]->view_fasta_chunk(100, chunk, i, 1, &file);
         BOOST_CHECK_EQUAL(ret, 0);
     }
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     chunk[2] = '\1';
     chunk[3] = '\2';
 
-    unsigned int i = 0;
+    uint32_t i = 0;
 
     ret = fs.data[0]->view_fasta_chunk(23, chunk, i++, 1, &file);
     BOOST_CHECK_EQUAL(chunk[0], '>');
@@ -197,10 +197,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
 
 
     // then: check returncodes:
-    unsigned int ret;
+    uint32_t ret;
     char chunk[1];
 
-    unsigned int i = 0;
+    uint32_t i = 0;
 
 
     ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
@@ -370,11 +370,11 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     // ends:            1  4  7   11
     fastafs_seq f = fastafs_seq();
 
-    f.n = (unsigned int) seq.size();
+    f.n = (uint32_t) seq.size();
     f.n_starts = {0, 4, 6, 11};
     f.n_ends = {1, 4, 7, 11};
 
-    unsigned int n_passed;
+    uint32_t n_passed;
     bool in_n;
 
     // NNxxNxNNxxxN

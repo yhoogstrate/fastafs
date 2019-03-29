@@ -55,8 +55,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
         padding=4, offset=5, position_until=9, 10,11,12,13:  1  "AAAA\n" "AAAA\nG" "AAAA\nGG" "AAAA\nGGG" "AAAA\nGGGG"
     */
 
-    unsigned int padding = 4;
-    unsigned int offset, position_until;
+    uint32_t padding = 4;
+    uint32_t offset, position_until;
 
     offset = 0;
     for(position_until = 0; position_until <= 3; ++position_until) {
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
 {
     // testing "ACTGACTGNNNNACTG"
 
-    unsigned int num_Ns; // number of N's until certain nucleotide is reached
+    uint32_t num_Ns; // number of N's until certain nucleotide is reached
     bool in_N;
 
     std::string fastafs_file = "tmp/test.fastafs";
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
-    for(unsigned int i = 0 ; i <= 7; i++) {
+    for(uint32_t i = 0 ; i <= 7; i++) {
         in_N = fs.data[1]->get_n_offset(i, &num_Ns);
         BOOST_CHECK_EQUAL(num_Ns, 0);
         BOOST_CHECK_EQUAL(in_N, false);
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
     BOOST_CHECK_EQUAL(num_Ns, 3);
     BOOST_CHECK_EQUAL(in_N, true);
 
-    for(unsigned int i = 12 ; i <= 15; i++) {
+    for(uint32_t i = 12 ; i <= 15; i++) {
         in_N = fs.data[1]->get_n_offset(i, &num_Ns);
         BOOST_CHECK_EQUAL(num_Ns, 4);
         BOOST_CHECK_EQUAL(in_N, false);
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
  */
 BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 {
-    unsigned int written;
+    uint32_t written;
 
     std::string test_name = "test";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
     std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
     //std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
-    for(unsigned int offset = 0; offset < 62; ++offset) {
+    for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 100);
 
         written = fs.view_fasta_chunk(4, buffer, 100, offset);
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 {
-    unsigned int written;
+    uint32_t written;
 
     std::string test_name = "test";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -381,7 +381,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     // 1   2   3   4   5   6   7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22
     //[>] [c] [h] [r] [3] [.] [1] [\n] [A] [C] [T] [G] [A] [C] [T] [G] [A] [A] [A] [A] [C] [\n]
     BOOST_CHECK_EQUAL(fs.data[2]->fasta_filesize(100), 22);
-    //unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
+    //uint32_t fastafs_seq::view_fasta_chunk(uint32_t padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh)
     written = fs.data[2]->view_fasta_chunk(100, buffer, 0, 100, &fh);
     BOOST_CHECK_EQUAL(written, 22);
 
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 
-    unsigned int written;
+    uint32_t written;
     char *buffer = new char[2110];// file size on disk is 2108 bytes
     flush_buffer(buffer, 2110, '\0');
     std::string std_buffer;
@@ -449,8 +449,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
 
      */
 
-    for(unsigned int start_pos = 0; start_pos < full_file.size(); start_pos++) {
-        for(unsigned int buffer_len = (unsigned int) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
+    for(uint32_t start_pos = 0; start_pos < full_file.size(); start_pos++) {
+        for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 
             //written = fs.view_fasta_chunk(60, buffer, buffer_len, start_pos);

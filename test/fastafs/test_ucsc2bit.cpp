@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                    "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
-    unsigned int complen;
+    uint32_t complen;
 
     // test header
     complen = 8;
@@ -350,14 +350,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
     // out of bound check
-    unsigned int written = fs.view_ucsc2bit_chunk(buffer, complen + 4, 0);
+    uint32_t written = fs.view_ucsc2bit_chunk(buffer, complen + 4, 0);
     BOOST_CHECK_EQUAL(written, complen);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
 
 
     // debug toolkit
     /*
-    for(unsigned int i = 0; i < reference.size() && i < complen; i++) {
+    for(uint32_t i = 0; i < reference.size() && i < complen; i++) {
         printf("[%i]  ref:%i ~ %u\t == buf:%i ~ %u",i, (signed char) reference[i], (unsigned char) reference[i], (signed char) buffer[i], (unsigned char) buffer[i]);
         if(reference[i] != buffer[i])
         {
@@ -412,18 +412,18 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
-    unsigned int complen;
+    uint32_t complen;
 
     // voor lengte 1...(245-1)
     //  voor i = 0, 245-lengte
     for(complen = 1; complen < reference.size(); complen++) {
-        for(unsigned int file_offset = 0; file_offset < reference.size() - complen - 1 ; file_offset++ ) {
+        for(uint32_t file_offset = 0; file_offset < reference.size() - complen - 1 ; file_offset++ ) {
             fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
             BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0, complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
         }
     }
 
-    //for(unsigned int i = 0; i < complen; i++) {
+    //for(uint32_t i = 0; i < complen; i++) {
     //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
     //if(reference[i + file_offset] != buffer[i])
     //{

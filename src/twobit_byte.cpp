@@ -22,7 +22,7 @@ const char twobit_byte::twobit_hash[256][5] = {"TTTT", "TTTC", "TTTA", "TTTG", "
 
 not sure what the quickest way is - this way all calculations are done as ints, not as chars
  */
-unsigned char twobit_byte::iterator_to_offset(unsigned int iterator)
+unsigned char twobit_byte::iterator_to_offset(uint32_t iterator)
 {
     return (unsigned char) ((3 - (iterator % 4)) * 2);
 }

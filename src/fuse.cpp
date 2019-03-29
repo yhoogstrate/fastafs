@@ -30,7 +30,7 @@
 
 struct fastafs_fuse_instance {
     fastafs *f;
-    unsigned int padding;
+    uint32_t padding;
     int argc_fuse;
     //char *argv_fuse[];
 };
@@ -85,7 +85,7 @@ static int do_getattr( const char *path, struct stat *st )
         }
     }
 
-    printf("    st_size: %u\n", (unsigned int) st->st_size);
+    printf("    st_size: %u\n", (uint32_t) st->st_size);
 
     return 0;
 }
@@ -98,7 +98,7 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
     char cur_time[100];
     time_t now = time (0);
     strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-    printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, (unsigned int) offset, path, ffi->f->name.c_str(), ffi->padding);
+    printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 
     std::string virtual_fasta_filename = ffi->f->name + ".fa";
     std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
@@ -128,7 +128,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     char cur_time[100];
     time_t now = time (0);
     strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
-    printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, (unsigned int) size, (unsigned int) offset, path, ffi->f->name.c_str(), ffi->padding);
+    printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n",cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 
     std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
     std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
@@ -192,7 +192,7 @@ fuse_operations operations  = {
     nullptr,    // int (*lock) (const char *, struct fuse_file_info *, int cmd, struct flock *);
     nullptr,    // int (*utimens) (const char *, const struct timespec tv[2]);
     nullptr,    // int (*bmap) (const char *, size_t blocksize, uint64_t *idx);
-//	nullptr,    // int (*ioctl) (const char *, int cmd, void *arg, struct fuse_file_info *, unsigned int flags, void *data);
+//	nullptr,    // int (*ioctl) (const char *, int cmd, void *arg, struct fuse_file_info *, uint32_t flags, void *data);
 //	nullptr,    // int (*poll) (const char *, struct fuse_file_info *, struct fuse_pollhandle *ph, unsigned *reventsp);
 //	nullptr,    // int (*write_buf) (const char *, struct fuse_bufvec *buf, off_t off, struct fuse_file_info *);
 //	nullptr,    // int (*read_buf) (const char *, struct fuse_bufvec **bufp, size_t size, off_t off, struct fuse_file_info *);
@@ -296,7 +296,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
             if(strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) {
                 try {
-                    ffi->padding = boost::lexical_cast<unsigned int>(argv[++i]);
+                    ffi->padding = boost::lexical_cast<uint32_t>(argv[++i]);
                 } catch(std::exception const & e) {
                     std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
                     exit(1);

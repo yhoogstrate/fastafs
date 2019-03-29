@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
                 std::cout << "\n";
             }
         } else if (strcmp(argv[1], "view") == 0) {
-            unsigned int padding = 60;
+            uint32_t padding = 60;
 
             if(argc > 2) {
                 if (strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                             from_file = true;
                         } else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i+1 < argc-1) {
                             try {
-                                padding = boost::lexical_cast<unsigned int>(argv[++i]);
+                                padding = boost::lexical_cast<uint32_t>(argv[++i]);
                             } catch(std::exception const & e) {
                                 std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
                                 return EINVAL;

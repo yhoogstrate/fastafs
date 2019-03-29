@@ -6,10 +6,10 @@
 #include "config.hpp"
 
 // as these chars are coming from ifstream.read
-unsigned int fourbytes_to_uint(char *chars, unsigned char offset)
+uint32_t fourbytes_to_uint(char *chars, unsigned char offset)
 {
 
-    unsigned int u = ((unsigned char) chars[0 + offset] << 24) | ((unsigned char) chars[1 + offset] << 16) | ((unsigned char)  chars[2 + offset] << 8) | ((unsigned char) chars[3 + offset]);
+    uint32_t u = ((unsigned char) chars[0 + offset] << 24) | ((unsigned char) chars[1 + offset] << 16) | ((unsigned char)  chars[2 + offset] << 8) | ((unsigned char) chars[3 + offset]);
 
     return u;
 }
@@ -27,18 +27,18 @@ the equivalent of 129 in their encoding is as follows:
 10000000 00000001 00000000 00000000
 
 
-The function below decodes these 4 charred strings into an unsigned integer
+The function below decodes these 4 charred strings into an uint32_teger
 */
-unsigned int fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
+uint32_t fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
 {
 
-    unsigned int u = ((unsigned char) chars[3 + offset] << 24) | ((unsigned char) chars[2 + offset] << 16) | ((unsigned char)  chars[1 + offset] << 8) | ((unsigned char) chars[0 + offset]);
+    uint32_t u = ((unsigned char) chars[3 + offset] << 24) | ((unsigned char) chars[2 + offset] << 16) | ((unsigned char)  chars[1 + offset] << 8) | ((unsigned char) chars[0 + offset]);
 
     return u;
 }
 
 
-void uint_to_fourbytes(char *chars, unsigned int n)
+void uint_to_fourbytes(char *chars, uint32_t n)
 {
     chars[0] = (signed char) ((n >> 24) & 0xFF);
     chars[1] = (signed char) ((n >> 16) & 0xFF);
@@ -48,7 +48,7 @@ void uint_to_fourbytes(char *chars, unsigned int n)
 
 
 // ucsc2bit is somehow stringreverted
-void uint_to_fourbytes_ucsc2bit(char *chars, unsigned int n)
+void uint_to_fourbytes_ucsc2bit(char *chars, uint32_t n)
 {
     chars[3] = (signed char) ((n >> 24) & 0xFF);
     chars[2] = (signed char) ((n >> 16) & 0xFF);
@@ -73,10 +73,10 @@ std::string get_mtab()
 
 
 
-char *human_readable_fs(unsigned int bitsize, char *buf)
+char *human_readable_fs(uint32_t bitsize, char *buf)
 {
     float size = (float) bitsize;
-    unsigned int i = 0;
+    uint32_t i = 0;
     const char *units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
     while (size > 1024) {
         size /= 1024;
@@ -93,7 +93,7 @@ void sha1_digest_to_hash(unsigned char *digest, char *hash)
     //unsigned char hash[SHA_DIGEST_LENGTH];
     //SHA1_Final(hash, &ctx);
 
-    for(unsigned int i = 0; i < SHA_DIGEST_LENGTH; i++) {
+    for(uint32_t i = 0; i < SHA_DIGEST_LENGTH; i++) {
         sprintf(hash + (i * 2), "%02x", digest[i]);
     }
     hash[40] = 0;

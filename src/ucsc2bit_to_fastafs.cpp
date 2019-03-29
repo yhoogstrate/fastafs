@@ -25,7 +25,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     fastafs fs_new = fastafs("");
     std::vector<ucsc2bit_seq_header *> data;
     std::vector<ucsc2bit_seq_header_conversion_data *> data2;
-    unsigned int i, j, n;
+    uint32_t i, j, n;
     ucsc2bit_seq_header *s;
     ucsc2bit_seq_header_conversion_data *t;
 
@@ -144,10 +144,10 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
             twobit_byte t_out = twobit_byte();
 
-            unsigned int k = 0; // iterator in fastafs format
-            unsigned int next_n;
-            unsigned int n_n = 0;
-            unsigned int n_ahead = 0; // number of n's ahead
+            uint32_t k = 0; // iterator in fastafs format
+            uint32_t next_n;
+            uint32_t n_n = 0;
+            uint32_t n_ahead = 0; // number of n's ahead
             if(s->n_blocks > n_n) {
                 next_n = s->n_block_starts[n_n];
             } else {
@@ -235,7 +235,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             //fh_fastafs << t->sha1_digest; // this way can be nasty if last bytes are nullbytes
             fh_fastafs.write(reinterpret_cast<char *> (&t->sha1_digest), (size_t) 20);
 
-            uint_to_fourbytes(buffer, (unsigned int) t->file_offset);
+            uint_to_fourbytes(buffer, (uint32_t) t->file_offset);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
             delete t;
