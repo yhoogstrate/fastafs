@@ -12,11 +12,12 @@
 struct ffs2f_init_seq {
     // fasta seq size
     // fasta seq newlines/padding lines
+    const unsigned int total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
     
     std::vector<unsigned int> n_starts;
     std::vector<unsigned int> n_ends;
     
-    ffs2f_init_seq(size_t size): n_starts(size), n_ends(size) {}
+    ffs2f_init_seq(size_t size, const unsigned int n_lines): total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
 };
 
 struct ffs2f_init {

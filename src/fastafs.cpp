@@ -67,7 +67,9 @@ void fastafs_seq::view_fasta(unsigned int padding, std::ifstream *fh)
 
 
 ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(unsigned int padding) {
-    ffs2f_init_seq* data = new ffs2f_init_seq(this->n_starts.size() + 1);
+    const unsigned int n_seq_lines = (this->n + padding - 1) / padding;
+    
+    ffs2f_init_seq* data = new ffs2f_init_seq(this->n_starts.size() + 1, n_seq_lines);
     unsigned int fasta_header_size = (unsigned int) this->name.size() + 2;
     
     for(size_t i = 0; i < this->n_starts.size(); i++) {
@@ -149,23 +151,8 @@ unsigned int fastafs_seq::view_fasta_chunk_cached(unsigned int padding, char *bu
         }
     }
 
-    // convert from nucleotide positions to file positions (by taking newlines/padding into account)
-  /*  
-    std::vector<unsigned int> n_starts_w(this->n_starts.size() + 1);
-    std::vector<unsigned int> n_ends_w(this->n_starts.size() + 1);
-    
-    //printf("[old: %d,%d] ~ [new: %d,%d]\n",n_starts_w.size(), n_ends_w.size(), cache->n_starts.size(), cache->n_ends.size());
-    for(size_t i = 0; i < this->n_starts.size(); i++) {
-        n_starts_w[i] = pos_limit + this->n_starts[i] + (this->n_starts[i] / padding);
-        n_ends_w[i] = pos_limit + this->n_ends[i] + (this->n_ends[i] / padding);
-        
-        //printf("=> [old: %d,%d] ~ [new: %d,%d]\n",n_starts_w[i], n_ends_w[i], cache->n_starts[i], cache->n_ends[i]);
-    }
-*/
     size_t n_block = cache->n_starts.size();
     
-    const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
-
     /*
     calc newlines passed:
     >chr1 \n
@@ -218,7 +205,7 @@ unsigned int fastafs_seq::view_fasta_chunk_cached(unsigned int padding, char *bu
     
     // write sequence
     pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
-    while(newlines_passed < total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+    while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
         
         // write nucleotides
