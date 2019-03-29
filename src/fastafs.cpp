@@ -134,7 +134,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     size_t n_block = n_blocks.size();
     
     const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
-    n_blocks[n_block - 1]  = {this->n + total_sequence_containing_lines  1, this->n + total_sequence_containing_lines  1};
+    n_blocks[n_block - 1]  = {pos_limit + this->n + total_sequence_containing_lines + 1, pos_limit + this->n + total_sequence_containing_lines + 1};
     
     /*
     calc newlines passed:
