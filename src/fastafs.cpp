@@ -124,17 +124,18 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     }
 
     // convert from nucleotide positions to file positions (by taking newlines/padding into account)
-    std::vector<std::array<unsigned int, 2>> n_blocks;// workable n blocks, adding a last entry to ensure it is not empty
+    std::vector<std::array<unsigned int, 2>> n_blocks(this->n_starts.size() + 1);// workable n blocks, adding a last entry to ensure it is not empty
     for(size_t i = 0; i < this->n_starts.size(); i++) {
-        n_blocks.push_back({
+        n_blocks[i] = {
             pos_limit + this->n_starts[i] + (this->n_starts[i] / padding),
             pos_limit + this->n_ends[i] + (this->n_ends[i] / padding)
-            });
+            };
     }
     size_t n_block = n_blocks.size();
-    n_blocks.push_back({this->fasta_filesize(padding), this->fasta_filesize(padding)});
     
     const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
+    n_blocks[n_block - 1]  = {this->n + total_sequence_containing_lines  1, this->n + total_sequence_containing_lines  1};
+    
     /*
     calc newlines passed:
     >chr1 \n
