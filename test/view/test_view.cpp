@@ -432,6 +432,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
     flush_buffer(buffer, 2110, '?');
     
+    
+    ffs2f_init* cache = fs.init_ffs2f(60);
     /* maak alle substrings:
       [....]
       [...]
@@ -445,11 +447,13 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
          [.]
 
      */
+     
     for(unsigned int start_pos = 0; start_pos < full_file.size(); start_pos++) {
         for(unsigned int buffer_len = (unsigned int) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
             
-            written = fs.view_fasta_chunk(60, buffer, buffer_len, start_pos);
+            //written = fs.view_fasta_chunk(60, buffer, buffer_len, start_pos);
+            written = fs.view_fasta_chunk_cached(cache, buffer, buffer_len, start_pos);
             std_buffer = std::string(buffer, substr_file.size());
             
             BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
