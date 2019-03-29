@@ -126,17 +126,13 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
     // convert from nucleotide positions to file positions (by taking newlines/padding into account)
     std::vector<std::array<unsigned int, 2>> n_blocks;// workable n blocks, adding a last entry to ensure it is not empty
     for(size_t i = 0; i < this->n_starts.size(); i++) {
-        n_blocks.push_back({pos_limit + this->n_starts[i], pos_limit + this->n_ends[i]});
+        n_blocks.push_back({
+            pos_limit + this->n_starts[i] + (this->n_starts[i] / padding),
+            pos_limit + this->n_ends[i] + (this->n_ends[i] / padding)
+            });
     }
+    size_t n_block = n_blocks.size();
     n_blocks.push_back({this->fasta_filesize(padding), this->fasta_filesize(padding)});
-    
-    // @todo put all this temporary data into a struct?
-    // if fuse accepts something like file-call transactions ~ probably: fuse_file_info::fh is the fh id, test when this value changes, and wach out for seek()s
-    std::vector<unsigned int> n_starts_w(this->n_starts);// workable type for this func
-    std::vector<unsigned int> n_ends_w(this->n_ends);// workable type for this func
-    n_starts_w.push_back(this->n);
-    n_ends_w.push_back(this->n);
-    size_t n_block = n_starts_w.size() - 1; /// last element, iterate back :)
     
     const unsigned int total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
     /*
@@ -185,25 +181,9 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         chunk = t.get();
     }
 
-
-    // since the n_blocks are sorted, a split search could technically become faster
-    // complexity is now N, which could be reduced to log(n)
-    printf("current n-block: %d  (%d <= %d)\n", n_block, nucleotide_pos, n_ends_w[n_block - 1]);
-    while(n_block > 0 and nucleotide_pos <= n_ends_w[n_block - 1]) { // iterate back
-        n_block--;
-        printf("updated n-block: %d  (%d <= %d)\n", n_block, nucleotide_pos, n_ends_w[n_block - 1]);
-    }
-
-    std::cout << "--- \n";
-    n_block = n_blocks.size() - 1; /// last element, iterate back :)
-
-    printf("current n-block: %d  (%d <= %d)\n", n_block, pos, n_blocks[n_block - 1][1]);
     while(n_block > 0 and pos <= n_blocks[n_block - 1][1]) { // iterate back
         n_block--;
-        printf("updated n-block: %d  (%d <= %d)\n", n_block, pos, n_blocks[n_block - 1][1]);
     }
-    std::cout << "\n\n";
-    
     
     // write sequence
     pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
@@ -212,7 +192,7 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
         
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            if(nucleotide_pos >= n_starts_w[n_block]) {
+            if(pos >= n_blocks[n_block][0]) {
                 buffer[written++] = 'N';
             }
             else {
@@ -225,12 +205,11 @@ unsigned int fastafs_seq::view_fasta_chunk(unsigned int padding, char *buffer, o
                 twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
             }
             
-            if(nucleotide_pos == n_ends_w[n_block]) {
+            if(pos == n_blocks[n_block][1]) {
                 n_block++;
             }
 
             pos++;
-            nucleotide_pos++;
 
             if(written >= buffer_size) {
                 fh->clear();
