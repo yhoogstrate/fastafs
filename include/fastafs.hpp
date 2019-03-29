@@ -21,7 +21,7 @@ struct ffs2f_init_seq {
 };
 
 struct ffs2f_init {
-    unsigned int padding;
+    const unsigned int padding;
     std::vector<ffs2f_init_seq *> sequences;
 
     ffs2f_init(size_t size, unsigned int padding): padding(padding), sequences(size) {}
