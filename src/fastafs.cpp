@@ -93,14 +93,22 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(uint32_t padding)
 * start_pos_in_fasta =
 * len_to_copy =
 * fh = filestream to fastafs file
+* cache = pre calculated values from fastafs_seq::init_ffs2f_seq
 */
-uint32_t fastafs_seq::view_fasta_chunk_cached(uint32_t padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh, ffs2f_init_seq* cache)
+uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh, ffs2f_init_seq* cache)
 {
 #if DEBUG
     if(cache == nullptr) {
         throw std::runtime_error("Empty cache was provided\n");
     }
 #endif //DEBUG
+    if(padding == 0) {
+        if(this->n == 0) {
+            throw std::runtime_error("Empty sequence glitch\n");
+        }
+        const uint32_t npadding = this->n;// 
+        return this->view_fasta_chunk_cached(npadding, buffer, start_pos_in_fasta, buffer_size, fh, cache);
+    }
 
     uint32_t written = 0;
 
@@ -111,10 +119,6 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(uint32_t padding, char *buffer, of
 
     uint32_t pos = (uint32_t) start_pos_in_fasta;
     uint32_t pos_limit = 0;
-
-    if(padding == 0) {
-        padding = this->n;
-    }
 
     // >
     pos_limit += 1;
