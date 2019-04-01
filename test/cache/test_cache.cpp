@@ -207,37 +207,87 @@ BOOST_AUTO_TEST_CASE(test_cache)
     f.write("tmp/test_cachce_test.fastafs");
     
     static std::string reference = 
-        FASTAFS_MAGIC + FASTAFS_VERSION + "\x00\x00\x00\x01"s "\x00\x00\x00\x00"s // 4                  GENERIC-HEADER
-        "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-        "\x00\x55\xAA\xFF"s // sequence
-        "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-        "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
-        "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-        "\x93\x93\xAA\x40"s// last one is 01 00 00 00
-        "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+        // GENERIC-HEADER
+        FASTAFS_MAGIC + FASTAFS_VERSION + "\x00\x00\x00\x01"s "\x00\x00\x00\x00"s // 4
+        
+        // DATA
+        "\x00\x00\x00\x10"s// seq length [16] (of 2bit encoded bytes; n-blocks are excluded)
+        "\x00\x55\xAA\xFF"s// sequence
+        "\x00\x00\x00\x00"s// n-blocks
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks
+        
+        "\x10\x00\x00\x00"s// seq length (of 2bit encoded bytes; n-blocks are excluded)
+        "\x93\x93\x00\x93"s// sequence: ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
+        "\x01\x00\x00\x00"s// n-blocks (1)
+        "\x08\x00\x00\x00"s// n-block start[1]
+        "\x04\x00\x00\x00"s// n-block ends[1]
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks
+        
+        "\x0D\x00\x00\x00"s// seq length (needs to become 2bit-encoded seq-len)
+        "\x93\x93\xAA\x40"s// sequence: last one is 01 00 00 00
+        "\x00\x00\x00\x00"s// n-blocks (0)
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks (0)
+        
+        "\x0E\x00\x00\x00"s// seq length (of 2bit encoded bytes; n-blocks are excluded)
         "\x93\x93\xAA\x50"s// last one is 01 01 00 00
-        "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+        "\x00\x00\x00\x00"s// n-bocks (0)
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks (0)
+        
+        "\x0F\x00\x00\x00"s// seq length (of 2bit encoded nucleotides; n-blocks are excluded)
         "\x93\x93\xAA\x54"s// last one is 01 01 01 00
-        "\x08\x00\x00\x00"s "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-        "\x93\x00" // ACTG NNNN = 10010011 00000000
-        "\x06\x00\x00\x00"s "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-        "\x09\x30" // NNAC TG?? = 00001001 00110000
+        "\x00\x00\x00\x00"s// n-blocks (0)
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks (0)
+        
+        "\x08\x00\x00\x00"s// seq length (of 2bit encoded nucleotides; n-blocks are excluded)
+        "\x93\x00"s// sequence: ACTG NNNN = 10010011 00000000
+        "\x01\x00\x00\x00"s// n-blocks (1)
+        "\x04\x00\x00\x00"s// n-starts [1]
+        "\x04\x00\x00\x00"s// n-ends [1]
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks (0)
+        
+        "\x06\x00\x00\x00"s// seq length (of 2bit encoded nucleotides; n-blocks are excluded)
+        "\x09\x30"s// sequence: NNAC TG?? = 00001001 00110000
+        "\x01\x00\x00\x00"s// n-blocks (1)
+        "\x00\x00\x00\x00"s// n-starts[1]
+        "\x02\x00\x00\x00"s// n-ends[1]
+        "00000000000000000000"s// checksum
+        "\x00\x00\x00\x00"s// m-blocks
 
         "\x00\x00\x00\x07"s     // 7 sequences
+        
         "\x08"                  // complete, DNA and not circular
-        "\x04"s "chr1"s   "\x55\x00\x00\x00"s
+        "\x04"s "chr1"s
+        "\x55\x00\x00\x00"s
+        
         "\x08"                  // complete, DNA and not circular
-        "\x04"s "chr2"s   "\x69\x00\x00\x00"s
+        "\x04"s "chr2"s
+        "\x69\x00\x00\x00"s
+        
         "\x08"                  // complete, DNA and not circular
-        "\x06"s "chr3.1"s "\x85\x00\x00\x00"s
+        "\x06"s "chr3.1"s
+        "\x85\x00\x00\x00"s
+        
         "\x08"                  // complete, DNA and not circular
-        "\x06"s "chr3.2"s "\x99\x00\x00\x00"s
+        "\x06"s "chr3.2"s
+        "\x99\x00\x00\x00"s
+        
         "\x08"                  // complete, DNA and not circular
-        "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
+        "\x06"s "chr3.3"s
+        "\xAD\x00\x00\x00"s
+        
         "\x08"                  // complete, DNA and not circular
-        "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
+        "\x04"s "chr4"s
+        "\xC1\x00\x00\x00"s
+        
         "\x08"                  // complete, DNA and not circular
-        "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
+        "\x04"s "chr5"s
+        "\xDB\x00\x00\x00"s
     ;
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
 }
