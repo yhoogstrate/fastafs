@@ -10,8 +10,6 @@
 
 
 
-
-
 fasta_to_fastafs_seq::fasta_to_fastafs_seq(void) :
     fastafs_seq(),
     previous_was_N(false),
