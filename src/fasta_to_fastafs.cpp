@@ -343,41 +343,16 @@ void fasta_to_fastafs::write(std::string filename)
         uint32_t four_bytes;
         unsigned char byte;
 
-        fh_fastafs << UCSC2BIT_MAGIC;
-        fh_fastafs << UCSC2BIT_VERSION;
+        fh_fastafs << FASTAFS_MAGIC;
+        fh_fastafs << FASTAFS_VERSION;
 
-        //four_bytes = (uint32_t) this->data.size();
-        //uint32_t n = (uint32_t) this->data.size();
-
-        char ch3[4];
-        uint_to_fourbytes(ch3, (uint32_t) this->data.size());
-        fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
-
-        // should become crc32 sum of all bytes written, to be updated after write
-        fh_fastafs << "\x00\x00\x00\x00"s;
-
-        // write indices
-        for(uint32_t i = 0; i < this->data.size(); i++) {
-            byte = (unsigned char) this->data[i]->name.size();
-            fh_fastafs.write((char *) &byte, (size_t) 1);
-
-            for(uint32_t j = 0; j < this->data[i]->name.size(); j++) {
-                byte = (unsigned char) this->data[i]->name[j];
-                fh_fastafs.write((char *) &byte, (size_t) 1);
-            }
-
-            //char sha1_placeholder[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-            //fh_fastafs.write(reinterpret_cast<char *> (&sha1_placeholder), (size_t) 20);
-            fh_fastafs.write(reinterpret_cast<char *> (&this->data[i]->sha1_digest), (size_t) 20);
-
-            uint_to_fourbytes(ch3, this->get_sequence_offset(i));
-            fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
-        }
-
+        fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
+        fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
+        
         // write data
         for(uint32_t i = 0; i < this->data.size(); i++) {
-            //s->n
-            uint_to_fourbytes(ch3, this->data[i]->n);
+            //s->n - s->N (total number of ACTG's in 2bit compressed bytes
+            uint_to_fourbytes(ch3, this->data[i]->n - his->data[i]->n_starts.size());
             fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
 
             //s-N
@@ -411,6 +386,24 @@ void fasta_to_fastafs::write(std::string filename)
                 fh_fastafs.write((char *)&(*j), (size_t) 1);
             }
             */
+        }
+
+        // write indices
+        for(uint32_t i = 0; i < this->data.size(); i++) {
+            byte = (unsigned char) this->data[i]->name.size();
+            fh_fastafs.write((char *) &byte, (size_t) 1);
+
+            for(uint32_t j = 0; j < this->data[i]->name.size(); j++) {
+                byte = (unsigned char) this->data[i]->name[j];
+                fh_fastafs.write((char *) &byte, (size_t) 1);
+            }
+
+            //char sha1_placeholder[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+            //fh_fastafs.write(reinterpret_cast<char *> (&sha1_placeholder), (size_t) 20);
+            fh_fastafs.write(reinterpret_cast<char *> (&this->data[i]->sha1_digest), (size_t) 20);
+
+            uint_to_fourbytes(ch3, this->get_sequence_offset(i));
+            fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
         }
 
         fh_fastafs.close();
