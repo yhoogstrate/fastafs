@@ -106,7 +106,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         if(this->n == 0) {
             throw std::runtime_error("Empty sequence glitch\n");
         }
-        const uint32_t npadding = this->n;// 
+        const uint32_t npadding = this->n;//
         return this->view_fasta_chunk_cached(npadding, buffer, start_pos_in_fasta, buffer_size, fh, cache);
     }
 
@@ -606,24 +606,33 @@ void fastafs::load(std::string afilename)
         } else {
             memblock = new char [20+1];//sha1 is 20b
             file.seekg (0, std::ios::beg);
-            file.read (memblock, 16);
+            uint32_t i;
+
+            // HEADER
+            file.read (memblock, 14);
             memblock[16] = '\0';
 
-            uint32_t i;
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
-                if(memblock[i] != UCSC2BIT_MAGIC[i]) {
+                if(memblock[i] != FASTAFS_MAGIC[i]) {
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
-            for(i = 0 + 4 ; i < 0 + 4 + 4;  i++) {
-                if(memblock[i] != '\0' or memblock[i + 8] != '\0') {
+            for(i = 4 ; i < 8;  i++) {
+                if(memblock[i] != FASTAFS_VERSION[i]) {
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
 
-            uint32_t n_seq = fourbytes_to_uint(memblock, 8);
+            this->flag = twobytes_to_uint(&memblock[8]);
+            uint32_t index_location = fourbytes_to_uint(&memblock[10], 0);
+
+            // INDEX
+            file.seekg(index_location, std::ios::beg);
+            file.read(memblock, 4);
+            uint32_t n_seq = fourbytes_to_uint(memblock, 0);
+            printf("n_seq: %d\n",n_seq);
 
             unsigned char j;
             fastafs_seq *s;
@@ -744,12 +753,12 @@ uint32_t fastafs::view_fasta_chunk_cached(ffs2f_init* cache, char *buffer, size_
 
             if(pos < sequence_file_size) {
                 const uint32_t written_seq = seq->view_fasta_chunk_cached(
-                                                     cache->padding,
-                                                     &buffer[written],
-                                                     pos,
-                                                     std::min((uint32_t) buffer_size - written, sequence_file_size),
-                                                     &file,
-                                                     cache->sequences[i]);
+                                                 cache->padding,
+                                                 &buffer[written],
+                                                 pos,
+                                                 std::min((uint32_t) buffer_size - written, sequence_file_size),
+                                                 &file,
+                                                 cache->sequences[i]);
 
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
@@ -789,11 +798,11 @@ uint32_t fastafs::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffer
 
             if(pos < sequence_file_size) {
                 const uint32_t written_seq = seq->view_fasta_chunk(
-                                                     padding,
-                                                     &buffer[written],
-                                                     pos,
-                                                     std::min((uint32_t) buffer_size - written, sequence_file_size),
-                                                     &file);
+                                                 padding,
+                                                 &buffer[written],
+                                                 pos,
+                                                 std::min((uint32_t) buffer_size - written, sequence_file_size),
+                                                 &file);
 
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);

@@ -80,6 +80,8 @@ public:
     std::string name;
     std::string filename;
     std::vector<fastafs_seq *> data;
+    uint16_t flag;
+
     uint32_t n();
 
     std::string basename();

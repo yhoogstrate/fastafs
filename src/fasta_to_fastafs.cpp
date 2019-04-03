@@ -348,17 +348,17 @@ void fasta_to_fastafs::write(std::string filename)
 
         fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
-        
+
         char buffer[4];
         // write data
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sequence_data_positions[i] = fh_fastafs.tellp();
-            
+
             unsigned int n_without_N = this->data[i]->n;
-            
+
             //s->n - s->N (total number of ACTG's in 2bit compressed bytes
             fh_fastafs << "\x00\x00\x00\x00"s;// unknown before writing everything
-            
+
             // @todo this->data[i].write_twobit_data(fstream);
             for(uint32_t j = 0; j < this->data[i]->twobits.size(); ++j) {
                 fh_fastafs.write((char *) &this->data[i]->twobits[j], (size_t) 1);
@@ -378,17 +378,17 @@ void fasta_to_fastafs::write(std::string filename)
             for(uint32_t j = 0; j < this->data[i]->n_ends.size(); ++j) {
                 uint_to_fourbytes(buffer, this->data[i]->n_ends[j]);
                 fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
-                
+
                 n_without_N -= this->data[i]->n_ends[j] - this->data[i]->n_starts[j] + 1;
             }
-            
+
             // update length as it is now known
             unsigned int curpos = (uint32_t) fh_fastafs.tellp();
             fh_fastafs.seekp(sequence_data_positions[i], std::ios::beg);
             uint_to_fourbytes(buffer, n_without_N);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
             fh_fastafs.seekp(curpos, std::ios::beg);
-            
+
             //if(this->complete)
             fh_fastafs.write(reinterpret_cast<char *> (&this->data[i]->sha1_digest), (size_t) 20);
 
@@ -403,11 +403,11 @@ void fasta_to_fastafs::write(std::string filename)
         // write down tellg
         uint_to_fourbytes(buffer, (uint32_t) this->data.size());
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
-    
+
         // write indices
         for(uint32_t i = 0; i < this->data.size(); i++) {
             fh_fastafs << "\x00\x08"s;
-            
+
             byte = (unsigned char) this->data[i]->name.size();
             fh_fastafs.write((char *) &byte, (size_t) 1);
 
@@ -422,11 +422,11 @@ void fasta_to_fastafs::write(std::string filename)
 
         // update header: set to updated
         fh_fastafs.seekp(8, std::ios::beg);
-        
+
         fh_fastafs << "\x00\x01"s; // updated flag
         uint_to_fourbytes(buffer, index_file_position);//position of header
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
-        
+
 
         fh_fastafs.close();
     } else {
