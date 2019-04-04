@@ -361,7 +361,7 @@ uint32_t fastafs_seq::view_fasta_chunk(uint32_t padding, char *buffer, off_t sta
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    fh->seekg((uint32_t) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + ((nucleotide_pos - n_passed) / 4), fh->beg);
+    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / 4), fh->beg);
 
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point

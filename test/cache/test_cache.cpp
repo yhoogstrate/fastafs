@@ -339,25 +339,25 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     
     f2.load("tmp/test_cachce_test.fastafs");
 
-    //const uint32_t padding = 60;
-    //const uint32_t write_size = 32;
-    //char buffer[write_size + 1] = "";
-    //buffer[32] = '\0';
+    const uint32_t padding = 60;
+    const uint32_t write_size = 32;
+    char buffer[write_size + 1] = "";
+    buffer[32] = '\0';
 
-    //uint32_t written = 0;
-    //uint32_t w = 0;
-    //std::string output = "";
-    //while(written < f2.fasta_filesize(padding)) {
-    //w = f2.view_fasta_chunk(padding, buffer, write_size, written);
-    //output.append(buffer, w);
-    //written += w;
-    //}
+    uint32_t written = 0;
+    uint32_t w = 0;
+    std::string output = "";
+    while(written < f2.fasta_filesize(padding)) {
+    w = f2.view_fasta_chunk(padding, buffer, write_size, written);
+    output.append(buffer, w);
+    written += w;
+    }
 
-    //std::string uppercase = ">chr1\nTTTTCCCCAAAAGGGG\n>chr2\nACTGACTGNNNNACTG\n>chr3.1\nACTGACTGAAAAC\n>chr3.2\nACTGACTGAAAACC\n>chr3.3\nACTGACTGAAAACCC\n>chr4\nACTGNNNN\n>chr5\nNNACTG\n";
-    //std::string mixedcase = ">chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n";
+    std::string uppercase = ">chr1\nTTTTCCCCAAAAGGGG\n>chr2\nACTGACTGNNNNACTG\n>chr3.1\nACTGACTGAAAAC\n>chr3.2\nACTGACTGAAAACC\n>chr3.3\nACTGACTGAAAACCC\n>chr4\nACTGNNNN\n>chr5\nNNACTG\n";
+    std::string mixedcase = ">chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n";
 
-    //// check case insensitive; without masking included
-    //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    // check case insensitive; without masking included
+    BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
 }
 
 
