@@ -68,9 +68,9 @@ void fastafs_seq::view_fasta(uint32_t padding, std::ifstream *fh)
 
 ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(uint32_t padding)
 {
-    const uint32_t n_seq_lines = (this->n + padding - 1) / padding;
+    const uint32_t total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
 
-    ffs2f_init_seq* data = new ffs2f_init_seq(this->n_starts.size() + 1, n_seq_lines);
+    ffs2f_init_seq* data = new ffs2f_init_seq(this->n_starts.size() + 1, total_sequence_containing_lines);
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
 
     for(size_t i = 0; i < this->n_starts.size(); i++) {
@@ -79,9 +79,9 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(uint32_t padding)
     }
 
     size_t n_block = data->n_starts.size();
-    const uint32_t total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
-    data->n_starts[n_block - 1]  = fasta_header_size + this->n + total_sequence_containing_lines + 1;
-    data->n_ends[n_block - 1] = fasta_header_size + this->n + total_sequence_containing_lines + 1;
+    unsigned int max_val = fasta_header_size + this->n + total_sequence_containing_lines + 1;
+    data->n_starts[n_block - 1]  = max_val;
+    data->n_ends[n_block - 1] = max_val;
 
     return data;
 }
@@ -183,7 +183,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    fh->seekg((uint32_t) this->data_position + 4 + 4 + 4 + (this->n_starts.size() * 8) + ((nucleotide_pos - n_passed) / 4), fh->beg);
+    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / 4), fh->beg);
 
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
