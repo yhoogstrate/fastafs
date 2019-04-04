@@ -605,7 +605,7 @@ void fastafs::load(std::string afilename)
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
             memblock = new char [20+1];//sha1 is 20b
-            file.seekg (0, std::ios::beg);
+            file.seekg(0, std::ios::beg);
             uint32_t i;
 
             // HEADER
@@ -626,70 +626,85 @@ void fastafs::load(std::string afilename)
             }
 
             this->flag = twobytes_to_uint(&memblock[8]);
-            uint32_t index_location = fourbytes_to_uint(&memblock[10], 0);
+            uint32_t file_cursor = fourbytes_to_uint(&memblock[10], 0);
 
             // INDEX
-            file.seekg(index_location, std::ios::beg);
+            file.seekg(file_cursor, std::ios::beg);
             file.read(memblock, 4);
-            uint32_t n_seq = fourbytes_to_uint(memblock, 0);
-            printf("n_seq: %d\n",n_seq);
-
+            this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
+            
             unsigned char j;
             fastafs_seq *s;
-            for(i = 0; i < n_seq; i ++ ) {
+            for(i = 0; i < this->data.size(); i ++ ) {
+                printf("parsing sequence: %d\n", i);
                 s = new fastafs_seq;
-                file.read (memblock, 1);
-
+                
+                // flag
+                file.read (memblock, 2);
+                s->flag = twobytes_to_uint(memblock);
+                
+                // name length
+                file.read(memblock, 1);
+                
+                // name
                 char name[memblock[0] + 1];
-
                 file.read (name, memblock[0]);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
+                printf("name: %s\n",s->name.c_str());
 
-                // SHA1 digest
-                file.read(memblock, 20);
-                //s->sha1_digest = memblock;
-                //strncpy(*s->sha1_digest, memblock);
-                for(int j = 0; j < 20 ; j ++) {
-                    s->sha1_digest[j] = memblock[j];
-                }
-
-                //char sha1_hash[41] = "";
-                //sha1_digest_to_hash(s->sha1_digest, sha1_hash);
-                //printf("sha1 from file: [%s]\n", sha1_hash);
-
+                // set cursor and save sequence data position
                 file.read(memblock, 4);
+                file_cursor = file.tellg();
                 s->data_position = fourbytes_to_uint(memblock, 0);
-
-                this->data.push_back(s);
-            }
-
-            for(i = 0; i < n_seq; i ++ ) {
-                s = this->data[i];
-
-                file.seekg ((uint32_t) s->data_position, file.beg);
-
-                //s->n
-                file.read(memblock, 4);
-                s->n = fourbytes_to_uint(memblock, 0);
-
-                file.read(memblock, 4);
-                uint32_t N_regions = fourbytes_to_uint(memblock, 0);
-
-                for(j = 0 ; N_regions > j  ; j ++) {
+                file.seekg((uint32_t) s->data_position, file.beg);
+                
+                printf("checkpoint \n");
+                
+                {// sequence stuff
+                    // n compressed nucleotides
                     file.read(memblock, 4);
-                    s->n_starts.push_back( fourbytes_to_uint(memblock, 0));
-                }
-                for(j = 0 ; j < N_regions ; j ++) {
+                    s->n = fourbytes_to_uint(memblock, 0);
+                    
+                    printf("s->n: %d\n", s->n);
+                    
+                    // skip nucleotides
+                    file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
+                    
+                    // N-blocks (and update this->n instantly)
                     file.read(memblock, 4);
-                    s->n_ends.push_back(fourbytes_to_uint(memblock, 0));
+                    uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
+                    s->n_starts.resize(N_blocks);
+                    s->n_ends.resize(N_blocks);
+                    
+                    printf("n block size: %d \n", N_blocks);
+                    
+                    for(j = 0 ; j < s->n_starts.size() ; j ++) {
+                        file.read(memblock, 4);
+                        s->n_starts[j] = fourbytes_to_uint(memblock, 0);
+                    }
+                    for(j = 0 ; j < s->n_ends.size() ; j ++) {
+                        file.read(memblock, 4);
+                        s->n_ends[j] = fourbytes_to_uint(memblock, 0);
+                        
+                        s->n += s->n_ends[j] - s->n_starts[j] + 1;
+                    }
+                    
+                    // SHA1-checksum
+                    file.read(memblock, 20);
+                    for(int j = 0; j < 20 ; j ++) {
+                        s->sha1_digest[j] = memblock[j];
+                    }
+
+                    // M-blocks
+                    file.read(memblock, 4);
+                    s->m_blocks.resize(fourbytes_to_uint(memblock, 0));
                 }
-
-                //file.read(memblock, 4);
-                //uint32_t maskblock = fourbytes_to_uint(memblock, 0);
-
+                file.seekg(file_cursor, file.beg);
+                
+                this->data[i] = s;
+                printf("\n");
             }
-
 
             file.close();
 

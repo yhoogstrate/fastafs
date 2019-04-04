@@ -38,6 +38,7 @@ public:
     uint32_t n;// number nucleotides
     std::vector<uint32_t> n_starts;// start positions 0-based)
     std::vector<uint32_t> n_ends;// end positions (is 0-based, must become 1-based)
+    uint16_t flag;
 
     std::vector<std::pair<uint32_t, uint32_t>> m_blocks;// @ todo check if unsiged int[2] is not more efficient / less bloated
 

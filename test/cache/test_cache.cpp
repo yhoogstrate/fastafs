@@ -334,6 +334,9 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     f.write("tmp/test_cachce_test.fastafs");
 
     fastafs f2 = fastafs("test");
+    
+    printf("loading\n");
+    
     f2.load("tmp/test_cachce_test.fastafs");
 
     //const uint32_t padding = 60;
