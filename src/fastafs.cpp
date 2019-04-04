@@ -112,8 +112,8 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
 
     uint32_t written = 0;
 
-    if(written >= buffer_size) { // requesting a buffer of size=0
-        fh->clear();
+    if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
+        //fh->clear();
         return written;
     }
 
@@ -127,7 +127,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         pos++;
 
         if(written >= buffer_size) {
-            fh->clear();
+            //fh->clear();
             return written;
         }
     }
@@ -139,7 +139,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         pos++;
 
         if(written >= buffer_size) {
-            fh->clear();
+            //fh->clear();
             return written;
         }
     }
@@ -151,7 +151,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         pos++;
 
         if(written >= buffer_size) {
-            fh->clear();
+            //fh->clear();
             return written;
         }
     }
@@ -234,7 +234,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
             pos++;
 
             if(written >= buffer_size) {
-                fh->clear();
+                //fh->clear();
                 return written;
             }
         }
@@ -246,7 +246,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
             pos++;
 
             if(written >= buffer_size) {
-                fh->clear();
+                //fh->clear();
                 return written;
             }
         }
@@ -254,7 +254,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         newlines_passed++;
     }
 
-    fh->clear();
+    //fh->clear();
     return written;
 }
 
