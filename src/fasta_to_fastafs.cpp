@@ -116,71 +116,6 @@ void fasta_to_fastafs_seq::close_reading()
 
 
 
-
-/*
-void fasta_to_fastafs_seq::print(void)
-{
-    if(this->n_starts.size() != this->n_ends.size()) {
-        throw std::invalid_argument("unequal number of start and end positions for N regions\n");
-    }
-
-    bool in_N = false;
-    twobit_byte t = twobit_byte();
-    uint32_t i;
-
-    printf(">%s (size=%i [ACTG: %i, N: %i], compressed ACTG=%i)\n", this->name.c_str(), this->n, this->n - this->N, this->N, (uint32_t) this->size());
-
-    printf("\nN[s]: ");
-    for(i = 0; i < this->n_starts.size(); i++) {
-        printf("%i\t", this->n_starts[i]);
-    }
-    printf("\nN[e]: ");
-    for(i = 0; i < this->n_ends.size(); i++) {
-        printf("%i\t", this->n_ends[i]);
-    }
-    printf("\n----------------------\n");
-
-    uint32_t i_n_start = 0;//@todo make iterator
-    uint32_t i_n_end = 0;//@todo make iterator
-    uint32_t i_in_seq = 0;
-    uint32_t chunk_offset;
-    const char *chunk;
-
-    for(i = 0; i < this->n; i++) {
-        if(i % 4 == 0 and i != 0) {
-            printf("\n");
-        }
-        printf("%i\t", i);
-
-
-
-        if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-            in_N = true;
-        }
-
-        if(in_N) {
-            printf("N\n");
-
-            if(i == this->n_ends[i_n_end]) {
-                i_n_end++;
-                in_N = false;
-            }
-        } else {
-            // load new twobit chunk when needed
-            chunk_offset = i_in_seq % 4;
-            if(chunk_offset == 0) {
-                t.data = this->twobits[i_in_seq / 4];
-                chunk = t.get();
-            }
-            printf("%c\n", chunk[chunk_offset]);
-
-            i_in_seq++;
-        }
-    }
-    printf("\n\n");
-}
-*/
-
 size_t fasta_to_fastafs_seq::size(void)
 {
     return this->twobits.size();
@@ -288,14 +223,6 @@ int fasta_to_fastafs::cache(void)
 }
 
 
-/*
-void fasta_to_fastafs::print(void)
-{
-    for(uint32_t i = 0; i < this->data.size(); i++) {
-        this->data[i]->print();
-    }
-}
-*/
 
 uint32_t fasta_to_fastafs::get_index_size()
 {
@@ -312,24 +239,6 @@ uint32_t fasta_to_fastafs::get_index_size()
     return n;
 }
 
-uint32_t fasta_to_fastafs::get_sequence_offset(uint32_t sequence)
-{
-    uint32_t n = 4 + 4 + 4 + 4 + this->get_index_size();
-
-    for(uint32_t i = 0; i < sequence; i++) {
-        n += 4; // dna_size
-        n += 4; // n_block_count
-        n += (uint32_t) this->data[i]->n_starts.size() * 4 * 2;//nBlockStarts + nBlockSizes
-        n += 4;//maskBlockCount
-        n += 0;//maskBlockStarts
-        n += 0;//maskBlockSizes
-        //n += 4;//reserved
-        n += (uint32_t) this->data[i]->size();//packedDna
-
-    }
-
-    return n;
-}
 
 
 
@@ -352,7 +261,7 @@ void fasta_to_fastafs::write(std::string filename)
         char buffer[4];
         // write data
         for(uint32_t i = 0; i < this->data.size(); i++) {
-            sequence_data_positions[i] = fh_fastafs.tellp();
+            sequence_data_positions[i] = (uint32_t) fh_fastafs.tellp();
 
             unsigned int n_without_N = this->data[i]->n;
 

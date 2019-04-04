@@ -31,7 +31,6 @@ public:
     void flush_reading();
     void close_reading();
 
-    //void print(void);
     SHA_CTX ctx;
     //unsigned char sha1_digest[SHA_DIGEST_LENGTH];
 };
@@ -49,8 +48,6 @@ public:
     fasta_to_fastafs(std::string, std::string);
     ~fasta_to_fastafs();
     int cache(void);
-    //void print();
     void write(std::string);
     unsigned int get_index_size();
-    unsigned int get_sequence_offset(unsigned int);
 };

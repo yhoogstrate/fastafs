@@ -37,8 +37,8 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
 
         // write fastafs header
-        fh_fastafs << UCSC2BIT_MAGIC;
-        fh_fastafs << UCSC2BIT_VERSION;
+        fh_fastafs << FASTAFS_MAGIC;
+        fh_fastafs << FASTAFS_VERSION;
         uint_to_fourbytes(buffer, n);
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
         fh_fastafs << "\x00\x00\x00\x00"s;

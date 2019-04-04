@@ -113,7 +113,6 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
     uint32_t written = 0;
 
     if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
-        //fh->clear();
         return written;
     }
 
@@ -127,7 +126,6 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         pos++;
 
         if(written >= buffer_size) {
-            //fh->clear();
             return written;
         }
     }
@@ -139,7 +137,6 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         pos++;
 
         if(written >= buffer_size) {
-            //fh->clear();
             return written;
         }
     }
@@ -151,31 +148,13 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
         pos++;
 
         if(written >= buffer_size) {
-            //fh->clear();
             return written;
         }
     }
 
-    size_t n_block = cache->n_starts.size();
-
-    /*
-    calc newlines passed:
-    >chr1 \n
-        ACTG\n      0 1 2 3 4
-        ACTG\n      5 6 7 8 9
-
-        0   0
-        1   0
-        2   0
-        3   0
-        4   0
-        5   1
-        6   1
-        7   1
-        8   1
-        9   1
-    */
     const uint32_t offset_from_sequence_line = pos - pos_limit;
+
+    size_t n_block = cache->n_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
@@ -626,7 +605,7 @@ void fastafs::load(std::string afilename)
             }
 
             this->flag = twobytes_to_uint(&memblock[8]);
-            uint32_t file_cursor = fourbytes_to_uint(&memblock[10], 0);
+            std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
 
             // INDEX
             file.seekg(file_cursor, std::ios::beg);
@@ -636,11 +615,10 @@ void fastafs::load(std::string afilename)
             unsigned char j;
             fastafs_seq *s;
             for(i = 0; i < this->data.size(); i ++ ) {
-                printf("parsing sequence: %d\n", i);
                 s = new fastafs_seq;
                 
                 // flag
-                file.read (memblock, 2);
+                file.read(memblock, 2);
                 s->flag = twobytes_to_uint(memblock);
                 
                 // name length
@@ -648,18 +626,15 @@ void fastafs::load(std::string afilename)
                 
                 // name
                 char name[memblock[0] + 1];
-                file.read (name, memblock[0]);
+                file.read(name, memblock[0]);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
-                printf("name: %s\n",s->name.c_str());
 
                 // set cursor and save sequence data position
                 file.read(memblock, 4);
                 file_cursor = file.tellg();
                 s->data_position = fourbytes_to_uint(memblock, 0);
                 file.seekg((uint32_t) s->data_position, file.beg);
-                
-                printf("checkpoint \n");
                 
                 {// sequence stuff
                     // n compressed nucleotides
