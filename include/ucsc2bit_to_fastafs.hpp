@@ -34,9 +34,8 @@ struct ucsc2bit_seq_header_conversion_data {
     SHA_CTX ctx;
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];
 
-    uint32_t N;// number of N nucleotides (n - N = total 2bit compressed nucleotides)
+    uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)
 
-    off_t header_position; // file positions where sha1 and offsets are stored
     off_t file_offset_dna_in_ucsc2bit; // file positions where sequence data blocks start
     
     ucsc2bit_seq_header_conversion_data():N(0) { }

@@ -73,8 +73,6 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             s->offset = fourbytes_to_uint_ucsc2bit(buffer, 0);
 
             SHA1_Init(&t->ctx);
-
-            t->header_position = fh_fastafs.tellp();
         }
 
 
