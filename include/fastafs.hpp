@@ -12,52 +12,53 @@
 struct ffs2f_init_seq {
     // fasta seq size
     // fasta seq newlines/padding lines
-    const unsigned int total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
+    const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
 
-    std::vector<unsigned int> n_starts;
-    std::vector<unsigned int> n_ends;
+    std::vector<uint32_t> n_starts;
+    std::vector<uint32_t> n_ends;
 
-    ffs2f_init_seq(size_t size, const unsigned int n_lines): total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
+    ffs2f_init_seq(size_t size, const uint32_t n_lines): total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
 };
 
 struct ffs2f_init {
-    const unsigned int padding;
+    const uint32_t padding;
     std::vector<ffs2f_init_seq *> sequences;
 
-    ffs2f_init(size_t size, unsigned int padding): padding(padding), sequences(size) {}
+    ffs2f_init(size_t size, uint32_t padding): padding(padding), sequences(size) {}
 };
 
 
 class fastafs_seq
 {
 public:
-    ffs2f_init_seq* init_ffs2f_seq(unsigned int padding);
+    ffs2f_init_seq* init_ffs2f_seq(uint32_t padding);
 
     std::string name;//may not exceed 255 chars in current datatype
-    unsigned int data_position;// file offset to start reading sequence data
-    unsigned int n;// number nucleotides
-    std::vector<unsigned int> n_starts;// start positions 0-based)
-    std::vector<unsigned int> n_ends;// end positions (is 0-based, must become 1-based)
+    uint32_t data_position;// file offset to start reading sequence data
+    uint32_t n;// number nucleotides
+    std::vector<uint32_t> n_starts;// start positions 0-based)
+    std::vector<uint32_t> n_ends;// end positions (is 0-based, must become 1-based)
+    uint16_t flag;
 
-    std::vector<std::pair<unsigned int, unsigned int>> m_blocks;// @ todo check if unsiged int[2] is not more efficient / less bloated
+    std::vector<std::pair<uint32_t, uint32_t>> m_blocks;// @ todo check if unsiged int[2] is not more efficient / less bloated
 
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented
 
     fastafs_seq();
 
-    unsigned int fasta_filesize(unsigned int padding);
-    void view_fasta(unsigned int, std::ifstream *);
-    //unsigned int view_fasta_chunk_cached( char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
-    unsigned int view_fasta_chunk(unsigned int, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
-    unsigned int view_fasta_chunk_cached(unsigned int, char *, off_t, size_t, std::ifstream *, ffs2f_init_seq*);
+    uint32_t fasta_filesize(uint32_t padding);
+    void view_fasta(uint32_t, std::ifstream *);
+    //uint32_t view_fasta_chunk_cached( char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
+    uint32_t view_fasta_chunk(uint32_t, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
+    uint32_t view_fasta_chunk_cached(const uint32_t, char *, off_t, size_t, std::ifstream *, ffs2f_init_seq*);
 
     std::string sha1(std::ifstream *);
 
-    unsigned int n_twobits();
+    uint32_t n_twobits();
 
-    static unsigned int n_padding(unsigned int, unsigned int, unsigned int);
-    bool get_n_offset(unsigned int, unsigned int *);
+    static uint32_t n_padding(uint32_t, uint32_t, uint32_t);
+    bool get_n_offset(uint32_t, uint32_t *);
 };
 
 
@@ -72,7 +73,7 @@ class fastafs
 {
 
 public:
-    ffs2f_init* init_ffs2f(unsigned int padding);
+    ffs2f_init* init_ffs2f(uint32_t padding);
 
     fastafs(std::string);
     ~fastafs();
@@ -80,21 +81,23 @@ public:
     std::string name;
     std::string filename;
     std::vector<fastafs_seq *> data;
-    unsigned int n();
+    uint16_t flag;
+
+    uint32_t n();
 
     std::string basename();
 
     void load(std::string);
-    void view_fasta(unsigned int);
-    unsigned int view_fasta_chunk_cached(ffs2f_init*, char *, size_t, off_t);
-    unsigned int view_fasta_chunk(unsigned int, char *, size_t, off_t);
-    unsigned int view_faidx_chunk(unsigned int, char *, size_t, off_t);
+    void view_fasta(uint32_t);
+    uint32_t view_fasta_chunk_cached(ffs2f_init*, char *, size_t, off_t);
+    uint32_t view_fasta_chunk(uint32_t, char *, size_t, off_t);
+    uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
 
-    unsigned int view_ucsc2bit_chunk(char *, size_t, off_t);
+    uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);
     off_t ucsc2bit_filesize(void);
 
-    std::string get_faidx(unsigned int);
-    unsigned int fasta_filesize(unsigned int);
+    std::string get_faidx(uint32_t);
+    uint32_t fasta_filesize(uint32_t);
 
     int info(bool);
     int check_integrity();
@@ -106,7 +109,7 @@ using namespace std::literals;
 static const std::string UCSC2BIT_MAGIC = "\x43\x27\x41\x1a"s;
 static const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
 
-static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46x53"s;
+static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46\x53"s;
 static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
 
 static const int READ_BUFFER_SIZE = 4096;

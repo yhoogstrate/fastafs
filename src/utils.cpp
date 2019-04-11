@@ -14,6 +14,7 @@ uint32_t fourbytes_to_uint(char *chars, unsigned char offset)
     return u;
 }
 
+
 /*
 for some reason, ucsc2bit writes down an int in reversed order.
 
@@ -36,6 +37,32 @@ uint32_t fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
 
     return u;
 }
+
+
+
+/*
+ * chars: pointer to 2 chars
+ */
+uint16_t twobytes_to_uint(char *chars)
+{
+
+    uint16_t u = ((unsigned char)  chars[0] << 8) | ((unsigned char) chars[1]);
+    return u;
+}
+
+
+/*
+ * chars: pointer to 2 chars
+ * n: integer that needs to be converted
+ */
+void uint_to_twobytes(char *chars, uint16_t n)
+{
+    chars[0] = (signed char) ((n >> 8) & 0xFF);
+    chars[1] = (signed char) (n & 0xFF);
+}
+
+
+
 
 
 void uint_to_fourbytes(char *chars, uint32_t n)

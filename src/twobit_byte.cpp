@@ -21,6 +21,8 @@ const char twobit_byte::twobit_hash[256][5] = {"TTTT", "TTTC", "TTTA", "TTTG", "
  7        0
 
 not sure what the quickest way is - this way all calculations are done as ints, not as chars
+
+
  */
 unsigned char twobit_byte::iterator_to_offset(uint32_t iterator)
 {
@@ -45,6 +47,9 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
     //unset bit(s): INPUT &= ~(1 << N);
     switch(nucleotide) {
     case 0://NUCLEOTIDE_T (00)
+        //      ??????00
+        //          11?? ~(3 << bit_offset)
+        // data ????????
         this->data = (unsigned char) (this->data & ~(3 << bit_offset));
         break;
     case 1://NUCLEOTIDE_C (01)

@@ -10,8 +10,6 @@
 
 
 
-
-
 fasta_to_fastafs_seq::fasta_to_fastafs_seq(void) :
     fastafs_seq(),
     previous_was_N(false),
@@ -117,71 +115,6 @@ void fasta_to_fastafs_seq::close_reading()
 }
 
 
-
-
-/*
-void fasta_to_fastafs_seq::print(void)
-{
-    if(this->n_starts.size() != this->n_ends.size()) {
-        throw std::invalid_argument("unequal number of start and end positions for N regions\n");
-    }
-
-    bool in_N = false;
-    twobit_byte t = twobit_byte();
-    uint32_t i;
-
-    printf(">%s (size=%i [ACTG: %i, N: %i], compressed ACTG=%i)\n", this->name.c_str(), this->n, this->n - this->N, this->N, (uint32_t) this->size());
-
-    printf("\nN[s]: ");
-    for(i = 0; i < this->n_starts.size(); i++) {
-        printf("%i\t", this->n_starts[i]);
-    }
-    printf("\nN[e]: ");
-    for(i = 0; i < this->n_ends.size(); i++) {
-        printf("%i\t", this->n_ends[i]);
-    }
-    printf("\n----------------------\n");
-
-    uint32_t i_n_start = 0;//@todo make iterator
-    uint32_t i_n_end = 0;//@todo make iterator
-    uint32_t i_in_seq = 0;
-    uint32_t chunk_offset;
-    const char *chunk;
-
-    for(i = 0; i < this->n; i++) {
-        if(i % 4 == 0 and i != 0) {
-            printf("\n");
-        }
-        printf("%i\t", i);
-
-
-
-        if(this->n_starts.size() > i_n_start and i == this->n_starts[i_n_start]) {
-            in_N = true;
-        }
-
-        if(in_N) {
-            printf("N\n");
-
-            if(i == this->n_ends[i_n_end]) {
-                i_n_end++;
-                in_N = false;
-            }
-        } else {
-            // load new twobit chunk when needed
-            chunk_offset = i_in_seq % 4;
-            if(chunk_offset == 0) {
-                t.data = this->twobits[i_in_seq / 4];
-                chunk = t.get();
-            }
-            printf("%c\n", chunk[chunk_offset]);
-
-            i_in_seq++;
-        }
-    }
-    printf("\n\n");
-}
-*/
 
 size_t fasta_to_fastafs_seq::size(void)
 {
@@ -290,14 +223,6 @@ int fasta_to_fastafs::cache(void)
 }
 
 
-/*
-void fasta_to_fastafs::print(void)
-{
-    for(uint32_t i = 0; i < this->data.size(); i++) {
-        this->data[i]->print();
-    }
-}
-*/
 
 uint32_t fasta_to_fastafs::get_index_size()
 {
@@ -314,24 +239,6 @@ uint32_t fasta_to_fastafs::get_index_size()
     return n;
 }
 
-uint32_t fasta_to_fastafs::get_sequence_offset(uint32_t sequence)
-{
-    uint32_t n = 4 + 4 + 4 + 4 + this->get_index_size();
-
-    for(uint32_t i = 0; i < sequence; i++) {
-        n += 4; // dna_size
-        n += 4; // n_block_count
-        n += (uint32_t) this->data[i]->n_starts.size() * 4 * 2;//nBlockStarts + nBlockSizes
-        n += 4;//maskBlockCount
-        n += 0;//maskBlockStarts
-        n += 0;//maskBlockSizes
-        //n += 4;//reserved
-        n += (uint32_t) this->data[i]->size();//packedDna
-
-    }
-
-    return n;
-}
 
 
 
@@ -340,26 +247,75 @@ void fasta_to_fastafs::write(std::string filename)
 {
     std::fstream fh_fastafs(filename.c_str(), std::ios :: out | std::ios :: binary);
     if(fh_fastafs.is_open()) {
-        //uint32_t crc = 0;
+        fh_fastafs << FASTAFS_MAGIC;
+        fh_fastafs << FASTAFS_VERSION;
 
+        fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
+        fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
+
+        std::vector<uint32_t> sequence_data_positions(this->data.size());
         uint32_t four_bytes;
+        char buffer[4];
         unsigned char byte;
+        // write data
+        for(uint32_t i = 0; i < this->data.size(); i++) {
+            sequence_data_positions[i] = (uint32_t) fh_fastafs.tellp();
 
-        fh_fastafs << UCSC2BIT_MAGIC;
-        fh_fastafs << UCSC2BIT_VERSION;
+            unsigned int n_without_N = this->data[i]->n;
 
-        //four_bytes = (uint32_t) this->data.size();
-        //uint32_t n = (uint32_t) this->data.size();
+            //s->n - s->N (total number of ACTG's in 2bit compressed bytes
+            fh_fastafs << "\x00\x00\x00\x00"s;// unknown before writing everything
 
-        char ch3[4];
-        uint_to_fourbytes(ch3, (uint32_t) this->data.size());
-        fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
+            // @todo this->data[i].write_twobit_data(fstream);
+            for(uint32_t j = 0; j < this->data[i]->twobits.size(); ++j) {
+                fh_fastafs.write((char *) &this->data[i]->twobits[j], (size_t) 1);
+            }
 
-        // should become crc32 sum of all bytes written, to be updated after write
-        fh_fastafs << "\x00\x00\x00\x00"s;
+            //s-N
+            uint_to_fourbytes(buffer, (uint32_t )this->data[i]->n_starts.size());
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+
+            //s->n_starts
+            for(uint32_t j = 0; j < this->data[i]->n_starts.size(); ++j) {
+                uint_to_fourbytes(buffer, this->data[i]->n_starts[j]);
+                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            }
+
+            //s->n_ends
+            for(uint32_t j = 0; j < this->data[i]->n_ends.size(); ++j) {
+                uint_to_fourbytes(buffer, this->data[i]->n_ends[j]);
+                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+
+                n_without_N -= this->data[i]->n_ends[j] - this->data[i]->n_starts[j] + 1;
+            }
+
+            // update length as it is now known
+            unsigned int curpos = (uint32_t) fh_fastafs.tellp();
+            fh_fastafs.seekp(sequence_data_positions[i], std::ios::beg);
+            uint_to_fourbytes(buffer, n_without_N);
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            fh_fastafs.seekp(curpos, std::ios::beg);
+
+            //if(this->complete)
+            fh_fastafs.write(reinterpret_cast<char *> (&this->data[i]->sha1_digest), (size_t) 20);
+
+            //s->M
+            four_bytes = (uint32_t) 0;
+            fh_fastafs.write( reinterpret_cast<char *>(&four_bytes), 4 );
+
+        }
+
+        // save startposition of index
+        unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
+
+        // write down tellg
+        uint_to_fourbytes(buffer, (uint32_t) this->data.size());
+        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
         // write indices
         for(uint32_t i = 0; i < this->data.size(); i++) {
+            fh_fastafs << "\x00\x08"s;
+
             byte = (unsigned char) this->data[i]->name.size();
             fh_fastafs.write((char *) &byte, (size_t) 1);
 
@@ -368,52 +324,20 @@ void fasta_to_fastafs::write(std::string filename)
                 fh_fastafs.write((char *) &byte, (size_t) 1);
             }
 
-            //char sha1_placeholder[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-            //fh_fastafs.write(reinterpret_cast<char *> (&sha1_placeholder), (size_t) 20);
-            fh_fastafs.write(reinterpret_cast<char *> (&this->data[i]->sha1_digest), (size_t) 20);
-
-            uint_to_fourbytes(ch3, this->get_sequence_offset(i));
-            fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
+            uint_to_fourbytes(buffer, sequence_data_positions[i]);
+            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
         }
+        
+        // write metadata:
+        fh_fastafs << "\x00"s; // no metadata tags (YET)
 
-        // write data
-        for(uint32_t i = 0; i < this->data.size(); i++) {
-            //s->n
-            uint_to_fourbytes(ch3, this->data[i]->n);
-            fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
+        // update header: set to updated
+        fh_fastafs.seekp(8, std::ios::beg);
 
-            //s-N
-            uint_to_fourbytes(ch3, (uint32_t )this->data[i]->n_starts.size());
-            fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
+        fh_fastafs << "\x00\x01"s; // updated flag
+        uint_to_fourbytes(buffer, index_file_position);//position of header
+        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
-            //s->n_starts
-            for(uint32_t j = 0; j < this->data[i]->n_starts.size(); ++j) {
-                uint_to_fourbytes(ch3, this->data[i]->n_starts[j]);
-                fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
-            }
-
-            //s->n_ends
-            for(uint32_t j = 0; j < this->data[i]->n_ends.size(); ++j) {
-                uint_to_fourbytes(ch3, this->data[i]->n_ends[j]);
-                fh_fastafs.write(reinterpret_cast<char *> (&ch3), (size_t) 4);
-            }
-
-            //s->M
-            four_bytes = (uint32_t) 0;
-            fh_fastafs.write( reinterpret_cast<char *>(&four_bytes), 4 );
-
-            // @todo this->data[i].write_twobit_data(fstream);
-            for(uint32_t j = 0; j < this->data[i]->twobits.size(); ++j) {
-                fh_fastafs.write((char *) &this->data[i]->twobits[j], (size_t) 1);
-            }
-
-            /*
-            // this is slower for some reason
-            for(std::vector<unsigned char>::iterator j = this->data[i]->twobits.begin(); j != this->data[i]->twobits.end(); ++j) {
-                fh_fastafs.write((char *)&(*j), (size_t) 1);
-            }
-            */
-        }
 
         fh_fastafs.close();
     } else {
