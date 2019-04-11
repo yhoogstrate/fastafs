@@ -123,7 +123,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             // parse and convert sequence
             fh_ucsc2bit.read(buffer, 4);
             twobit_byte t_in = twobit_byte();
-            const char *decoded_in;
+            const char *decoded_in = t_in.twobit_hash[0];// unnecessary initialization but otherwise gcc whines
 
             twobit_byte t_out = twobit_byte();
 
@@ -239,7 +239,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
         
         // write index/footer
-        uint_to_fourbytes(buffer,data.size());
+        uint_to_fourbytes(buffer, (uint32_t) data.size());
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
         for(i = 0 ; i < n; i ++) {
