@@ -261,10 +261,8 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         }
         
     
-        fh_fastafs << "\x00"s;
-        
         // write metadata:
-        fh_fastafs << "\x00"; // no metadata tags (YET)
+        fh_fastafs << "\x00"s;// no metadata tags (YET)
 
         // update header: set to updated
         fh_fastafs.seekp(8, std::ios::beg);
