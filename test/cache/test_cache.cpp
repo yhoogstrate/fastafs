@@ -334,9 +334,9 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     f.write("tmp/test_cachce_test.fastafs");
 
     fastafs f2 = fastafs("test");
-    
+
     printf("loading\n");
-    
+
     f2.load("tmp/test_cachce_test.fastafs");
 
     const uint32_t padding = 60;
@@ -348,9 +348,9 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     uint32_t w = 0;
     std::string output = "";
     while(written < f2.fasta_filesize(padding)) {
-    w = f2.view_fasta_chunk(padding, buffer, write_size, written);
-    output.append(buffer, w);
-    written += w;
+        w = f2.view_fasta_chunk(padding, buffer, write_size, written);
+        output.append(buffer, w);
+        written += w;
     }
 
     std::string uppercase = ">chr1\nTTTTCCCCAAAAGGGG\n>chr2\nACTGACTGNNNNACTG\n>chr3.1\nACTGACTGAAAAC\n>chr3.2\nACTGACTGAAAACC\n>chr3.3\nACTGACTGAAAACCC\n>chr4\nACTGNNNN\n>chr5\nNNACTG\n";

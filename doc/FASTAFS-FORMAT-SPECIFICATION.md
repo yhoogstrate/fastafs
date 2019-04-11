@@ -28,7 +28,7 @@ If this metadata would be written in the header located before the sequence data
 |        | TWOBIT-DATA | char[] | length can be deduced from header |
 |        | UNKNOWN-NUCLEOTIDES | uint32_t | Number of N-entries |
 |        | N-STARTS | N x uint32_t | start positions (0-based) |
-|        | N-ENDS | N x uint32_t | end positions (1-based) |
+|        | N-ENDS | N x uint32_t | end positions (0-based) |
 |        | 1* CHECKSUM | 20 x byte | SHA1 |
 |        | 2* RESERVED-REGIONS | uint32_t | Number of R-entries (reserved regions ~ incomplete file) |
 |        | 2* R-STARTS | N x uint32_t | start positions (0-based) |
@@ -42,7 +42,7 @@ If this metadata would be written in the header located before the sequence data
 |        | SEQUENCE-FLAG | 2 bytes ~ uchar | storing metadata and type of data |
 |        | NAME-LENGTH | unsigned char | length in bytes; name cannot exceed 255 bytes |
 |        | NAME-FASTA | char[NAME-LENGTH] | FASTA header; may not include new-lines or '>' |
-|        | START-POSITION-IN-BODY |  | Seems tricky; after two very long sequences this may exceed 4 uints |
+|        | START-POSITION-IN-BODY of N-COMPR-NUC |  | Seems tricky; after two very long sequences this may exceed 4 uints |
 | METADATA | by definition optional data |
 |          | N-METADATA-TAGS | 1 x char |
 | METADATA-ENTRY [per entry] |  ~ limits to 'only' 256 distinct types of metadata

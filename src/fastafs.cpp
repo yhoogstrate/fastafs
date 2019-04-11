@@ -611,19 +611,19 @@ void fastafs::load(std::string afilename)
             file.seekg(file_cursor, std::ios::beg);
             file.read(memblock, 4);
             this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
-            
+
             unsigned char j;
             fastafs_seq *s;
             for(i = 0; i < this->data.size(); i ++ ) {
                 s = new fastafs_seq;
-                
+
                 // flag
                 file.read(memblock, 2);
                 s->flag = twobytes_to_uint(memblock);
-                
+
                 // name length
                 file.read(memblock, 1);
-                
+
                 // name
                 char name[memblock[0] + 1];
                 file.read(name, memblock[0]);
@@ -635,36 +635,33 @@ void fastafs::load(std::string afilename)
                 file_cursor = file.tellg();
                 s->data_position = fourbytes_to_uint(memblock, 0);
                 file.seekg((uint32_t) s->data_position, file.beg);
-                
-                {// sequence stuff
+
+                {
+                    // sequence stuff
                     // n compressed nucleotides
                     file.read(memblock, 4);
                     s->n = fourbytes_to_uint(memblock, 0);
-                    
-                    printf("s->n: %d\n", s->n);
-                    
+
                     // skip nucleotides
                     file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
-                    
+
                     // N-blocks (and update this->n instantly)
                     file.read(memblock, 4);
                     uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
                     s->n_starts.resize(N_blocks);
                     s->n_ends.resize(N_blocks);
-                    
-                    printf("n block size: %d \n", N_blocks);
-                    
-                    for(j = 0 ; j < s->n_starts.size() ; j ++) {
+
+                    for(j = 0; j < s->n_starts.size() ; j ++) {
                         file.read(memblock, 4);
                         s->n_starts[j] = fourbytes_to_uint(memblock, 0);
                     }
-                    for(j = 0 ; j < s->n_ends.size() ; j ++) {
+                    for(j = 0; j < s->n_ends.size() ; j ++) {
                         file.read(memblock, 4);
                         s->n_ends[j] = fourbytes_to_uint(memblock, 0);
-                        
+
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
                     }
-                    
+
                     // SHA1-checksum
                     file.read(memblock, 20);
                     for(int j = 0; j < 20 ; j ++) {
@@ -676,9 +673,8 @@ void fastafs::load(std::string afilename)
                     s->m_blocks.resize(fourbytes_to_uint(memblock, 0));
                 }
                 file.seekg(file_cursor, file.beg);
-                
+
                 this->data[i] = s;
-                printf("\n");
             }
 
             file.close();

@@ -247,18 +247,16 @@ void fasta_to_fastafs::write(std::string filename)
 {
     std::fstream fh_fastafs(filename.c_str(), std::ios :: out | std::ios :: binary);
     if(fh_fastafs.is_open()) {
-        std::vector<uint32_t> sequence_data_positions(this->data.size());
-
-        uint32_t four_bytes;
-        unsigned char byte;
-
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
 
         fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
+        std::vector<uint32_t> sequence_data_positions(this->data.size());
+        uint32_t four_bytes;
         char buffer[4];
+        unsigned char byte;
         // write data
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sequence_data_positions[i] = (uint32_t) fh_fastafs.tellp();
@@ -307,6 +305,7 @@ void fasta_to_fastafs::write(std::string filename)
 
         }
 
+        // save startposition of index
         unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
 
         // write down tellg
@@ -328,6 +327,9 @@ void fasta_to_fastafs::write(std::string filename)
             uint_to_fourbytes(buffer, sequence_data_positions[i]);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
         }
+        
+        // write metadata:
+        fh_fastafs << "\x00"s; // no metadata tags (YET)
 
         // update header: set to updated
         fh_fastafs.seekp(8, std::ios::beg);
