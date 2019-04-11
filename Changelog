@@ -1,11 +1,17 @@
+2019-11-04  Youri Hoogstrate
+
+    * The file format has been re-specified, backwards incompatible with
+      the test code. The fastafs to fasta projection has been enormously
+      improved and is way and way faster.
+
 2018-10-26  Youri Hoogstrate
 
-     * fastafs_seq::sha1() is in concordance with CRAM standard; only
-       uppercase nucleotide chars are taken into consideration
+    * fastafs_seq::sha1() is in concordance with CRAM standard; only
+      uppercase nucleotide chars are taken into consideration
 
 2018-01-17  Youri Hoogstrate
 
-     * fastafs mount --padding 5 works
+    * fastafs mount --padding 5 works
 
 2018-01-10  Youri Hoogstrate
 

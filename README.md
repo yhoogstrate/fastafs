@@ -5,6 +5,11 @@ DNA sequences are typically stored in the FASTA format. Although very commonly u
 
 Here we propose a solution; a mixture of 2bit and random access compression on FASTA files in a readonly FUSE file system. By simply mounting the highly compressed archives as a FASTA file, we only virtualize the large FASTA file. Additional advantages are the interface that will crc check the files and search for duplicate entries.
 
+FASTAFS is not compatible with 2bit views, so is this thefamous 15th standard (<https://xkcd.com/927/>)?
+Partially, yes. It simply is yet another format. 
+Backwards compatibility was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not within 2bit.
+However, the fastafs file is not intended for analysis but purely for storage and can then virtualize both FA and 2bit files.
+
 ### installation and compilation ###
 
 Currently the package uses cmake for compilation

@@ -54,7 +54,7 @@ void database::list()
     std::ifstream infile(this->idx);
     std::string line;
     while (std::getline(infile, line)) {
-        std::istringstream iss(line);
+        //std::istringstream iss(line);
 
         std::string fname = this->path + "/" + line + ".fastafs";
 
@@ -62,7 +62,7 @@ void database::list()
         f.load(fname);
 
         std::ifstream file (fname, std::ios::in | std::ios::binary | std::ios::ate);
-        unsigned int size = (unsigned int) file.tellg();
+        uint32_t size = (uint32_t) file.tellg();
         file.close();
         //http://fibrevillage.com/sysadmin/278-understanding-the-difference-between-etc-mtab-and-proc-mounts-on-linux
         // /proc/mounts via c? ->/proc/self/mountinfo -> /etc/mtab ?
@@ -71,7 +71,7 @@ void database::list()
                line.c_str(),
                std::string("uid").c_str(),
                std::string("v0-x32-2bit").c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
-               (unsigned int) f.data.size(),
+               (uint32_t) f.data.size(),
                f.n(),
                size,
                (float) 100.0 * (float) size / (float) f.fasta_filesize(50),
@@ -105,7 +105,7 @@ std::string database::get(std::string fastafs_name_or_id)
     std::ifstream infile(this->idx);
     std::string line;
     while (std::getline(infile, line)) {
-        std::istringstream iss(line);
+        //std::istringstream iss(line);
 
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";

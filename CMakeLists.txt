@@ -6,9 +6,9 @@ cmake_minimum_required(VERSION 2.8)
 project(fastafs)
 
 # Do this once in a while - find different bugs
-SET (CMAKE_CXX_COMPILER             "clang++")
+#set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "0.0.6")
+set(PROJECT_VERSION "1.0.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -77,7 +77,7 @@ add_custom_target(tidy DEPENDS make_tidy )
 
 add_subdirectory(src)
 include_directories(include)
-add_definitions(-std=c++11)
+add_definitions(-std=c++14)
 
 # Boost
 find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
@@ -89,13 +89,13 @@ else()
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-#link_libraries(openssl)
+link_libraries(ssl)
 link_libraries(crypto)
 link_libraries(fuse)
 
 
 if(DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -ggdb -Wconversion -D_FILE_OFFSET_BITS=64")# -Werror makes compilation crash when warnings are given (also part of Travis)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -Wall -g -ggdb -Wconversion -D_FILE_OFFSET_BITS=64")# -Werror makes compilation crash when warnings are given (also part of Travis)
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -D_FILE_OFFSET_BITS=64")
 endif()
@@ -121,10 +121,13 @@ enable_testing()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-add_test(test_cache          "${BUILD_TEST_DIR}/test_cache")
-add_test(test_view           "${BUILD_TEST_DIR}/test_view")
-add_test(test_tree           "${BUILD_TEST_DIR}/test_tree")
-add_test(test_fastafs        "${BUILD_TEST_DIR}/test_fastafs")
+add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte")
+add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
+add_test(test_view                "${BUILD_TEST_DIR}/test_view")
+add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
+add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
+add_test(test_ucsc2bit            "${BUILD_TEST_DIR}/test_ucsc2bit")
+add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'

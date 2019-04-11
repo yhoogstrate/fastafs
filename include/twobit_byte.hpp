@@ -1,15 +1,22 @@
 
-#include <array>
+#ifndef TWOBIT_BYTE_HPP
+#define TWOBIT_BYTE_HPP
 
+#include <array>
 #include "config.hpp"
 
 class twobit_byte
 {
+public:
     static const char twobit_hash[256][5];
 
-public:
     unsigned char data;
     void set(unsigned char, unsigned char);
+    void set(char*);// string met 4 bytes set
     const char *get(void);
     char *get(unsigned char);
+
+    static unsigned char iterator_to_offset(unsigned int);
 };
+
+#endif
