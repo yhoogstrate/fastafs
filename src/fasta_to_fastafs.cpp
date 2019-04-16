@@ -348,33 +348,6 @@ void fasta_to_fastafs::write(std::string filename)
 
 
 
-struct fasta_seq_header_conversion_data {
-    off_t file_offset_in_fasta; // file positions where sequence data blocks start
-    std::string name;
-    
-    uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)
-
-
-    uint32_t padding;
-
-    // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
-    SHA_CTX ctx;
-    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
-
-
-    fasta_seq_header_conversion_data(off_t fof, std::string name): file_offset_in_fasta(fof), name(name), N(0) { }
-
-    uint32_t n_blocks;
-    std::vector<uint32_t> n_block_starts;
-    std::vector<uint32_t> n_block_sizes;
-
-    uint32_t m_blocks;
-    std::vector<uint32_t> m_block_starts;
-    std::vector<uint32_t> m_block_sizes;
-
-};
-
-
 
 
 
@@ -396,7 +369,7 @@ size_t f2fs(const std::string fasta_file, const std::string fastafs_file) {
         fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
-        // iterate until first line starting with >
+        // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
         s = nullptr;
         while(s == nullptr and getline(fh_fasta, line)) {
             if (line[0] == '>') {

@@ -54,5 +54,45 @@ public:
 
 
 
+
+class fasta_seq_header_conversion_data {
+    public:
+        off_t file_offset_in_fasta; // file positions where sequence data blocks start
+        std::string name;
+        
+        uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)
+
+        bool previous_was_N;
+        int twobit_offset; // ranging from 0 to 3
+
+
+        fasta_seq_header_conversion_data(off_t fof, std::string name):
+            file_offset_in_fasta(fof),
+            name(name),
+            N(0),
+            previous_was_N(false)
+            { }
+
+
+        // all below are undefined at initialization
+        uint32_t padding;
+
+        // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
+        SHA_CTX ctx;
+        unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+
+        uint32_t n_blocks;
+        std::vector<uint32_t> n_block_starts;
+        std::vector<uint32_t> n_block_sizes;
+
+        uint32_t m_blocks;
+        std::vector<uint32_t> m_block_starts;
+        std::vector<uint32_t> m_block_sizes;
+
+
+        twobit_byte twobit_data;
+};
+
+
 size_t f2fs(const std::string, const std::string);
 
