@@ -245,7 +245,7 @@ uint32_t fasta_to_fastafs::get_index_size()
 // closely similar to: http://genome.ucsc.edu/FAQ/FAQformat.html#format7
 void fasta_to_fastafs::write(std::string filename)
 {
-    std::fstream fh_fastafs(filename.c_str(), std::ios :: out | std::ios :: binary);
+    std::ofstream fh_fastafs(filename.c_str(), std::ios :: out | std::ios :: binary);
     if(fh_fastafs.is_open()) {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
@@ -343,4 +343,129 @@ void fasta_to_fastafs::write(std::string filename)
     } else {
         throw std::runtime_error("Could not write to file: " + filename);
     }
+}
+
+
+
+
+struct fasta_seq_header_conversion_data {
+    off_t file_offset_in_fasta; // file positions where sequence data blocks start
+    std::string name;
+    
+    uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)
+
+
+    uint32_t padding;
+
+    // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
+    SHA_CTX ctx;
+    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+
+
+    fasta_seq_header_conversion_data(off_t fof, std::string name): file_offset_in_fasta(fof), name(name), N(0) { }
+
+    uint32_t n_blocks;
+    std::vector<uint32_t> n_block_starts;
+    std::vector<uint32_t> n_block_sizes;
+
+    uint32_t m_blocks;
+    std::vector<uint32_t> m_block_starts;
+    std::vector<uint32_t> m_block_sizes;
+
+};
+
+
+
+
+
+size_t f2fs(const std::string fasta_file, const std::string fastafs_file) {
+    size_t written = 0;
+    
+    std::vector<fasta_seq_header_conversion_data*> index;
+    fasta_seq_header_conversion_data* s;
+
+    
+    // @todo use ifstream and ofstream argument types
+    std::string line;
+    std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
+    std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
+    if(fh_fasta.is_open() and fh_fastafs.is_open()) {
+        fh_fastafs << FASTAFS_MAGIC;
+        fh_fastafs << FASTAFS_VERSION;
+
+        fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
+        fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
+
+        // iterate until first line starting with >
+        s = nullptr;
+        while(s == nullptr and getline(fh_fasta, line)) {
+            if (line[0] == '>') {
+                
+                line.erase(0, 1);// erases first part, quicker would be pointer from first char
+                s = new fasta_seq_header_conversion_data(3, line);
+                
+                index.push_back(s);
+            }
+        }
+
+        while(getline(fh_fasta, line)) {
+            if(line[0] == '>') {
+                printf(" another sequence ! \n");
+
+                line.erase(0, 1);// erases first part, quicker would be pointer from first char
+                s = new fasta_seq_header_conversion_data(fh_fastafs.tellp(), line);
+                
+                index.push_back(s);
+            } else {
+                fh_fastafs << "1234";
+                /*for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
+                    switch(*it) {
+                    case 't':
+                    case 'T':
+                    case 'u':
+                    case 'U':
+                        s->add_nucleotide(NUCLEOTIDE_T);
+                        SHA1_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                        break;
+                    case 'c':
+                    case 'C':
+                        s->add_nucleotide(NUCLEOTIDE_C);
+                        SHA1_Update(&s->ctx, nc, 1);
+                        break;
+                    case 'a':
+                    case 'A':
+                        s->add_nucleotide(NUCLEOTIDE_A);
+                        SHA1_Update(&s->ctx, na, 1);
+                        break;
+                    case 'g':
+                    case 'G':
+                        s->add_nucleotide(NUCLEOTIDE_G);
+                        SHA1_Update(&s->ctx, ng, 1);
+                        break;
+                    case 'n':
+                    case 'N':
+                        s->add_N();
+                        SHA1_Update(&s->ctx, nn, 1);
+                        break;
+                    default:
+                        std::cerr << "invalid chars in FASTA file" << std::endl;
+                        exit(1);
+                        break;
+                    }
+                }*/
+            }
+        }
+        
+        fh_fasta.close();
+    }
+
+    // doing index
+    for(size_t i = 0; i < index.size(); i++) {
+        printf("seq:         %s \n",index[i]->name.c_str());
+        printf("pos-in-file: %d \n",index[i]->file_offset_in_fasta);
+        
+        printf("\n");
+    }
+
+    return written;
 }

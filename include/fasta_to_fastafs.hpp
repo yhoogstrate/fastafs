@@ -51,3 +51,8 @@ public:
     void write(std::string);
     unsigned int get_index_size();
 };
+
+
+
+size_t f2fs(const std::string, const std::string);
+
