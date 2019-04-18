@@ -11,10 +11,10 @@
 
 /*
  * ucsc2bit_to_fastafs - creates a FASTAFS_FILE with contents identical to an UCSC 2bit file
- * 
+ *
  * @ucsc2bit_file: file name of input file (must be read accessible)
  * @fastafs_file:  file name of the output FASTAFS file (must be write accessible)
- * 
+ *
  * @todo: returns number of bytes written?
  * @todo2: use filehandles/if|ofstreams instead of filenames
  */
@@ -97,7 +97,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             for(j = 0; j < s->n_blocks; j++) {
                 fh_ucsc2bit.read(buffer, 4);
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
-                
+
                 t->N += s->n_block_sizes.back();//ucsc2bit provides lengths
             }
 
@@ -197,12 +197,13 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                 for(j = k % 4; j < 4; j++) {
                     t_out.set(twobit_byte::iterator_to_offset(j), 0);
                 }
+                // @todo hf_fastsfs << t_out.data
                 fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
 
             }
 
             SHA1_Final(t->sha1_digest, &t->ctx);
-            
+
             // write N blocks
             uint_to_fourbytes(buffer, s->n_blocks);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
@@ -218,7 +219,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
             // write checksum
             fh_fastafs.write(reinterpret_cast<char *> (&t->sha1_digest), (size_t) 20);
-            
+
             // write M blocks (masked region; upper/lower case)
             uint_to_fourbytes(buffer, s->m_blocks);
             fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
@@ -235,7 +236,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
         // save startposition of index
         unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
-        
+
         // write index/footer
         uint_to_fourbytes(buffer, (uint32_t) data.size());
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
@@ -243,10 +244,10 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         for(i = 0 ; i < n; i ++) {
             s = data[i];
             t = data2[i];
-            
+
             // flag
             fh_fastafs << "\x00\x08"s;
-            
+
             // name
             fh_fastafs.write((char *) &s->name_size, (size_t) 1); // name size
             fh_fastafs.write(s->name, (size_t) s->name_size);// name
@@ -259,8 +260,8 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             delete s;
             delete t;
         }
-        
-    
+
+
         // write metadata:
         fh_fastafs << "\x00"s;// no metadata tags (YET)
 

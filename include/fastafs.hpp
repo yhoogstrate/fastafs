@@ -12,19 +12,20 @@
 struct ffs2f_init_seq {
     // fasta seq size
     // fasta seq newlines/padding lines
+    const uint32_t padding;// padding used for this sequence, cannot be 0
     const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
 
     std::vector<uint32_t> n_starts;
     std::vector<uint32_t> n_ends;
 
-    ffs2f_init_seq(size_t size, const uint32_t n_lines): total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
+    ffs2f_init_seq(const uint32_t padding, size_t size, const uint32_t n_lines): padding(padding), total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
 };
 
 struct ffs2f_init {
-    const uint32_t padding;
+    const uint32_t padding_arg;// padding argument, 0 means no padding takes place and all nucleotides are written to one single line
     std::vector<ffs2f_init_seq *> sequences;
 
-    ffs2f_init(size_t size, uint32_t padding): padding(padding), sequences(size) {}
+    ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
 };
 
 
@@ -48,10 +49,10 @@ public:
     fastafs_seq();
 
     uint32_t fasta_filesize(uint32_t padding);
-    void view_fasta(uint32_t, std::ifstream *);
+    void view_fasta(ffs2f_init_seq*, std::ifstream *);
     //uint32_t view_fasta_chunk_cached( char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
     uint32_t view_fasta_chunk(uint32_t, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
-    uint32_t view_fasta_chunk_cached(const uint32_t, char *, off_t, size_t, std::ifstream *, ffs2f_init_seq*);
+    uint32_t view_fasta_chunk_cached(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
 
     std::string sha1(std::ifstream *);
 
@@ -88,8 +89,8 @@ public:
     std::string basename();
 
     void load(std::string);
-    void view_fasta(uint32_t);
-    uint32_t view_fasta_chunk_cached(ffs2f_init*, char *, size_t, off_t);
+    void view_fasta(ffs2f_init*);
+    uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);
     uint32_t view_fasta_chunk(uint32_t, char *, size_t, off_t);
     uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
 

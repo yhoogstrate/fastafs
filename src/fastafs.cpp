@@ -37,6 +37,10 @@ fastafs_seq::fastafs_seq(): n(0)
 {
 }
 
+/*
+ * @todo create class fasta(fastafs ~ padding)
+ * all fasta properties need to be put outside of the fastafs class
+ */
 uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
 {
 #if DEBUG
@@ -49,28 +53,39 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
     return 1 + (uint32_t ) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
 
-void fastafs_seq::view_fasta(uint32_t padding, std::ifstream *fh)
+void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
 {
     char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
     uint32_t offset = 0;
 
-    uint32_t written = this->view_fasta_chunk(padding, buffer, offset, READ_BUFFER_SIZE, fh);
+    //@todo figure out if a do {} while() loop isn't more in place here?
+    uint32_t written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
     while(written > 0) {
         std::cout << std::string(buffer, written);
         offset += written;
 
-        written = this->view_fasta_chunk(padding, buffer, offset, READ_BUFFER_SIZE, fh);
+        written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
     }
 }
 
 
 
-
-ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(uint32_t padding)
+ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg)
 {
+    uint32_t padding = padding_arg;
+
+    if(padding_arg == 0) { // for writing all sequences to one single line after the header
+        if(n == 0) {
+            throw std::runtime_error("Empty sequence glitch\n");
+        }
+
+        padding = this->n;
+    }
+
+    // this can go into the constructor
     const uint32_t total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
 
-    ffs2f_init_seq* data = new ffs2f_init_seq(this->n_starts.size() + 1, total_sequence_containing_lines);
+    ffs2f_init_seq* data = new ffs2f_init_seq(padding, this->n_starts.size() + 1, total_sequence_containing_lines);
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
 
     for(size_t i = 0; i < this->n_starts.size(); i++) {
@@ -87,28 +102,33 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(uint32_t padding)
 }
 
 /*
-@todo see if this can be a std::ifstream or some kind of stream type of object?
-* padding = number of spaces?
-* char buffer =
-* start_pos_in_fasta =
-* len_to_copy =
-* fh = filestream to fastafs file
-* cache = pre calculated values from fastafs_seq::init_ffs2f_seq
+ * fastafs_seq::view_fasta_chunk_cached -
+ *
+ * @padding = number of spaces?
+ * @char buffer =
+ * @start_pos_in_fasta =
+ * @len_to_copy =
+ * @fh = filestream to fastafs file
+ * @cache = pre calculated values from fastafs_seq::init_ffs2f_seq
+ *
+ * returns
+ *
+ * @todo see if this can be a std::ifstream or some kind of stream type of object?
 */
-uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buffer, off_t start_pos_in_fasta, size_t buffer_size, std::ifstream *fh, ffs2f_init_seq* cache)
+uint32_t fastafs_seq::view_fasta_chunk_cached(
+    ffs2f_init_seq* cache,
+    char *buffer,
+
+    size_t buffer_size,
+    off_t start_pos_in_fasta,
+
+    std::ifstream *fh)
 {
 #if DEBUG
     if(cache == nullptr) {
         throw std::runtime_error("Empty cache was provided\n");
     }
 #endif //DEBUG
-    if(padding == 0) {
-        if(this->n == 0) {
-            throw std::runtime_error("Empty sequence glitch\n");
-        }
-        const uint32_t npadding = this->n;//
-        return this->view_fasta_chunk_cached(npadding, buffer, start_pos_in_fasta, buffer_size, fh, cache);
-    }
 
     uint32_t written = 0;
 
@@ -155,7 +175,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
     const uint32_t offset_from_sequence_line = pos - pos_limit;
 
     size_t n_block = cache->n_starts.size();
-    uint32_t newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
+    uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
     // calculate file position for next twobit
@@ -188,9 +208,9 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(const uint32_t padding, char *buff
     }
 
     // write sequence
-    pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
+    pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
     while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
-        pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
+        pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
 
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
@@ -689,8 +709,7 @@ void fastafs::load(std::string afilename)
 }
 
 
-
-void fastafs::view_fasta(uint32_t padding)
+void fastafs::view_fasta(ffs2f_init* cache)
 {
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
@@ -699,11 +718,7 @@ void fastafs::view_fasta(uint32_t padding)
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
-            if(padding == 0) {
-                this->data[i]->view_fasta(this->data[i]->n, &file);
-            } else {
-                this->data[i]->view_fasta(padding, &file);
-            }
+            this->data[i]->view_fasta(cache->sequences[i], &file);
         }
         file.close();
     }
@@ -723,7 +738,22 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding)
     return ddata;
 }
 
-uint32_t fastafs::view_fasta_chunk_cached(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
+/*
+ * fastafs::view_fasta_chunk_cached -
+ *
+ * @cache:
+ * @buffer:
+ * @buffer_size:
+ * @file_offset:
+ *
+ * returns
+ */
+uint32_t fastafs::view_fasta_chunk_cached(
+    ffs2f_init* cache,
+    char *buffer,
+
+    size_t buffer_size,
+    off_t file_offset)
 {
     uint32_t written = 0;
 
@@ -735,16 +765,15 @@ uint32_t fastafs::view_fasta_chunk_cached(ffs2f_init* cache, char *buffer, size_
 
         while(i < data.size()) {
             seq = this->data[i];
-            const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding);
+            const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
 
             if(pos < sequence_file_size) {
                 const uint32_t written_seq = seq->view_fasta_chunk_cached(
-                                                 cache->padding,
+                                                 cache->sequences[i],
                                                  &buffer[written],
-                                                 pos,
                                                  std::min((uint32_t) buffer_size - written, sequence_file_size),
-                                                 &file,
-                                                 cache->sequences[i]);
+                                                 pos,
+                                                 &file);
 
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
