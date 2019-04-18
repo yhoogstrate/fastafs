@@ -73,12 +73,12 @@ void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
 ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg)
 {
     uint32_t padding = padding_arg;
-    
+
     if(padding_arg == 0) { // for writing all sequences to one single line after the header
         if(n == 0) {
             throw std::runtime_error("Empty sequence glitch\n");
         }
-        
+
         padding = this->n;
     }
 
@@ -102,26 +102,26 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg)
 }
 
 /*
- * fastafs_seq::view_fasta_chunk_cached - 
- * 
+ * fastafs_seq::view_fasta_chunk_cached -
+ *
  * @padding = number of spaces?
  * @char buffer =
  * @start_pos_in_fasta =
  * @len_to_copy =
  * @fh = filestream to fastafs file
  * @cache = pre calculated values from fastafs_seq::init_ffs2f_seq
- * 
- * returns 
- * 
+ *
+ * returns
+ *
  * @todo see if this can be a std::ifstream or some kind of stream type of object?
 */
 uint32_t fastafs_seq::view_fasta_chunk_cached(
     ffs2f_init_seq* cache,
     char *buffer,
-    
+
     size_t buffer_size,
     off_t start_pos_in_fasta,
-    
+
     std::ifstream *fh)
 {
 #if DEBUG
@@ -730,7 +730,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
 ffs2f_init* fastafs::init_ffs2f(uint32_t padding)
 {
     ffs2f_init *ddata = new ffs2f_init(this->data.size(), padding);
-    
+
     for(size_t i = 0; i < this->data.size(); i++) {
         ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding);
     }
@@ -739,19 +739,19 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding)
 }
 
 /*
- * fastafs::view_fasta_chunk_cached - 
- * 
- * @cache: 
- * @buffer: 
- * @buffer_size: 
- * @file_offset: 
- * 
+ * fastafs::view_fasta_chunk_cached -
+ *
+ * @cache:
+ * @buffer:
+ * @buffer_size:
+ * @file_offset:
+ *
  * returns
  */
 uint32_t fastafs::view_fasta_chunk_cached(
     ffs2f_init* cache,
     char *buffer,
-    
+
     size_t buffer_size,
     off_t file_offset)
 {

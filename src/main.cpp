@@ -80,11 +80,13 @@ int main(int argc, char *argv[])
             exit(0);
         } else if (strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
-                fasta_to_fastafs f = fasta_to_fastafs(std::string(argv[argc - 2]), std::string(argv[argc - 1]));
-                f.cache();
                 database d = database();
                 std::string fname_out = d.add(argv[argc - 2]);
-                f.write(fname_out);
+
+                fasta_to_fastafs(argv[argc - 1], fname_out);
+                //fasta_to_fastafs f = fasta_to_fastafs(std::string(argv[argc - 2]), std::string(argv[argc - 1]));
+                //f.cache();
+                //f.write(fname_out);
                 // @ todo progress bar
             } else {
                 std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file>\n\n";
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
 
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                ffs2f_init* cache = f.init_ffs2f(padding);    
+                ffs2f_init* cache = f.init_ffs2f(padding);
                 f.view_fasta(cache);//@todo make argument parsing
             } else {
                 usage_view();

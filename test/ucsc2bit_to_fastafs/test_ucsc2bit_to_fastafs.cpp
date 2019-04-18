@@ -22,9 +22,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     std::string ucsc2bit_file = "tmp/test.2bit";
 
     // 01 fasta_to_fastafs()
-    fasta_to_fastafs f = fasta_to_fastafs("test", "test/data/test.fa");
-    f.cache();
-    f.write(fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file);
 
     // 02 load fastafs
     fastafs fs = fastafs("test");
