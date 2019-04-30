@@ -1,9 +1,13 @@
-2019-11-18  Youri Hoogstrate
+2019-04-30  Youri Hoogstrate
+
+    * Performance update.
+
+2019-04-18  Youri Hoogstrate
 
     * The forwards conversion (fasta to fastafs) code has been improved
       and does not require to keep whole sequences in heap.
 
-2019-11-04  Youri Hoogstrate
+2019-04-11  Youri Hoogstrate
 
     * The file format has been re-specified, backwards incompatible with
       the test code. The fastafs to fasta projection has been enormously
