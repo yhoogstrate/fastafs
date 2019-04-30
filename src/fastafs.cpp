@@ -461,7 +461,7 @@ fastafs check short  1.53s user 2.73s system 99% cpu 4.269 total
 chunk size 1024:
 ??
 */
-std::string fastafs_seq::sha1(std::ifstream *fh)
+std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 {
     const size_t header_offset = this->name.size() + 2;
     //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
@@ -483,7 +483,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     unsigned long nbases = 0;
 
     for(unsigned long i = 0; i < n_iterations; i++) {
-        this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
+        //this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
+        this->view_fasta_chunk_cached(cache, chunk, chunksize, header_offset + (n_iterations * chunksize), fh);
         //printf("[%s] - %i\n", chunk, chunksize);
         SHA1_Update(&ctx, chunk, chunksize);
 
@@ -491,7 +492,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     }
 
     if(remaining_bytes > 0) {
-        this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);
+        //this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);    
+        this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
         SHA1_Update(&ctx, chunk, remaining_bytes);
         nbases += remaining_bytes;
 
@@ -1312,13 +1314,14 @@ int fastafs::check_integrity()
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
     std::string old_hash;
+    ffs2f_init* cache = this->init_ffs2f(0);
 
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);
-            std::string new_hash = this->data[i]->sha1(&file);
+            std::string new_hash = this->data[i]->sha1(cache->sequences[i], &file);
 
             if(old_hash.compare(new_hash) == 0) {
                 printf("OK\t%s\n",this->data[i]->name.c_str());

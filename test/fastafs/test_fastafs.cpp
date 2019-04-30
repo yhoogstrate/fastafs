@@ -308,6 +308,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
 
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
+    ffs2f_init* cache = fs.init_ffs2f(0);
 
     //printf("[%i]\n", fs.data.size());
     BOOST_REQUIRE(fs.data.size() > 0);
@@ -316,9 +317,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     BOOST_REQUIRE(file.is_open());
 
     //printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
-    fs.data[0]->sha1(&file);
+    fs.data[0]->sha1(cache->sequences[0], &file);
 
-    BOOST_CHECK_EQUAL(fs.data[0]->sha1(&file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
+    BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache->sequences[0], &file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
 }
 
 
