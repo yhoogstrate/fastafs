@@ -461,7 +461,7 @@ fastafs check short  1.53s user 2.73s system 99% cpu 4.269 total
 chunk size 1024:
 ??
 */
-std::string fastafs_seq::sha1(std::ifstream *fh)
+std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 {
     const size_t header_offset = this->name.size() + 2;
     //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
@@ -483,7 +483,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     unsigned long nbases = 0;
 
     for(unsigned long i = 0; i < n_iterations; i++) {
-        this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
+        //this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
+        this->view_fasta_chunk_cached(cache, chunk, chunksize, header_offset + (n_iterations * chunksize), fh);
         //printf("[%s] - %i\n", chunk, chunksize);
         SHA1_Update(&ctx, chunk, chunksize);
 
@@ -491,7 +492,8 @@ std::string fastafs_seq::sha1(std::ifstream *fh)
     }
 
     if(remaining_bytes > 0) {
-        this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);
+        //this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);
+        this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
         SHA1_Update(&ctx, chunk, remaining_bytes);
         nbases += remaining_bytes;
 
@@ -881,6 +883,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         char n_seq[4];
+        ffs2f_init* cache = this->init_ffs2f(0);
 
         pos_limit += 4;// skip this loop after writing first four bytes
         while(pos < pos_limit) {
@@ -1048,7 +1051,8 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             pos_limit += full_twobits;
             while(pos < pos_limit) {
                 //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
-                sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
+                //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
+                sequence->view_fasta_chunk_cached(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), &file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
@@ -1069,7 +1073,8 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 if(pos < pos_limit) {
                     //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, sequence->n - (full_twobits * 4),  sequence->n - j);
 
-                    sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
+                    //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
+                    sequence->view_fasta_chunk_cached(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, &file);
                     t.set(n_seq);
 
                     buffer[written++] = t.data;
@@ -1312,13 +1317,14 @@ int fastafs::check_integrity()
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
     std::string old_hash;
+    ffs2f_init* cache = this->init_ffs2f(0);
 
     std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);
-            std::string new_hash = this->data[i]->sha1(&file);
+            std::string new_hash = this->data[i]->sha1(cache->sequences[i], &file);
 
             if(old_hash.compare(new_hash) == 0) {
                 printf("OK\t%s\n",this->data[i]->name.c_str());
