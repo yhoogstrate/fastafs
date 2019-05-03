@@ -463,6 +463,12 @@ chunk size 1024:
 */
 std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 {
+    #if DEBUG
+        if(cache == nullptr) {
+            throw std::invalid_argument("Using an empty cache is impossible\n");
+        }
+    #endif
+
     const size_t header_offset = this->name.size() + 2;
     //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
     const unsigned long chunksize = 1024*1024;// seems to not matter that much
@@ -480,29 +486,24 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
     signed int remaining_bytes = this->n % chunksize;
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
 
-    unsigned long nbases = 0;
-
-    for(unsigned long i = 0; i < n_iterations; i++) {
-        //this->view_fasta_chunk(0, chunk, header_offset + (i * chunksize), chunksize, fh);
-        this->view_fasta_chunk_cached(cache, chunk, chunksize, header_offset + (n_iterations * chunksize), fh);
-        //printf("[%s] - %i\n", chunk, chunksize);
+    for(uint32_t i = 0; i < n_iterations; i++) {
+        this->view_fasta_chunk_cached(cache, chunk,
+            chunksize,
+            header_offset + (i * chunksize),
+            fh);
+        
         SHA1_Update(&ctx, chunk, chunksize);
-
-        nbases += chunksize;
     }
 
     if(remaining_bytes > 0) {
-        //this->view_fasta_chunk(0, chunk, header_offset + (n_iterations * chunksize), remaining_bytes, fh);
         this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
+        
         SHA1_Update(&ctx, chunk, remaining_bytes);
-        nbases += remaining_bytes;
 
         chunk[remaining_bytes] = '\0';
-        //printf("[%s] - %i (last chunk)\n", chunk, remaining_bytes);
     }
 
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
-    //printf("nbases=%i\n", nbases);
 
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];
     SHA1_Final(sha1_digest, &ctx);
@@ -1324,6 +1325,14 @@ int fastafs::check_integrity()
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);
+            
+            /*
+             *     const uint32_t padding;// padding used for this sequence, cannot be 0
+    const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
+
+    std::vector<uint32_t> n_starts;
+    std::vector<uint32_t> n_ends;
+             * */
             std::string new_hash = this->data[i]->sha1(cache->sequences[i], &file);
 
             if(old_hash.compare(new_hash) == 0) {
