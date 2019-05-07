@@ -294,7 +294,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
             if(strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) {
                 try {
-                    sscanf(argv[++i], "%d", &ffi->padding);
+                    sscanf(argv[++i], "%u", &ffi->padding);
                 } catch(std::exception const & e) {
                     std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
                     exit(1);
