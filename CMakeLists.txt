@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.1.1")
+set(PROJECT_VERSION "1.2.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -103,6 +103,7 @@ endif()
 add_executable(fastafs
 					src/main.cpp
 					src/fasta_to_fastafs.cpp
+					src/ucsc2bit_to_fastafs.cpp
 					src/fastafs.cpp
 					src/twobit_byte.cpp
 					src/database.cpp

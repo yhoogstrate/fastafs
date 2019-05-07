@@ -152,3 +152,22 @@ std::string std_string_nullbyte_safe(char *ref, size_t len)
     return s;
 }
 
+
+bool is_fasta_file(char *filename)
+{
+    char buf[2];
+    FILE *fp;
+
+    if ((fp = fopen(filename, "rb")) == NULL) {
+        throw std::runtime_error("Could not read first byte of putative FASTA file.");
+
+        return false;
+    }
+
+    if (fread(buf, 1, 2, fp) == 2) {
+        return (buf[0] == '>');// return true if first byte equals >
+    }
+
+    fclose(fp);
+}
+

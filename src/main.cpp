@@ -6,6 +6,7 @@
 
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
+#include "ucsc2bit_to_fastafs.hpp"
 #include "database.hpp"
 #include "fuse.hpp"
 
@@ -61,6 +62,12 @@ void usage_check(void)
     std::cout << std::endl;
 }
 
+void usage_cache(void)
+{
+    std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file | ucsc TwoBit file>\n\n";
+    std::cout << "\n";
+}
+
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
@@ -80,14 +87,15 @@ int main(int argc, char *argv[])
                 database d = database();
                 std::string fname_out = d.add(argv[argc - 2]);
 
-                fasta_to_fastafs(argv[argc - 1], fname_out);
-                //fasta_to_fastafs f = fasta_to_fastafs(std::string(argv[argc - 2]), std::string(argv[argc - 1]));
-                //f.cache();
-                //f.write(fname_out);
-                // @ todo progress bar
+                if(is_fasta_file(argv[argc - 1])) {
+                    fasta_to_fastafs(argv[argc - 1], fname_out);
+                } else {
+                    ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
+                }
+
             } else {
-                std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file>\n\n";
-                std::cout << "\n";
+                usage_cache();
+                exit(0);
             }
         } else if (strcmp(argv[1], "view") == 0) {
             uint32_t padding = 60;

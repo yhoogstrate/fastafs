@@ -1,3 +1,7 @@
+2019-05-07  Youri Hoogstrate
+
+    * Full support for UCSC TwoBit files in `fastafs cache` (adding to db)
+
 2019-04-30  Youri Hoogstrate
 
     * Performance update.
