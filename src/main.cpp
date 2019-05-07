@@ -4,8 +4,6 @@
 #include <vector>
 #include <string.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
 #include "database.hpp"
@@ -63,7 +61,6 @@ void usage_check(void)
     std::cout << std::endl;
 }
 
-// @todo: https://www.boost.org/doc/libs/1_69_0/doc/html/program_options/tutorial.html
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
@@ -111,7 +108,7 @@ int main(int argc, char *argv[])
                             from_file = true;
                         } else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i+1 < argc-1) {
                             try {
-                                padding = boost::lexical_cast<uint32_t>(argv[++i]);
+                                sscanf(argv[++i], "%d", &padding);
                             } catch(std::exception const & e) {
                                 std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
                                 return EINVAL;

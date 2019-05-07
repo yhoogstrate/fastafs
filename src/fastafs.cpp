@@ -463,11 +463,11 @@ chunk size 1024:
 */
 std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 {
-    #if DEBUG
-        if(cache == nullptr) {
-            throw std::invalid_argument("Using an empty cache is impossible\n");
-        }
-    #endif
+#if DEBUG
+    if(cache == nullptr) {
+        throw std::invalid_argument("Using an empty cache is impossible\n");
+    }
+#endif
 
     const size_t header_offset = this->name.size() + 2;
     //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
@@ -488,16 +488,16 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 
     for(uint32_t i = 0; i < n_iterations; i++) {
         this->view_fasta_chunk_cached(cache, chunk,
-            chunksize,
-            header_offset + (i * chunksize),
-            fh);
-        
+                                      chunksize,
+                                      header_offset + (i * chunksize),
+                                      fh);
+
         SHA1_Update(&ctx, chunk, chunksize);
     }
 
     if(remaining_bytes > 0) {
         this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
-        
+
         SHA1_Update(&ctx, chunk, remaining_bytes);
 
         chunk[remaining_bytes] = '\0';
@@ -1325,13 +1325,13 @@ int fastafs::check_integrity()
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);
-            
+
             /*
              *     const uint32_t padding;// padding used for this sequence, cannot be 0
-    const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
+            const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
 
-    std::vector<uint32_t> n_starts;
-    std::vector<uint32_t> n_ends;
+            std::vector<uint32_t> n_starts;
+            std::vector<uint32_t> n_ends;
              * */
             std::string new_hash = this->data[i]->sha1(cache->sequences[i], &file);
 

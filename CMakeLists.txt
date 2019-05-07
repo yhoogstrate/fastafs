@@ -80,7 +80,7 @@ include_directories(include)
 add_definitions(-std=c++14)
 
 # Boost
-find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 if(NOT Boost_FOUND)
   message(FATAL_ERROR "Boost not found or requirement not satisfied. See building instructions.")
 else()
