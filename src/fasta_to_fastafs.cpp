@@ -58,6 +58,18 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
         this->n_block_ends.push_back(this->n_actg + this->N - 1);
     }
 
+    // do M block
+    if(this->in_m_block) {
+        this->m_block_ends.push_back(this->n_actg + this->N - 1);
+        //printf("closing m-block: %u\n",this->n_actg + this->N - 1);
+    }
+
+#if DEBUG
+    if(this->m_block_starts.size() != this->m_block_ends.size()) {
+        throw std::runtime_error("M blocks not correctly parsed\n");
+    }
+#endif //DEBUG
+
     char buffer[4 +  1];
 
     // (over)write number nucleotides
@@ -99,7 +111,6 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
         uint_to_fourbytes(buffer, this->m_block_ends[j]);
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
     }
-
 }
 
 
@@ -153,30 +164,95 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
             } else {
                 for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                     switch(*it) {
-                    case 't':
-                    case 'T':
-                    case 'u':
                     case 'U':
+                    case 'T':
+                        if(s->in_m_block) {
+                            //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                            s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                            s->in_m_block = false;
+                        }
                         s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
                         SHA1_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
                         break;
-                    case 'c':
+                    case 'u':// lower case = m block
+                    case 't':
+                        if(!s->in_m_block) {
+                            //printf("starting M block: %d\n", s->N + s->n_actg);
+                            s->m_block_starts.push_back(s->N + s->n_actg);
+                            s->in_m_block = true;
+                        }
+                        s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
+                        SHA1_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                        break;
                     case 'C':
+                        if(s->in_m_block) {
+                            //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                            s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                            s->in_m_block = false;
+                        }
                         s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
                         SHA1_Update(&s->ctx, nc, 1);
                         break;
-                    case 'a':
+                    case 'c':
+                        if(!s->in_m_block) {
+                            //printf("starting M block: %d\n", s->N + s->n_actg);
+                            s->m_block_starts.push_back(s->N + s->n_actg);
+                            s->in_m_block = true;
+                        }
+                        s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
+                        SHA1_Update(&s->ctx, nc, 1);
+                        break;
                     case 'A':
+                        if(s->in_m_block) {
+                            //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                            s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                            s->in_m_block = false;
+                        }
                         s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
                         SHA1_Update(&s->ctx, na, 1);
                         break;
-                    case 'g':
+                    case 'a':
+                        if(!s->in_m_block) {
+                            //printf("starting M block: %d\n", s->N + s->n_actg);
+                            s->m_block_starts.push_back(s->N + s->n_actg);
+                            s->in_m_block = true;
+                        }
+                        s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
+                        SHA1_Update(&s->ctx, na, 1);
+                        break;
                     case 'G':
+                        if(s->in_m_block) {
+                            //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                            s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                            s->in_m_block = false;
+                        }
                         s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
                         SHA1_Update(&s->ctx, ng, 1);
                         break;
-                    case 'n':
+                    case 'g':
+                        if(!s->in_m_block) {
+                            //printf("starting M block: %d\n", s->N + s->n_actg);
+                            s->m_block_starts.push_back(s->N + s->n_actg);
+                            s->in_m_block = true;
+                        }
+                        s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                        SHA1_Update(&s->ctx, ng, 1);
+                        break;
                     case 'N':
+                        if(s->in_m_block) {
+                            //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                            s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                            s->in_m_block = false;
+                        }
+                        s->add_N();
+                        SHA1_Update(&s->ctx, nn, 1);
+                        break;
+                    case 'n':
+                        if(!s->in_m_block) {
+                            //printf("starting M block: %d\n", s->N + s->n_actg);
+                            s->m_block_starts.push_back(s->N + s->n_actg);
+                            s->in_m_block = true;
+                        }
                         s->add_N();
                         SHA1_Update(&s->ctx, nn, 1);
                         break;
