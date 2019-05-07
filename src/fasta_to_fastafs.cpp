@@ -191,7 +191,10 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
 
         fh_fasta.close();
     }
-    s->finish_sequence(fh_fastafs);// finish last sequence
+
+    if(s != nullptr) {
+        s->finish_sequence(fh_fastafs);// finish last sequence
+    }
 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
