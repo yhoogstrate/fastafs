@@ -241,7 +241,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         uint_to_fourbytes(buffer, (uint32_t) data.size());
         fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
 
-        for(i = 0 ; i < n; i ++) {
+        for(i = 0; i < n; i++) {
             s = data[i];
             t = data2[i];
 

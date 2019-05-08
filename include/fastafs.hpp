@@ -41,7 +41,8 @@ public:
     std::vector<uint32_t> n_ends;// end positions (is 0-based, must become 1-based)
     uint16_t flag;
 
-    std::vector<std::pair<uint32_t, uint32_t>> m_blocks;// @ todo check if unsiged int[2] is not more efficient / less bloated
+    std::vector<uint32_t> m_starts;// start positions 0-based)
+    std::vector<uint32_t> m_ends;// end positions (is 0-based, must become 1-based)
 
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented

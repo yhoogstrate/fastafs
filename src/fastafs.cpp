@@ -674,11 +674,11 @@ void fastafs::load(std::string afilename)
                     s->n_starts.resize(N_blocks);
                     s->n_ends.resize(N_blocks);
 
-                    for(j = 0; j < s->n_starts.size() ; j ++) {
+                    for(j = 0; j < s->n_starts.size(); j++) {
                         file.read(memblock, 4);
                         s->n_starts[j] = fourbytes_to_uint(memblock, 0);
                     }
-                    for(j = 0; j < s->n_ends.size() ; j ++) {
+                    for(j = 0; j < s->n_ends.size(); j++) {
                         file.read(memblock, 4);
                         s->n_ends[j] = fourbytes_to_uint(memblock, 0);
 
@@ -693,7 +693,18 @@ void fastafs::load(std::string afilename)
 
                     // M-blocks
                     file.read(memblock, 4);
-                    s->m_blocks.resize(fourbytes_to_uint(memblock, 0));
+                    uint32_t M_blocks = fourbytes_to_uint(memblock, 0);
+                    s->m_starts.resize(M_blocks);
+                    s->m_ends.resize(M_blocks);
+
+                    for(j = 0; j < s->m_starts.size(); j++) {
+                        file.read(memblock, 4);
+                        s->m_starts[j] = fourbytes_to_uint(memblock, 0);
+                    }
+                    for(j = 0; j < s->m_ends.size(); j++) {
+                        file.read(memblock, 4);
+                        s->m_ends[j] = fourbytes_to_uint(memblock, 0);
+                    }
                 }
                 file.seekg(file_cursor, file.beg);
 
@@ -861,7 +872,9 @@ off_t fastafs::ucsc2bit_filesize(void)
         nn += 4;// n blocks
         nn += sequence->n_starts.size() * (4 * 2); // both start and end
 
-        nn += 4;// n masked regions - so far always 0
+        nn += 4;// masked regions - so far always 0
+        nn += sequence->m_starts.size() * (4 * 2); // both start and end
+
         nn += 4;// reserved
 
         nn += sequence->name.size();
@@ -977,6 +990,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
 
             header_offset_previous += 4 + 4 + 4 + 4;
             header_offset_previous += 8 * (uint32_t) sequence->n_starts.size();
+            header_offset_previous += 8 * (uint32_t) sequence->m_starts.size();
             header_offset_previous += sequence->n / 4;
             if(sequence->n % 4 != 0) {
                 header_offset_previous++;
@@ -1035,8 +1049,45 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 }
             }
 
-            // m-blocks + reserved block
-            pos_limit += 4 + 4;
+            // number M blocks (masked regions; lower case regions)
+            uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->m_starts.size());
+            pos_limit += 4;
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                pos++;
+
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // write m-blocks effectively down!
+            for(uint32_t k = 0; k < sequence->m_starts.size(); k++) {
+                uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_starts[k]);
+                pos_limit += 4;
+                while(pos < pos_limit) {
+                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                    pos++;
+
+                    if(written >= buffer_size) {
+                        return written;
+                    }
+                }
+
+                uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_ends[k] - sequence->m_starts[k] + 1);
+                pos_limit += 4;
+                while(pos < pos_limit) {
+                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                    pos++;
+
+                    if(written >= buffer_size) {
+                        return written;
+                    }
+                }
+            }
+
+            // reserved block
+            pos_limit += 4;
             while(pos < pos_limit) {
                 buffer[written++] = '\0';
                 pos++;
@@ -1045,6 +1096,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
 
             // twobit coded nucleotides (only containing 4 nucleotides each)
             uint32_t full_twobits = sequence->n / 4;
