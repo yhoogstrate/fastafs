@@ -16,9 +16,9 @@ However, the fastafs file is not intended for analysis but purely for storage an
 Currently the package uses cmake for compilation
 Required dependencies are:
 
-- libboost (only for unit testing, will be come an optional dependency soon)
-- libopenssl (for generating SHA hashes)
-- libfuse (for access to the fuse layer system and file virtualization)
+  - libboost (only for unit testing, will be come an optional dependency soon)
+ - libopenssl (for generating SHA hashes)
+ - libfuse (for access to the fuse layer system and file virtualization)
 
 ## usage
 ### fastafs cache: adding files to fastafs
@@ -70,3 +70,5 @@ ACT
 
 ## Contributing
 Feel free to start a discussion or to contribute to the GPL licensed code.
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c90c7d61651d4e18aa82a4b02f3599fa)](https://www.codacy.com/app/yhoogstrate/fastafs?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yhoogstrate/fastafs&amp;utm_campaign=Badge_Grade)
