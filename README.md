@@ -1,5 +1,6 @@
 # fastafs: fuse layer and file system for storing FASTA files
-### in a compressed, non-redundant and (randomly) accessible manner
+in a compressed, non-redundant and (randomly) accessible manner
+-------------
 
 DNA sequences are typically stored in the FASTA format. Although very commonly used and easy to read, FASTA files consume vast amounts of diskspace. It is possible to use compression (gzip or 2bit) instead, but such files are binary and not as practical as FASTA. Also, this requires all other software to support each compressed formats which is unfortunately not the case.
 
@@ -10,23 +11,23 @@ Partially, yes. It simply is yet another format.
 Backwards compatibility was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not within 2bit.
 However, the fastafs file is not intended for analysis but purely for storage and can then virtualize both FA and 2bit files.
 
-### installation and compilation ###
+## installation and compilation
 
 Currently the package uses cmake for compilation
 Required dependencies are:
 
- - libboost (for parsing integer values in an appropriate way)
- - libopenssl (for generating SHA hashes)
- - libfuse (for access to the fuse layer system and file virtualization)
+- libboost (only for unit testing, will be come an optional dependency soon)
+- libopenssl (for generating SHA hashes)
+- libfuse (for access to the fuse layer system and file virtualization)
 
-### usage ###
-##### fastafs cache: adding files to fastafs
+## usage
+### fastafs cache: adding files to fastafs
 We can add files to the fastafs database by running:
 ```
 $ fastafs cache test ./test.fa
 ```
 
-##### fastafs list: overview of fastafs db #####
+### fastafs list: overview of fastafs db
 ```
 $ fastafs list
 
@@ -34,7 +35,7 @@ FASTAFS NAME    FASTFS ID   FASTAFS        SEQUENCES    BASES   DISK SIZE    MOU
 test            uid         v0-x32-2bit     7           88      214          /mnt/fastafs/hg19
 ```
 
-##### fastafs info: stats of cached fasta file #####
+### fastafs info: stats of cached fasta file
 ```
 $ fastafs info
 
@@ -49,7 +50,7 @@ SEQUENCES:    7
     >chr5                    6           e0848040eef5dac325a166146245a8188675a35c
 ```
 
-##### fastafs mount: mount fastafs archive to unlock fasta file(s)
+### fastafs mount: mount fastafs archive to unlock fasta file(s)
 ```
 $ fastafs mount test /mnt/fastafs/hg19
 $ ls /mnt/fastafs/hg19/
@@ -67,3 +68,5 @@ NNNN
 ACT
 ```
 
+## Contributing
+Feel free to start a discussion or to contribute to the GPL licensed code.
