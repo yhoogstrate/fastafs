@@ -1,4 +1,7 @@
 # fastafs: fuse layer and file system for storing FASTA files
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b405382f7a194c46928b019bbbd5560b)](https://app.codacy.com/app/yhoogstrate/fastafs?utm_source=github.com&utm_medium=referral&utm_content=yhoogstrate/fastafs&utm_campaign=Badge_Grade_Dashboard)
+
 in a compressed, non-redundant and (randomly) accessible manner
 -------------
 
