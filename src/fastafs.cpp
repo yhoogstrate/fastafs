@@ -142,12 +142,6 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     }
 #endif //DEBUG
 
-    std::cout << "m block starts: " << this->m_starts.size() << "\n";
-    std::cout << "m block starts: " << this->m_ends.size() << "\n---\n";
-
-    std::cout << "m block starts [cache]: " << cache->m_starts.size() << "\n";
-    std::cout << "m block starts [cache]: " << cache->m_ends.size() << "\n\n";
-
     uint32_t written = 0;
 
     if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?

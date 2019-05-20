@@ -175,10 +175,22 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                    "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
                                    "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
                                    "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
-                                   "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+                                   
+                                   // seq1 
+                                   "\x10\x00\x00\x00"s // len
+                                   "\x00\x00\x00\x00"s // n blocks
+                                   "\x00\x00\x00\x01"s "\x08\x00\x00\x00"s "\x08\x00\x00\x0F"s // m blocks [(0, 15)]
+                                   "\x00\x00\x00\x00"s // reserved
                                    "\x00\x55\xAA\xFF"s // sequence
-                                   "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+
+                                   // seq2
+                                   "\x10\x00\x00\x00"s // len
+                                   "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s // n blocks
+                                   "\x00\x00\x00\x01"s "\x08\x00\x00\x08"s "\x08\x00\x00\x0B"s // m blocks [(8, 11)]
+                                   "\x00\x00\x00\x00"s // reserved
                                    "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
+
+                                   // seq 3
                                    "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                    "\x93\x93\xAA\x40"s// last one is 01 00 00 00
                                    "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
@@ -393,12 +405,29 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x06"s "chr3.3"s "\xAD\x00\x00\x00"s
                                    "\x04"s "chr4"s   "\xC1\x00\x00\x00"s
                                    "\x04"s "chr5"s   "\xDB\x00\x00\x00"s
-                                   "\x10\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+
+                                   // seq1 
+                                   "\x10\x00\x00\x00"s // len
+                                   "\x00\x00\x00\x00"s // n blocks
+                                   "\x00\x00\x00\x01"s "\x08\x00\x00\x00"s "\x08\x00\x00\x0F"s // m blocks [(0, 15)]
+                                   "\x00\x00\x00\x00"s // reserved
                                    "\x00\x55\xAA\xFF"s // sequence
-                                   "\x10\x00\x00\x00"s "\01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
+
+                                   // seq2
+                                   "\x10\x00\x00\x00"s // len
+                                   "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s // n blocks
+                                   "\x00\x00\x00\x01"s "\x08\x00\x00\x08"s "\x08\x00\x00\x04"s // m blocks [(8, 4)]
+                                   "\x00\x00\x00\x00"s // reserved
                                    "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
-                                   "\x0D\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
-                                   "\x93\x93\xAA\x40"s// last one is 01 00 00 00
+
+                                    // seq3
+                                   "\x0D\x00\x00\x00"s // len
+                                   "\x00\x00\x00\x00"s // n 
+                                   "\x00\x00\x00\x01"s "\x08\x00\x00\x08"s "\x08\x00\x00\x05"s // m blocks [(8, 5)]
+                                   "\x00\x00\x00\x00"s // res
+                                   "\x93\x93\xAA\x40"s // last one is 01 00 00 00
+
+                                   // seq 4
                                    "\x0E\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
                                    "\x93\x93\xAA\x50"s// last one is 01 01 00 00
                                    "\x0F\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s "\x00\x00\x00\x00"s
