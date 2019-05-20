@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
     //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15    16
     // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
-    // >  c  h  r  1 \n  T  T  T  T  C  C  C  C  A  A  A  A  G  G  G \n  G \n
+    // >  c  h  r  1 \n  t  t  t  t  c  c  c  c  a  a  a  a  g  g  g \n  g \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(15), 24);
 
 
@@ -109,107 +109,26 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     BOOST_REQUIRE(file.is_open());
 
 
+    ffs2f_init* cache_p0 = fs.init_ffs2f(0);
+
     // then: check returncodes:
     uint32_t ret;
     char chunk[1];
 
-    uint32_t i = 0;
-
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], '>');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'c');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'h');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'r');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], '1');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], '\n');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'T');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'T');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'T');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'T');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'C');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'C');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'C');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'C');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'A');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'A');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'A');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'A');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'G');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'G');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'G');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], 'G');
-    BOOST_CHECK_EQUAL(ret, 1);
-
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
-    BOOST_CHECK_EQUAL(chunk[0], '\n');
-    BOOST_CHECK_EQUAL(ret, 1);
+    
+    
+    std::string ref = ">chr1\nttttccccaaaagggg\n";
+    uint32_t i;
+    for(i = 0; i < ref.size(); i++) {
+        //ret = fs.data[0]->view_fasta_chunk(23, chunk, i, 1, &file);
+        ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, i, &file);
+        BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
+        BOOST_CHECK_EQUAL(ret, 1);
+    }
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
+    //ret = fs.data[0]->view_fasta_chunk(0, chunk, i++, 1, &file);
+    ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
 
     file.close();
@@ -230,7 +149,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     //printf("[%i]\n", fs.data.size());
     BOOST_REQUIRE(fs.data.size() > 0);
 
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
     //printf("[%s]\n", fs.data[0]->sha1(&file).c_str());

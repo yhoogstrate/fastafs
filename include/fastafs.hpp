@@ -20,7 +20,7 @@ struct ffs2f_init_seq {
     
     std::vector<uint32_t> m_starts;// file position based
     std::vector<uint32_t> m_ends;// file position based
-
+    
     ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines):
         padding(padding),
         total_sequence_containing_lines(n_lines),
