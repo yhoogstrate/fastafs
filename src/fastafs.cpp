@@ -780,7 +780,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         char n_seq[4];
-        ffs2f_init* cache = this->init_ffs2f(0);
         pos_limit += 4;// skip this loop after writing first four bytes
         while(pos < pos_limit) {
             buffer[written++] = UCSC2BIT_MAGIC[pos];
@@ -862,6 +861,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 header_offset_previous++;
             }
         }
+        ffs2f_init* cache = this->init_ffs2f(0);
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
             // number nucleotides
@@ -871,6 +871,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
                 if(written >= buffer_size) {
+                    delete cache;
                     return written;
                 }
             }
@@ -881,6 +882,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
                 if(written >= buffer_size) {
+                    delete cache;
                     return written;
                 }
             }
@@ -892,6 +894,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
                     if(written >= buffer_size) {
+                        delete cache;
                         return written;
                     }
                 }
@@ -901,6 +904,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
                     if(written >= buffer_size) {
+                        delete cache;
                         return written;
                     }
                 }
@@ -912,6 +916,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
                 if(written >= buffer_size) {
+                    delete cache;
                     return written;
                 }
             }
@@ -923,6 +928,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
                     if(written >= buffer_size) {
+                        delete cache;
                         return written;
                     }
                 }
@@ -932,6 +938,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
                     if(written >= buffer_size) {
+                        delete cache;
                         return written;
                     }
                 }
@@ -942,6 +949,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = '\0';
                 pos++;
                 if(written >= buffer_size) {
+                    delete cache;
                     return written;
                 }
             }
@@ -957,6 +965,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = t.data;
                 pos++;
                 if(written >= buffer_size) {
+                    delete cache;
                     return written;
                 }
             }
@@ -975,11 +984,13 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     buffer[written++] = t.data;
                     pos++;
                     if(written >= buffer_size) {
+                        delete cache;
                         return written;
                     }
                 }
             }
         }
+        delete cache;
         file.close();
     } else {
         throw std::runtime_error("could not load fastafs: " + this->filename);

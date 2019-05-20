@@ -34,6 +34,13 @@ struct ffs2f_init {
     std::vector<ffs2f_init_seq *> sequences;
 
     ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
+
+    ~ffs2f_init(void)
+    {
+        for(size_t i = 0; i < sequences.size(); i++) {
+            delete sequences[i];
+        }
+    }
 };
 
 
