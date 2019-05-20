@@ -15,10 +15,18 @@ struct ffs2f_init_seq {
     const uint32_t padding;// padding used for this sequence, cannot be 0
     const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
 
-    std::vector<uint32_t> n_starts;
-    std::vector<uint32_t> n_ends;
+    std::vector<uint32_t> n_starts;// file position based
+    std::vector<uint32_t> n_ends;// file position based
+    
+    std::vector<uint32_t> m_starts;// file position based
+    std::vector<uint32_t> m_ends;// file position based
 
-    ffs2f_init_seq(const uint32_t padding, size_t size, const uint32_t n_lines): padding(padding), total_sequence_containing_lines(n_lines), n_starts(size), n_ends(size) {}
+    ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines):
+        padding(padding),
+        total_sequence_containing_lines(n_lines),
+        n_starts(n_blocks), n_ends(n_blocks),
+        m_starts(m_blocks), m_ends(m_blocks)
+        {}
 };
 
 struct ffs2f_init {
@@ -37,12 +45,12 @@ public:
     std::string name;//may not exceed 255 chars in current datatype
     uint32_t data_position;// file offset to start reading sequence data
     uint32_t n;// number nucleotides
-    std::vector<uint32_t> n_starts;// start positions 0-based)
-    std::vector<uint32_t> n_ends;// end positions (is 0-based, must become 1-based)
+    std::vector<uint32_t> n_starts;// start positions (nucleotide positions; 0-based)
+    std::vector<uint32_t> n_ends;// end positions (nucleotide positions; 0-based)
     uint16_t flag;
 
-    std::vector<uint32_t> m_starts;// start positions 0-based)
-    std::vector<uint32_t> m_ends;// end positions (is 0-based, must become 1-based)
+    std::vector<uint32_t> m_starts;// start positions (nucleotide positions; 0-based)
+    std::vector<uint32_t> m_ends;// end positions (nucleotide positions; 0-based)
 
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
     // masked not -yet- needed||implemented

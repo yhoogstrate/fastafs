@@ -85,18 +85,30 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg)
     // this can go into the constructor
     const uint32_t total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
 
-    ffs2f_init_seq* data = new ffs2f_init_seq(padding, this->n_starts.size() + 1, total_sequence_containing_lines);
+    ffs2f_init_seq* data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines);
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
 
+    // n blocks are stored in the fastafs object per nucleotide position, but as fasta file they need to be calculated as file position
     for(size_t i = 0; i < this->n_starts.size(); i++) {
         data->n_starts[i] = fasta_header_size + this->n_starts[i] + (this->n_starts[i] / padding);
         data->n_ends[i] = fasta_header_size + this->n_ends[i] + (this->n_ends[i] / padding);
     }
+    for(size_t i = 0; i < this->m_starts.size(); i++) {
+        data->m_starts[i] = fasta_header_size + this->m_starts[i] + (this->m_starts[i] / padding);
+        data->m_ends[i] = fasta_header_size + this->m_ends[i] + (this->m_ends[i] / padding);
+    }
 
-    size_t n_block = data->n_starts.size();
+
+    size_t block_size;
     unsigned int max_val = fasta_header_size + this->n + total_sequence_containing_lines + 1;
-    data->n_starts[n_block - 1]  = max_val;
-    data->n_ends[n_block - 1] = max_val;
+
+    block_size = data->n_starts.size();
+    data->n_starts[block_size - 1]  = max_val;
+    data->n_ends[block_size - 1] = max_val;
+
+    block_size = data->m_starts.size();
+    data->m_starts[block_size - 1]  = max_val;
+    data->m_ends[block_size - 1] = max_val;
 
     return data;
 }
@@ -129,6 +141,9 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
         throw std::runtime_error("Empty cache was provided\n");
     }
 #endif //DEBUG
+
+    std::cout << "m block starts: " << this->m_starts.size() << "\n";
+    std::cout << "m block starts: " << this->m_ends.size() << "\n\n";
 
     uint32_t written = 0;
 
