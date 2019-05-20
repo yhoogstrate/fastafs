@@ -289,14 +289,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
         complen += 4; // n-blocks [0]
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-        complen += (3*4); // m-blocks
+        complen += (3 * 4); // m-blocks
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         complen += 4; // res
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 1 sequence-data-block
-        complen += (16+3)/4;
+        complen += (16 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
@@ -306,68 +306,68 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // n block
-        complen += (3*4);
+        complen += (3 * 4);
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // m block
-        complen += (3*4);
+        complen += (3 * 4);
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         complen += 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 2 sequence-data-block
-        complen += (16+3)/4;
+        complen += (16 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
     {
         // test ... + sequence 3 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
-        complen += 4 + 4 + (3*4) + 4;
+        complen += 4 + 4 + (3 * 4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 3 sequence-data-block
-        complen += (13+3)/4;
+        complen += (13 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
     {
         // test ... + sequence 4 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
-        complen += 4 + 4 + (3*4) + 4;
+        complen += 4 + 4 + (3 * 4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 4 sequence-data-block
-        complen += (14+3)/4;
+        complen += (14 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
     {
         // test ... + sequence 5 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
-        complen += 4 + 4 + (3*4) + 4;
+        complen += 4 + 4 + (3 * 4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 5 sequence-data-block
-        complen += (15+3)/4;
+        complen += (15 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
     {
         // test ... + sequence 6 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
-        complen += 4 + (3*4) + (3*4) + 4;
+        complen += 4 + (3 * 4) + (3 * 4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 6 sequence-data-block
-        complen += (8+3)/4;
+        complen += (8 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
     {
         // test ... + sequence 7 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
-        complen += 4 + (3*4) + (3*4) + 4;
+        complen += 4 + (3 * 4) + (3 * 4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
         // test ... + sequence 7 sequence-data-block
-        complen += (6+3)/4;
+        complen += (6 + 3) / 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }

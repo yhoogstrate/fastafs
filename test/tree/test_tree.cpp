@@ -129,20 +129,20 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
                     current[s] = 1; // als deze 1 is, betekend het dat het matchen 1 positie terug is gestart - s-1 bestaat nog niet
                 }
                 // de else if hieronder kan slimmer, door nog een losse for-for te maken (nu moet er in de hele loop extra ge-ift worden
-                else if(l == size_l - 1 and current[s]+1 >= min_subseq_len) { // in de laatste rij betekend een mismatch dat beide suffixen matchen
-                    uint32_t len = previous[s-1] ;
-                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s-1) - previous[s-1] +1, s-1, (l-1) - previous[s-1] + 1, l-1, len            );
-                    assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); // len of both subseqs must be identical
+                else if(l == size_l - 1 and current[s] + 1 >= min_subseq_len) { // in de laatste rij betekend een mismatch dat beide suffixen matchen
+                    uint32_t len = previous[s - 1] ;
+                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s - 1) - previous[s - 1] + 1, s - 1, (l - 1) - previous[s - 1] + 1, l - 1, len            );
+                    assert( (s - 1) - ((s - 1) - previous[s - 1] + 1)   ==     (l - 1) - ((l - 1) - previous[s - 1] + 1)   ); // len of both subseqs must be identical
                     traceback[s][l] = len ;
                     traceback2[ {s, l}] = len;
                 } else {
-                    current[s] = previous[s-1] + 1;
+                    current[s] = previous[s - 1] + 1;
                 }
             } else {
-                if(s > 0 and previous[s-1] >= min_subseq_len) {
-                    uint32_t len = previous[s-1] ;
-                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s-1) - previous[s-1] +1, s-1, (l-1) - previous[s-1] + 1, l-1, len            );
-                    assert( (s-1) - ((s-1) - previous[s-1] +1)   ==     (l-1) - ((l-1) - previous[s-1] + 1)   ); // len of both subseqs must be identical
+                if(s > 0 and previous[s - 1] >= min_subseq_len) {
+                    uint32_t len = previous[s - 1] ;
+                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s - 1) - previous[s - 1] + 1, s - 1, (l - 1) - previous[s - 1] + 1, l - 1, len            );
+                    assert( (s - 1) - ((s - 1) - previous[s - 1] + 1)   ==     (l - 1) - ((l - 1) - previous[s - 1] + 1)   ); // len of both subseqs must be identical
                     traceback[s][l] = len ;
                     traceback2[ {s, l}] = len;
                     //intervals.push_back(    Interval<std::size_t, int>(s, l, intervals.size() + 1)    );

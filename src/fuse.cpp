@@ -315,12 +315,12 @@ void fuse(int argc, char *argv[])
     time_t now = time (0);
     strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
     printf("\033[0;32m[%s]\033[0;33m init (recv arguments):\033[0m [argc=%i]", cur_time, argc);
-    for(int i=0; i<argc; i++) {
+    for(int i = 0; i < argc; i++) {
         printf(" argv[%u]=\"%s\"", i, argv[i]);
     }
     strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
     printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]", cur_time, ffi->argc_fuse);
-    for(int i=0; i<ffi->argc_fuse; i++) {
+    for(int i = 0; i < ffi->argc_fuse; i++) {
         printf(" argv[%u]=\"%s\"", i, argv2[i]);
     }
     printf("\n");

@@ -430,7 +430,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 #endif
     const size_t header_offset = this->name.size() + 2;
     //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
-    const unsigned long chunksize = 1024*1024;// seems to not matter that much
+    const unsigned long chunksize = 1024 * 1024; // seems to not matter that much
     char chunk[chunksize + 2];
     chunk[chunksize] = '\0';
     SHA_CTX ctx;
@@ -540,7 +540,7 @@ void fastafs::load(std::string afilename)
             file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
-            memblock = new char [20+1];//sha1 is 20b
+            memblock = new char [20 + 1]; //sha1 is 20b
             file.seekg(0, std::ios::beg);
             uint32_t i;
             // HEADER
@@ -816,7 +816,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 return written;
             }
         }
-        uint32_t header_block_len = 4+4+4+4 + ((uint32_t) this->data.size() * (1 + 4));
+        uint32_t header_block_len = 4 + 4 + 4 + 4 + ((uint32_t) this->data.size() * (1 + 4));
         uint32_t header_offset_previous = 0;
         for(uint32_t i = 0; i < this->data.size(); i++) {
             header_block_len += (uint32_t) this->data[i]->name.size();
@@ -1120,7 +1120,7 @@ int fastafs::info(bool ena_verify_checksum)
                 serv_addr.sin_family = AF_INET;
                 serv_addr.sin_port = htons(443);
                 // Convert IPv4 and IPv6 addresses from text to binary form
-                if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr)<=0) {
+                if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr) <= 0) {
                     printf("\nInvalid address/ Address not supported \n");
                     return -1;
                 }

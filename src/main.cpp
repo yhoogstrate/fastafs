@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                     } else {
                         if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                             from_file = true;
-                        } else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i+1 < argc-1) {
+                        } else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i + 1 < argc - 1) {
                             try {
                                 sscanf(argv[++i], "%u", &padding);
                             } catch(std::exception const & e) {

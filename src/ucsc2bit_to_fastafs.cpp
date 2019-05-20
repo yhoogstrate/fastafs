@@ -154,7 +154,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                         break;
                     }
                     if(k % 4 == 3) {
-                        fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
+                        fh_fastafs.write((char *) & (t_out.data), (size_t) 1); // name size
                     }
                     k++;
                 }
@@ -164,7 +164,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                     t_out.set(twobit_byte::iterator_to_offset(j), 0);
                 }
                 // @todo hf_fastsfs << t_out.data
-                fh_fastafs.write((char *) &(t_out.data), (size_t) 1); // name size
+                fh_fastafs.write((char *) & (t_out.data), (size_t) 1); // name size
             }
             SHA1_Final(t->sha1_digest, &t->ctx);
             // write N blocks
