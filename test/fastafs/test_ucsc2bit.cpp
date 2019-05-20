@@ -153,18 +153,12 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-
     fasta_to_fastafs("test/data/test.fa", fastafs_file);
-
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
-
     BOOST_REQUIRE(fs.data.size() > 0);
-
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
-
-
     // check ucsc2bit header:
     char buffer[1024 + 1];
     static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
@@ -181,42 +175,36 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                    "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x10\x00\x00\x00"s // m blocks [(0, 16)]
                                    "\x00\x00\x00\x00"s // reserved
                                    "\x00\x55\xAA\xFF"s // sequence
-
                                    // seq2
                                    "\x10\x00\x00\x00"s // len
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s // m blocks [(8, 11 - 8 + 1 = 4)]
                                    "\x00\x00\x00\x00"s // reserved
                                    "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
-
                                    // seq 3
                                    "\x0D\x00\x00\x00"s // len
                                    "\x00\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x05\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s // reserved
                                    "\x93\x93\xAA\x40"s // last one is 01 00 00 00
-
                                    // seq 4
                                    "\x0E\x00\x00\x00"s
                                    "\x00\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x06\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s
                                    "\x93\x93\xAA\x50"s// last one is 01 01 00 00
-
                                    // seq 5
                                    "\x0F\x00\x00\x00"s
                                    "\x00\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x07\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s
                                    "\x93\x93\xAA\x54"s// last one is 01 01 01 00
-
                                    // seq 6
                                    "\x08\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s
                                    "\x93\x00" // ACTG NNNN = 10010011 00000000
-
                                    // seq 7
                                    "\x06\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s // n blocks
@@ -225,210 +213,168 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
     uint32_t complen;
-
     // test header
     complen = 8;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen), 0, complen), 0);
-
     // test ... + n-seq
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + reserved
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 1 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 1 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 2 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 2 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 3 name
     complen += 7;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 3 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 4 name
     complen += 7;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 4 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 5 name
     complen += 7;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 5 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 6 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 6 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 7 name
     complen += 5;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 7 offset
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
     // test ... + sequence 1 data-block (without sequence)
     {
         complen += 4; // len
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         complen += 4; // n-blocks [0]
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         complen += (3*4); // m-blocks
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         complen += 4; // res
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 1 sequence-data-block
         complen += (16+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
     {
         // test ... + sequence 2 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
         complen += 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // n block
         complen += (3*4);
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // m block
         complen += (3*4);
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         complen += 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 2 sequence-data-block
         complen += (16+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
     {
         // test ... + sequence 3 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
         complen += 4 + 4 + (3*4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 3 sequence-data-block
         complen += (13+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
-
     {
         // test ... + sequence 4 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
         complen += 4 + 4 + (3*4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 4 sequence-data-block
         complen += (14+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
     {
         // test ... + sequence 5 data-block (without sequence) [ n, n-blocks, n-mblock, reserved]
         complen += 4 + 4 + (3*4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 5 sequence-data-block
         complen += (15+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
     {
         // test ... + sequence 6 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
         complen += 4 + (3*4) + (3*4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 6 sequence-data-block
         complen += (8+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
-
     {
         // test ... + sequence 7 data-block (without sequence) [ n, n-blocks, n-start 1, n-len 1, n-mblock, reserved]
         complen += 4 + (3*4) + (3*4) + 4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
         // test ... + sequence 7 sequence-data-block
         complen += (6+3)/4;
         fs.view_ucsc2bit_chunk(buffer, complen, 0);
         BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
     }
-
     // out of bound check
     uint32_t written = fs.view_ucsc2bit_chunk(buffer, complen + 4, 0);
     BOOST_CHECK_EQUAL(written, complen);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
-
-
     // debug toolkit
     /*
     for(uint32_t i = 0; i < reference.size() && i < complen; i++) {
@@ -448,18 +394,12 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-
     fasta_to_fastafs("test/data/test.fa", fastafs_file);
-
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
-
     BOOST_REQUIRE(fs.data.size() > 0);
-
     std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
-
-
     // check ucsc2bit header:
     char buffer[1024 + 1];
     static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
@@ -476,42 +416,36 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x10\x00\x00\x00"s // m blocks [(0, 16)]
                                    "\x00\x00\x00\x00"s // reserved
                                    "\x00\x55\xAA\xFF"s // sequence
-
                                    // seq2
                                    "\x10\x00\x00\x00"s // len
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x04\x00\x00\x00"s // m blocks [(8, 11 - 8 + 1 = 4)]
                                    "\x00\x00\x00\x00"s // reserved
                                    "\x93\x93\x00\x93"s // ACTG ACTG nnnn ACTG = 10010011 10010011 00000000 10010011 = \x93 \x93 \x00 \x93
-
                                    // seq 3
                                    "\x0D\x00\x00\x00"s // len
                                    "\x00\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x05\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s // reserved
                                    "\x93\x93\xAA\x40"s // last one is 01 00 00 00
-
                                    // seq 4
                                    "\x0E\x00\x00\x00"s
                                    "\x00\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x06\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s
                                    "\x93\x93\xAA\x50"s// last one is 01 01 00 00
-
                                    // seq 5
                                    "\x0F\x00\x00\x00"s
                                    "\x00\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x08\x00\x00\x00"s "\x07\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s
                                    "\x93\x93\xAA\x54"s// last one is 01 01 01 00
-
                                    // seq 6
                                    "\x08\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x04\x00\x00\x00"s "\x04\x00\x00\x00"s // m blocks
                                    "\x00\x00\x00\x00"s
                                    "\x93\x00" // ACTG NNNN = 10010011 00000000
-
                                    // seq 7
                                    "\x06\x00\x00\x00"s
                                    "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x02\x00\x00\x00"s // n blocks
@@ -520,7 +454,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
     uint32_t complen;
-
     // voor lengte 1...(245-1)
     //  voor i = 0, 245-lengte
     for(complen = 1; complen < reference.size(); complen++) {
@@ -529,7 +462,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0, complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
         }
     }
-
     //for(uint32_t i = 0; i < complen; i++) {
     //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
     //if(reference[i + file_offset] != buffer[i])

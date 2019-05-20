@@ -36,13 +36,11 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
     // nucleotides must be:
     // => T - 00, C - 01, A - 10, G - 11
     // => T - 00, C -  1, A -  2, G -  3
-
 #if DEBUG
     if(bit_offset != 0 and bit_offset != 2 and bit_offset != 4 and bit_offset != 6) {
         throw std::invalid_argument("twobit_byte(bit_offset, ..) must be 0, 2, 4 or 6\n");
     }
 #endif //DEBUG
-
     //set   bit(s): INPUT |= 1 << N;
     //unset bit(s): INPUT &= ~(1 << N);
     switch(nucleotide) {
@@ -97,7 +95,6 @@ void twobit_byte::set(char* buffer)
         case 'G':
             this->set(bit_offsets[i], 3);
             break;
-
 #if DEBUG
         default:
             throw std::invalid_argument("twobit_byte::set(char *) invalid value\n");
@@ -114,11 +111,9 @@ void twobit_byte::set(char* buffer)
 char *twobit_byte::get(unsigned char length)
 {
     char *seq = new char[length + 1];
-
     for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
         seq[i] = twobit_byte::twobit_hash[this->data][i];
     }
-
     seq[length] = '\0';
     return seq;
 }

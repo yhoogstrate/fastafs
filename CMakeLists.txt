@@ -51,9 +51,7 @@ find_program(ASTYLE astyle)
 
 add_custom_command(
 				OUTPUT  make_tidy
-				COMMAND astyle -n --style=linux include/*.hpp
-				COMMAND astyle -n --style=linux src/*.cpp
-				COMMAND astyle -n --style=linux test/*/*.cpp
+				COMMAND bash tidy.sh
 			)
 
 add_custom_target(tidy DEPENDS make_tidy )

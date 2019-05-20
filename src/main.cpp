@@ -80,33 +80,28 @@ int main(int argc, char *argv[])
             std::cout << "This is free software: you are free to change and redistribute it.\n";
             std::cout << "There is NO WARRANTY, to the extent permitted by law.\n\n";
             std::cout << "The " << PACKAGE << " package is written by Youri Hoogstrate.\n";
-
             exit(0);
         } else if (strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
                 database d = database();
                 std::string fname_out = d.add(argv[argc - 2]);
-
                 if(is_fasta_file(argv[argc - 1])) {
                     fasta_to_fastafs(argv[argc - 1], fname_out);
                 } else {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 }
-
             } else {
                 usage_cache();
                 exit(0);
             }
         } else if (strcmp(argv[1], "view") == 0) {
             uint32_t padding = 60;
-
             if(argc > 2) {
                 if (strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
                     usage_view();
                     exit(0);
                 }
                 bool from_file = false;
-
                 bool skip_argument = false;
                 for(int i = 2; i < argc - 1; i++) {
                     if(skip_argument) {
@@ -125,7 +120,6 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
@@ -137,7 +131,6 @@ int main(int argc, char *argv[])
                         return EINVAL;
                     }
                 }
-
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
                 ffs2f_init* cache = f.init_ffs2f(padding);
@@ -152,10 +145,8 @@ int main(int argc, char *argv[])
                     usage_info();
                     exit(0);
                 }
-
                 bool from_file = false;
                 bool ena_verify_checksum = false;
-
                 for(int i = 2; i < argc - 1; i++) {
                     if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
@@ -166,7 +157,6 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                 }
-
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
@@ -178,7 +168,6 @@ int main(int argc, char *argv[])
                         return EINVAL;
                     }
                 }
-
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
                 return f.info(ena_verify_checksum);
@@ -193,13 +182,11 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[1], "check") == 0) {
             if(argc > 2) {
                 bool from_file = false;
-
                 for(int i = 2; i < argc - 1; i++) {
                     if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                 }
-
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
@@ -211,7 +198,6 @@ int main(int argc, char *argv[])
                         return EINVAL;
                     }
                 }
-
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
                 return f.check_integrity();
@@ -227,7 +213,6 @@ int main(int argc, char *argv[])
         usage();
         return EINVAL;
     }
-
     return 0;
 }
 
