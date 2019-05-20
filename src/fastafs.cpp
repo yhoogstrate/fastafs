@@ -143,7 +143,10 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
 #endif //DEBUG
 
     std::cout << "m block starts: " << this->m_starts.size() << "\n";
-    std::cout << "m block starts: " << this->m_ends.size() << "\n\n";
+    std::cout << "m block starts: " << this->m_ends.size() << "\n---\n";
+
+    std::cout << "m block starts [cache]: " << cache->m_starts.size() << "\n";
+    std::cout << "m block starts [cache]: " << cache->m_ends.size() << "\n\n";
 
     uint32_t written = 0;
 
@@ -190,6 +193,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     const uint32_t offset_from_sequence_line = pos - pos_limit;
 
     size_t n_block = cache->n_starts.size();
+    size_t m_block = cache->m_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
@@ -221,6 +225,9 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
         n_block--;
     }
+    while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
+        m_block--;
+    }
 
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
@@ -230,19 +237,33 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
             if(pos >= cache->n_starts[n_block]) {
-                buffer[written++] = 'N';
+                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+                    buffer[written++] = 'n';
+                }
+                else {
+                    buffer[written++] = 'N';
+                }
             } else {
                 if(twobit_offset % 4 == 0) {
                     fh->read((char*) (&t.data), 1);
                     chunk = t.get();
                 }
 
-                buffer[written++] = chunk[twobit_offset];
+                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+                    buffer[written++] = chunk[twobit_offset] + 32;
+                }
+                else {
+                    buffer[written++] = chunk[twobit_offset];
+                }
+                
                 twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
             }
 
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
+            }
+            if(pos == cache->m_ends[m_block]) {
+                m_block++;
             }
 
             pos++;
