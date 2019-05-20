@@ -115,8 +115,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     uint32_t ret;
     char chunk[1];
 
-    
-    
+
+
     std::string ref = ">chr1\nttttccccaaaagggg\n";
     uint32_t i;
     for(i = 0; i < ref.size(); i++) {

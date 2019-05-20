@@ -233,8 +233,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
                     buffer[written++] = 'n';
-                }
-                else {
+                } else {
                     buffer[written++] = 'N';
                 }
             } else {
@@ -245,11 +244,10 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
 
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
                     buffer[written++] = chunk[twobit_offset] + 32;
-                }
-                else {
+                } else {
                     buffer[written++] = chunk[twobit_offset];
                 }
-                
+
                 twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
             }
 

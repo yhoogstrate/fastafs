@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                    "\x06"s "chr3.3"s "\xCD\x00\x00\x00"s
                                    "\x04"s "chr4"s   "\xE9\x00\x00\x00"s
                                    "\x04"s "chr5"s   "\x0B\x01\x00\x00"s
-                                   // seq1 
+                                   // seq1
                                    "\x10\x00\x00\x00"s // len
                                    "\x00\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x10\x00\x00\x00"s // m blocks [(0, 16)]
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x06"s "chr3.3"s "\xCD\x00\x00\x00"s
                                    "\x04"s "chr4"s   "\xE9\x00\x00\x00"s
                                    "\x04"s "chr5"s   "\x0B\x01\x00\x00"s
-                                   // seq1 
+                                   // seq1
                                    "\x10\x00\x00\x00"s // len
                                    "\x00\x00\x00\x00"s // n blocks
                                    "\x01\x00\x00\x00"s "\x00\x00\x00\x00"s "\x10\x00\x00\x00"s // m blocks [(0, 16)]
