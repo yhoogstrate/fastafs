@@ -52,8 +52,8 @@ uint16_t twobytes_to_uint(char *chars)
  */
 void uint_to_twobytes(char *chars, uint16_t n)
 {
-    chars[0] = (signed char) ((n >> 8) & 0xFF);
-    chars[1] = (signed char) (n & 0xFF);
+    chars[0] = (signed char)((n >> 8) & 0xFF);
+    chars[1] = (signed char)(n & 0xFF);
 }
 
 
@@ -62,20 +62,20 @@ void uint_to_twobytes(char *chars, uint16_t n)
 
 void uint_to_fourbytes(char *chars, uint32_t n)
 {
-    chars[0] = (signed char) ((n >> 24) & 0xFF);
-    chars[1] = (signed char) ((n >> 16) & 0xFF);
-    chars[2] = (signed char) ((n >> 8) & 0xFF);
-    chars[3] = (signed char) (n & 0xFF);
+    chars[0] = (signed char)((n >> 24) & 0xFF);
+    chars[1] = (signed char)((n >> 16) & 0xFF);
+    chars[2] = (signed char)((n >> 8) & 0xFF);
+    chars[3] = (signed char)(n & 0xFF);
 }
 
 
 // ucsc2bit is somehow stringreverted
 void uint_to_fourbytes_ucsc2bit(char *chars, uint32_t n)
 {
-    chars[3] = (signed char) ((n >> 24) & 0xFF);
-    chars[2] = (signed char) ((n >> 16) & 0xFF);
-    chars[1] = (signed char) ((n >> 8) & 0xFF);
-    chars[0] = (signed char) (n & 0xFF);
+    chars[3] = (signed char)((n >> 24) & 0xFF);
+    chars[2] = (signed char)((n >> 16) & 0xFF);
+    chars[1] = (signed char)((n >> 8) & 0xFF);
+    chars[0] = (signed char)(n & 0xFF);
 }
 
 
@@ -97,7 +97,7 @@ char *human_readable_fs(uint32_t bitsize, char *buf)
     float size = (float) bitsize;
     uint32_t i = 0;
     const char *units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
-    while (size > 1024) {
+    while(size > 1024) {
         size /= 1024;
         i++;
     }
@@ -142,11 +142,11 @@ bool is_fasta_file(char *filename)
 {
     char buf[2];
     FILE *fp;
-    if ((fp = fopen(filename, "rb")) == NULL) {
+    if((fp = fopen(filename, "rb")) == NULL) {
         throw std::runtime_error("Could not read first byte of putative FASTA file.");
         return false;
     }
-    if (fread(buf, 1, 2, fp) == 2) {
+    if(fread(buf, 1, 2, fp) == 2) {
         fclose(fp);
         return (buf[0] == '>');// return true if first byte equals >
     } else {

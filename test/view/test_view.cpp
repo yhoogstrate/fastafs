@@ -289,8 +289,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
         std::string substr_file = full_file.substr(offset, 100);
         written = fs.view_fasta_chunk(4, buffer, 100, offset);
         std_buffer = std::string(buffer, substr_file.size());
-        BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset );
-        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << offset );
+        BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset);
+        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << offset);
         flush_buffer(buffer, 100, '?');
     }
     delete[] buffer;
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     flush_buffer(buffer, 100, '?');
     //std::string std_buffer;
     // test fastafs_seq functions
-    std::ifstream fh (fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream fh(fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(fh.is_open());
     // 1   2   3   4   5   6   7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22
     //[>] [c] [h] [r] [3] [.] [1] [\n] [A] [C] [T] [G] [A] [C] [T] [G] [A] [A] [A] [A] [C] [\n]

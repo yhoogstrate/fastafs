@@ -278,14 +278,14 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00"                  // no metadata fields [padding will come soon?]
         ;
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
-    std::ifstream file ("tmp/test_cachce_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file("tmp/test_cachce_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
     std::streampos size;
     char * buffer;
     size = file.tellg();
     buffer = new char [size];
-    file.seekg (0, std::ios::beg);
-    file.read (buffer, size);
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
     file.close();
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);

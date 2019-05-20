@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
     // check ucsc2bit header:
     char buffer[1024 + 1];
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
     // check ucsc2bit header:
     char buffer[1024 + 1];
@@ -457,7 +457,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
     // voor lengte 1...(245-1)
     //  voor i = 0, 245-lengte
     for(complen = 1; complen < reference.size(); complen++) {
-        for(uint32_t file_offset = 0; file_offset < reference.size() - complen - 1 ; file_offset++ ) {
+        for(uint32_t file_offset = 0; file_offset < reference.size() - complen - 1 ; file_offset++) {
             fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
             BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0, complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
         }

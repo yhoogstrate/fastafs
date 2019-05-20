@@ -64,33 +64,33 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fasta, std::ios::beg);
-    uint_to_fourbytes(buffer, this->n_actg );
-    fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+    uint_to_fourbytes(buffer, this->n_actg);
+    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     fh_fastafs.seekp(index_file_position, std::ios::beg);
     // N blocks
     uint_to_fourbytes(buffer, this->n_block_starts.size());
-    fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->n_block_starts.size(); j++) {
         uint_to_fourbytes(buffer, this->n_block_starts[j]);
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
     for(j = 0; j < this->n_block_ends.size(); j++) {
         uint_to_fourbytes(buffer, this->n_block_ends[j]);
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
     // write checksum
     SHA1_Final(this->sha1_digest, &this->ctx);
-    fh_fastafs.write(reinterpret_cast<char *> (&this->sha1_digest), (size_t) 20);
+    fh_fastafs.write(reinterpret_cast<char *>(&this->sha1_digest), (size_t) 20);
     // M blocks
     uint_to_fourbytes(buffer, this->m_block_starts.size());
-    fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->m_block_starts.size(); j++) {
         uint_to_fourbytes(buffer, this->m_block_starts[j]);
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
     for(j = 0; j < this->m_block_ends.size(); j++) {
         uint_to_fourbytes(buffer, this->m_block_ends[j]);
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
 }
 
@@ -244,7 +244,7 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
     char buffer[4 +  1];
     uint_to_fourbytes(buffer, (uint32_t) index.size());
-    fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(size_t i = 0; i < index.size(); i++) {
         s = index[i];
         // flag
@@ -255,7 +255,7 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
         fh_fastafs.write(s->name.c_str(), (size_t) s->name.size());// name
         // location of sequence data in file
         uint_to_fourbytes(buffer, (uint32_t) s->file_offset_in_fasta);
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
         delete s;
     }
     fh_fastafs << "\x00"s;// no metadata tags (YET)
@@ -263,6 +263,6 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
     fh_fastafs.seekp(8, std::ios::beg);
     fh_fastafs << "\x00\x01"s; // updated flag
     uint_to_fourbytes(buffer, index_file_position);//position of header
-    fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     return written;
 }

@@ -131,8 +131,8 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
                 // de else if hieronder kan slimmer, door nog een losse for-for te maken (nu moet er in de hele loop extra ge-ift worden
                 else if(l == size_l - 1 and current[s] + 1 >= min_subseq_len) { // in de laatste rij betekend een mismatch dat beide suffixen matchen
                     uint32_t len = previous[s - 1] ;
-                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s - 1) - previous[s - 1] + 1, s - 1, (l - 1) - previous[s - 1] + 1, l - 1, len            );
-                    assert( (s - 1) - ((s - 1) - previous[s - 1] + 1)   ==     (l - 1) - ((l - 1) - previous[s - 1] + 1)   ); // len of both subseqs must be identical
+                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s - 1) - previous[s - 1] + 1, s - 1, (l - 1) - previous[s - 1] + 1, l - 1, len);
+                    assert((s - 1) - ((s - 1) - previous[s - 1] + 1)   == (l - 1) - ((l - 1) - previous[s - 1] + 1));         // len of both subseqs must be identical
                     traceback[s][l] = len ;
                     traceback2[ {s, l}] = len;
                 } else {
@@ -141,8 +141,8 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
             } else {
                 if(s > 0 and previous[s - 1] >= min_subseq_len) {
                     uint32_t len = previous[s - 1] ;
-                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s - 1) - previous[s - 1] + 1, s - 1, (l - 1) - previous[s - 1] + 1, l - 1, len            );
-                    assert( (s - 1) - ((s - 1) - previous[s - 1] + 1)   ==     (l - 1) - ((l - 1) - previous[s - 1] + 1)   ); // len of both subseqs must be identical
+                    printf("s:[%u, %u] ~ l:[%u,%u]  (%u)\n", (s - 1) - previous[s - 1] + 1, s - 1, (l - 1) - previous[s - 1] + 1, l - 1, len);
+                    assert((s - 1) - ((s - 1) - previous[s - 1] + 1)   == (l - 1) - ((l - 1) - previous[s - 1] + 1));         // len of both subseqs must be identical
                     traceback[s][l] = len ;
                     traceback2[ {s, l}] = len;
                     //intervals.push_back(    Interval<std::size_t, int>(s, l, intervals.size() + 1)    );
@@ -211,11 +211,11 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
                     route[s][l][0] = s - traceback[s][l];
                     route[s][l][1] = l - traceback[s][l];
                     //printf("    match (%u,%u)   ",route[s][l][0], route[s][l][1]);
-                } else if (scoremax == score1) {
+                } else if(scoremax == score1) {
                     route[s][l][0] = s - 1;
                     route[s][l][1] = l - 1;
                     //printf("    mm -1,-1   ");
-                } else if (scoremax == score2) {
+                } else if(scoremax == score2) {
                     route[s][l][0] = s - 1;
                     route[s][l][1] = l;
                     //printf("    mm -1,0   ");

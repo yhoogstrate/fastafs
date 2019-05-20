@@ -30,8 +30,8 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     uint32_t i, j, n;
     ucsc2bit_seq_header *s;
     ucsc2bit_seq_header_conversion_data *t;
-    std::ifstream fh_ucsc2bit (ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
-    std::ofstream fh_fastafs (fastafs_file.c_str(), std::ios::out | std::ios::binary);
+    std::ifstream fh_ucsc2bit(ucsc2bit_file.c_str(), std::ios::in | std::ios::binary);
+    std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios::out | std::ios::binary);
     if(fh_ucsc2bit.is_open() and fh_fastafs.is_open()) {
         // Write header
         fh_fastafs << FASTAFS_MAGIC;
@@ -93,7 +93,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             }
             // write number fo compressed nucleotides
             uint_to_fourbytes(buffer, s->dna_size - t->N);
-            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             // parse and convert sequence
             fh_ucsc2bit.read(buffer, 4);
             twobit_byte t_in = twobit_byte();
@@ -169,34 +169,34 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             SHA1_Final(t->sha1_digest, &t->ctx);
             // write N blocks
             uint_to_fourbytes(buffer, s->n_blocks);
-            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             for(j = 0; j < s->n_blocks; j++) {
                 uint_to_fourbytes(buffer, s->n_block_starts[j]);
-                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+                fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             }
             for(j = 0; j < s->n_blocks; j++) {
                 uint_to_fourbytes(buffer, s->n_block_starts[j] + s->n_block_sizes[j] - 1);
-                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+                fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             }
             // write checksum
-            fh_fastafs.write(reinterpret_cast<char *> (&t->sha1_digest), (size_t) 20);
+            fh_fastafs.write(reinterpret_cast<char *>(&t->sha1_digest), (size_t) 20);
             // write M blocks (masked region; upper/lower case)
             uint_to_fourbytes(buffer, s->m_blocks);
-            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             for(j = 0; j < s->m_blocks; j++) {
                 uint_to_fourbytes(buffer, s->m_block_starts[j]);
-                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+                fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             }
             for(j = 0; j < s->m_blocks; j++) {
                 uint_to_fourbytes(buffer, s->m_block_starts[j] + s->m_block_sizes[j] - 1);
-                fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+                fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             }
         }
         // save startposition of index
         unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
         // write index/footer
         uint_to_fourbytes(buffer, (uint32_t) data.size());
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
         for(i = 0; i < n; i++) {
             s = data[i];
             t = data2[i];
@@ -207,7 +207,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             fh_fastafs.write(s->name, (size_t) s->name_size);// name
             // location of sequence data in file
             uint_to_fourbytes(buffer, (uint32_t) t->file_offset_dna_in_ucsc2bit);
-            fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+            fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
             delete[] s->name;
             delete s;
             delete t;
@@ -218,7 +218,7 @@ void ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         fh_fastafs.seekp(8, std::ios::beg);
         fh_fastafs << "\x00\x01"s; // updated flag
         uint_to_fourbytes(buffer, index_file_position);//position of header
-        fh_fastafs.write(reinterpret_cast<char *> (&buffer), (size_t) 4);
+        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
     fh_fastafs.close();
     fh_ucsc2bit.close();

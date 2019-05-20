@@ -70,10 +70,10 @@ void usage_cache(void)
 
 int main(int argc, char *argv[])
 {
-    if (argc > 1) {
-        if (strcmp(argv[1], "--help") == 0 or strcmp(argv[1], "-h") == 0) {
+    if(argc > 1) {
+        if(strcmp(argv[1], "--help") == 0 or strcmp(argv[1], "-h") == 0) {
             usage();
-        } else if (strcmp(argv[1], "--version") == 0) {
+        } else if(strcmp(argv[1], "--version") == 0) {
             std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "\n\n";
             std::cout << "Copyright (C) 2017 Youri Hoogstrate." << "\n";
             std::cout << "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n";
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
             std::cout << "There is NO WARRANTY, to the extent permitted by law.\n\n";
             std::cout << "The " << PACKAGE << " package is written by Youri Hoogstrate.\n";
             exit(0);
-        } else if (strcmp(argv[1], "cache") == 0) {
+        } else if(strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
                 database d = database();
                 std::string fname_out = d.add(argv[argc - 2]);
@@ -94,10 +94,10 @@ int main(int argc, char *argv[])
                 usage_cache();
                 exit(0);
             }
-        } else if (strcmp(argv[1], "view") == 0) {
+        } else if(strcmp(argv[1], "view") == 0) {
             uint32_t padding = 60;
             if(argc > 2) {
-                if (strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
+                if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
                     usage_view();
                     exit(0);
                 }
@@ -107,9 +107,9 @@ int main(int argc, char *argv[])
                     if(skip_argument) {
                         skip_argument = false;
                     } else {
-                        if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
+                        if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                             from_file = true;
-                        } else if ((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i + 1 < argc - 1) {
+                        } else if((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i + 1 < argc - 1) {
                             try {
                                 sscanf(argv[++i], "%u", &padding);
                             } catch(std::exception const & e) {
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
                 usage_view();
                 return EINVAL;
             }
-        } else if (strcmp(argv[1], "info") == 0) {
+        } else if(strcmp(argv[1], "info") == 0) {
             if(argc > 2) {
                 if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
                     usage_info();
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
                 bool from_file = false;
                 bool ena_verify_checksum = false;
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
+                    if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     } else if(strcmp(argv[i], "-e") == 0 or strcmp(argv[i], "--ena-verify") == 0) {
                         ena_verify_checksum = true;
@@ -174,16 +174,16 @@ int main(int argc, char *argv[])
             } else {
                 usage_info();
             }
-        } else if (strcmp(argv[1], "mount") == 0) {
+        } else if(strcmp(argv[1], "mount") == 0) {
             fuse(argc, argv);
-        } else if (strcmp(argv[1], "list") == 0) {
+        } else if(strcmp(argv[1], "list") == 0) {
             database d = database();
             d.list();
-        } else if (strcmp(argv[1], "check") == 0) {
+        } else if(strcmp(argv[1], "check") == 0) {
             if(argc > 2) {
                 bool from_file = false;
                 for(int i = 2; i < argc - 1; i++) {
-                    if (strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
+                    if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                 }

@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
     // >  c  h  r  1 \n  T  T  T  T  C  C  C  C  A  A  A  A  G  G  G  G \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(fs.data[0]->n), 23);
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
     ffs2f_init* cache_p0 = fs.init_ffs2f(0);
     // then: check returncodes:
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
-    std::ifstream file (fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
     BOOST_CHECK_EQUAL(fs.check_integrity(), 0);
 }

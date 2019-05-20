@@ -34,12 +34,12 @@ struct fastafs_fuse_instance {
 };
 
 
-static int do_getattr( const char *path, struct stat *st )
+static int do_getattr(const char *path, struct stat *st)
 {
     fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
     char cur_time[100];
     time_t now = time(0);
-    strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->f->name.c_str(), ffi->padding);
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
@@ -54,7 +54,7 @@ static int do_getattr( const char *path, struct stat *st )
     st->st_gid = getgid(); // The group of the file/directory is the same as the group of the user who mounted the filesystem
     st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
     st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
-    if ( strcmp( path, "/" ) == 0 ) {
+    if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0644;
         //st->st_nlink = 1;
         //st->st_size = 1024;
@@ -80,19 +80,19 @@ static int do_getattr( const char *path, struct stat *st )
 }
 
 
-static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
     fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
     char cur_time[100];
-    time_t now = time (0);
-    strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+    time_t now = time(0);
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
     std::string virtual_fasta_filename = ffi->f->name + ".fa";
     std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
     std::string virtual_ucsc2bit_filename = ffi->f->name + ".2bit";
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
-    if (strcmp(path, "/" ) == 0 ) { // If the user is trying to show the files/directories of the root directory show the following
+    if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
         filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
         filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
         filler(buffer, virtual_ucsc2bit_filename.c_str(), NULL, 0);
@@ -103,24 +103,24 @@ static int do_readdir( const char *path, void *buffer, fuse_fill_dir_t filler, o
 }
 
 
-static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi )
+static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
     char cur_time[100];
-    time_t now = time (0);
-    strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+    time_t now = time(0);
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
     std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
     std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
     std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
     static int written;
-    if(strcmp(path, virtual_fasta_filename.c_str() ) == 0) {
+    if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
         printf("    return written=%u\n", written);
-    } else if(strcmp(path, virtual_faidx_filename.c_str() ) == 0 ) {
+    } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         printf("    return written=%u\n", written);
-    } else if(strcmp(path, virtual_ucsc2bit_filename.c_str() ) == 0 ) {
+    } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
         printf("    return written=%u\n", written);
     } else {
@@ -312,13 +312,13 @@ void fuse(int argc, char *argv[])
     fastafs_fuse_instance *ffi = parse_args(argc, argv, argv2);
     // part 2 - print what the planning is
     char cur_time[100];
-    time_t now = time (0);
-    strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+    time_t now = time(0);
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m init (recv arguments):\033[0m [argc=%i]", cur_time, argc);
     for(int i = 0; i < argc; i++) {
         printf(" argv[%u]=\"%s\"", i, argv[i]);
     }
-    strftime (cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]", cur_time, ffi->argc_fuse);
     for(int i = 0; i < ffi->argc_fuse; i++) {
         printf(" argv[%u]=\"%s\"", i, argv2[i]);

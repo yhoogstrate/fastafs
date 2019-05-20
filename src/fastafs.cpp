@@ -49,7 +49,7 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
     }
 #endif
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
-    return 1 + (uint32_t ) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
+    return 1 + (uint32_t) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
 
 void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
@@ -185,7 +185,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     const char *chunk = twobit_byte::twobit_hash[0];
     unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
     if(twobit_offset != 0) {
-        fh->read((char*) (&t.data), 1);
+        fh->read((char*)(&t.data), 1);
         chunk = t.get();
     }
     while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
@@ -208,7 +208,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
                 }
             } else {
                 if(twobit_offset % 4 == 0) {
-                    fh->read((char*) (&t.data), 1);
+                    fh->read((char*)(&t.data), 1);
                     chunk = t.get();
                 }
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
@@ -216,7 +216,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
                 } else {
                     buffer[written++] = chunk[twobit_offset];
                 }
-                twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
+                twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
             }
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
@@ -348,7 +348,7 @@ uint32_t fastafs_seq::view_fasta_chunk(uint32_t padding, char *buffer, off_t sta
     const char *chunk = twobit_byte::twobit_hash[0];
     unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
     if(twobit_offset != 0) {
-        fh->read((char*) (&t.data), 1);
+        fh->read((char*)(&t.data), 1);
         chunk = t.get();
     }
     while(n_block > 0 and pos <= n_ends_w[n_block - 1]) { // iterate back
@@ -364,11 +364,11 @@ uint32_t fastafs_seq::view_fasta_chunk(uint32_t padding, char *buffer, off_t sta
                 buffer[written++] = 'N';
             } else {
                 if(twobit_offset % 4 == 0) {
-                    fh->read((char*) (&t.data), 1);
+                    fh->read((char*)(&t.data), 1);
                     chunk = t.get();
                 }
                 buffer[written++] = chunk[twobit_offset];
-                twobit_offset = (unsigned char) (twobit_offset + 1) % 4;
+                twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
             }
             if(pos == n_ends_w[n_block]) {
                 n_block++;
@@ -484,7 +484,7 @@ uint32_t fastafs_seq::n_padding(uint32_t offset, uint32_t position_until, uint32
     // end if
     uint32_t n = (position_until + 1) / (padding + 1);
     // minus all the n's that occurred before offset
-    if (offset > 0) {
+    if(offset > 0) {
         n -= fastafs_seq::n_padding(0, offset - 1, padding);
     }
     return n;
@@ -532,8 +532,8 @@ void fastafs::load(std::string afilename)
 {
     std::streampos size;
     char *memblock;
-    std::ifstream file (afilename, std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         this->filename = afilename;
         size = file.tellg();
         if(size < 16) {
@@ -544,7 +544,7 @@ void fastafs::load(std::string afilename)
             file.seekg(0, std::ios::beg);
             uint32_t i;
             // HEADER
-            file.read (memblock, 14);
+            file.read(memblock, 14);
             memblock[16] = '\0';
             // check magic
             for(i = 0 ; i < 4;  i++) {
@@ -565,7 +565,7 @@ void fastafs::load(std::string afilename)
             this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
             unsigned char j;
             fastafs_seq *s;
-            for(i = 0; i < this->data.size(); i ++ ) {
+            for(i = 0; i < this->data.size(); i ++) {
                 s = new fastafs_seq;
                 // flag
                 file.read(memblock, 2);
@@ -639,8 +639,8 @@ void fastafs::view_fasta(ffs2f_init* cache)
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
             this->data[i]->view_fasta(cache->sequences[i], &file);
         }
@@ -678,8 +678,8 @@ uint32_t fastafs::view_fasta_chunk_cached(
     off_t file_offset)
 {
     uint32_t written = 0;
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         size_t i = 0;// sequence iterator
         uint32_t pos = (uint32_t) file_offset;
         fastafs_seq *seq;
@@ -714,8 +714,8 @@ uint32_t fastafs::view_fasta_chunk_cached(
 uint32_t fastafs::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
     uint32_t written = 0;
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         size_t i = 0;// sequence iterator
         uint32_t pos = (uint32_t) file_offset;
         fastafs_seq *seq;
@@ -777,8 +777,8 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     uint32_t written = 0;
     uint32_t pos = (uint32_t) file_offset; // iterator (position, in bytes) in file
     uint32_t pos_limit = 0; // counter to keep track of when writing needs to stop for given loop
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         char n_seq[4];
         ffs2f_init* cache = this->init_ffs2f(0);
         pos_limit += 4;// skip this loop after writing first four bytes
@@ -995,8 +995,8 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
 uint32_t fastafs::fasta_filesize(uint32_t padding)
 {
     uint32_t n = 0;
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         file.close();
         for(uint32_t i = 0; i < this->data.size(); i++) {
             n += this->data[i]->fasta_filesize(padding);
@@ -1013,13 +1013,13 @@ std::string fastafs::get_faidx(uint32_t padding)
     std::string contents = "";
     std::string padding_s = std::to_string(padding);
     std::string padding_s2 = std::to_string(padding + 1);// padding + newline
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         file.close();
         uint32_t offset = 0;
         for(uint32_t i = 0; i < this->data.size(); i++) {
             offset += 1;// '>'
-            offset += (uint32_t ) this->data[i]->name.size() + 1;// "chr1\n"
+            offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
             contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
             offset += this->data[i]->n; // ACTG NNN
             offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
@@ -1094,7 +1094,7 @@ int fastafs::info(bool ena_verify_checksum)
     }
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         std::cout << "FASTAFS NAME: " << this->filename << "\n";
         printf("SEQUENCES:    %u\n", (uint32_t) this->data.size());
@@ -1112,7 +1112,7 @@ int fastafs::info(bool ena_verify_checksum)
                 std::string hello2 = "GET /ena/cram/sha1/" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
                 //char *hello = &hello2.c_str();
                 char buffer[1024] = {0};
-                if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+                if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
                     printf("\n Socket creation error \n");
                     return -1;
                 }
@@ -1124,7 +1124,7 @@ int fastafs::info(bool ena_verify_checksum)
                     printf("\nInvalid address/ Address not supported \n");
                     return -1;
                 }
-                if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+                if(connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
                     printf("\nConnection Failed \n");
                     return -1;
                 }
@@ -1132,9 +1132,9 @@ int fastafs::info(bool ena_verify_checksum)
                 SSLeay_add_ssl_algorithms();
                 SSL_load_error_strings();
                 const SSL_METHOD *meth = TLS_client_method();// defining version specificity in here often results in deprecation warnings over time
-                SSL_CTX *ctx = SSL_CTX_new (meth);
+                SSL_CTX *ctx = SSL_CTX_new(meth);
                 ssl = SSL_new(ctx);
-                if (!ssl) {
+                if(!ssl) {
                     printf("Error creating SSL.\n");
                     //log_ssl();
                     return -1;
@@ -1142,7 +1142,7 @@ int fastafs::info(bool ena_verify_checksum)
                 //int sock_ssl = SSL_get_fd(ssl);
                 SSL_set_fd(ssl, sock);
                 int err = SSL_connect(ssl);
-                if (err <= 0) {
+                if(err <= 0) {
                     printf("Error creating SSL connection.  err=%x\n", err);
                     //log_ssl();
                     fflush(stdout);
@@ -1177,8 +1177,8 @@ int fastafs::check_integrity()
     sha1_hash[40] = '\0';
     std::string old_hash;
     ffs2f_init* cache = this->init_ffs2f(0);
-    std::ifstream file (this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if (file.is_open()) {
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             old_hash = std::string(sha1_hash);

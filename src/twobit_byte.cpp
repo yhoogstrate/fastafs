@@ -26,7 +26,7 @@ not sure what the quickest way is - this way all calculations are done as ints, 
  */
 unsigned char twobit_byte::iterator_to_offset(uint32_t iterator)
 {
-    return (unsigned char) ((3 - (iterator % 4)) * 2);
+    return (unsigned char)((3 - (iterator % 4)) * 2);
 }
 
 // @todo, offset needs to be second parameter
@@ -48,18 +48,18 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         //      ??????00
         //          11?? ~(3 << bit_offset)
         // data ????????
-        this->data = (unsigned char) (this->data & ~(3 << bit_offset));
+        this->data = (unsigned char)(this->data & ~(3 << bit_offset));
         break;
     case 1://NUCLEOTIDE_C (01)
-        this->data = (unsigned char) (this->data & ~(2 << bit_offset));
-        this->data = (unsigned char) (this->data | (1 << bit_offset));
+        this->data = (unsigned char)(this->data & ~(2 << bit_offset));
+        this->data = (unsigned char)(this->data | (1 << bit_offset));
         break;
     case 2://NUCLEOTIDE_A (10)
-        this->data = (unsigned char) (this->data & ~(1 << bit_offset));
-        this->data = (unsigned char) (this->data | (2 << bit_offset));
+        this->data = (unsigned char)(this->data & ~(1 << bit_offset));
+        this->data = (unsigned char)(this->data | (2 << bit_offset));
         break;
     case 3://NUCLEOTIDE_G (11)
-        this->data = (unsigned char) (this->data | (nucleotide << bit_offset));
+        this->data = (unsigned char)(this->data | (nucleotide << bit_offset));
         break;
 #if DEBUG
     default:
@@ -76,7 +76,7 @@ void twobit_byte::set(char* buffer)
 {
     const std::array< unsigned char, 4> bit_offsets = {6, 4, 2, 0};
     for(unsigned char i = 0; i < 4; i++) {
-        switch (buffer[i]) {
+        switch(buffer[i]) {
         case 't':
         case 'T':
         case 'n':
@@ -111,7 +111,7 @@ void twobit_byte::set(char* buffer)
 char *twobit_byte::get(unsigned char length)
 {
     char *seq = new char[length + 1];
-    for(unsigned char i = 0; i < length; i++ ) {// length = 4: i = 0, 1, 2, 3
+    for(unsigned char i = 0; i < length; i++) { // length = 4: i = 0, 1, 2, 3
         seq[i] = twobit_byte::twobit_hash[this->data][i];
     }
     seq[length] = '\0';
