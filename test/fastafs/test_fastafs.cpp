@@ -148,12 +148,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     fasta_to_fastafs("test/data/test.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
+
     ffs2f_init* cache = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
-    //printf("[%i]\n", fs.data.size());
     BOOST_REQUIRE(fs.data.size() > 0);
+
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
-    //printf("[%s]\n", fs.data[0]->sha1(&file).c_str());
+
     fs.data[0]->sha1(cache->sequences[0], &file);
     BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache->sequences[0], &file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
 }
@@ -171,9 +172,12 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
     fasta_to_fastafs("test/data/test_002.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
+
     BOOST_REQUIRE(fs.data.size() > 0);
+
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
+
     BOOST_CHECK_EQUAL(fs.check_integrity(), 0);
 }
 
@@ -196,66 +200,79 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     f.n_ends = {1, 4, 7, 11};
     uint32_t n_passed;
     bool in_n;
+
     // NNxxNxNNxxxN
     // |
     in_n = f.get_n_offset(0, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 0);
     BOOST_CHECK_EQUAL(in_n, true);
+
     // NNxxNxNNxxxN
     // -|
     in_n = f.get_n_offset(1, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 1);
     BOOST_CHECK_EQUAL(in_n, true);
+
     // NNxxNxNNxxxN
     // --|
     in_n = f.get_n_offset(2, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 2);
     BOOST_CHECK_EQUAL(in_n, false);
+
     // NNxxNxNNxxxN
     // -- |
     in_n = f.get_n_offset(3, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 2);
     BOOST_CHECK_EQUAL(in_n, false);
+
     // NNxxNxNNxxxN
     // --  |
     in_n = f.get_n_offset(4, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 2);
     BOOST_CHECK_EQUAL(in_n, true);
+
     // NNxxNxNNxxxN
     // --  -|
     in_n = f.get_n_offset(5, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 3);
     BOOST_CHECK_EQUAL(in_n, false);
+
     // NNxxNxNNxxxN
     // --  - |
     in_n = f.get_n_offset(6, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 3);
     BOOST_CHECK_EQUAL(in_n, true);
+
     // NNxxNxNNxxxN
     // --  - -|
     in_n = f.get_n_offset(7, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 4);
     BOOST_CHECK_EQUAL(in_n, true);
+
     // NNxxNxNNxxxN
     // --  - --|
     in_n = f.get_n_offset(8, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, false);
+
     // NNxxNxNNxxxN
     // --  - -- |
     in_n = f.get_n_offset(9, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, false);
+
     // NNxxNxNNxxxN
     // --  - --  |
     in_n = f.get_n_offset(10, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, false);
+
     // NNxxNxNNxxxN
     // --  - --   |
     in_n = f.get_n_offset(11, &n_passed);
     BOOST_CHECK_EQUAL(n_passed, 5);
     BOOST_CHECK_EQUAL(in_n, true);
+
     // I could test 12, but that behavious is not yet defined, and doesn't need to?
 }
 

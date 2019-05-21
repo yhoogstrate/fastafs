@@ -109,16 +109,20 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
+
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+
     std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
     std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
     std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
+
     static int written;
     if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-        written = (signed int) ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
+        //written = (signed int) ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
+        written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
         printf("    return written=%u\n", written);
     } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
@@ -294,6 +298,9 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 fastafs *f = new fastafs(std::string(argv[i]));
                 f->load(fname);
                 ffi->f = f;
+
+                printf("initializing cache, with true\n");
+                ffi->cache = f->init_ffs2f(ffi->padding, true);// allow mixed case
             }
         } else { // mountpoint
             //argv_test[ffi->argc_fuse] = argv[i];
@@ -301,6 +308,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
         i++;
     }
+
     return ffi;
 }
 

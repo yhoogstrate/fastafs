@@ -68,7 +68,7 @@ public:
     void view_fasta(ffs2f_init_seq*, std::ifstream *);
 
     // legacy: slow code
-    uint32_t view_fasta_chunk(uint32_t, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
+    //uint32_t view_fasta_chunk(uint32_t, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
     uint32_t view_fasta_chunk_cached(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
 
     std::string sha1(ffs2f_init_seq*, std::ifstream *);
@@ -108,7 +108,7 @@ public:
     void load(std::string);
     void view_fasta(ffs2f_init*);
     uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);
-    uint32_t view_fasta_chunk(uint32_t, char *, size_t, off_t);
+    //uint32_t view_fasta_chunk(uint32_t, char *, size_t, off_t);
     uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
 
     uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);
