@@ -18,6 +18,7 @@
 
 #include "fuse.hpp"
 #include "database.hpp"
+#include "fastafs.hpp"
 
 
 // http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
@@ -31,6 +32,8 @@ struct fastafs_fuse_instance {
     uint32_t padding;
     int argc_fuse;
     //char *argv_fuse[];
+    
+    ffs2f_init *cache; //
 };
 
 
@@ -258,7 +261,7 @@ fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     // Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
     //char **argv_test = (char **) malloc(sizeof(char*) * argc);
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
-    fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 0});
+    fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 0, nullptr});
     //printf("argc=%i",argc);
     argv_fuse[ffi->argc_fuse++] = (char *) "fasfafs mount";
     //ffi->argv_fuse[0] = argv[0];

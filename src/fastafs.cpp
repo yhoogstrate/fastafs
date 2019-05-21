@@ -84,9 +84,11 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
     } else {
         data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  1, total_sequence_containing_lines);
     }
+
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
     unsigned int max_val = fasta_header_size + this->n + total_sequence_containing_lines + 1;
     size_t block_size;
+    
     // n blocks are stored in the fastafs object per nucleotide position, but as fasta file they need to be calculated as file position
     for(size_t i = 0; i < this->n_starts.size(); i++) {
         data->n_starts[i] = fasta_header_size + this->n_starts[i] + (this->n_starts[i] / padding);
@@ -95,15 +97,18 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
     block_size = data->n_starts.size();
     data->n_starts[block_size - 1]  = max_val;
     data->n_ends[block_size - 1] = max_val;
+
+    // m blocks
     if(allow_masking) {
         for(size_t i = 0; i < this->m_starts.size(); i++) {
             data->m_starts[i] = fasta_header_size + this->m_starts[i] + (this->m_starts[i] / padding);
             data->m_ends[i] = fasta_header_size + this->m_ends[i] + (this->m_ends[i] / padding);
         }
-        block_size = data->m_starts.size();
-        data->m_starts[block_size - 1]  = max_val;
-        data->m_ends[block_size - 1] = max_val;
     }
+    block_size = data->m_starts.size();
+    data->m_starts[block_size - 1]  = max_val;
+    data->m_ends[block_size - 1] = max_val;
+
     return data;
 }
 
