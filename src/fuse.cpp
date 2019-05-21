@@ -32,7 +32,7 @@ struct fastafs_fuse_instance {
     uint32_t padding;
     int argc_fuse;
     //char *argv_fuse[];
-    
+
     ffs2f_init *cache; //
 };
 

@@ -88,7 +88,7 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
     unsigned int max_val = fasta_header_size + this->n + total_sequence_containing_lines + 1;
     size_t block_size;
-    
+
     // n blocks are stored in the fastafs object per nucleotide position, but as fasta file they need to be calculated as file position
     for(size_t i = 0; i < this->n_starts.size(); i++) {
         data->n_starts[i] = fasta_header_size + this->n_starts[i] + (this->n_starts[i] / padding);

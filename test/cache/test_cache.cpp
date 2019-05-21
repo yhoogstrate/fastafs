@@ -277,13 +277,16 @@ BOOST_AUTO_TEST_CASE(test_cache)
         // METADATA
         "\x00"                  // no metadata fields [padding will come soon?]
         ;
+
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_cachce_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
+
     std::streampos size;
     char * buffer;
     size = file.tellg();
     buffer = new char [size];
+
     file.seekg(0, std::ios::beg);
     file.read(buffer, size);
     file.close();
@@ -294,6 +297,8 @@ BOOST_AUTO_TEST_CASE(test_cache)
         //    printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n",i, reference[i],buffer[i],buffer[i],buffer[i]);
         //}
     }
+
+    delete[] buffer;
 }
 
 
@@ -308,25 +313,50 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 {
     // generate FASTAFS file from FASTA file
     fasta_to_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
     f2.load("tmp/test_cachce_test.fastafs");
+
     const uint32_t padding = 60;
+    ffs2f_init* cache_p60_uc = f2.init_ffs2f(padding, false); // upper case
+    ffs2f_init* cache_p60_mc = f2.init_ffs2f(padding, true); // mixed case
+
+    // upper case test
     const uint32_t write_size = 32;
     char buffer[write_size + 1] = "";
     buffer[32] = '\0';
     uint32_t written = 0;
     uint32_t w = 0;
     std::string output = "";
+
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk(padding, buffer, write_size, written);
+        w = f2.view_fasta_chunk_cached(cache_p60_uc, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
+
     std::string uppercase = ">chr1\nTTTTCCCCAAAAGGGG\n>chr2\nACTGACTGNNNNACTG\n>chr3.1\nACTGACTGAAAAC\n>chr3.2\nACTGACTGAAAACC\n>chr3.3\nACTGACTGAAAACCC\n>chr4\nACTGNNNN\n>chr5\nNNACTG\n";
+    BOOST_CHECK(output.compare(uppercase) == 0);
+
+    // mixed case test
+    buffer[32] = '\0';
+    written = 0;
+    w = 0;
+    output = "";
+
+    while(written < f2.fasta_filesize(padding)) {
+        w = f2.view_fasta_chunk_cached(cache_p60_mc, buffer, write_size, written);
+        output.append(buffer, w);
+        written += w;
+    }
     std::string mixedcase = ">chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n";
+
     // check case insensitive; without masking included
-    BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    BOOST_CHECK(output.compare(mixedcase) == 0);
+
+    delete cache_p60_uc;
+    delete cache_p60_mc;
 }
 
 
@@ -343,23 +373,31 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 {
     // generate FASTAFS file from FASTA file
     fasta_to_fastafs("test/data/test_003.fa", "tmp/test_cachce_test_003.fastafs");
+
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
     f2.load("tmp/test_cachce_test_003.fastafs");
+
     const uint32_t padding = 60;
+    ffs2f_init* cache_p60 = f2.init_ffs2f(padding, false);
+
     const uint32_t write_size = 32;
     char buffer[write_size + 1] = "";
     buffer[32] = '\0';
     uint32_t written = 0;
     uint32_t w = 0;
     std::string output = "";
+
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk(padding, buffer, write_size, written);
+        w = f2.view_fasta_chunk_cached(cache_p60, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
+
     std::string uppercase = ">seq1\nTCCCTTGCNNAGGGNTGTNTTTNTNTANNNGTNGGAGACCNGANTAAAGTCACACCACAT\nCACGNNNTCAGCCTNAAACGGCGNATTAAGTGATCCTANCAACGATCTATCCGNANACAC\nAAATANGTTGACCTCGCGTCNNAGGCACCCGNNANAAGNANGCGCCGCACGGGNNGGNGN\nTACTAACGTCNNNCGCATGTNAGATGGACCNGTNNGCNANTTACCGNNCATACNCCNNNC\nCNAGAATTTCGTATNANAACNCAATTANGGTGGTCCGNNNGGTGNCAACCCTACCTTANA\nTNGGAACATATTNTAGGNCNCGNAATAAANGAGAGTAGNCCCANCTCANGANNACNNGGA\nCTCGCAGCCCNTTNAGCANNCAGCGGCGCNNTGGNTNGTTCTCANTNNNTNCAGGCGTNC\nGAAACTCGTGANNANAGACNGGTTGCNNCGNNANGNTNAGCCTCNTCGNAGCAGTTNTTA\nCGGTNCAACTNTAAGCCAGGTCANCAGTCNNN\n>seq2\nNNAATCATNCGAGNCTATNATANNAGNACNCTGTAGACCNNATACTNNATCAANNNTCTG\nTCANTNCNCAGNCNGGNGNNTTGNTNNATNGANGACTACGGTGCAGTTCGGTTGTGCGCC\nNCNNGATCTNTNNTACCGCGANCCCGGTNGNTGCTNCGATANTCANAACAGCAGAGANNG\nTTGNACAAATTTCTAGGNAACTTNCCCCCTACAANAGNNCGTACNNCNGTCTNAGTCACT\nANGCNCTGCNAAANGCGGCGATTCTTACNNGTNTCCGCGGGNTNNGTTCTCCACACTANA\nNCCNTATCNGACTANTATCATTNNCAANGAGTTAAGNCCAATNTACGCAAGTNAATTNNG\nAACGCCNCNACACCNTNGGANAGCNTGTTNTCACGNGTGACGCNNTGNATTNTATGCTTN\nAGAGTTANGCGGNCNGCGTCTGTGNTCGNGGGNCNTATAGGCGNCNNTGGCNGCCCCGTT\nNAGNNCTNGNNANTCNTGGNAGCCNGCGGTNN\n>seq3\nANTNANNNCNCNCNTNCNGNANTNNNGNTNGNNNANANANGNTNCNNNTNCNCNANCNTN\nTNNNGNTNGNTNNNANTNGNTNANNNTNCNANNNCNTNTNTNGNGNGNCNNNNNCNCNAN\nNNTNANNNANNNANTNCNGNCNANGNGNCNANTNANANANANNNTNANTNCNGNANANNN\nTNTNCNTNANCNGNNNNNANANGNCNNNGNANCNCNNNCNANNNTNTNANCNNNGNANNN\nANTNNNCNTNTNTNGNANGNCNTNGNANNNANTNGNGNTNTNNNGNANANTNGNCNTNCN\nGNGNTNGNCNGNGNANANNNANTNNNANGNGNGNTNCNGNGNANGNANANTNGNANANTN\nCNTNANCNTNCNTNCNTNANCNTNTNGNANGNGNGNNNCNTNANTNCNCNANTNCNGNCN\nNNTNANGNANTNCNCNCNANGNCNCNANGNGNGNGNCNCNANTNTNNNANANCNTNGNGN\nGNANTNANGNTNGNNNGNTNANGNNNANCNAN\n>seq4\nNTNGNTNGNGNTNCNANGNTNCNTNCNANCNGNNNANGNANGNGNTNTNGNNNCNCNTNN\nNNNANANTNCNANTNGNGNTNCNGNTNCNGNCNNNGNGNANANANNNTNGNNNGNNNANT\nNTNANTNTNNNCNCNANCNTNTNNNANTNTNANCNGNANNNNNCNGNANTNANCNGNGNG\nNTNGNTNTNGNNNANCNCNGNANCNNNCNNNTNCNTNTNGNCNANGNCNNNNNANCNANC\nNNNANCNANCNGNGNCNANGNNNGNTNCNANGNCNNNCNCNTNTNNNANCNCNNNANANN\nNTNCNGNTNNNCNCNCNTNCNNNCNNNGNANTNANCNNNCNTNTNCNANGNCNANCNTNC\nNNNNNCNANTNNNGNANGNCNNNANNNNNCNANANCNANCNNNTNCNANTNNNTNNNNNT\nNCNTNANCNTNGNGNCNTNCNNNCNTNANNNGNCNGNTNGNANTNGNTNNNNNNNGNNNG\nNTNCNNNNNANANGNANTNGNGNTNTNGNNNA\n";
     BOOST_CHECK(output.compare(uppercase) == 0);
+
+    delete cache_p60;
 }
 
 
