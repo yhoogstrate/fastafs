@@ -31,6 +31,7 @@ The function below decodes these 4 charred strings into an uint32_teger
 uint32_t fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
 {
     uint32_t u = ((unsigned char) chars[3 + offset] << 24) | ((unsigned char) chars[2 + offset] << 16) | ((unsigned char)  chars[1 + offset] << 8) | ((unsigned char) chars[0 + offset]);
+
     return u;
 }
 
@@ -41,7 +42,7 @@ uint32_t fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
  */
 uint16_t twobytes_to_uint(char *chars)
 {
-    uint16_t u = ((unsigned char)  chars[0] << 8) | ((unsigned char) chars[1]);
+    uint16_t u = (uint16_t)(((unsigned char) chars[0] << 8) | ((unsigned char) chars[1]));
 
     return u;
 }
@@ -98,7 +99,7 @@ char *human_readable_fs(uint32_t bitsize, char *buf)
     float size = (float) bitsize;
     uint32_t i = 0;
     const char *units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
-    while(size > 1024) {
+    while((size > 1024) & (i < 9)) {
         size /= 1024;
         i++;
     }
@@ -115,7 +116,6 @@ void sha1_digest_to_hash(unsigned char *digest, char *hash)
         sprintf(hash + (i * 2), "%02x", digest[i]);
     }
     hash[40] = 0;
-    //return void;
 }
 
 
@@ -143,16 +143,19 @@ bool is_fasta_file(char *filename)
 {
     char buf[2];
     FILE *fp;
+
     if((fp = fopen(filename, "rb")) == NULL) {
         throw std::runtime_error("Could not read first byte of putative FASTA file.");
         return false;
     }
+
     if(fread(buf, 1, 2, fp) == 2) {
         fclose(fp);
         return (buf[0] == '>');// return true if first byte equals >
     } else {
         throw std::runtime_error("Could not read sufficient data.");
     }
+
     return false;
 }
 
