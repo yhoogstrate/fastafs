@@ -15,13 +15,16 @@
 void fasta_seq_header_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
     this->twobit_data.set(twobit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
+
     // if fourth nucleotide, 2bit is complete; write to disk
     if(this->n_actg % 4 == 3) {
         fh_fastafs << this->twobit_data.data;
     }
+
     if(this->previous_was_N) {
         this->n_block_ends.push_back(this->n_actg + this->N - 1);
     }
+
     this->previous_was_N = false;
     this->n_actg++;
 }
@@ -31,6 +34,7 @@ void fasta_seq_header_conversion_data::add_N()
     if(!this->previous_was_N) {
         this->n_block_starts.push_back(this->n_actg + this->N);
     }
+
     this->previous_was_N = true;
     this->N++;
 }
@@ -40,6 +44,7 @@ void fasta_seq_header_conversion_data::add_N()
 void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs)
 {
     uint32_t j;
+
     // flush last nucleotide
     if(this->n_actg % 4 != 0) {
         for(j = this->n_actg % 4; j < 4; j++) {
@@ -47,9 +52,11 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
         }
         fh_fastafs << this->twobit_data.data;
     }
+
     if(this->previous_was_N) {
         this->n_block_ends.push_back(this->n_actg + this->N - 1);
     }
+
     // do M block
     if(this->in_m_block) {
         this->m_block_ends.push_back(this->n_actg + this->N - 1);

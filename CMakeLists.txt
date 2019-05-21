@@ -123,10 +123,11 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as al
 add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte")
 add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
-add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
+#add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
 add_test(test_ucsc2bit            "${BUILD_TEST_DIR}/test_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
+add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'

@@ -22,6 +22,7 @@ BOOST_AUTO_TEST_CASE(test_twobit_conversions)
     t.set(seq);//10101010 = 170
     printf("[%s] -> %i ~ %u -> [%s]\n", seq, (signed char) t.data, (unsigned char) t.data, t.get());
     BOOST_CHECK_EQUAL(t.data, 170);
+
     seq[0] = 'T';
     seq[1] = 'A';
     seq[2] = 'A';

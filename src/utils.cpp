@@ -42,6 +42,7 @@ uint32_t fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
 uint16_t twobytes_to_uint(char *chars)
 {
     uint16_t u = ((unsigned char)  chars[0] << 8) | ((unsigned char) chars[1]);
+
     return u;
 }
 
