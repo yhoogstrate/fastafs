@@ -1,3 +1,7 @@
+2019-05-21  Youri Hoogstrate
+
+    * Supports Masked regions (and conversion to/from UCSC TwoBit files)
+
 2019-05-07  Youri Hoogstrate
 
     * Full support for UCSC TwoBit files in `fastafs cache` (adding to db)
