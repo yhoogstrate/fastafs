@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     std::string full_file = std::string(buffer);
     BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
     flush_buffer(buffer, 2110, '?');
-    ffs2f_init* cache = fs.init_ffs2f(60);
+    ffs2f_init* cache = fs.init_ffs2f(60, true);
     /* maak alle substrings:
       [....]
       [...]

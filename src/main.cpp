@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
                 }
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
-                ffs2f_init* cache = f.init_ffs2f(padding);
+                ffs2f_init* cache = f.init_ffs2f(padding, true);
                 f.view_fasta(cache);//@todo make argument parsing
             } else {
                 usage_view();

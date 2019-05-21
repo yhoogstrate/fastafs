@@ -47,7 +47,7 @@ struct ffs2f_init {
 class fastafs_seq
 {
 public:
-    ffs2f_init_seq* init_ffs2f_seq(uint32_t padding);
+    ffs2f_init_seq* init_ffs2f_seq(uint32_t, bool);
 
     std::string name;//may not exceed 255 chars in current datatype
     uint32_t data_position;// file offset to start reading sequence data
@@ -91,14 +91,14 @@ class fastafs
 {
 
 public:
-    ffs2f_init* init_ffs2f(uint32_t padding);
+    ffs2f_init* init_ffs2f(uint32_t, bool);
 
     fastafs(std::string);
     ~fastafs();
 
     std::string name;
     std::string filename;
-    std::vector<fastafs_seq *> data;
+    std::vector<fastafs_seq*> data;
     uint16_t flag;
 
     uint32_t n();

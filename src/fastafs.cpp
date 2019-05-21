@@ -67,7 +67,7 @@ void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
 
 
 
-ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg)
+ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool allow_masking)
 {
     uint32_t padding = padding_arg;
     if(padding_arg == 0) { // for writing all sequences to one single line after the header
@@ -78,25 +78,38 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg)
     }
     // this can go into the constructor
     const uint32_t total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
-    ffs2f_init_seq* data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines);
+    
+    ffs2f_init_seq* data;
+    if(allow_masking) {
+        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines);
+    }
+    else {
+        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  1, total_sequence_containing_lines);
+    }
+    
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
+    unsigned int max_val = fasta_header_size + this->n + total_sequence_containing_lines + 1;
+    size_t block_size;
+
     // n blocks are stored in the fastafs object per nucleotide position, but as fasta file they need to be calculated as file position
     for(size_t i = 0; i < this->n_starts.size(); i++) {
         data->n_starts[i] = fasta_header_size + this->n_starts[i] + (this->n_starts[i] / padding);
         data->n_ends[i] = fasta_header_size + this->n_ends[i] + (this->n_ends[i] / padding);
     }
-    for(size_t i = 0; i < this->m_starts.size(); i++) {
-        data->m_starts[i] = fasta_header_size + this->m_starts[i] + (this->m_starts[i] / padding);
-        data->m_ends[i] = fasta_header_size + this->m_ends[i] + (this->m_ends[i] / padding);
-    }
-    size_t block_size;
-    unsigned int max_val = fasta_header_size + this->n + total_sequence_containing_lines + 1;
     block_size = data->n_starts.size();
     data->n_starts[block_size - 1]  = max_val;
     data->n_ends[block_size - 1] = max_val;
-    block_size = data->m_starts.size();
-    data->m_starts[block_size - 1]  = max_val;
-    data->m_ends[block_size - 1] = max_val;
+
+    if(allow_masking) {
+        for(size_t i = 0; i < this->m_starts.size(); i++) {
+            data->m_starts[i] = fasta_header_size + this->m_starts[i] + (this->m_starts[i] / padding);
+            data->m_ends[i] = fasta_header_size + this->m_ends[i] + (this->m_ends[i] / padding);
+        }
+        block_size = data->m_starts.size();
+        data->m_starts[block_size - 1]  = max_val;
+        data->m_ends[block_size - 1] = max_val;
+    }
+    
     return data;
 }
 
@@ -651,11 +664,11 @@ void fastafs::view_fasta(ffs2f_init* cache)
 
 
 
-ffs2f_init* fastafs::init_ffs2f(uint32_t padding)
+ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 {
     ffs2f_init *ddata = new ffs2f_init(this->data.size(), padding);
     for(size_t i = 0; i < this->data.size(); i++) {
-        ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding);
+        ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding, allow_masking);
     }
     return ddata;
 }
@@ -861,7 +874,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 header_offset_previous++;
             }
         }
-        ffs2f_init* cache = this->init_ffs2f(0);
+        ffs2f_init* cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
             // number nucleotides
@@ -1187,7 +1200,7 @@ int fastafs::check_integrity()
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
     std::string old_hash;
-    ffs2f_init* cache = this->init_ffs2f(0);
+    ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
