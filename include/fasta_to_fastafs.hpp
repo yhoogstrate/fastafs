@@ -32,7 +32,8 @@ public:
         name(name),
         N(0),
         n_actg(0),
-        previous_was_N(false)
+        previous_was_N(false),
+        in_m_block(false)
     {
         SHA1_Init(&this->ctx);
     }
@@ -45,14 +46,12 @@ public:
     SHA_CTX ctx;
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];
 
-    uint32_t n_blocks;
     std::vector<uint32_t> n_block_starts;
     std::vector<uint32_t> n_block_ends;
 
-    uint32_t m_blocks;
     std::vector<uint32_t> m_block_starts;
     std::vector<uint32_t> m_block_ends;
-
+    bool in_m_block;
 
     twobit_byte twobit_data;
 };

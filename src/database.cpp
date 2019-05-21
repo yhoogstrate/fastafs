@@ -12,15 +12,14 @@
 void database::force_db_exists()
 {
     DIR *dir = opendir(this->path.c_str());
-    if (dir) {
+    if(dir) {
         closedir(dir);
     } else {
-        if(mkdir(this->path.c_str(), S_IRWXU ) == 0) {
+        if(mkdir(this->path.c_str(), S_IRWXU) == 0) {
         } else {
             throw std::runtime_error("could not access and not create database as directory: " + path);
         }
     }
-
     if(FILE *file = fopen(this->idx.c_str(), "r")) {
         fclose(file);
     } else {
@@ -49,19 +48,14 @@ void database::load()
 void database::list()
 {
     std::cout << "FASTAFS NAME\t\tFASTFS ID\t\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT" << std::endl;
-
-
     std::ifstream infile(this->idx);
     std::string line;
-    while (std::getline(infile, line)) {
+    while(std::getline(infile, line)) {
         //std::istringstream iss(line);
-
         std::string fname = this->path + "/" + line + ".fastafs";
-
         fastafs f = fastafs(line);
         f.load(fname);
-
-        std::ifstream file (fname, std::ios::in | std::ios::binary | std::ios::ate);
+        std::ifstream file(fname, std::ios::in | std::ios::binary | std::ios::ate);
         uint32_t size = (uint32_t) file.tellg();
         file.close();
         //http://fibrevillage.com/sysadmin/278-understanding-the-difference-between-etc-mtab-and-proc-mounts-on-linux
@@ -86,10 +80,8 @@ std::string database::add(char *name)
 {
     std::ofstream outputFile;
     outputFile.open(this->idx, std::fstream::app);
-
     outputFile << name << std::endl;
     outputFile.close();
-
     return this->path + "/" + name + ".fastafs";
 }
 
@@ -101,17 +93,14 @@ std::string database::add(char *name)
 std::string database::get(std::string fastafs_name_or_id)
 {
     std::string fname;
-
     std::ifstream infile(this->idx);
     std::string line;
-    while (std::getline(infile, line)) {
+    while(std::getline(infile, line)) {
         //std::istringstream iss(line);
-
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
         }
     }
-
     return fname;
 }
 

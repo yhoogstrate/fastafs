@@ -38,7 +38,7 @@ struct ucsc2bit_seq_header_conversion_data {
 
     off_t file_offset_dna_in_ucsc2bit; // file positions where sequence data blocks start
 
-    ucsc2bit_seq_header_conversion_data():N(0) { }
+    ucsc2bit_seq_header_conversion_data(): N(0) { }
 };
 
 

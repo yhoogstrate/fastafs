@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.2.0")
+set(PROJECT_VERSION "1.3.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -51,9 +51,7 @@ find_program(ASTYLE astyle)
 
 add_custom_command(
 				OUTPUT  make_tidy
-				COMMAND astyle -n --style=linux include/*.hpp
-				COMMAND astyle -n --style=linux src/*.cpp
-				COMMAND astyle -n --style=linux test/*/*.cpp
+				COMMAND bash tidy.sh
 			)
 
 add_custom_target(tidy DEPENDS make_tidy )

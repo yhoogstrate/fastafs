@@ -34,7 +34,7 @@ If this metadata would be written in the header located before the sequence data
 |        | 2* R-STARTS | N x uint32_t | start positions (0-based) |
 |        | 2* R-ENDS | N x uint32_t | end positions (1-based) |
 |        | MASKED-NUCLEOTIDES | uint32_t | Number of M-entries (for lower case regions) |
-|        | M-STARTS | M x uint32_t | start positions (0-based) |
+|        | M-STARTS | M x uint32_t | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
 |        | M-ENDS | M x uint32_t | end positions (1-based) |
 | INDEX  | --- | --- |  |
 |        | NUMBER-SEQUENCES | uint32_t | Number of sequences included |
