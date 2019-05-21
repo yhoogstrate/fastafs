@@ -226,11 +226,13 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
                     fh->read((char*)(&t.data), 1);
                     chunk = t.get();
                 }
+
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = chunk[twobit_offset] + 32;
+                    buffer[written++] = (unsigned char)(chunk[twobit_offset] + 32);
                 } else {
                     buffer[written++] = chunk[twobit_offset];
                 }
+
                 twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
             }
             if(pos == cache->n_ends[n_block]) {
@@ -726,65 +728,6 @@ uint32_t fastafs::view_fasta_chunk_cached(
     return written;
 }
 
-//uint32_t fastafs::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
-//{
-//uint32_t written = 0;
-//std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-//if(file.is_open()) {
-//size_t i = 0;// sequence iterator
-//uint32_t pos = (uint32_t) file_offset;
-//fastafs_seq *seq;
-//while(i < data.size()) {
-//seq = this->data[i];
-//const uint32_t sequence_file_size = seq->fasta_filesize(padding);
-//if(pos < sequence_file_size) {
-//const uint32_t written_seq = seq->view_fasta_chunk(
-//padding,
-//&buffer[written],
-//pos,
-//std::min((uint32_t) buffer_size - written, sequence_file_size),
-//&file);
-//written += written_seq;
-//pos -= (sequence_file_size - written_seq);
-//if(written == buffer_size) {
-//file.close();
-//return written;
-//}
-//} else {
-//pos -= sequence_file_size;
-//}
-//i++;
-//}
-//file.close();
-//} else {
-//throw std::runtime_error("could not load fastafs: " + this->filename);
-//}
-//return written;
-//}
-
-
-
-off_t fastafs::ucsc2bit_filesize(void)
-{
-    off_t nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
-    fastafs_seq *sequence;
-    for(size_t i = 0; i < this->data.size(); i++) {
-        sequence = this->data[i];
-        nn += 1; // namesize
-        nn += 4; // offset in file
-        nn += 4;// dna size
-        nn += 4;// n blocks
-        nn += sequence->n_starts.size() * (4 * 2); // both start and end
-        nn += 4;// masked regions - so far always 0
-        nn += sequence->m_starts.size() * (4 * 2); // both start and end
-        nn += 4;// reserved
-        nn += sequence->name.size();
-        nn += (sequence->n + 3) / 4; // math.ceil hack
-    }
-    return nn;
-}
-
-
 //http://genome.ucsc.edu/FAQ/FAQformat.html#format7
 //https://www.mathsisfun.com/binary-decimal-hexadecimal-converter.html
 uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
@@ -1015,16 +958,13 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
 
 
 
-
-
-
-uint32_t fastafs::fasta_filesize(uint32_t padding)
+size_t fastafs::fasta_filesize(uint32_t padding)
 {
-    uint32_t n = 0;
+    size_t n = 0;
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         file.close();
-        for(uint32_t i = 0; i < this->data.size(); i++) {
+        for(size_t i = 0; i < this->data.size(); i++) {
             n += this->data[i]->fasta_filesize(padding);
         }
     } else {
@@ -1032,6 +972,38 @@ uint32_t fastafs::fasta_filesize(uint32_t padding)
     }
     return n;
 }
+
+
+
+size_t fastafs::ucsc2bit_filesize(void)
+{
+    size_t nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
+    fastafs_seq *sequence;
+    for(size_t i = 0; i < this->data.size(); i++) {
+        sequence = this->data[i];
+        nn += 1; // namesize
+        nn += 4; // offset in file
+        nn += 4;// dna size
+        nn += 4;// n blocks
+        nn += sequence->n_starts.size() * (4 * 2); // both start and end
+        nn += 4;// masked regions - so far always 0
+        nn += sequence->m_starts.size() * (4 * 2); // both start and end
+        nn += 4;// reserved
+        nn += sequence->name.size();
+        nn += (sequence->n + 3) / 4; // math.ceil hack
+    }
+    return nn;
+}
+
+
+
+
+size_t fastafs::dict_filesize(void)
+{
+    size_t size = 0;
+    return size;
+}
+
 
 
 std::string fastafs::get_faidx(uint32_t padding)

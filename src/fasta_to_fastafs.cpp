@@ -55,20 +55,25 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
         this->m_block_ends.push_back(this->n_actg + this->N - 1);
         //printf("closing m-block: %u\n",this->n_actg + this->N - 1);
     }
+
 #if DEBUG
     if(this->m_block_starts.size() != this->m_block_ends.size()) {
         throw std::runtime_error("M blocks not correctly parsed\n");
     }
 #endif //DEBUG
+
     char buffer[4 +  1];
+
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fasta, std::ios::beg);
     uint_to_fourbytes(buffer, this->n_actg);
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
+
     fh_fastafs.seekp(index_file_position, std::ios::beg);
+
     // N blocks
-    uint_to_fourbytes(buffer, this->n_block_starts.size());
+    uint_to_fourbytes(buffer, (uint32_t) this->n_block_starts.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->n_block_starts.size(); j++) {
         uint_to_fourbytes(buffer, this->n_block_starts[j]);
@@ -78,11 +83,13 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
         uint_to_fourbytes(buffer, this->n_block_ends[j]);
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
+
     // write checksum
     SHA1_Final(this->sha1_digest, &this->ctx);
     fh_fastafs.write(reinterpret_cast<char *>(&this->sha1_digest), (size_t) 20);
+
     // M blocks
-    uint_to_fourbytes(buffer, this->m_block_starts.size());
+    uint_to_fourbytes(buffer, (uint32_t) this->m_block_starts.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->m_block_starts.size(); j++) {
         uint_to_fourbytes(buffer, this->m_block_starts[j]);
