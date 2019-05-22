@@ -153,6 +153,7 @@ bool is_fasta_file(char *filename)
         fclose(fp);
         return (buf[0] == '>');// return true if first byte equals >
     } else {
+        fclose(fp);
         throw std::runtime_error("Could not read sufficient data.");
     }
 
