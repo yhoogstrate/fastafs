@@ -580,7 +580,7 @@ void fastafs::load(std::string afilename)
             file.seekg(file_cursor, std::ios::beg);
             file.read(memblock, 4);
             this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
-            unsigned char j;
+            size_t j;
             fastafs_seq *s;
             for(i = 0; i < this->data.size(); i ++) {
                 s = new fastafs_seq;
