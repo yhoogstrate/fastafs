@@ -80,11 +80,12 @@ public:
 };
 
 
-
+/*
 struct fastafs_metadata {
     std::string name;
     std::string uid;
 };
+*/
 
 
 class fastafs
@@ -132,5 +133,9 @@ static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46\x53"s;
 static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
 
 static const int READ_BUFFER_SIZE = 4096;
+
+
+static const std::string DICT_HEADER = "@HD\tVN:1.0\tSO:unsorted\n";
+
 
 #endif
