@@ -1000,7 +1000,20 @@ size_t fastafs::ucsc2bit_filesize(void)
 
 size_t fastafs::dict_filesize(void)
 {
-    size_t size = 0;
+    size_t size = DICT_HEADER.size();
+
+    // every sequence has a:
+    // '@SQ\tSN:' + 'LN:\t' + 'S1:\t' + 20 + 'UR:fastafs://' + this->name.size()  + '\n'
+    //  ||| |||      ||||      ||||           |||||||||||||                           |
+    size += (28 + 20 + this->name.size()) * this->data.size();
+
+    for(size_t i = 0; i < this->data.size(); i++) {
+        size += this->data[i]->name.size();
+
+        std::string seq_size = std::to_string(this->data[i]->n);
+        size += seq_size.size();
+    }
+
     return size;
 }
 
@@ -1011,14 +1024,19 @@ std::string fastafs::get_faidx(uint32_t padding)
     std::string contents = "";
     std::string padding_s = std::to_string(padding);
     std::string padding_s2 = std::to_string(padding + 1);// padding + newline
+
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
     if(file.is_open()) {
         file.close();
         uint32_t offset = 0;
-        for(uint32_t i = 0; i < this->data.size(); i++) {
+        
+        for(size_t i = 0; i < this->data.size(); i++) {
             offset += 1;// '>'
             offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
+        
             contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
+        
             offset += this->data[i]->n; // ACTG NNN
             offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
         }
