@@ -278,5 +278,33 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
 
 
 
+/**
+ * @description tests size and content of creating dict files
+ */
+BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
+{
+/*
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:chr1	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr2	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr3.1	LN:13	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr3.2	LN:14	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr3.3	LN:15	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr4	LN:8	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr5	LN:6	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+ */
+
+    std::string fastafs_file = "tmp/test.fastafs";
+    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    BOOST_REQUIRE(fs.data.size() > 0);
+    BOOST_CHECK_EQUAL(fs.dict_filesize() , 594);
+}
+
+
+
 
 BOOST_AUTO_TEST_SUITE_END()

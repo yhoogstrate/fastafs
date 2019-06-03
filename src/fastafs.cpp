@@ -1001,17 +1001,20 @@ size_t fastafs::ucsc2bit_filesize(void)
 size_t fastafs::dict_filesize(void)
 {
     size_t size = DICT_HEADER.size();
+    printf("[%u] \n",size);
 
     // every sequence has a:
-    // '@SQ\tSN:' + 'LN:\t' + 'S1:\t' + 20 + 'UR:fastafs://' + this->name.size()  + '\n'
-    //  ||| |||      ||||      ||||           |||||||||||||                           |
-    size += (28 + 20 + this->name.size()) * this->data.size();
+    // '@SQ \t SN:' + '\t LN: ??len??? \t' + 'S1:' + 40 + '\t UR:fastafs:///' + this->name.size()  + '\n'
+    //  ||| |  |||     |  |||           |     |||           | ||||||||||||||                           |
+    size += (31 + 40 + this->name.size()) * this->data.size();
+    printf("[%u] \n",size);
 
     for(size_t i = 0; i < this->data.size(); i++) {
         size += this->data[i]->name.size();
-
+        printf("\n - [a: %u] \n",size);
         std::string seq_size = std::to_string(this->data[i]->n);
         size += seq_size.size();
+        printf(" - [b: %u] \n",size);
     }
 
     return size;
