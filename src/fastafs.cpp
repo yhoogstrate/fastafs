@@ -57,6 +57,7 @@ void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
 {
     char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
     uint32_t offset = 0;
+
     //@todo figure out if a do {} while() loop isn't more in place here?
     uint32_t written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
     while(written > 0) {
@@ -737,6 +738,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
+
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
@@ -818,6 +820,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     uint32_t written = 0;
     uint32_t pos = (uint32_t) file_offset; // iterator (position, in bytes) in file
     uint32_t pos_limit = 0; // counter to keep track of when writing needs to stop for given loop
+
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         char n_seq[4];
@@ -1062,6 +1065,7 @@ size_t fastafs::ucsc2bit_filesize(void)
 {
     size_t nn = 4 + 4 + 4 + 4;// header, version, n-seq, rsrvd
     fastafs_seq *sequence;
+
     for(size_t i = 0; i < this->data.size(); i++) {
         sequence = this->data[i];
         nn += 1; // namesize
@@ -1075,6 +1079,7 @@ size_t fastafs::ucsc2bit_filesize(void)
         nn += sequence->name.size();
         nn += (sequence->n + 3) / 4; // math.ceil hack
     }
+
     return nn;
 }
 
@@ -1142,10 +1147,12 @@ uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer
 {
     std::string contents = this->get_faidx(padding);
     uint32_t written = 0;
+
     while(written < buffer_size and written + file_offset < (uint32_t) contents.size()) {
         buffer[written] = contents[written];
         written++;
     }
+
     return written;
 }
 

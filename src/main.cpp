@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
             }
         } else if(strcmp(argv[1], "view") == 0) {
             uint32_t padding = 60;
+            bool view_2bit = false;
 
             if(argc > 2) {
                 if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
@@ -120,6 +121,8 @@ int main(int argc, char *argv[])
                                 return EINVAL;
                             }
                             skip_argument = true;// skip next argument, as it is the padding value
+                        } else if(strcmp(argv[i], "-2") == 0 or strcmp(argv[i], "--2bit") == 0) {
+                            view_2bit = true;
                         }
                     }
                 }
@@ -140,10 +143,22 @@ int main(int argc, char *argv[])
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
 
-                ffs2f_init* cache = f.init_ffs2f(padding, true);
-                f.view_fasta(cache);//@todo make argument parsing
-                delete cache;
+                if(view_2bit) {
+                    char buffer[READ_BUFFER_SIZE + 1];// = new char [READ_BUFFER_SIZE];
+                    uint32_t offset = 0;
 
+                    uint32_t written = f.view_ucsc2bit_chunk(buffer, READ_BUFFER_SIZE, offset);
+                    while(written > 0) {
+                        std::cout << std::string(buffer, written);
+                        offset += written;
+
+                        written = f.view_ucsc2bit_chunk(buffer, READ_BUFFER_SIZE, offset);
+                    }
+                } else {
+                    ffs2f_init* cache = f.init_ffs2f(padding, true);
+                    f.view_fasta(cache);//@todo make argument parsing
+                    delete cache;
+                }
             } else {
                 usage_view();
                 return EINVAL;
