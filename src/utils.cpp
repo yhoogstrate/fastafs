@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <openssl/sha.h>
+#include <openssl/md5.h>
 
 #include "config.hpp"
 
@@ -116,6 +117,14 @@ void sha1_digest_to_hash(unsigned char *digest, char *hash)
         sprintf(hash + (i * 2), "%02x", digest[i]);
     }
     hash[40] = 0;
+}
+
+void md5_digest_to_hash(unsigned char *digest, char *hash)
+{
+    for(uint32_t i = 0; i < MD5_DIGEST_LENGTH; i++) {
+        sprintf(hash + (i * 2), "%02x", digest[i]);
+    }
+    hash[32] = 0;
 }
 
 

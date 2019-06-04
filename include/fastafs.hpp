@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <openssl/sha.h>
+#include <openssl/md5.h>
 
 #include "utils.hpp"
 
@@ -59,8 +60,9 @@ public:
     std::vector<uint32_t> m_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> m_ends;// end positions (nucleotide positions; 0-based)
 
+    // those red from fastafs file
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
-    // masked not -yet- needed||implemented
+    unsigned char md5_digest[MD5_DIGEST_LENGTH];//this is the binary encoded md5 hash, not the ascii decoded
 
     fastafs_seq();
 
@@ -71,7 +73,8 @@ public:
     //uint32_t view_fasta_chunk(uint32_t, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
     uint32_t view_fasta_chunk_cached(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
 
-    std::string sha1(ffs2f_init_seq*, std::ifstream *);
+    std::string sha1(ffs2f_init_seq*, std::ifstream*);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
+    std::string md5(ffs2f_init_seq*, std::ifstream*);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
 
     uint32_t n_twobits();
 

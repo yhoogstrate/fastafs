@@ -11,6 +11,7 @@ void uint_to_fourbytes_ucsc2bit(char *, uint32_t);
 
 char *human_readable_fs(uint32_t, char *);
 void sha1_digest_to_hash(unsigned char *, char *);
+void md5_digest_to_hash(unsigned char *, char *);
 
 std::string std_string_nullbyte_safe(char *, size_t, size_t);
 std::string std_string_nullbyte_safe(char *, size_t);

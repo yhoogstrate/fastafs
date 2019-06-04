@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <openssl/sha.h>
+#include <openssl/md5.h>
 
 // SSL requests to ENA
 #include <sys/socket.h>
@@ -445,18 +446,24 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
         throw std::invalid_argument("Using an empty cache is impossible\n");
     }
 #endif
+
     const size_t header_offset = this->name.size() + 2;
+
     //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
     const unsigned long chunksize = 1024 * 1024; // seems to not matter that much
     char chunk[chunksize + 2];
     chunk[chunksize] = '\0';
+
     SHA_CTX ctx;
     SHA1_Init(&ctx);
+
     fh->clear();
+
     // "(a/b)*b + a%b shall equal a"
     // full iterations = this->n / chunk_size; do this number of iterations looped
     unsigned long n_iterations = (unsigned long) this->n / chunksize;
     signed int remaining_bytes = this->n % chunksize;
+
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
         this->view_fasta_chunk_cached(cache, chunk,
@@ -465,19 +472,77 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
                                       fh);
         SHA1_Update(&ctx, chunk, chunksize);
     }
+
     if(remaining_bytes > 0) {
         this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
         SHA1_Update(&ctx, chunk, remaining_bytes);
         chunk[remaining_bytes] = '\0';
     }
+
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
-    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
-    SHA1_Final(sha1_digest, &ctx);
+    unsigned char cur_sha1_digest[SHA_DIGEST_LENGTH];
+    SHA1_Final(cur_sha1_digest, &ctx);
     fh->clear(); // because gseek was done before
+
     char sha1_hash[41];
-    sha1_digest_to_hash(sha1_digest, sha1_hash);
+    sha1_digest_to_hash(cur_sha1_digest, sha1_hash);
+
     return std::string(sha1_hash);
 }
+
+
+std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
+{
+#if DEBUG
+    if(cache == nullptr) {
+        throw std::invalid_argument("Using an empty cache is impossible\n");
+    }
+#endif
+
+    const size_t header_offset = this->name.size() + 2;
+
+    //const size_t fasta_size = header_offset + this->n; // not size effectively, as terminating newline is skipped..., but length to be read
+    const unsigned long chunksize = 1024 * 1024; // seems to not matter that much
+    char chunk[chunksize + 2];
+    chunk[chunksize] = '\0';
+
+    MD5_CTX ctx;
+    MD5_Init(&ctx);
+
+    fh->clear();
+
+    // "(a/b)*b + a%b shall equal a"
+    // full iterations = this->n / chunk_size; do this number of iterations looped
+    unsigned long n_iterations = (unsigned long) this->n / chunksize;
+    signed int remaining_bytes = this->n % chunksize;
+
+    // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
+    for(uint32_t i = 0; i < n_iterations; i++) {
+        this->view_fasta_chunk_cached(cache, chunk,
+                                      chunksize,
+                                      header_offset + (i * chunksize),
+                                      fh);
+        MD5_Update(&ctx, chunk, chunksize);
+    }
+
+    if(remaining_bytes > 0) {
+        this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
+        MD5_Update(&ctx, chunk, remaining_bytes);
+        chunk[remaining_bytes] = '\0';
+    }
+
+    //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
+    unsigned char cur_md5_digest[MD5_DIGEST_LENGTH];
+    MD5_Final(cur_md5_digest, &ctx);
+    fh->clear(); // because gseek was done before
+
+    char md5_hash[32+1];
+    md5_digest_to_hash(cur_md5_digest, md5_hash);
+
+    return std::string(md5_hash);
+}
+
+
 
 uint32_t fastafs_seq::n_twobits()
 {
@@ -1111,12 +1176,15 @@ int fastafs::info(bool ena_verify_checksum)
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
+
     char sha1_hash[41] = "";
     sha1_hash[40] = '\0';
+
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         std::cout << "FASTAFS NAME: " << this->filename << "\n";
         printf("SEQUENCES:    %u\n", (uint32_t) this->data.size());
+
         for(uint32_t i = 0; i < this->data.size(); i++) {
             sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
             if(ena_verify_checksum) {
@@ -1124,40 +1192,48 @@ int fastafs::info(bool ena_verify_checksum)
                 //https://www.ebi.ac.uk/ena/cram/sha1/<sha1>
                 //std::cout << "https://www.ebi.ac.uk/ena/cram/sha1/" << sha1_hash << "\n";
                 SSL *ssl;
+
                 //int sock_ssl = 0;
                 //struct sockadfiledr_in address;
                 int sock = 0;
                 struct sockaddr_in serv_addr;
                 std::string hello2 = "GET /ena/cram/sha1/" + std::string(sha1_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
+
                 //char *hello = &hello2.c_str();
                 char buffer[1024] = {0};
                 if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
                     printf("\n Socket creation error \n");
                     return -1;
                 }
+
                 memset(&serv_addr, '0', sizeof(serv_addr));
                 serv_addr.sin_family = AF_INET;
                 serv_addr.sin_port = htons(443);
+
                 // Convert IPv4 and IPv6 addresses from text to binary form
                 if(inet_pton(AF_INET, "193.62.193.80", &serv_addr.sin_addr) <= 0) {
                     printf("\nInvalid address/ Address not supported \n");
                     return -1;
                 }
+
                 if(connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
                     printf("\nConnection Failed \n");
                     return -1;
                 }
+
                 SSL_library_init();
                 SSLeay_add_ssl_algorithms();
                 SSL_load_error_strings();
                 const SSL_METHOD *meth = TLS_client_method();// defining version specificity in here often results in deprecation warnings over time
                 SSL_CTX *ctx = SSL_CTX_new(meth);
+
                 ssl = SSL_new(ctx);
                 if(!ssl) {
                     printf("Error creating SSL.\n");
                     //log_ssl();
                     return -1;
                 }
+
                 //int sock_ssl = SSL_get_fd(ssl);
                 SSL_set_fd(ssl, sock);
                 int err = SSL_connect(ssl);
@@ -1168,6 +1244,7 @@ int fastafs::info(bool ena_verify_checksum)
                     return -1;
                 }
                 SSL_write(ssl, hello2.c_str(), (signed int) hello2.length());
+
                 int NNvalread = SSL_read(ssl, buffer, 32);
                 if(NNvalread < 0) {
                     printf("    >%-24s%-12i%s   <connection error>\n", this->data[i]->name.c_str(), this->data[i]->n, sha1_hash);
