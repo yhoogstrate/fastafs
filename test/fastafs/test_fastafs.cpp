@@ -155,10 +155,33 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
-    fs.data[0]->sha1(cache->sequences[0], &file);
+    //fs.data[0]->sha1(cache->sequences[0], &file);
     BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache->sequences[0], &file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
 }
 
+
+BOOST_AUTO_TEST_CASE(test_fastafs_seq_md5)
+{
+    // 1: create FASTAFS file
+    std::string fastafs_file = "tmp/test.fastafs";
+    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    ffs2f_init* cache = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
+    BOOST_REQUIRE(fs.data.size() > 0);
+
+    std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    BOOST_CHECK_EQUAL(fs.data[0]->md5(cache->sequences[0], &file), "75255c6d90778999ad3643a2e69d4344");
+    BOOST_CHECK_EQUAL(fs.data[1]->md5(cache->sequences[1], &file), "8b5673724a9965c29a1d76fe7031ac8a");
+    BOOST_CHECK_EQUAL(fs.data[2]->md5(cache->sequences[2], &file), "61deba32ec4c3576e3998fa2d4b87288");
+    BOOST_CHECK_EQUAL(fs.data[3]->md5(cache->sequences[3], &file), "99b90560f23c1bda2871a6c93fd6a240");
+    BOOST_CHECK_EQUAL(fs.data[4]->md5(cache->sequences[4], &file), "3625afdfbeb43765b85f612e0acb4739");
+    BOOST_CHECK_EQUAL(fs.data[5]->md5(cache->sequences[5], &file), "bd8c080ed25ba8a454d9434cb8d14a68");
+    BOOST_CHECK_EQUAL(fs.data[6]->md5(cache->sequences[6], &file), "980ef3a1cd80afec959dcf852d026246");
+}
 
 
 
