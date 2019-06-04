@@ -335,11 +335,13 @@ BOOST_AUTO_TEST_CASE(test_cache)
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
+/*
         printf("comparing char %i\n", i);
         if(reference[i] != buffer[i]) {
             printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n", i, reference[i], buffer[i], buffer[i], buffer[i]);
         }
     }
+*/
 
     delete[] buffer;
 }

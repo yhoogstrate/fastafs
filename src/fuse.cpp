@@ -145,6 +145,9 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
         printf("    return written=%u\n", written);
+    } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+        written = 0;//(signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
+        //printf("    return written=%u\n", written);
     } else {
         written = -1;
     }

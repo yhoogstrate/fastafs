@@ -16,9 +16,9 @@ Nevertheless, the FASTAFS format is heavily inspired by 2bit.
 Currently the package uses cmake for compilation
 Required dependencies are:
 
- - libboost (only for unit testing, will be come an optional dependency soon)
- - libopenssl (for generating SHA hashes)
- - libfuse (for access to the fuse layer system and file virtualization)
+ -   libboost (only for unit testing, will be come an optional dependency soon)
+ -   libopenssl (for generating SHA hashes)
+ -   libfuse (for access to the fuse layer system and file virtualization)
 
 ## usage
 ### fastafs cache: adding files to fastafs
