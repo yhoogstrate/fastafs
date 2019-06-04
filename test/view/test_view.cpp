@@ -396,7 +396,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     BOOST_REQUIRE_EQUAL(size, 2108);
 
     fh.seekg(0, std::ios::beg);
-    size = fh.tellg();
     fh.read(buffer, 2108);
     fh.close();
     std::string full_file = std::string(buffer);

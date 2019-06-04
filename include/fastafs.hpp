@@ -97,7 +97,7 @@ class fastafs
 public:
     ffs2f_init* init_ffs2f(uint32_t, bool);
 
-    fastafs(std::string);
+    explicit fastafs(std::string);
     ~fastafs();
 
     std::string name;
