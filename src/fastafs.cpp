@@ -1287,7 +1287,7 @@ int fastafs::check_integrity()
     }
 
     int retcode = 0;
-    char md5_hash[32+1] = "";
+    char md5_hash[32 + 1] = "";
     md5_hash[32] = '\0';
     std::string old_hash;
 
