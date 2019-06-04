@@ -106,14 +106,14 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
 
 
 
+const static char nt[2] = "T";
+const static char nc[2] = "C";
+const static char na[2] = "A";
+const static char ng[2] = "G";
+const static char nn[2] = "N";
+
 size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_file)
 {
-    static char nt[2] = "T";
-    static char nc[2] = "C";
-    static char na[2] = "A";
-    static char ng[2] = "G";
-    static char nn[2] = "N";
-
     std::vector<fasta_seq_header_conversion_data*> index;
     fasta_seq_header_conversion_data* s;
 

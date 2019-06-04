@@ -154,6 +154,7 @@ bool is_fasta_file(char *filename)
     FILE *fp;
 
     if((fp = fopen(filename, "rb")) == NULL) {
+        fclose(fp);
         throw std::runtime_error("Could not read first byte of putative FASTA file.");
         return false;
     }

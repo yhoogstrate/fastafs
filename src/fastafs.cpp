@@ -476,7 +476,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
     if(remaining_bytes > 0) {
         this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
         SHA1_Update(&ctx, chunk, remaining_bytes);
-        chunk[remaining_bytes] = '\0';
+        //chunk[remaining_bytes] = '\0';
     }
 
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
