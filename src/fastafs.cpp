@@ -727,7 +727,7 @@ void fastafs::load(std::string afilename)
             delete[] memblock;
         }
     } else {
-        std::cout << "Unable to open file";
+        throw std::invalid_argument("Unable to open file '" + afilename + "'");
     }
 }
 
@@ -806,7 +806,7 @@ uint32_t fastafs::view_fasta_chunk_cached(
         }
         file.close();
     } else {
-        throw std::runtime_error("could not load fastafs: " + this->filename);
+        throw std::runtime_error("[fastafs::view_fasta_chunk_cached] could not load fastafs: " + this->filename);
     }
     return written;
 }
@@ -1034,7 +1034,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
         delete cache;
         file.close();
     } else {
-        throw std::runtime_error("could not load fastafs: " + this->filename);
+        throw std::runtime_error("[fastafs::view_fasta_chunk_cached] could not load fastafs: " + this->filename);
     }
     return written;
 }
@@ -1051,7 +1051,7 @@ size_t fastafs::fasta_filesize(uint32_t padding)
             n += this->data[i]->fasta_filesize(padding);
         }
     } else {
-        throw std::runtime_error("could not load fastafs: " + this->filename);
+        throw std::runtime_error("[fastafs::fasta_filesize] could not load fastafs: " + this->filename);
     }
     return n;
 }
@@ -1131,7 +1131,7 @@ std::string fastafs::get_faidx(uint32_t padding)
         //	written++;
         //	}
     } else {
-        throw std::runtime_error("could not load fastafs: " + this->filename);
+        throw std::runtime_error("[fastafs::get_faidx] could not load fastafs: " + this->filename);
     }
     return contents;
 }

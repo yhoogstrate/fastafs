@@ -96,13 +96,16 @@ int main(int argc, char *argv[])
             }
         } else if(strcmp(argv[1], "view") == 0) {
             uint32_t padding = 60;
+
             if(argc > 2) {
                 if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
                     usage_view();
                     exit(0);
                 }
+
                 bool from_file = false;
                 bool skip_argument = false;
+
                 for(int i = 2; i < argc - 1; i++) {
                     if(skip_argument) {
                         skip_argument = false;
@@ -120,21 +123,27 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
+
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
                 } else {
                     database d = database();
                     fname = d.get(argv[argc - 1]);
+
                     if(fname.size() == 0) {
                         std::cout << "Invalid FASTAFS requested\n";
                         return EINVAL;
                     }
                 }
+
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
+
                 ffs2f_init* cache = f.init_ffs2f(padding, true);
                 f.view_fasta(cache);//@todo make argument parsing
+                delete cache;
+
             } else {
                 usage_view();
                 return EINVAL;

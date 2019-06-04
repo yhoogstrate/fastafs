@@ -328,7 +328,13 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
         flush_buffer(buffer, 100, '?');
     }
+
     delete[] buffer;
+
+    delete cache_p1;
+    delete cache_p4;
+    delete cache_p5;
+    delete cache_p999;
 }
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
@@ -366,6 +372,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     fh.close();
 
     delete[] buffer;
+
+    delete cache_p100;
 }
 
 
@@ -442,7 +450,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
             flush_buffer(buffer, 2110, '?');
         }
     }
+
     delete[] buffer;
+    delete cache;
 }
 
 
