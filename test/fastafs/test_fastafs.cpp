@@ -29,11 +29,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
+
     //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
     // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
     // >  c  h  r  1 \n  t  t  t  t  c  c  c  c  a  a  a  a  g  g  g  g \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(100), 23);
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(16), 23);
+
     //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15    16
     // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
     // >  c  h  r  1 \n  t  t  t  t  c  c  c  c  a  a  a  a  g  g  g \n  g \n
@@ -306,16 +308,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
  */
 BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
 {
-/*
-@HD	VN:1.0	SO:unsorted
-@SQ	SN:chr1	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-@SQ	SN:chr2	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-@SQ	SN:chr3.1	LN:13	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-@SQ	SN:chr3.2	LN:14	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-@SQ	SN:chr3.3	LN:15	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-@SQ	SN:chr4	LN:8	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-@SQ	SN:chr5	LN:6	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
- */
+    /*
+    @HD	VN:1.0	SO:unsorted
+    @SQ	SN:chr1	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr2	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr3.1	LN:13	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr3.2	LN:14	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr3.3	LN:15	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr4	LN:8	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr5	LN:6	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+     */
 
     std::string fastafs_file = "tmp/test.fastafs";
     fasta_to_fastafs("test/data/test.fa", fastafs_file);
@@ -324,7 +326,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
     fs.load(fastafs_file);
 
     BOOST_REQUIRE(fs.data.size() > 0);
-    BOOST_CHECK_EQUAL(fs.dict_filesize() , 594);
+    BOOST_CHECK_EQUAL(fs.dict_filesize(), 594);
 }
 
 

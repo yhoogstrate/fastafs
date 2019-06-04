@@ -536,7 +536,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     MD5_Final(cur_md5_digest, &ctx);
     fh->clear(); // because gseek was done before
 
-    char md5_hash[32+1];
+    char md5_hash[32 + 1];
     md5_digest_to_hash(cur_md5_digest, md5_hash);
 
     return std::string(md5_hash);
@@ -614,10 +614,12 @@ void fastafs::load(std::string afilename)
 {
     std::streampos size;
     char *memblock;
+
     std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         this->filename = afilename;
         size = file.tellg();
+
         if(size < 16) {
             file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
@@ -625,9 +627,11 @@ void fastafs::load(std::string afilename)
             memblock = new char [20 + 1]; //sha1 is 20b
             file.seekg(0, std::ios::beg);
             uint32_t i;
+
             // HEADER
             file.read(memblock, 14);
             memblock[16] = '\0';
+
             // check magic
             for(i = 0 ; i < 4;  i++) {
                 if(memblock[i] != FASTAFS_MAGIC[i]) {
@@ -639,29 +643,37 @@ void fastafs::load(std::string afilename)
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
+
             this->flag = twobytes_to_uint(&memblock[8]);
             std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
+
             // INDEX
             file.seekg(file_cursor, std::ios::beg);
             file.read(memblock, 4);
             this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
+
             size_t j;
             fastafs_seq *s;
             for(i = 0; i < this->data.size(); i ++) {
                 s = new fastafs_seq;
+
                 // flag
                 file.read(memblock, 2);
                 s->flag = twobytes_to_uint(memblock);
+
                 // name length
                 file.read(memblock, 1);
+
                 // name
                 char name[memblock[0] + 1];
                 file.read(name, memblock[0]);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
+
                 // set cursor and save sequence data position
                 file.read(memblock, 4);
                 file_cursor = file.tellg();
+
                 s->data_position = fourbytes_to_uint(memblock, 0);
                 file.seekg((uint32_t) s->data_position, file.beg);
                 {
@@ -669,8 +681,10 @@ void fastafs::load(std::string afilename)
                     // n compressed nucleotides
                     file.read(memblock, 4);
                     s->n = fourbytes_to_uint(memblock, 0);
+
                     // skip nucleotides
                     file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
+
                     // N-blocks (and update this->n instantly)
                     file.read(memblock, 4);
                     uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
@@ -685,11 +699,13 @@ void fastafs::load(std::string afilename)
                         s->n_ends[j] = fourbytes_to_uint(memblock, 0);
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
                     }
-                    // SHA1-checksum
-                    file.read(memblock, 20);
-                    for(int j = 0; j < 20 ; j ++) {
-                        s->sha1_digest[j] = memblock[j];
+
+                    // MD5-checksum
+                    file.read(memblock, 16);
+                    for(int j = 0; j < 16 ; j ++) {
+                        s->md5_digest[j] = memblock[j];
                     }
+
                     // M-blocks
                     file.read(memblock, 4);
                     uint32_t M_blocks = fourbytes_to_uint(memblock, 0);
@@ -1066,20 +1082,20 @@ size_t fastafs::ucsc2bit_filesize(void)
 size_t fastafs::dict_filesize(void)
 {
     size_t size = DICT_HEADER.size();
-    printf("[%u] \n",size);
+    printf("[%u] \n", size);
 
     // every sequence has a:
     // '@SQ \t SN:' + '\t LN: ??len??? \t' + 'S1:' + 40 + '\t UR:fastafs:///' + this->name.size()  + '\n'
     //  ||| |  |||     |  |||           |     |||           | ||||||||||||||                           |
     size += (31 + 40 + this->name.size()) * this->data.size();
-    printf("[%u] \n",size);
+    printf("[%u] \n", size);
 
     for(size_t i = 0; i < this->data.size(); i++) {
         size += this->data[i]->name.size();
-        printf("\n - [a: %u] \n",size);
+        printf("\n - [a: %u] \n", size);
         std::string seq_size = std::to_string(this->data[i]->n);
         size += seq_size.size();
-        printf(" - [b: %u] \n",size);
+        printf(" - [b: %u] \n", size);
     }
 
     return size;
@@ -1239,6 +1255,7 @@ int fastafs::info(bool ena_verify_checksum)
                 int err = SSL_connect(ssl);
                 if(err <= 0) {
                     printf("Error creating SSL connection.  err=%x\n", err);
+
                     //log_ssl();
                     fflush(stdout);
                     return -1;
@@ -1268,16 +1285,19 @@ int fastafs::check_integrity()
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
+
     int retcode = 0;
-    char sha1_hash[41] = "";
-    sha1_hash[40] = '\0';
+    char md5_hash[32+1] = "";
+    md5_hash[32] = '\0';
     std::string old_hash;
+
     ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
-            sha1_digest_to_hash(this->data[i]->sha1_digest, sha1_hash);
-            old_hash = std::string(sha1_hash);
+            md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
+            old_hash = std::string(md5_hash);
+
             /*
              *     const uint32_t padding;// padding used for this sequence, cannot be 0
             const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
@@ -1285,11 +1305,12 @@ int fastafs::check_integrity()
             std::vector<uint32_t> n_starts;
             std::vector<uint32_t> n_ends;
              * */
-            std::string new_hash = this->data[i]->sha1(cache->sequences[i], &file);
+
+            std::string new_hash = this->data[i]->md5(cache->sequences[i], &file);
             if(old_hash.compare(new_hash) == 0) {
                 printf("OK\t%s\n", this->data[i]->name.c_str());
             } else {
-                printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), sha1_hash, new_hash.c_str());
+                printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
                 retcode = EIO;
             }
         }

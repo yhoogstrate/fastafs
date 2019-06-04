@@ -8,10 +8,6 @@
 
 
 
-
-
-
-
 void fasta_seq_header_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
     this->twobit_data.set(twobit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
@@ -92,8 +88,8 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
     }
 
     // write checksum
-    SHA1_Final(this->sha1_digest, &this->ctx);
-    fh_fastafs.write(reinterpret_cast<char *>(&this->sha1_digest), (size_t) 20);
+    MD5_Final(this->md5_digest, &this->ctx);
+    fh_fastafs.write(reinterpret_cast<char *>(&this->md5_digest), (size_t) 16);
 
     // M blocks
     uint_to_fourbytes(buffer, (uint32_t) this->m_block_starts.size());
@@ -118,8 +114,10 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
     static char na[2] = "A";
     static char ng[2] = "G";
     static char nn[2] = "N";
+
     std::vector<fasta_seq_header_conversion_data*> index;
     fasta_seq_header_conversion_data* s;
+
     // @todo use ifstream and ofstream argument types
     std::string line;
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
@@ -129,6 +127,7 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
         fh_fastafs << FASTAFS_VERSION;
         fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
+
         // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
         s = nullptr;
         while(s == nullptr and getline(fh_fasta, line)) {
@@ -139,17 +138,20 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                 index.push_back(s);
             }
         }
+
         if(s != nullptr) {
             while(getline(fh_fasta, line)) {
                 if(line[0] == '>') {
                     s->finish_sequence(fh_fastafs);
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
+
                     s = new fasta_seq_header_conversion_data(fh_fastafs.tellp(), line);
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
                     index.push_back(s);
                 } else {
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         switch(*it) {
+
                         case 'U':
                         case 'T':
                             if(s->in_m_block) {
@@ -157,8 +159,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                 s->in_m_block = false;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                            SHA1_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                            MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
                             break;
                         case 'u':// lower case = m block
                         case 't':
@@ -167,8 +170,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_starts.push_back(s->N + s->n_actg);
                                 s->in_m_block = true;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                            SHA1_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                            MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
                             break;
                         case 'C':
                             if(s->in_m_block) {
@@ -176,8 +180,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                 s->in_m_block = false;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
-                            SHA1_Update(&s->ctx, nc, 1);
+                            MD5_Update(&s->ctx, nc, 1);
                             break;
                         case 'c':
                             if(!s->in_m_block) {
@@ -185,8 +190,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_starts.push_back(s->N + s->n_actg);
                                 s->in_m_block = true;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
-                            SHA1_Update(&s->ctx, nc, 1);
+                            MD5_Update(&s->ctx, nc, 1);
                             break;
                         case 'A':
                             if(s->in_m_block) {
@@ -194,8 +200,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                 s->in_m_block = false;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
-                            SHA1_Update(&s->ctx, na, 1);
+                            MD5_Update(&s->ctx, na, 1);
                             break;
                         case 'a':
                             if(!s->in_m_block) {
@@ -203,8 +210,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_starts.push_back(s->N + s->n_actg);
                                 s->in_m_block = true;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
-                            SHA1_Update(&s->ctx, na, 1);
+                            MD5_Update(&s->ctx, na, 1);
                             break;
                         case 'G':
                             if(s->in_m_block) {
@@ -212,8 +220,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                 s->in_m_block = false;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
-                            SHA1_Update(&s->ctx, ng, 1);
+                            MD5_Update(&s->ctx, ng, 1);
                             break;
                         case 'g':
                             if(!s->in_m_block) {
@@ -221,8 +230,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_starts.push_back(s->N + s->n_actg);
                                 s->in_m_block = true;
                             }
+
                             s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
-                            SHA1_Update(&s->ctx, ng, 1);
+                            MD5_Update(&s->ctx, ng, 1);
                             break;
                         case 'N':
                             if(s->in_m_block) {
@@ -230,8 +240,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                 s->in_m_block = false;
                             }
+
                             s->add_N();
-                            SHA1_Update(&s->ctx, nn, 1);
+                            MD5_Update(&s->ctx, nn, 1);
                             break;
                         case 'n':
                             if(!s->in_m_block) {
@@ -239,8 +250,9 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                                 s->m_block_starts.push_back(s->N + s->n_actg);
                                 s->in_m_block = true;
                             }
+
                             s->add_N();
-                            SHA1_Update(&s->ctx, nn, 1);
+                            MD5_Update(&s->ctx, nn, 1);
                             break;
                         default:
                             std::cerr << "invalid chars in FASTA file" << std::endl;
@@ -256,29 +268,37 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
     if(s != nullptr) {
         s->finish_sequence(fh_fastafs);// finish last sequence
     }
+
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
     char buffer[4 +  1];
     uint_to_fourbytes(buffer, (uint32_t) index.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
+
     for(size_t i = 0; i < index.size(); i++) {
         s = index[i];
+
         // flag
         fh_fastafs << "\x00\x08"s;
+
         // name
         unsigned char name_size = (unsigned char) s->name.size();
         fh_fastafs.write((char *) &name_size, 1); // name size
         fh_fastafs.write(s->name.c_str(), (size_t) s->name.size());// name
+
         // location of sequence data in file
         uint_to_fourbytes(buffer, (uint32_t) s->file_offset_in_fasta);
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
         delete s;
     }
     fh_fastafs << "\x00"s;// no metadata tags (YET)
+
     // update header: set to updated
     fh_fastafs.seekp(8, std::ios::beg);
     fh_fastafs << "\x00\x01"s; // updated flag
+
     uint_to_fourbytes(buffer, index_file_position);//position of header
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
+
     return written;
 }
