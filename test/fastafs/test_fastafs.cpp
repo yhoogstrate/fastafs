@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE fastfs_cache
+#define BOOST_TEST_MODULE fastfs_fastafs
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -57,19 +57,26 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
         ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(ret, 0);
     }
+
     chunk[1] = '\0';
     chunk[2] = '\1';
     chunk[3] = '\2';
+
     std::string ref = ">chr1\nttttccccaaaagggg\n";
     for(uint32_t i = 0; i < ref.size(); i++) {
         ret = fs.data[0]->view_fasta_chunk_cached(cache_p23->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
+
     BOOST_CHECK_EQUAL(chunk[1], '\0');
     BOOST_CHECK_EQUAL(chunk[2], '\1');
     BOOST_CHECK_EQUAL(chunk[3], '\2');
+
     file.close();
+
+    delete cache_p100;
+    delete cache_p23;
 }
 
 
@@ -93,6 +100,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     // then: check returncodes:
     uint32_t ret;
     char chunk[1];
+
     std::string ref = ">chr1\nttttccccaaaagggg\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
@@ -104,7 +112,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     // check if out of bound query returns 0
     ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
+
     file.close();
+
+    delete cache_p0;
 }
 
 
@@ -113,8 +124,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
     fasta_to_fastafs("test/data/test.fa", fastafs_file);
+
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
+
     BOOST_REQUIRE(fs.data.size() > 0);
 
     //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
@@ -123,6 +136,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(fs.data[0]->n), 23);
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
+
     ffs2f_init* cache_p0 = fs.init_ffs2f(0, false); // no masking; everything must be uppercase
 
     // then: check returncodes:
@@ -139,7 +153,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     // check if out of bound query returns 0
     ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
+
     file.close();
+
+    delete cache_p0;
 }
 
 
@@ -151,14 +168,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
-    ffs2f_init* cache = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
+    ffs2f_init* cache_p0 = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
     BOOST_REQUIRE(fs.data.size() > 0);
 
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
-    //fs.data[0]->sha1(cache->sequences[0], &file);
-    BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache->sequences[0], &file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
+    //fs.data[0]->sha1(cache_p0->sequences[0], &file);
+    BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache_p0->sequences[0], &file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
+
+    delete cache_p0;
 }
 
 
@@ -183,6 +202,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_md5)
     BOOST_CHECK_EQUAL(fs.data[4]->md5(cache->sequences[4], &file), "3625afdfbeb43765b85f612e0acb4739");
     BOOST_CHECK_EQUAL(fs.data[5]->md5(cache->sequences[5], &file), "bd8c080ed25ba8a454d9434cb8d14a68");
     BOOST_CHECK_EQUAL(fs.data[6]->md5(cache->sequences[6], &file), "980ef3a1cd80afec959dcf852d026246");
+
+    delete cache;
 }
 
 
@@ -217,6 +238,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq__get_n_offset)
     // pretend the following sequence:
     // NNxxNxNNxxxN
     std::string seq = "NNxxNxNNxxxN";
+
     // starts:         0   4 6    11
     // ends:            1  4  7   11
     fastafs_seq f = fastafs_seq();
@@ -310,13 +332,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
 {
     /*
     @HD	VN:1.0	SO:unsorted
-    @SQ	SN:chr1	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-    @SQ	SN:chr2	LN:16	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-    @SQ	SN:chr3.1	LN:13	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-    @SQ	SN:chr3.2	LN:14	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-    @SQ	SN:chr3.3	LN:15	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-    @SQ	SN:chr4	LN:8	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
-    @SQ	SN:chr5	LN:6	S1:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr1	LN:16	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr2	LN:16	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr3.1	LN:13	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr3.2	LN:14	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr3.3	LN:15	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr4	LN:8	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+    @SQ	SN:chr5	LN:6	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
      */
 
     std::string fastafs_file = "tmp/test.fastafs";
@@ -326,7 +348,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
     fs.load(fastafs_file);
 
     BOOST_REQUIRE(fs.data.size() > 0);
-    BOOST_CHECK_EQUAL(fs.dict_filesize(), 594);
+    BOOST_CHECK_EQUAL(fs.dict_filesize(), 594 - (7 * (40 - 32)));
 }
 
 

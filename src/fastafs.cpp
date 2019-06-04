@@ -752,9 +752,11 @@ void fastafs::view_fasta(ffs2f_init* cache)
 ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 {
     ffs2f_init *ddata = new ffs2f_init(this->data.size(), padding);
+
     for(size_t i = 0; i < this->data.size(); i++) {
         ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding, allow_masking);
     }
+
     return ddata;
 }
 
@@ -1294,6 +1296,7 @@ int fastafs::check_integrity()
     std::string old_hash;
 
     ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
+
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
@@ -1318,6 +1321,9 @@ int fastafs::check_integrity()
         }
         file.close();
     }
+
+    delete cache;
+
     return retcode;
 }
 
