@@ -248,11 +248,11 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     }
 
     fh_fastafs.seekp(0, std::ios::end);
-    size_t fh_filesize = fh_fastafs.tellp();
+    size_t written = fh_fastafs.tellp();
 
     fh_fastafs.close();
     fh_ucsc2bit.close();
 
-    return fh_filesize;
+    return written;
 }
 

@@ -108,7 +108,6 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
 
 size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_file)
 {
-    size_t written = 0;
     static char nt[2] = "T";
     static char nc[2] = "C";
     static char na[2] = "A";
@@ -299,6 +298,13 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
 
     uint_to_fourbytes(buffer, index_file_position);//position of header
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
+
+    // calc written size
+    fh_fastafs.seekp(0, std::ios::end);
+    size_t written = fh_fastafs.tellp();
+
+    fh_fasta.close();
+    fh_fastafs.close();
 
     return written;
 }

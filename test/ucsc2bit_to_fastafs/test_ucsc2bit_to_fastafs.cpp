@@ -56,5 +56,4 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 
 
 
-
 BOOST_AUTO_TEST_SUITE_END()
