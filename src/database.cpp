@@ -68,7 +68,7 @@ void database::list()
                (uint32_t) f.data.size(),
                f.n(),
                size,
-               (float) 100.0 * (float) size / (float) f.fasta_filesize(50),
+               (float) 100.0 * (float) size / (float) f.fasta_filesize(50), // @todo fastafs file size!
                "/mnt/"
               );
     }

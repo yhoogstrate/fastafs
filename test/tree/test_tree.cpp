@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(test_finding_long_subseqs2) // do not allow overlapping
         l = l_tmp;
         s = s_tmp; // otherwise s influences obtaining l
     }
-    printf("[%u] shared regions were found \n", output.size());
+    printf("[%u] shared regions were found \n", (unsigned int) output.size());
 }
 
 

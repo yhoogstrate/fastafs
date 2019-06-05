@@ -1,24 +1,24 @@
 # fastafs: fuse layer and file system for storing FASTA files
-in a compressed, non-redundant and (randomly) accessible manner
--------------
+## in a compressed and (randomly) accessible manner
 
-DNA sequences are typically stored in the FASTA format. Although very commonly used and easy to read, FASTA files consume vast amounts of diskspace. It is possible to use compression (gzip or 2bit) instead, but such files are binary and not as practical as FASTA. Also, this requires all other software to support each compressed formats which is unfortunately not the case.
+DNA sequences are typically stored in the FASTA format. Although very commonly used and easy to read, FASTA files consume vast amounts of diskspace. It is possible to use compression (gzip or 2bit) instead, but such files are binary and not as widely adopted as FASTA. Using for instance 2bit requires all a software package to support each compressed format, which alse requires more discipline on maintainance and testing.
 
-Here we propose a solution; a mixture of 2bit and random access compression on FASTA files in a readonly FUSE file system. By simply mounting the highly compressed archives as a FASTA file, we only virtualize the large FASTA file. Additional advantages are the interface that will crc check the files and search for duplicate entries.
+Here we propose a solution; a mixture of 2bit compression and random on FASTA very similar to UCSC TwoBit files, accessible as read-onl FASTA, FAI, DICT and 2BIT files via a FUSE file system layer. By simply mounting the compressed archive as a FASTA and necessary metadata files, we only virtualize the large FASTA file on request. Additional advantages of FASTAFS are the toolkit and interface and the possibility to crc check files, search for duplicate entries.
 
-FASTAFS is not compatible with 2bit views, so is this thefamous 15th standard (<https://xkcd.com/927/>)?
-Partially, yes. It simply is yet another format. 
-Backwards compatibility was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not within 2bit.
-However, the fastafs file is not intended for analysis but purely for storage and can then virtualize both FA and 2bit files.
+FASTAFS is not compatible with 2bit files, but 2bit files can be convert to FASTAFS and, more importantly, a mounted FASTAFS mountpoint will not only virtualize the FASTA but also the 2bit file.
+So, is FASTAFS this famous 15th standard (<https://xkcd.com/927/>)?
+Partially, but it is not designed to replace FASTA nor 2bit as those mountpoints should be used as flat files did before. 
+Using 2bit files as backend for the FASTAFS toolkit was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not implemented in 2bit.
+Nevertheless, the FASTAFS format is heavily inspired by 2bit.
 
 ## installation and compilation
 
 Currently the package uses cmake for compilation
 Required dependencies are:
 
-  - libboost (only for unit testing, will be come an optional dependency soon)
- - libopenssl (for generating SHA hashes)
- - libfuse (for access to the fuse layer system and file virtualization)
+ -   libboost (only for unit testing, will be come an optional dependency soon)
+ -   libopenssl (for generating SHA hashes)
+ -   libfuse (for access to the fuse layer system and file virtualization)
 
 ## usage
 ### fastafs cache: adding files to fastafs

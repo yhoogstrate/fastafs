@@ -65,17 +65,23 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
     } else {
+
         std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
         std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
         std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
+        std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
+
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
+
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
             st->st_size = ffi->f->fasta_filesize(ffi->padding);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             st->st_size = ffi->f->get_faidx(ffi->padding).size();
         } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
             st->st_size = ffi->f->ucsc2bit_filesize();
+        } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+            st->st_size = ffi->f->dict_filesize();
         }
     }
     printf("    st_size: %u\n", (uint32_t) st->st_size);
@@ -86,22 +92,31 @@ static int do_getattr(const char *path, struct stat *st)
 static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
     fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
+
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+
     std::string virtual_fasta_filename = ffi->f->name + ".fa";
     std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
     std::string virtual_ucsc2bit_filename = ffi->f->name + ".2bit";
+    std::string virtual_dict_filename = ffi->f->name + ".dict";
+
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
+
     if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
         filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
         filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
         filler(buffer, virtual_ucsc2bit_filename.c_str(), NULL, 0);
+        filler(buffer, virtual_dict_filename.c_str(), NULL, 0);
+
         std::cout << "    " << virtual_fasta_filename << "\n";
         std::cout << "    " << virtual_faidx_filename << "\n";
+        std::cout << "    " << virtual_dict_filename << "\n";
     }
+
     return 0;
 }
 
@@ -118,21 +133,25 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
     std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
     std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
+    std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
 
     static int written;
     if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-        //written = (signed int) ffi->f->view_fasta_chunk(ffi->padding, buffer, size, offset);
         written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
-        printf("    return written=%u\n", written);
+        //printf("    return written=%u\n", written);
     } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
-        printf("    return written=%u\n", written);
+        //printf("    return written=%u\n", written);
     } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
         written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
-        printf("    return written=%u\n", written);
+        //printf("    return written=%u\n", written);
+    } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+        written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
+        //printf("    return written=%u\n", written);
     } else {
         written = -1;
     }
+
     return written;
 }
 

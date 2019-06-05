@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <openssl/sha.h>
+#include <openssl/md5.h>
 
 #include "utils.hpp"
 
@@ -59,19 +60,19 @@ public:
     std::vector<uint32_t> m_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> m_ends;// end positions (nucleotide positions; 0-based)
 
+    // those red from fastafs file
     unsigned char sha1_digest[SHA_DIGEST_LENGTH];//this is the binary encoded sha1 hash, not the ascii decoded
-    // masked not -yet- needed||implemented
+    unsigned char md5_digest[MD5_DIGEST_LENGTH];//this is the binary encoded md5 hash, not the ascii decoded
 
     fastafs_seq();
 
     uint32_t fasta_filesize(uint32_t padding);
     void view_fasta(ffs2f_init_seq*, std::ifstream *);
 
-    // legacy: slow code
-    //uint32_t view_fasta_chunk(uint32_t, char *, off_t, size_t, std::ifstream *);//@todo order of off_t and size_t needs to be identical to view chunk in fastafs::
     uint32_t view_fasta_chunk_cached(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
 
-    std::string sha1(ffs2f_init_seq*, std::ifstream *);
+    std::string sha1(ffs2f_init_seq*, std::ifstream*);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
+    std::string md5(ffs2f_init_seq*, std::ifstream*);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
 
     uint32_t n_twobits();
 
@@ -80,11 +81,12 @@ public:
 };
 
 
-
+/*
 struct fastafs_metadata {
     std::string name;
     std::string uid;
 };
+*/
 
 
 class fastafs
@@ -93,7 +95,7 @@ class fastafs
 public:
     ffs2f_init* init_ffs2f(uint32_t, bool);
 
-    fastafs(std::string);
+    explicit fastafs(std::string);
     ~fastafs();
 
     std::string name;
@@ -107,18 +109,20 @@ public:
 
     void load(std::string);
     void view_fasta(ffs2f_init*);
-    uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);
-    //uint32_t view_fasta_chunk(uint32_t, char *, size_t, off_t);
+
+    uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);//@todo remove _cached suffix
     uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
-
     uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);
-    off_t ucsc2bit_filesize(void);
+    size_t   view_dict_chunk(char *, size_t, off_t);
 
-    std::string get_faidx(uint32_t);
-    uint32_t fasta_filesize(uint32_t);
+    size_t fasta_filesize(uint32_t);
+    size_t ucsc2bit_filesize(void);
+    size_t dict_filesize(void);
+
+    std::string get_faidx(uint32_t);//@todo get rid of this, make it full chunked
 
     int info(bool);
-    int check_integrity();
+    int check_integrity(void);
 };
 
 
@@ -131,5 +135,9 @@ static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46\x53"s;
 static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
 
 static const int READ_BUFFER_SIZE = 4096;
+
+
+static const std::string DICT_HEADER = "@HD\tVN:1.0\tSO:unsorted\n";
+
 
 #endif

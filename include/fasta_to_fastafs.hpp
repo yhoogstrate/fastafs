@@ -1,7 +1,7 @@
 
 #include <vector>
 
-#include <openssl/sha.h>
+#include <openssl/md5.h>
 
 #include "config.hpp"
 #include "utils.hpp"
@@ -35,7 +35,7 @@ public:
         previous_was_N(false),
         in_m_block(false)
     {
-        SHA1_Init(&this->ctx);
+        MD5_Init(&this->ctx);
     }
 
 
@@ -43,8 +43,8 @@ public:
     uint32_t padding;
 
     // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
-    SHA_CTX ctx;
-    unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+    MD5_CTX ctx;
+    unsigned char md5_digest[MD5_DIGEST_LENGTH];
 
     std::vector<uint32_t> n_block_starts;
     std::vector<uint32_t> n_block_ends;
