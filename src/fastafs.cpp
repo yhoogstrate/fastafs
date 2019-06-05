@@ -34,6 +34,12 @@
 
 
 
+static const std::string dict_sq = "@SQ\tSN:";
+static const std::string dict_ln = "\tLN:";
+static const std::string dict_m5 = "\tM5:";
+static const std::string dict_ur = "\tUR:fastafs:///";
+
+
 fastafs_seq::fastafs_seq(): n(0)
 {
 }
@@ -864,10 +870,12 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
         for(uint32_t i = 0; i < this->data.size(); i++) {
             header_block_len += (uint32_t) this->data[i]->name.size();
         }
+
         fastafs_seq *sequence;
         size_t i;
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
+
             // single byte can be written, as the while loop has returned true
             pos_limit += 1;
             if(pos < pos_limit) {
@@ -877,6 +885,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // sequence name
             pos_limit += (uint32_t) sequence->name.size();
             while(pos < pos_limit) {
@@ -886,6 +895,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // file offset
             uint32_t offset = header_block_len + header_offset_previous;
             uint_to_fourbytes_ucsc2bit(n_seq, offset);
@@ -897,10 +907,12 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             header_offset_previous += 4 + 4 + 4 + 4;
             header_offset_previous += 8 * (uint32_t) sequence->n_starts.size();
             header_offset_previous += 8 * (uint32_t) sequence->m_starts.size();
             header_offset_previous += sequence->n / 4;
+
             if(sequence->n % 4 != 0) {
                 header_offset_previous++;
             }
@@ -908,6 +920,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
         ffs2f_init* cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
+
             // number nucleotides
             uint_to_fourbytes_ucsc2bit(n_seq, sequence->n);
             pos_limit += 4;
@@ -919,6 +932,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // number N blocks
             uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->n_starts.size());
             pos_limit += 4;
@@ -930,6 +944,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // write n-blocks effectively down!
             for(uint32_t k = 0; k < sequence->n_starts.size(); k++) {
                 uint_to_fourbytes_ucsc2bit(n_seq, sequence->n_starts[k]);
@@ -953,6 +968,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     }
                 }
             }
+
             // number M blocks (masked regions; lower case regions)
             uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->m_starts.size());
             pos_limit += 4;
@@ -964,6 +980,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // write m-blocks effectively down!
             for(uint32_t k = 0; k < sequence->m_starts.size(); k++) {
                 uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_starts[k]);
@@ -976,6 +993,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                         return written;
                     }
                 }
+
                 uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_ends[k] - sequence->m_starts[k] + 1);
                 pos_limit += 4;
                 while(pos < pos_limit) {
@@ -987,6 +1005,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     }
                 }
             }
+
             // reserved block
             pos_limit += 4;
             while(pos < pos_limit) {
@@ -997,6 +1016,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // twobit coded nucleotides (only containing 4 nucleotides each)
             uint32_t full_twobits = sequence->n / 4;
             twobit_byte t;
@@ -1013,6 +1033,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
+
             // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
             if(full_twobits * 4 < sequence->n) {
                 n_seq[0] = 'N';
@@ -1039,6 +1060,144 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     } else {
         throw std::runtime_error("[fastafs::view_fasta_chunk_cached] could not load fastafs: " + this->filename);
     }
+    return written;
+}
+
+
+
+/*
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:chr1	LN:16	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr2	LN:16	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr3.1	LN:13	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr3.2	LN:14	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr3.3	LN:15	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr4	LN:8	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+@SQ	SN:chr5	LN:6	M5:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	UR:fastafs:///test
+ */
+size_t fastafs::view_dict_chunk(char *buffer, size_t buffer_size, off_t file_offset)
+{
+    uint32_t written = 0;
+    uint32_t pos = (uint32_t) file_offset; // iterator (position, in bytes) in file
+    uint32_t pos_limit = 0; // counter to keep track of when writing needs to stop for given loop
+
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
+        pos_limit += (uint32_t) DICT_HEADER.size();// skip this loop after writing first four bytes
+
+        while(pos < pos_limit) {
+            buffer[written++] = DICT_HEADER[pos];
+            pos++;
+            if(written >= buffer_size) {
+                return written;
+            }
+        }
+
+        fastafs_seq *sequence;
+        for(size_t i = 0; i < this->data.size(); i++) {
+            // @SQ \t SN:
+            pos_limit += (uint32_t) dict_sq.size();// skip this loop after writing first four bytes
+            while(pos < pos_limit) {
+                buffer[written++] = dict_sq[dict_sq.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // sequence name
+            sequence = this->data[i];
+            pos_limit += (uint32_t) sequence->name.size();
+            while(pos < pos_limit) {
+                buffer[written++] = sequence->name[sequence->name.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // \t LN:
+            pos_limit += (uint32_t) dict_ln.size();// skip this loop after writing first four bytes
+            while(pos < pos_limit) {
+                buffer[written++] = dict_ln[dict_ln.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // 12345
+            std::string len = std::to_string(sequence->n);
+            pos_limit += (uint32_t) len.size();// skip this loop after writing first four bytes
+            while(pos < pos_limit) {
+                buffer[written++] = len[len.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // \t M5:
+            pos_limit += (uint32_t) dict_m5.size();// skip this loop after writing first four bytes
+            while(pos < pos_limit) {
+                buffer[written++] = dict_m5[dict_m5.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // md5 checksum
+            char md5_hash[32 + 1] = "";
+            md5_hash[32] = '\0';
+            md5_digest_to_hash(sequence->md5_digest, md5_hash);
+
+            pos_limit += (uint32_t) 32;// skip this loop after writing first four bytes
+            while(pos < pos_limit) {
+                buffer[written++] = md5_hash[32 - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // \t UR:
+            pos_limit += (uint32_t) dict_ur.size();// skip this loop after writing first four bytes
+            while(pos < pos_limit) {
+                buffer[written++] = dict_ur[dict_ur.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // file name
+            pos_limit += (uint32_t) this->name.size();
+            while(pos < pos_limit) {
+                buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+            // '\n'
+            pos_limit += 1;
+            if(pos < pos_limit) {
+                buffer[written++] = '\n';
+                pos++;
+                if(written >= buffer_size) {
+                    return written;
+                }
+            }
+
+        }
+
+        file.close();
+    } else {
+        throw std::runtime_error("[fastafs::view_dict_chunk] could not load fastafs: " + this->filename);
+    }
+
     return written;
 }
 
@@ -1089,20 +1248,17 @@ size_t fastafs::ucsc2bit_filesize(void)
 size_t fastafs::dict_filesize(void)
 {
     size_t size = DICT_HEADER.size();
-    //printf("[%u] \n", size);
 
     // every sequence has a:
-    // '@SQ \t SN:' + '\t LN: ??len??? \t' + 'S1:' + 40 + '\t UR:fastafs:///' + this->name.size()  + '\n'
+    // '@SQ \t SN:' + '\t LN: ??len??? \t' + 'S1:' + 32 + '\t UR:fastafs:///' + this->name.size()  + '\n'
     //  ||| |  |||     |  |||           |     |||           | ||||||||||||||                           |
     size += (31 + 32 + this->name.size()) * this->data.size();
-    //printf("[%u] \n", size);
 
     for(size_t i = 0; i < this->data.size(); i++) {
         size += this->data[i]->name.size();
-        //printf("\n - [a: %u] \n", size);
+
         std::string seq_size = std::to_string(this->data[i]->n);
         size += seq_size.size();
-        //printf(" - [b: %u] \n", size);
     }
 
     return size;
@@ -1202,8 +1358,8 @@ int fastafs::info(bool ena_verify_checksum)
         throw std::invalid_argument("No filename found");
     }
 
-    char md5_hash[41] = "";
-    md5_hash[40] = '\0';
+    char md5_hash[32+1] = "";
+    md5_hash[32] = '\0';
 
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {

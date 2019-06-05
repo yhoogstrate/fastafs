@@ -56,16 +56,21 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
     */
     uint32_t padding = 4;
     uint32_t offset, position_until;
+
     offset = 0;
     for(position_until = 0; position_until <= 3; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 0);
     }
+
     for(position_until = 4; position_until <= 8; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 1);
     }
+
     for(position_until = 9; position_until <= 13; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 2);
     }
+
+
     offset = 1;
     for(position_until = 1; position_until <= 3; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 0);
@@ -92,6 +97,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
     for(position_until = 9; position_until <= 13; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 2);
     }
+
+
     offset = 3;
     for(position_until = 3; position_until <= 3; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 0);
@@ -102,6 +109,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
     for(position_until = 9; position_until <= 13; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 2);
     }
+
+
     offset = 4;
     for(position_until = 4; position_until <= 8; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 1);
@@ -109,6 +118,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
     for(position_until = 9; position_until <= 13; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 2);
     }
+
+
     offset = 5;
     for(position_until = 5; position_until <= 8; ++position_until) {
         BOOST_CHECK_EQUAL(fastafs_seq::n_padding(offset, position_until, padding), 0);

@@ -12,6 +12,17 @@
 #include "fastafs.hpp"
 
 
+
+// @todo to utils?
+void flush_buffer(char *buffer, size_t n, char fill)
+{
+    for(size_t i = 0; i < n; i++) {
+        buffer[i] = fill;
+    }
+}
+
+
+
 BOOST_AUTO_TEST_SUITE(Testing)
 
 BOOST_AUTO_TEST_CASE(init)
@@ -348,7 +359,26 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
     fs.load(fastafs_file);
 
     BOOST_REQUIRE(fs.data.size() > 0);
-    BOOST_CHECK_EQUAL(fs.dict_filesize(), 594 - (7 * (40 - 32)));
+    BOOST_CHECK_EQUAL(fs.dict_filesize(), 538);
+
+
+    std::string ref = "@HD	VN:1.0	SO:unsorted\n@SQ	SN:chr1	LN:16	M5:75255c6d90778999ad3643a2e69d4344	UR:fastafs:///test\n@SQ	SN:chr2	LN:16	M5:8b5673724a9965c29a1d76fe7031ac8a	UR:fastafs:///test\n@SQ	SN:chr3.1	LN:13	M5:61deba32ec4c3576e3998fa2d4b87288	UR:fastafs:///test\n@SQ	SN:chr3.2	LN:14	M5:99b90560f23c1bda2871a6c93fd6a240	UR:fastafs:///test\n@SQ	SN:chr3.3	LN:15	M5:3625afdfbeb43765b85f612e0acb4739	UR:fastafs:///test\n@SQ	SN:chr4	LN:8	M5:bd8c080ed25ba8a454d9434cb8d14a68	UR:fastafs:///test\n@SQ	SN:chr5	LN:6	M5:980ef3a1cd80afec959dcf852d026246	UR:fastafs:///test\n";
+
+    size_t written;
+    char *buffer;
+
+    // for buffer size ...  {
+    size_t buffer_size = 4096;
+    buffer = new char[buffer_size + 1];
+    flush_buffer(buffer, buffer_size, '\0');
+
+    written = fs.view_dict_chunk(buffer, buffer_size, 0); // char *buffer, size_t buffer_size, off_t file_offset
+
+    BOOST_CHECK_EQUAL(written, 538);
+    BOOST_CHECK_EQUAL(std::string(buffer, written).compare(ref), 0);
+
+    delete[] buffer;
+    // }
 }
 
 
