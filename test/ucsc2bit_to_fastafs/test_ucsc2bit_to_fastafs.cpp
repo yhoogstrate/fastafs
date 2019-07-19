@@ -34,6 +34,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     if(ucsc2bit_out_stream.is_open()) {
         uint32_t written = fs.view_ucsc2bit_chunk(buffer, 4096, 0);
         std::string buffer_s = std_string_nullbyte_safe(buffer, written);
+
         ucsc2bit_out_stream << buffer_s;
         ucsc2bit_out_stream.close();
     } else {
@@ -41,18 +42,17 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     }
 
     // 04 ucsc2bit_to_fasta
-    ucsc2bit_to_fastafs(ucsc2bit_file, fastafs_file2);
+    size_t written = ucsc2bit_to_fastafs(ucsc2bit_file, fastafs_file2);
 
     // - comparison based on iterators: <https://stackoverflow.com/questions/15022036/how-to-compare-files-with-boost-test>
     std::ifstream ifs1(fastafs_file);
     std::ifstream ifs2(fastafs_file2);
-
     std::istream_iterator<char> b1(ifs1), e1;
     std::istream_iterator<char> b2(ifs2), e2;
 
     BOOST_CHECK_EQUAL_COLLECTIONS(b1, e1, b2, e2);
+    BOOST_CHECK_EQUAL(written, (size_t) 399);
 }
-
 
 
 

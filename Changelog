@@ -1,9 +1,29 @@
-2019-11-18  Youri Hoogstrate
+2019-06-05  Youri Hoogstrate
+
+    * Changed SHA1 to MD5 hashes for BAM compatibility
+    * Supports mounting `samtools dict` equivalent files
+    * Hotfix for more than 255 M-blocks
+    * Solves many warnings + various cleanups
+    * Fixed some memleaks
+
+2019-05-21  Youri Hoogstrate
+
+    * Supports Masked regions (and conversion to/from UCSC TwoBit files)
+
+2019-05-07  Youri Hoogstrate
+
+    * Full support for UCSC TwoBit files in `fastafs cache` (adding to db)
+
+2019-04-30  Youri Hoogstrate
+
+    * Performance update.
+
+2019-04-18  Youri Hoogstrate
 
     * The forwards conversion (fasta to fastafs) code has been improved
       and does not require to keep whole sequences in heap.
 
-2019-11-04  Youri Hoogstrate
+2019-04-11  Youri Hoogstrate
 
     * The file format has been re-specified, backwards incompatible with
       the test code. The fastafs to fasta projection has been enormously

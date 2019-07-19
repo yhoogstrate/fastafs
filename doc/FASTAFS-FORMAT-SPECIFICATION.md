@@ -29,12 +29,12 @@ If this metadata would be written in the header located before the sequence data
 |        | UNKNOWN-NUCLEOTIDES | uint32_t | Number of N-entries |
 |        | N-STARTS | N x uint32_t | start positions (0-based) |
 |        | N-ENDS | N x uint32_t | end positions (0-based) |
-|        | 1* CHECKSUM | 20 x byte | SHA1 |
+|        | 1* CHECKSUM | 16 x byte | MD5 |
 |        | 2* RESERVED-REGIONS | uint32_t | Number of R-entries (reserved regions ~ incomplete file) |
 |        | 2* R-STARTS | N x uint32_t | start positions (0-based) |
 |        | 2* R-ENDS | N x uint32_t | end positions (1-based) |
 |        | MASKED-NUCLEOTIDES | uint32_t | Number of M-entries (for lower case regions) |
-|        | M-STARTS | M x uint32_t | start positions (0-based) |
+|        | M-STARTS | M x uint32_t | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
 |        | M-ENDS | M x uint32_t | end positions (1-based) |
 | INDEX  | --- | --- |  |
 |        | NUMBER-SEQUENCES | uint32_t | Number of sequences included |
