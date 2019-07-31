@@ -1206,15 +1206,18 @@ size_t fastafs::view_dict_chunk(char *buffer, size_t buffer_size, off_t file_off
 size_t fastafs::fasta_filesize(uint32_t padding)
 {
     size_t n = 0;
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
-        file.close();
-        for(size_t i = 0; i < this->data.size(); i++) {
-            n += this->data[i]->fasta_filesize(padding);
-        }
-    } else {
-        throw std::runtime_error("[fastafs::fasta_filesize] could not load fastafs: " + this->filename);
+
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
+    //    file.close();
+
+    for(size_t i = 0; i < this->data.size(); i++) {
+        n += this->data[i]->fasta_filesize(padding);
     }
+
+    //} else {
+    //    throw std::runtime_error("[fastafs::fasta_filesize] could not load fastafs: " + this->filename);
+    //}
     return n;
 }
 

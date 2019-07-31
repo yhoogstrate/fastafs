@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta_file)
 
     // testing
     BOOST_CHECK_EQUAL(u2b.n(), 88);
-    //BOOST_CHECK_EQUAL(u2b.n(), 88);
+    BOOST_CHECK_EQUAL(u2b.fasta_filesize(100), 143);
 
     //uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t file_offset)
 

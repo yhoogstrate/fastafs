@@ -19,20 +19,24 @@ ucsc2bit_seq::ucsc2bit_seq(): n(0)
 {
 }
 
-/*
- * @todo create class fasta(ucsc2bit ~ padding)
- * all fasta properties need to be put outside of the ucsc2bit class
- */
+
+
 uint32_t ucsc2bit_seq::fasta_filesize(uint32_t padding)
 {
-#if DEBUG
-    if(padding == 0) {
-        throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
-    }
-#endif
+    #if DEBUG
+        if(padding == 0) {
+            throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
+        }
+    #endif
+
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
     return 1 + (uint32_t) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
+
+
+
+
+
 
 //void ucsc2bit_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
 //{
@@ -424,20 +428,24 @@ void ucsc2bit::load(std::string afilename)
 
 
 
-//size_t ucsc2bit::fasta_filesize(uint32_t padding)
-//{
-//size_t n = 0;
-//std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-//if(file.is_open()) {
-//file.close();
-//for(size_t i = 0; i < this->data.size(); i++) {
-//n += this->data[i]->fasta_filesize(padding);
-//}
-//} else {
-//throw std::runtime_error("[ucsc2bit::fasta_filesize] could not load ucsc2bit: " + this->filename);
-//}
-//return n;
-//}
+size_t ucsc2bit::fasta_filesize(uint32_t padding)
+{
+    size_t n = 0;
+
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
+    //file.close();
+
+    for(size_t i = 0; i < this->data.size(); i++) {
+        n += this->data[i]->fasta_filesize(padding);
+    }
+
+    //} else {
+    //throw std::runtime_error("[ucsc2bit::fasta_filesize] could not load ucsc2bit: " + this->filename);
+    //}
+
+    return n;
+}
 
 
 
