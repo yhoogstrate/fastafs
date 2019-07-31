@@ -1358,7 +1358,7 @@ int fastafs::info(bool ena_verify_checksum)
         throw std::invalid_argument("No filename found");
     }
 
-    char md5_hash[32+1] = "";
+    char md5_hash[32 + 1] = "";
     md5_hash[32] = '\0';
 
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);

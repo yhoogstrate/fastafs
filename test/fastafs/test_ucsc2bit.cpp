@@ -154,11 +154,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
     fasta_to_fastafs("test/data/test.fa", fastafs_file);
+
+    // 2. load fastafs
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
+
     // check ucsc2bit header:
     char buffer[1024 + 1];
     static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
@@ -213,14 +216,17 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
     uint32_t complen;
+
     // test header
     complen = 8;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen), 0, complen), 0);
+
     // test ... + n-seq
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);
     BOOST_CHECK_EQUAL(reference.compare(0, complen, std_string_nullbyte_safe(buffer, complen)), 0);
+
     // test ... + reserved
     complen += 4;
     fs.view_ucsc2bit_chunk(buffer, complen, 0);

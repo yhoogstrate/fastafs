@@ -29,10 +29,10 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     fs.load(fastafs_file);
 
     // 03 fastafs::chunked ucsc2bit view of the file
-    char buffer[4096 +  1];
+    char buffer[READ_BUFFER_SIZE +  1];
     std::fstream ucsc2bit_out_stream(ucsc2bit_file.c_str(), std::ios :: out | std::ios :: binary);
     if(ucsc2bit_out_stream.is_open()) {
-        uint32_t written = fs.view_ucsc2bit_chunk(buffer, 4096, 0);
+        uint32_t written = fs.view_ucsc2bit_chunk(buffer, READ_BUFFER_SIZE, 0);
         std::string buffer_s = std_string_nullbyte_safe(buffer, written);
 
         ucsc2bit_out_stream << buffer_s;

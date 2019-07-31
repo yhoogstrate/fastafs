@@ -368,11 +368,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
     char *buffer;
 
     // for buffer size ...  {
-    size_t buffer_size = 4096;
-    buffer = new char[buffer_size + 1];
-    flush_buffer(buffer, buffer_size, '\0');
+    buffer = new char[READ_BUFFER_SIZE + 1];
+    flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-    written = fs.view_dict_chunk(buffer, buffer_size, 0); // char *buffer, size_t buffer_size, off_t file_offset
+    written = fs.view_dict_chunk(buffer, READ_BUFFER_SIZE, 0); // char *buffer, size_t READ_BUFFER_SIZE, off_t file_offset
 
     BOOST_CHECK_EQUAL(written, 538);
     BOOST_CHECK_EQUAL(std::string(buffer, written).compare(ref), 0);
