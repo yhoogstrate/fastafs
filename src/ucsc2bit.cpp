@@ -69,38 +69,46 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
         return written;
     }
 
-//uint32_t pos = (uint32_t) start_pos_in_fasta;
-//uint32_t pos_limit = 0;
-//// >
-//pos_limit += 1;
-//if(pos < pos_limit) {
-//buffer[written++] = '>';
-//pos++;
-//if(written >= buffer_size) {
-//return written;
-//}
-//}
-//// sequence name
-//pos_limit += (uint32_t) this->name.size();
-//while(pos < pos_limit) {
-//buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
-//pos++;
-//if(written >= buffer_size) {
-//return written;
-//}
-//}
-//// \n
-//pos_limit += 1;
-//if(pos < pos_limit) {
-//buffer[written++] = '\n';
-//pos++;
-//if(written >= buffer_size) {
-//return written;
-//}
-//}
-//const uint32_t offset_from_sequence_line = pos - pos_limit;
-//size_t n_block = cache->n_starts.size();
-//size_t m_block = cache->m_starts.size();
+    uint32_t pos = (uint32_t) start_pos_in_fasta;
+    uint32_t pos_limit = 0;
+
+    // >
+    pos_limit += 1;
+    if(pos < pos_limit) {
+        buffer[written++] = '>';
+        pos++;
+
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+
+    // sequence name
+    pos_limit += (uint32_t) this->name.size();
+    while(pos < pos_limit) {
+        buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
+        pos++;
+
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+
+    // \n
+    pos_limit += 1;
+    if(pos < pos_limit) {
+        buffer[written++] = '\n';
+        pos++;
+
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+
+
+    // set file pointer to sequqnece data?
+    const uint32_t offset_from_sequence_line = pos - pos_limit;
+    printf("[offset from seq line: %d\n", offset_from_sequence_line);
 //uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
 //uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 //// calculate file position for next twobit
@@ -221,25 +229,29 @@ ucsc2bit::~ucsc2bit()
 
 void ucsc2bit::load(std::string afilename)
 {
-    std::streampos size; // to determine ucsc2bit file size
-    char *memblock; // buffer?
 
     std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         this->filename = afilename;
-        size = file.tellg();
+
+        char *memblock; // buffer
+        std::streampos size = file.tellg();// ucsc2bit file size
 
         if(size < 16) {
             file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
             memblock = new char [20 + 1]; //
+            memblock[20] = '\0';
+
             file.seekg(0, std::ios::beg);
             uint32_t i;
 
             // HEADER
-            file.read(memblock, 8);
-            memblock[16] = '\0';
+            file.read(memblock, 16);// 4 + 4 + 4 + 4
+            if(!file) {
+                throw std::invalid_argument("Corrupt file: " + filename);
+            }
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
@@ -256,12 +268,10 @@ void ucsc2bit::load(std::string afilename)
             }
 
             // read sequenceCount and reserve that number of memblocks
-            file.read(memblock, 4);
-            this->data.resize(fourbytes_to_uint_ucsc2bit(memblock, 0));//n_seq becomes this->data.size()
+            this->data.resize(fourbytes_to_uint_ucsc2bit(memblock, 8));//n_seq becomes this->data.size()
 
             // 4 x reserved 0
-            file.read(memblock, 4);
-            for(i = 0 ; i < 4;  i++) {
+            for(i = 12 ; i < 16; i++) {
                 if(memblock[i] != '\0') {
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
@@ -273,23 +283,27 @@ void ucsc2bit::load(std::string afilename)
 
                 // name length
                 file.read(memblock, 1);
+                if(!file) {
+                    throw std::invalid_argument("Corrupt file: " + filename);
+                }
 
                 // name
                 char name[memblock[0] + 1];
                 file.read(name, memblock[0]);
+                if(!file) {
+                    throw std::invalid_argument("Corrupt file: " + filename);
+                }
+
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
 
                 // file offset for seq-block
                 file.read(memblock, 4);
                 s->data_position = fourbytes_to_uint_ucsc2bit(memblock, 0);
-                printf("data-pos: %d\n", s->data_position);
 
 
                 this->data[i] = s;
             }
-
-            printf("\n\n");
 
             size_t j;
             for(i = 0; i < this->data.size(); i ++) {
@@ -298,14 +312,15 @@ void ucsc2bit::load(std::string afilename)
 
                 file.read(memblock, 4);
                 s->n = fourbytes_to_uint_ucsc2bit(memblock, 0);
-                printf("dna-size: %d\n", s->n);
 
                 // n blocks
                 file.read(memblock, 4);
+                if(!file) {
+                    throw std::invalid_argument("Corrupt file: " + filename);
+                }
                 uint32_t n_blocks = fourbytes_to_uint_ucsc2bit(memblock, 0);
                 s->n_starts.resize(n_blocks);
                 s->n_ends.resize(n_blocks);
-                printf("n_blocks: %d\n", n_blocks);
                 for(j = 0; j < n_blocks; j++) {
                     file.read(memblock, 8);
                     uint32_t n_block_s = fourbytes_to_uint_ucsc2bit(memblock, 0);
@@ -316,10 +331,12 @@ void ucsc2bit::load(std::string afilename)
 
                 // m blocks
                 file.read(memblock, 4);
+                if(!file) {
+                    throw std::invalid_argument("Corrupt file: " + filename);
+                }
                 uint32_t m_blocks = fourbytes_to_uint_ucsc2bit(memblock, 0);
                 s->m_starts.resize(m_blocks);
                 s->m_ends.resize(m_blocks);
-                printf("m_blocks: %d\n", m_blocks);
                 for(j = 0; j < m_blocks; j++) {
                     file.read(memblock, 8);
                     uint32_t m_block_s = fourbytes_to_uint_ucsc2bit(memblock, 0);
@@ -329,8 +346,6 @@ void ucsc2bit::load(std::string afilename)
                 }
 
                 s->sequence_data_position = s->data_position + 4 + 4 + 4 + (8 * n_blocks) + (8 * m_blocks);
-
-                printf("\n");
             }
 
             file.close();
