@@ -29,6 +29,8 @@ public:
 
     uint32_t fasta_filesize(uint32_t);
     uint32_t n_padding(uint32_t, uint32_t, uint32_t);
+
+    uint32_t view_fasta_chunk(uint32_t, char*, size_t, off_t, std::ifstream*);
 };
 
 
@@ -53,16 +55,10 @@ public:
 
 
     uint32_t view_fasta_chunk(uint32_t, char*, size_t, off_t);
+
     /*
         void view_fasta(ffs2f_init*);
-
-
-        uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
-
-        
-
         std::string get_faidx(uint32_t);//@todo get rid of this, make it full chunked
-
         */
 };
 

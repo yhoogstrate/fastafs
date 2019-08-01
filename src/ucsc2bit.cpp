@@ -23,11 +23,11 @@ ucsc2bit_seq::ucsc2bit_seq(): n(0)
 
 uint32_t ucsc2bit_seq::fasta_filesize(uint32_t padding)
 {
-    #if DEBUG
-        if(padding == 0) {
-            throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
-        }
-    #endif
+#if DEBUG
+    if(padding == 0) {
+        throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
+    }
+#endif
 
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
     return 1 + (uint32_t) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
@@ -55,24 +55,20 @@ uint32_t ucsc2bit_seq::fasta_filesize(uint32_t padding)
 
 
 
-//uint32_t ucsc2bit_seq::view_fasta_chunk(
-//ffs2f_init_seq* cache,
-//char *buffer,
+uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t start_pos_in_fasta, std::ifstream *fh)
+{
+#if DEBUG
+    if(padding == 0) {
+        throw std::runtime_error("Padding cannot be 0\n");
+    }
+#endif //DEBUG
 
-//size_t buffer_size,
-//off_t start_pos_in_fasta,
+    uint32_t written = 0;
 
-//std::ifstream *fh)
-//{
-//#if DEBUG
-//if(cache == nullptr) {
-//throw std::runtime_error("Empty cache was provided\n");
-//}
-//#endif //DEBUG
-//uint32_t written = 0;
-//if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
-//return written;
-//}
+    if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
+        return written;
+    }
+
 //uint32_t pos = (uint32_t) start_pos_in_fasta;
 //uint32_t pos_limit = 0;
 //// >
@@ -185,9 +181,10 @@ uint32_t ucsc2bit_seq::fasta_filesize(uint32_t padding)
 //}
 //newlines_passed++;
 //}
-////fh->clear();
-//return written;
-//}
+
+    //fh->clear();
+    return written;
+}
 
 
 
@@ -397,13 +394,11 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
         uint32_t pos = (uint32_t) file_offset;
         ucsc2bit_seq *seq;
 
-        while(i < data.size())
-        {
+        while(i < data.size()) {
             seq = this->data[i];
             const uint32_t sequence_file_size = seq->fasta_filesize(padding);
 
-            if(pos < sequence_file_size)
-            {
+            if(pos < sequence_file_size) {
                 const uint32_t written_seq = 0;
                 /*
                 seq->view_fasta_chunk_cached(
@@ -413,17 +408,15 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
                     pos,
                     &file);
                 */
-                
+
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
 
-                if(written == buffer_size)
-                {
+                if(written == buffer_size) {
                     file.close();
                     return written;
                 }
-            }
-            else {
+            } else {
                 pos -= sequence_file_size;
             }
 
