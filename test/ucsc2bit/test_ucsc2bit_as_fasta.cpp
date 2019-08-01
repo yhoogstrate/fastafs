@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta_file)
     size_t written;
     std::string std_buffer;
     flush_buffer(buffer, READ_BUFFER_SIZE, '?');
-    
+
 
     written = u2b.view_fasta_chunk(60, buffer, 143 + 100, 0);
     BOOST_CHECK_EQUAL(written, 143);

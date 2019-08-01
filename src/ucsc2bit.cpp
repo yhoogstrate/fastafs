@@ -35,26 +35,6 @@ uint32_t ucsc2bit_seq::fasta_filesize(uint32_t padding)
 
 
 
-
-
-
-//void ucsc2bit_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
-//{
-//char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
-//uint32_t offset = 0;
-
-////@todo figure out if a do {} while() loop isn't more in place here?
-//uint32_t written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
-//while(written > 0) {
-//std::cout << std::string(buffer, written);
-//offset += written;
-//written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
-//}
-//}
-
-
-
-
 uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t start_pos_in_fasta, std::ifstream *fh)
 {
 #if DEBUG
@@ -389,36 +369,6 @@ void ucsc2bit::load(std::string afilename)
 
 
 
-//void ucsc2bit::view_fasta(ffs2f_init* cache)
-//{
-//if(this->filename.size() == 0) {
-//throw std::invalid_argument("No filename found");
-//}
-
-//std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-//if(file.is_open()) {
-//for(uint32_t i = 0; i < this->data.size(); i++) {
-//this->data[i]->view_fasta(cache->sequences[i], &file);
-//}
-//file.close();
-//}
-//}
-
-
-
-
-//ffs2f_init* ucsc2bit::init_ffs2f(uint32_t padding, bool allow_masking)
-//{
-//ffs2f_init *ddata = new ffs2f_init(this->data.size(), padding);
-
-//for(size_t i = 0; i < this->data.size(); i++) {
-//ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding, allow_masking);
-//}
-
-
-
-//return ddata;
-//}
 
 /*
 * ucsc2bit::view_fasta_chunk_cached -
@@ -489,61 +439,58 @@ size_t ucsc2bit::fasta_filesize(uint32_t padding)
 
 
 
+std::string ucsc2bit::get_faidx(uint32_t padding)
+{
+    std::string contents = "";
+    std::string padding_s = std::to_string(padding);
+    std::string padding_s2 = std::to_string(padding + 1);// padding + newline
 
-//std::string ucsc2bit::get_faidx(uint32_t padding)
-//{
-//std::string contents = "";
-//std::string padding_s = std::to_string(padding);
-//std::string padding_s2 = std::to_string(padding + 1);// padding + newline
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
+        file.close();
+        uint32_t offset = 0;
 
-//std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+        for(size_t i = 0; i < this->data.size(); i++) {
+            offset += 1;// '>'
+            offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
 
-//if(file.is_open()) {
-//file.close();
-//uint32_t offset = 0;
+            contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
 
-//for(size_t i = 0; i < this->data.size(); i++) {
-//offset += 1;// '>'
-//offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
+            offset += this->data[i]->n; // ACTG NNN
+            offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+        }
+    } else {
+        throw std::runtime_error("[ucsc2bit::get_faidx] could not load ucsc2bit: " + this->filename);
+    }
 
-//contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
-
-//offset += this->data[i]->n; // ACTG NNN
-//offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-//}
-////while(written < buffer_size and written + file_offset < contents.size()) {
-////	buffer[written] = contents[written];
-////	written++;
-////	}
-//} else {
-//throw std::runtime_error("[ucsc2bit::get_faidx] could not load ucsc2bit: " + this->filename);
-//}
-//return contents;
-//}
+    return contents;
+}
 
 
 
-//uint32_t ucsc2bit::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
-//{
-//std::string contents = this->get_faidx(padding);
-//uint32_t written = 0;
+uint32_t ucsc2bit::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
+{
+    std::string contents = this->get_faidx(padding);
+    uint32_t written = 0;
 
-//while(written < buffer_size and written + file_offset < (uint32_t) contents.size()) {
-//buffer[written] = contents[written];
-//written++;
-//}
+    while(written < buffer_size and written + file_offset < (uint32_t) contents.size()) {
+        buffer[written] = contents[written];
+        written++;
+    }
 
-//return written;
-//}
+    return written;
+}
 
 
 
 uint32_t ucsc2bit::n()
 {
     uint32_t n = 0;
+
     for(unsigned i = 0; i < this->data.size(); i++) {
         n += this->data[i]->n;
     }
+
     return n;
 }
 

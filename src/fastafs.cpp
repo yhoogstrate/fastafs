@@ -1370,9 +1370,11 @@ int fastafs::check_integrity()
 uint32_t fastafs::n()
 {
     uint32_t n = 0;
+
     for(unsigned i = 0; i < this->data.size(); i++) {
         n += this->data[i]->n;
     }
+
     return n;
 }
 
