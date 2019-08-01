@@ -66,97 +66,161 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta_file)
     BOOST_CHECK_EQUAL(u2b.fasta_filesize(4), 160);
 
 
-    flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 0);// start of file
-    printf("---\n%s---\n\n", buffer);
+    size_t written;
+    std::string std_buffer;
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
     
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 1);// >
-    //printf("---\n%s---\n\n", buffer);
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 2);// > c
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 143 + 100, 0);
+    BOOST_CHECK_EQUAL(written, 143);
+    std_buffer = std::string(buffer, 143);
+    BOOST_CHECK_EQUAL(std_buffer.compare(">chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 3);// > c h
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 142 + 100, 1);
+    BOOST_CHECK_EQUAL(written, 142);
+    std_buffer = std::string(buffer, 142);
+    BOOST_CHECK_EQUAL(std_buffer.compare("chr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 4);// > c h r
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 141 + 100, 2);
+    BOOST_CHECK_EQUAL(written, 141);
+    std_buffer = std::string(buffer, 141);
+    BOOST_CHECK_EQUAL(std_buffer.compare("hr1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
+    written = u2b.view_fasta_chunk(60, buffer, 140 + 100, 3);
+    BOOST_CHECK_EQUAL(written, 140);
+    std_buffer = std::string(buffer, 140);
+    BOOST_CHECK_EQUAL(std_buffer.compare("r1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 5);// > c h r 1
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 139 + 100, 4);
+    BOOST_CHECK_EQUAL(written, 139);
+    std_buffer = std::string(buffer, 139);
+    BOOST_CHECK_EQUAL(std_buffer.compare("1\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 6);// > c h r 1 \n
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 138 + 100, 5);
+    BOOST_CHECK_EQUAL(written, 138);
+    std_buffer = std::string(buffer, 138);
+    BOOST_CHECK_EQUAL(std_buffer.compare("\nttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 10);// > c h r 1 \n t t t t 
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 137 + 100, 6);
+    BOOST_CHECK_EQUAL(written, 137);
+    std_buffer = std::string(buffer, 137);
+    BOOST_CHECK_EQUAL(std_buffer.compare("ttttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 11);// > c h r 1 \n t t t t \n
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 136 + 100, 7);
+    BOOST_CHECK_EQUAL(written, 136);
+    std_buffer = std::string(buffer, 136);
+    BOOST_CHECK_EQUAL(std_buffer.compare("tttccccaaaagggg\n>chr2\nACTGACTGnnnnACTG\n>chr3.1\nACTGACTGaaaac\n>chr3.2\nACTGACTGaaaacc\n>chr3.3\nACTGACTGaaaaccc\n>chr4\nACTGnnnn\n>chr5\nnnACTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
-    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 12);// > c h r 1 \n t t t t \n t
-    //printf("---\n%s---\n\n", buffer);
+    written = u2b.view_fasta_chunk(60, buffer, 1, 7);
+    BOOST_CHECK_EQUAL(written, 1);
+    std_buffer = std::string(buffer, 1);
+    BOOST_CHECK_EQUAL(std_buffer.compare("t"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-    
-    /*
-        //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
-        // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
-        // >  c  h  r  1 \n  t  t  t  t  c  c  c  c  a  a  a  a  g  g  g  g \n
-        BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(100), 23);
-        BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(16), 23);
+    written = u2b.view_fasta_chunk(4, buffer, 160 + 100, 0);
+    BOOST_CHECK_EQUAL(written, 160);
+    std_buffer = std::string(buffer, 160);
+    BOOST_CHECK_EQUAL(std_buffer.compare(">chr1\ntttt\ncccc\naaaa\ngggg\n>chr2\nACTG\nACTG\nnnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        //                   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15    16
-        // 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
-        // >  c  h  r  1 \n  t  t  t  t  c  c  c  c  a  a  a  a  g  g  g \n  g \n
-        BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(15), 24);
-        std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-        BOOST_REQUIRE(file.is_open());
+    written = u2b.view_fasta_chunk(4, buffer, 150 + 100, 10);
+    BOOST_CHECK_EQUAL(written, 150);
+    std_buffer = std::string(buffer, 150);
+    BOOST_CHECK_EQUAL(std_buffer.compare("\ncccc\naaaa\ngggg\n>chr2\nACTG\nACTG\nnnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        ffs2f_init* cache_p100 = fs.init_ffs2f(100, true);
-        ffs2f_init* cache_p23 = fs.init_ffs2f(23, true);
+    written = u2b.view_fasta_chunk(4, buffer, 149 + 100, 11);
+    BOOST_CHECK_EQUAL(written, 149);
+    std_buffer = std::string(buffer, 149);
+    BOOST_CHECK_EQUAL(std_buffer.compare("cccc\naaaa\ngggg\n>chr2\nACTG\nACTG\nnnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        // then: check returncodes:
-        uint32_t ret;
-        char chunk[4];
-        for(uint32_t i = 0; i < 23; i++) {
-            ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
-            BOOST_CHECK_EQUAL(ret, 1);
-        }
-        for(uint32_t i = 23; i < 23 + 5; i++) {
-            ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
-            BOOST_CHECK_EQUAL(ret, 0);
-        }
+    written = u2b.view_fasta_chunk(4, buffer, 148 + 100, 12);
+    BOOST_CHECK_EQUAL(written, 148);
+    std_buffer = std::string(buffer, 148);
+    BOOST_CHECK_EQUAL(std_buffer.compare("ccc\naaaa\ngggg\n>chr2\nACTG\nACTG\nnnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        chunk[1] = '\0';
-        chunk[2] = '\1';
-        chunk[3] = '\2';
+    written = u2b.view_fasta_chunk(4, buffer, 120 + 100, 40);
+    BOOST_CHECK_EQUAL(written, 120);
+    std_buffer = std::string(buffer, 120);
+    BOOST_CHECK_EQUAL(std_buffer.compare("G\nnnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        std::string ref = ">chr1\nttttccccaaaagggg\n";
-        for(uint32_t i = 0; i < ref.size(); i++) {
-            ret = fs.data[0]->view_fasta_chunk_cached(cache_p23->sequences[0], chunk, 1, i, &file);
-            BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
-            BOOST_CHECK_EQUAL(ret, 1);
-        }
+    written = u2b.view_fasta_chunk(4, buffer, 119 + 100, 41);
+    BOOST_CHECK_EQUAL(written, 119);
+    std_buffer = std::string(buffer, 119);
+    BOOST_CHECK_EQUAL(std_buffer.compare("\nnnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        BOOST_CHECK_EQUAL(chunk[1], '\0');
-        BOOST_CHECK_EQUAL(chunk[2], '\1');
-        BOOST_CHECK_EQUAL(chunk[3], '\2');
+    written = u2b.view_fasta_chunk(4, buffer, 118 + 100, 42);
+    BOOST_CHECK_EQUAL(written, 118);
+    std_buffer = std::string(buffer, 118);
+    BOOST_CHECK_EQUAL(std_buffer.compare("nnnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        file.close();
+    written = u2b.view_fasta_chunk(4, buffer, 117 + 100, 43);
+    BOOST_CHECK_EQUAL(written, 117);
+    std_buffer = std::string(buffer, 117);
+    BOOST_CHECK_EQUAL(std_buffer.compare("nnn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
 
-        delete cache_p100;
-        delete cache_p23;
-        */
+    written = u2b.view_fasta_chunk(4, buffer, 116 + 100, 44);
+    BOOST_CHECK_EQUAL(written, 116);
+    std_buffer = std::string(buffer, 116);
+    BOOST_CHECK_EQUAL(std_buffer.compare("nn\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 115 + 100, 45);
+    BOOST_CHECK_EQUAL(written, 115);
+    std_buffer = std::string(buffer, 115);
+    BOOST_CHECK_EQUAL(std_buffer.compare("n\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 114 + 100, 46);
+    BOOST_CHECK_EQUAL(written, 114);
+    std_buffer = std::string(buffer, 114);
+    BOOST_CHECK_EQUAL(std_buffer.compare("\nACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 113 + 100, 47);
+    BOOST_CHECK_EQUAL(written, 113);
+    std_buffer = std::string(buffer, 113);
+    BOOST_CHECK_EQUAL(std_buffer.compare("ACTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 112 + 100, 48);
+    BOOST_CHECK_EQUAL(written, 112);
+    std_buffer = std::string(buffer, 112);
+    BOOST_CHECK_EQUAL(std_buffer.compare("CTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>chr5\nnnAC\nTG\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 97, 48);
+    BOOST_CHECK_EQUAL(written, 97);
+    std_buffer = std::string(buffer, 97);
+    BOOST_CHECK_EQUAL(std_buffer.compare("CTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 98, 48);
+    BOOST_CHECK_EQUAL(written, 98);
+    std_buffer = std::string(buffer, 98);
+    BOOST_CHECK_EQUAL(std_buffer.compare("CTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
+    written = u2b.view_fasta_chunk(4, buffer, 99, 48);
+    BOOST_CHECK_EQUAL(written, 99);
+    std_buffer = std::string(buffer, 99);
+    BOOST_CHECK_EQUAL(std_buffer.compare("CTG\n>chr3.1\nACTG\nACTG\naaaa\nc\n>chr3.2\nACTG\nACTG\naaaa\ncc\n>chr3.3\nACTG\nACTG\naaaa\nccc\n>chr4\nACTG\nnnnn\n>"), 0);
+    flush_buffer(buffer, READ_BUFFER_SIZE, '?');
+
 }
 
 

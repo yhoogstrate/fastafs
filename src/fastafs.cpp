@@ -197,6 +197,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     size_t m_block = cache->m_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+
     // calculate file position for next twobit
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;

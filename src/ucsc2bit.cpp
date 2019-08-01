@@ -63,8 +63,6 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     }
 #endif //DEBUG
 
-    printf("[*] start pos in fasta: %d\n", (uint32_t) start_pos_in_fasta);
-
     uint32_t written = 0;
 
     if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
@@ -111,31 +109,37 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     // set file pointer to sequqnece data?
     const uint32_t offset_from_sequence_line = pos - pos_limit;
     uint32_t newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
-    
+
+
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
     fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), std::ios::beg);// std::ios::beg | fh->beg
 
     twobit_byte t = twobit_byte();
     const char *chunk = twobit_byte::twobit_hash[0];
-    
+
     unsigned char twobit_offset = nucleotide_pos % 4;
 
     if(twobit_offset != 0) {
-        fh->read((char *) (&t.data), 1);
+        fh->read((char *)(&t.data), 1);
         chunk = t.get();
     }
-    
-    //for(unsigned int q = 0; q < 6; q++) {
-        //fh->read((char *) (&t.data), 1);
-        //printf(" *** read new char from disk: [%i : %i]\n",fh->tellg(), t.data);
-    //}
 
-    //while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
-    //n_block--;
-    //}
-    //while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
-    //m_block--;
-    //}
+    uint32_t fs_max = (uint32_t) this->fasta_filesize(padding) + 2;
+
+    size_t n_block = this->n_starts.size();
+    size_t m_block = this->m_starts.size();
+
+    this->n_ends.push_back(fs_max);
+    this->n_starts.push_back(fs_max);
+    while(n_block > 0 and pos <= this->n_ends[n_block - 1] + newlines_passed + this->name.size() + 2) { // iterate back
+        n_block--;
+    }
+
+    this->m_ends.push_back(fs_max);
+    this->m_starts.push_back(fs_max);
+    while(m_block > 0 and pos <= this->m_ends[m_block - 1] + newlines_passed + this->name.size() + 2) { // iterate back
+        m_block--;
+    }
 
     // write sequence
     pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
@@ -146,38 +150,44 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
 
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            /*if(pos >= cache->n_starts[n_block]) {
-                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = 'n';
-                } else {
-                    buffer[written++] = 'N';
-                }
-            } else {*/
             if(twobit_offset % 4 == 0) {
-                fh->read((char *) (&t.data), 1);
+                fh->read((char *)(&t.data), 1);
                 chunk = t.get();
             }
 
-            //if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-            //    buffer[written++] = (unsigned char)(chunk[twobit_offset] + 32);
-            //} else {
-                buffer[written++] = chunk[twobit_offset];
-            //}
-            //buffer[written++] = '?';
+            if(pos >= this->n_starts[n_block] + newlines_passed + this->name.size() + 2) {
+                buffer[written] = 'N';
+            } else {
+                buffer[written] = chunk[twobit_offset];
+            }
+
+            if(pos >= this->m_starts[m_block] + newlines_passed + this->name.size() + 2) {
+                buffer[written] = (unsigned char)(buffer[written] + 32);
+            }
+
+            written++;
+
+
 
             twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
 
-            /*if(pos == cache->n_ends[n_block]) {
-            n_block++;
+            if(pos == this->n_ends[n_block]  + newlines_passed + this->name.size() + 2) {
+                n_block++;
             }
-            if(pos == cache->m_ends[m_block]) {
-            m_block++;
-            }*/
-        
+            if(pos == this->m_ends[m_block]  + newlines_passed + this->name.size() + 2) {
+                m_block++;
+            }
+
             pos++;
 
             if(written >= buffer_size) {
                 //fh->clear();
+                this->n_starts.pop_back();
+                this->n_ends.pop_back();
+
+                this->m_starts.pop_back();
+                this->m_ends.pop_back();
+
                 return written;
             }
 
@@ -191,6 +201,13 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
 
             if(written >= buffer_size) {
                 //fh->clear();
+
+                this->n_starts.pop_back();
+                this->n_ends.pop_back();
+
+                this->m_starts.pop_back();
+                this->m_ends.pop_back();
+
                 return written;
             }
         }
@@ -198,8 +215,6 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
         newlines_passed++;
     }
 
-
-    printf("\nwritten: %d\n", written);
     //fh->clear();
     return written;
 }
@@ -431,11 +446,11 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
 
             if(pos < sequence_file_size) {
                 const uint32_t written_seq = seq->view_fasta_chunk(
-                    padding,
-                    &buffer[written],
-                    std::min((uint32_t) buffer_size - written, sequence_file_size),
-                    pos,
-                    &file);
+                                                 padding,
+                                                 &buffer[written],
+                                                 std::min((uint32_t) buffer_size - written, sequence_file_size),
+                                                 pos,
+                                                 &file);
 
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
