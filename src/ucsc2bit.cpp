@@ -239,6 +239,9 @@ void ucsc2bit::load(std::string afilename)
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
             char *memblock = new char [20 + 1]; // buffer
+            if(memblock == 0) {
+                throw std::invalid_argument("Could not alloc\n");
+            }
             memblock[20] = '\0';
 
             file.seekg(0, std::ios::beg);
@@ -246,12 +249,14 @@ void ucsc2bit::load(std::string afilename)
 
             // HEADER
             if(!file.read(memblock, 16)) {
+                delete[] memblock;
                 throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
             }
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
                 if(memblock[i] != UCSC2BIT_MAGIC[i]) {
+                    delete[] memblock;
                     throw std::invalid_argument("Not a 2bit file: " + filename);
                 }
             }
@@ -259,6 +264,7 @@ void ucsc2bit::load(std::string afilename)
             // check version
             for(i = 4 ; i < 8;  i++) {
                 if(memblock[i] != UCSC2BIT_VERSION[i]) {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt 2bit file. unknown version: " + filename);
                 }
             }
@@ -269,6 +275,7 @@ void ucsc2bit::load(std::string afilename)
             // 4 x reserved 0
             for(i = 12 ; i < 16; i++) {
                 if(memblock[i] != '\0') {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt 2bit file: " + filename);
                 }
             }
@@ -279,12 +286,14 @@ void ucsc2bit::load(std::string afilename)
 
                 // name length
                 if(!file.read(memblock, 1)) {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
 
                 // name
                 char name[memblock[0] + 1];
                 if(!file.read(name, memblock[0])) {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
 
@@ -293,6 +302,7 @@ void ucsc2bit::load(std::string afilename)
 
                 // file offset for seq-block
                 if(!file.read(memblock, 4)) {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
                 s->data_position = fourbytes_to_uint_ucsc2bit(memblock, 0);
@@ -312,6 +322,7 @@ void ucsc2bit::load(std::string afilename)
                 // n blocks
                 file.read(memblock, 4);
                 if(!file) {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
                 uint32_t n_blocks = fourbytes_to_uint_ucsc2bit(memblock, 0);
@@ -328,6 +339,7 @@ void ucsc2bit::load(std::string afilename)
                 // m blocks
                 file.read(memblock, 4);
                 if(!file) {
+                    delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
                 uint32_t m_blocks = fourbytes_to_uint_ucsc2bit(memblock, 0);
