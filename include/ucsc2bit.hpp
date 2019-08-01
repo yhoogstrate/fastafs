@@ -52,10 +52,11 @@ public:
     size_t fasta_filesize(uint32_t);
 
 
+    uint32_t view_fasta_chunk(uint32_t, char*, size_t, off_t);
     /*
         void view_fasta(ffs2f_init*);
 
-        uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);//@todo remove _cached suffix
+
         uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
 
         

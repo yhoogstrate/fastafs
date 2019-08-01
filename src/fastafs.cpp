@@ -791,25 +791,35 @@ uint32_t fastafs::view_fasta_chunk_cached(
         size_t i = 0;// sequence iterator
         uint32_t pos = (uint32_t) file_offset;
         fastafs_seq *seq;
-        while(i < data.size()) {
+
+        while(i < data.size())
+        {
             seq = this->data[i];
             const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
-            if(pos < sequence_file_size) {
+
+            if(pos < sequence_file_size)
+            {
                 const uint32_t written_seq = seq->view_fasta_chunk_cached(
                                                  cache->sequences[i],
                                                  &buffer[written],
                                                  std::min((uint32_t) buffer_size - written, sequence_file_size),
                                                  pos,
                                                  &file);
+
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
-                if(written == buffer_size) {
+
+                if(written == buffer_size)
+                {
                     file.close();
                     return written;
                 }
-            } else {
+            }
+            else
+            {
                 pos -= sequence_file_size;
             }
+
             i++;
         }
         file.close();

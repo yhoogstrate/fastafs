@@ -55,7 +55,7 @@ uint32_t ucsc2bit_seq::fasta_filesize(uint32_t padding)
 
 
 
-//uint32_t ucsc2bit_seq::view_fasta_chunk_cached(
+//uint32_t ucsc2bit_seq::view_fasta_chunk(
 //ffs2f_init_seq* cache,
 //char *buffer,
 
@@ -372,59 +372,71 @@ void ucsc2bit::load(std::string afilename)
 //ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding, allow_masking);
 //}
 
+
+
 //return ddata;
 //}
 
-///*
-//* ucsc2bit::view_fasta_chunk_cached -
-//*
-//* @cache:
-//* @buffer:
-//* @buffer_size:
-//* @file_offset:
-//*
-//* returns
-//*/
-//uint32_t ucsc2bit::view_fasta_chunk_cached(
-//ffs2f_init* cache,
-//char *buffer,
+/*
+* ucsc2bit::view_fasta_chunk_cached -
+*
+* @padding: size of padding - placement of newlines (default = 60)
+* @buffer:
+* @buffer_size:
+* @file_offset:
+*
+* returns number of bytes written to buffer
+*/
+uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
+{
+    uint32_t written = 0;
 
-//size_t buffer_size,
-//off_t file_offset)
-//{
-//uint32_t written = 0;
-//std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-//if(file.is_open()) {
-//size_t i = 0;// sequence iterator
-//uint32_t pos = (uint32_t) file_offset;
-//ucsc2bit_seq *seq;
-//while(i < data.size()) {
-//seq = this->data[i];
-//const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
-//if(pos < sequence_file_size) {
-//const uint32_t written_seq = seq->view_fasta_chunk_cached(
-//cache->sequences[i],
-//&buffer[written],
-//std::min((uint32_t) buffer_size - written, sequence_file_size),
-//pos,
-//&file);
-//written += written_seq;
-//pos -= (sequence_file_size - written_seq);
-//if(written == buffer_size) {
-//file.close();
-//return written;
-//}
-//} else {
-//pos -= sequence_file_size;
-//}
-//i++;
-//}
-//file.close();
-//} else {
-//throw std::runtime_error("[ucsc2bit::view_fasta_chunk_cached] could not load ucsc2bit: " + this->filename);
-//}
-//return written;
-//}
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
+        size_t i = 0;// sequence iterator
+        uint32_t pos = (uint32_t) file_offset;
+        ucsc2bit_seq *seq;
+
+        while(i < data.size())
+        {
+            seq = this->data[i];
+            const uint32_t sequence_file_size = seq->fasta_filesize(padding);
+
+            if(pos < sequence_file_size)
+            {
+                const uint32_t written_seq = 0;
+                /*
+                seq->view_fasta_chunk_cached(
+                    cache->sequences[i],
+                    &buffer[written],
+                    std::min((uint32_t) buffer_size - written, sequence_file_size),
+                    pos,
+                    &file);
+                */
+                
+                written += written_seq;
+                pos -= (sequence_file_size - written_seq);
+
+                if(written == buffer_size)
+                {
+                    file.close();
+                    return written;
+                }
+            }
+            else {
+                pos -= sequence_file_size;
+            }
+
+            i++;
+        }
+
+        file.close();
+
+    } else {
+        throw std::runtime_error("[ucsc2bit::view_fasta_chunk_cached] could not load ucsc2bit: " + this->filename);
+    }
+    return written;
+}
 
 
 
@@ -432,17 +444,9 @@ size_t ucsc2bit::fasta_filesize(uint32_t padding)
 {
     size_t n = 0;
 
-    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    //if(file.is_open()) {
-    //file.close();
-
     for(size_t i = 0; i < this->data.size(); i++) {
         n += this->data[i]->fasta_filesize(padding);
     }
-
-    //} else {
-    //throw std::runtime_error("[ucsc2bit::fasta_filesize] could not load ucsc2bit: " + this->filename);
-    //}
 
     return n;
 }
