@@ -110,81 +110,96 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
 
     // set file pointer to sequqnece data?
     const uint32_t offset_from_sequence_line = pos - pos_limit;
-    printf("offset from seq line: %d\n", offset_from_sequence_line);
-
     uint32_t newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
-    printf("newlines passed: %d\n", newlines_passed);
     
-    printf("\n");
-
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-    fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), fh->beg);
+    fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), std::ios::beg);// std::ios::beg | fh->beg
 
     twobit_byte t = twobit_byte();
     const char *chunk = twobit_byte::twobit_hash[0];
     
     unsigned char twobit_offset = nucleotide_pos % 4;
-//if(twobit_offset != 0) {
-//fh->read((char*)(&t.data), 1);
-//chunk = t.get();
-//}
-//while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
-//n_block--;
-//}
-//while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
-//m_block--;
-//}
-//// write sequence
-//pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
-//while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
-//pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
-//// write nucleotides
-//while(pos < pos_limit) {// while next sequence-containing-line is open
-//if(pos >= cache->n_starts[n_block]) {
-//if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-//buffer[written++] = 'n';
-//} else {
-//buffer[written++] = 'N';
-//}
-//} else {
-//if(twobit_offset % 4 == 0) {
-//fh->read((char*)(&t.data), 1);
-//chunk = t.get();
-//}
 
-//if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-//buffer[written++] = (unsigned char)(chunk[twobit_offset] + 32);
-//} else {
-//buffer[written++] = chunk[twobit_offset];
-//}
+    if(twobit_offset != 0) {
+        fh->read((char *) (&t.data), 1);
+        chunk = t.get();
+    }
+    
+    //for(unsigned int q = 0; q < 6; q++) {
+        //fh->read((char *) (&t.data), 1);
+        //printf(" *** read new char from disk: [%i : %i]\n",fh->tellg(), t.data);
+    //}
 
-//twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
-//}
-//if(pos == cache->n_ends[n_block]) {
-//n_block++;
-//}
-//if(pos == cache->m_ends[m_block]) {
-//m_block++;
-//}
-//pos++;
-//if(written >= buffer_size) {
-////fh->clear();
-//return written;
-//}
-//}
-//// write newline
-//pos_limit += 1;
-//if(pos < pos_limit) {
-//buffer[written++] = '\n';
-//pos++;
-//if(written >= buffer_size) {
-////fh->clear();
-//return written;
-//}
-//}
-//newlines_passed++;
-//}
+    //while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
+    //n_block--;
+    //}
+    //while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
+    //m_block--;
+    //}
 
+    // write sequence
+    pos_limit += newlines_passed * (padding + 1);// passed sequence-containg lines
+    uint32_t sequence_lines = (this->n + padding - 1) / padding;
+
+    while(newlines_passed < sequence_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+        pos_limit += std::min(padding, this->n - (newlines_passed * padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
+
+        // write nucleotides
+        while(pos < pos_limit) {// while next sequence-containing-line is open
+            /*if(pos >= cache->n_starts[n_block]) {
+                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+                    buffer[written++] = 'n';
+                } else {
+                    buffer[written++] = 'N';
+                }
+            } else {*/
+            if(twobit_offset % 4 == 0) {
+                fh->read((char *) (&t.data), 1);
+                chunk = t.get();
+            }
+
+            //if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+            //    buffer[written++] = (unsigned char)(chunk[twobit_offset] + 32);
+            //} else {
+                buffer[written++] = chunk[twobit_offset];
+            //}
+            //buffer[written++] = '?';
+
+            twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
+
+            /*if(pos == cache->n_ends[n_block]) {
+            n_block++;
+            }
+            if(pos == cache->m_ends[m_block]) {
+            m_block++;
+            }*/
+        
+            pos++;
+
+            if(written >= buffer_size) {
+                //fh->clear();
+                return written;
+            }
+
+        }
+
+        // write newline
+        pos_limit += 1;
+        if(pos < pos_limit) {
+            buffer[written++] = '\n';
+            pos++;
+
+            if(written >= buffer_size) {
+                //fh->clear();
+                return written;
+            }
+        }
+
+        newlines_passed++;
+    }
+
+
+    printf("\nwritten: %d\n", written);
     //fh->clear();
     return written;
 }
@@ -346,7 +361,7 @@ void ucsc2bit::load(std::string afilename)
                     s->m_ends[j] = m_block_s + fourbytes_to_uint_ucsc2bit(memblock, 4) - 1;
                 }
 
-                s->sequence_data_position = s->data_position + 4 + 4 + 4 + (8 * n_blocks) + (8 * m_blocks);
+                s->sequence_data_position = s->data_position + 4 + 4 + 4 + 4 + (8 * n_blocks) + (8 * m_blocks);
             }
 
             file.close();
@@ -415,14 +430,13 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
             const uint32_t sequence_file_size = seq->fasta_filesize(padding);
 
             if(pos < sequence_file_size) {
-                const uint32_t written_seq = 0;
-                seq->view_fasta_chunk(
+                const uint32_t written_seq = seq->view_fasta_chunk(
                     padding,
                     &buffer[written],
                     std::min((uint32_t) buffer_size - written, sequence_file_size),
                     pos,
                     &file);
-                
+
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
 

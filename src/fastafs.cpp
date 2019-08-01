@@ -225,10 +225,12 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
         m_block--;
     }
+
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
     while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
         pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
+
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
             if(pos >= cache->n_starts[n_block]) {
@@ -258,11 +260,13 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
                 m_block++;
             }
             pos++;
+
             if(written >= buffer_size) {
                 //fh->clear();
                 return written;
             }
         }
+
         // write newline
         pos_limit += 1;
         if(pos < pos_limit) {

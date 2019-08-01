@@ -13,7 +13,6 @@
 #include "fastafs.hpp"
 
 
-/*
 // @todo to utils?
 void flush_buffer(char *buffer, size_t n, char fill)
 {
@@ -21,7 +20,6 @@ void flush_buffer(char *buffer, size_t n, char fill)
         buffer[i] = fill;
     }
 }
-*/
 
 
 BOOST_AUTO_TEST_SUITE(Testing)
@@ -68,18 +66,46 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta_file)
     BOOST_CHECK_EQUAL(u2b.fasta_filesize(4), 160);
 
 
+    flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
     u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 0);// start of file
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 1);// >
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 2);// > c
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 3);// > c h
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 4);// > c h r
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 5);// > c h r 1
-    printf("next up, newline after header:\n");
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 6);// > c h r 1 \n
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 10);// > c h r 1 \n t t t t 
-    printf("next up, newline:\n");
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 11);// > c h r 1 \n t t t t \n
-    u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 12);// > c h r 1 \n t t t t \n t
+    printf("---\n%s---\n\n", buffer);
+    
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 1);// >
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 2);// > c
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 3);// > c h
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 4);// > c h r
+    //printf("---\n%s---\n\n", buffer);
+
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 5);// > c h r 1
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 6);// > c h r 1 \n
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 10);// > c h r 1 \n t t t t 
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 11);// > c h r 1 \n t t t t \n
+    //printf("---\n%s---\n\n", buffer);
+
+    //flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+    //u2b.view_fasta_chunk(4, buffer, READ_BUFFER_SIZE, 12);// > c h r 1 \n t t t t \n t
+    //printf("---\n%s---\n\n", buffer);
 
     
     /*
