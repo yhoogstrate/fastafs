@@ -103,6 +103,7 @@ add_executable(fastafs
 					src/fasta_to_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/fastafs.cpp
+					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
