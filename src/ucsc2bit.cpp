@@ -63,6 +63,8 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     }
 #endif //DEBUG
 
+    printf("[*] start pos in fasta: %d\n", (uint32_t) start_pos_in_fasta);
+
     uint32_t written = 0;
 
     if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
@@ -108,27 +110,20 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
 
     // set file pointer to sequqnece data?
     const uint32_t offset_from_sequence_line = pos - pos_limit;
-    printf("[offset from seq line: %d\n", offset_from_sequence_line);
-//uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
-//uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-//// calculate file position for next twobit
-//// when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
-//uint32_t n_passed = 0;
-//this->get_n_offset(nucleotide_pos, &n_passed);
-//fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / 4), fh->beg);
-///*
-//0  0  0  0  1  1  1  1 << desired offset from starting point
-//A  C  T  G  A  C  T  G
-//*
+    printf("offset from seq line: %d\n", offset_from_sequence_line);
 
-//handigste is om file pointer naar de byte ervoor te zetten
-//vervolgens wanneer twobit_offset gelijk is aan nul, lees je de volgende byte
-//* nooit out of bound
+    uint32_t newlines_passed = offset_from_sequence_line / (padding + 1);// number of newlines passed (within the sequence part)
+    printf("newlines passed: %d\n", newlines_passed);
+    
+    printf("\n");
 
-//*/
-//twobit_byte t = twobit_byte();
-//const char *chunk = twobit_byte::twobit_hash[0];
-//unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
+    uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+    fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), fh->beg);
+
+    twobit_byte t = twobit_byte();
+    const char *chunk = twobit_byte::twobit_hash[0];
+    
+    unsigned char twobit_offset = nucleotide_pos % 4;
 //if(twobit_offset != 0) {
 //fh->read((char*)(&t.data), 1);
 //chunk = t.get();
@@ -320,8 +315,7 @@ void ucsc2bit::load(std::string afilename)
                 s->n = fourbytes_to_uint_ucsc2bit(memblock, 0);
 
                 // n blocks
-                file.read(memblock, 4);
-                if(!file) {
+                if(!file.read(memblock, 4)) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
@@ -337,8 +331,7 @@ void ucsc2bit::load(std::string afilename)
                 }
 
                 // m blocks
-                file.read(memblock, 4);
-                if(!file) {
+                if(!file.read(memblock, 4)) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
@@ -423,15 +416,13 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
 
             if(pos < sequence_file_size) {
                 const uint32_t written_seq = 0;
-                /*
-                seq->view_fasta_chunk_cached(
-                    cache->sequences[i],
+                seq->view_fasta_chunk(
+                    padding,
                     &buffer[written],
                     std::min((uint32_t) buffer_size - written, sequence_file_size),
                     pos,
                     &file);
-                */
-
+                
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
 
