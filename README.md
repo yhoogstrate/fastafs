@@ -8,11 +8,8 @@ DNA sequences are typically stored in the FASTA format. Although very commonly u
 
 Here we propose a solution; a mixture of 2bit compression and random on FASTA very similar to UCSC TwoBit files, accessible as read-onl FASTA, FAI, DICT and 2BIT files via a FUSE file system layer. By simply mounting the compressed archive as a FASTA and necessary metadata files, we only virtualize the large FASTA file on request. Additional advantages of FASTAFS are the toolkit and interface and the possibility to crc check files, search for duplicate entries.
 
-FASTAFS is not compatible with 2bit files, but 2bit files can be convert to FASTAFS and, more importantly, a mounted FASTAFS mountpoint will not only virtualize the FASTA but also the 2bit file.
-So, is FASTAFS this famous 15th standard (<https://xkcd.com/927/>)?
-Partially, but it is not designed to replace FASTA nor 2bit as those mountpoints should be used as flat files did before. 
-Using 2bit files as backend for the FASTAFS toolkit was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not implemented in 2bit.
-Nevertheless, the FASTAFS format is heavily inspired by 2bit.
+FASTAFS is compatible with 2bit files but 2bit has some limitations and does for instance not allow mounting DICT files needed for CRAM and Picard tools. The 2bit files can be convert to FASTAFS and, more importantly, a mounted FASTAFS mountpoint will not only virtualize the FASTA but also the 2bit file. Is FASTAFS this famous 15th standard (<https://xkcd.com/927/>)?
+Partially, but it is not designed to replace FASTA nor 2bit as those mountpoints should be used as flat files did before and the  virtualization of dict files is not possible when we mount 2bit files.
 
 ## installation and compilation
 
