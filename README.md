@@ -20,8 +20,26 @@ Currently the package uses cmake for compilation
 Required dependencies are:
 
  -   libboost (only for unit testing, will be come an optional dependency soon)
- -   libopenssl (for generating SHA hashes)
+ -   libopenssl (for generating MD5 hashes)
  -   libfuse (for access to the fuse layer system and file virtualization)
+ -   c++ compiler supporting c++-17
+
+Compilation is done using cmake. The build script to run cmake for common use is:
+
+$ ./build-release.sh
+$ make install
+
+If you like to play with the code and like to help development, you can create a debug binary as follows:
+
+$ ./build-debug.sh
+$ make install
+
+If you have patches, changes or even cool new features you believe are worth contributing, please run astyle with the following command:
+
+$ make tidy
+
+This styles the code in a more or less compatible way with the rest of the code.
+Thanks in advance(!)
 
 ## usage
 ### fastafs cache: adding files to fastafs
