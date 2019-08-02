@@ -80,11 +80,13 @@ int main(int argc, char *argv[])
             std::cout << "This is free software: you are free to change and redistribute it.\n";
             std::cout << "There is NO WARRANTY, to the extent permitted by law.\n\n";
             std::cout << "The " << PACKAGE << " package is written by Youri Hoogstrate.\n";
+
             exit(0);
         } else if(strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
                 database d = database();
                 std::string fname_out = d.add(argv[argc - 2]);
+
                 if(is_fasta_file(argv[argc - 1])) {
                     fasta_to_fastafs(argv[argc - 1], fname_out);
                 } else {
@@ -96,9 +98,10 @@ int main(int argc, char *argv[])
             }
         } else if(strcmp(argv[1], "view") == 0) {
             uint32_t padding = 60;
-            bool view_2bit = false;
 
             if(argc > 2) {
+                bool view_2bit = false;
+
                 if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
                     usage_view();
                     exit(0);
@@ -157,6 +160,7 @@ int main(int argc, char *argv[])
                 } else {
                     ffs2f_init* cache = f.init_ffs2f(padding, true);
                     f.view_fasta(cache);//@todo make argument parsing
+
                     delete cache;
                 }
             } else {
@@ -169,8 +173,10 @@ int main(int argc, char *argv[])
                     usage_info();
                     exit(0);
                 }
+
                 bool from_file = false;
                 bool ena_verify_checksum = false;
+
                 for(int i = 2; i < argc - 1; i++) {
                     if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
@@ -181,19 +187,24 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                 }
+
                 std::string fname;
+
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
                 } else {
                     database d = database();
                     fname = d.get(argv[argc - 1]);
+
                     if(fname.size() == 0) {
                         std::cout << "Invalid FASTAFS requested\n";
                         return EINVAL;
                     }
                 }
+
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
+
                 return f.info(ena_verify_checksum);
             } else {
                 usage_info();
@@ -206,24 +217,29 @@ int main(int argc, char *argv[])
         } else if(strcmp(argv[1], "check") == 0) {
             if(argc > 2) {
                 bool from_file = false;
+
                 for(int i = 2; i < argc - 1; i++) {
                     if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
                     }
                 }
+
                 std::string fname;
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
                 } else {
                     database d = database();
                     fname = d.get(argv[argc - 1]);
+
                     if(fname.size() == 0) {
                         std::cout << "Invalid FASTAFS requested\n";
                         return EINVAL;
                     }
                 }
+
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
+
                 return f.check_integrity();
             } else {
                 usage_check();
@@ -231,10 +247,12 @@ int main(int argc, char *argv[])
         } else {
             std::cerr << PACKAGE << ": '" << argv[1] << "' is not a " << PACKAGE << " command. See '" << PACKAGE << " --help':" << std::endl << std::endl;
             usage();
+
             return EINVAL;
         }
     } else {
         usage();
+
         return EINVAL;
     }
     return 0;

@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.4.0")
+set(PROJECT_VERSION "1.5.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -75,7 +75,7 @@ add_custom_target(tidy DEPENDS make_tidy )
 
 add_subdirectory(src)
 include_directories(include)
-add_definitions(-std=c++14)
+add_definitions(-std=c++17)
 
 # Boost
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
@@ -103,6 +103,7 @@ add_executable(fastafs
 					src/fasta_to_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/fastafs.cpp
+					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
@@ -125,8 +126,9 @@ add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 #add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
-add_test(test_ucsc2bit            "${BUILD_TEST_DIR}/test_ucsc2bit")
+add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
+add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
 add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 
