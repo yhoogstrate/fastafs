@@ -451,17 +451,17 @@ std::string ucsc2bit::get_faidx(uint32_t padding)
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     //    file.close();
-        uint32_t offset = 0;
+    uint32_t offset = 0;
 
-        for(size_t i = 0; i < this->data.size(); i++) {
-            offset += 1;// '>'
-            offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
+    for(size_t i = 0; i < this->data.size(); i++) {
+        offset += 1;// '>'
+        offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
 
-            contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
+        contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
 
-            offset += this->data[i]->n; // ACTG NNN
-            offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
-        }
+        offset += this->data[i]->n; // ACTG NNN
+        offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
+    }
     //} else {
     //    throw std::runtime_error("[ucsc2bit::get_faidx] could not load ucsc2bit: " + this->filename);
     //}
