@@ -12,7 +12,7 @@ else()
 endif()
 
 
-add_definitions(-std=c++14)
+add_definitions(-std=c++17)
 
 set(BUILD_DIR      "../bin")
 set(BUILD_TEST_DIR "${BUILD_DIR}/test")

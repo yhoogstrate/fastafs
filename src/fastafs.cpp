@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
+#include <filesystem>
 
 #include <openssl/sha.h>
 #include <openssl/md5.h>
@@ -492,7 +493,10 @@ void fastafs::load(std::string afilename)
 
     std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
-        this->filename = afilename;
+        // if a user can't compile this line, please replace it with C's
+        // 'realpath' function and delete/free afterwards and send a PR
+        this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
+
         size = file.tellg();
 
         if(size < 16) {

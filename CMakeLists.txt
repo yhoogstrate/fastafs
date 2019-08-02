@@ -75,7 +75,7 @@ add_custom_target(tidy DEPENDS make_tidy )
 
 add_subdirectory(src)
 include_directories(include)
-add_definitions(-std=c++14)
+add_definitions(-std=c++17)
 
 # Boost
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)

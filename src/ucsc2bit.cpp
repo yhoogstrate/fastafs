@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
+#include <filesystem>
 
 
 #include "config.hpp"
@@ -234,10 +235,11 @@ ucsc2bit::~ucsc2bit()
 
 void ucsc2bit::load(std::string afilename)
 {
-
     std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
-        this->filename = afilename;
+        // if a user can't compile this line, please replace it with C's
+        // 'realpath' function and delete/free afterwards and send a PR
+        this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
 
         if(file.tellg() < 16) {
             file.close();
@@ -421,6 +423,7 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
     } else {
         throw std::runtime_error("[ucsc2bit::view_fasta_chunk_cached] could not load ucsc2bit: " + this->filename);
     }
+
     return written;
 }
 
@@ -445,9 +448,9 @@ std::string ucsc2bit::get_faidx(uint32_t padding)
     std::string padding_s = std::to_string(padding);
     std::string padding_s2 = std::to_string(padding + 1);// padding + newline
 
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
-        file.close();
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
+    //    file.close();
         uint32_t offset = 0;
 
         for(size_t i = 0; i < this->data.size(); i++) {
@@ -459,9 +462,9 @@ std::string ucsc2bit::get_faidx(uint32_t padding)
             offset += this->data[i]->n; // ACTG NNN
             offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
         }
-    } else {
-        throw std::runtime_error("[ucsc2bit::get_faidx] could not load ucsc2bit: " + this->filename);
-    }
+    //} else {
+    //    throw std::runtime_error("[ucsc2bit::get_faidx] could not load ucsc2bit: " + this->filename);
+    //}
 
     return contents;
 }
