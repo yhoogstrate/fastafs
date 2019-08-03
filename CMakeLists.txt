@@ -112,6 +112,23 @@ add_executable(fastafs
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
+add_library(libfastafs SHARED
+					src/fasta_to_fastafs.cpp
+					src/ucsc2bit_to_fastafs.cpp
+					src/fastafs.cpp
+					src/ucsc2bit.cpp
+					src/twobit_byte.cpp
+					src/database.cpp
+					src/utils.cpp
+					src/fuse.cpp
+)
+
+set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
+set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(libfastafs PROPERTIES SOVERSION 1)
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER include/*.hpp)
+set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
+
 # ----------------------------------------------------------------------
 # ------------------------------ Testing -------------------------------
 
@@ -140,5 +157,6 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
+#install(TARGETS libfastafs DESTINATION "lib"  LIBRARY DESTINATION lib)
 
 # ----------------------------------------------------------------------
