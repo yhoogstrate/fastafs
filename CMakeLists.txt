@@ -164,6 +164,6 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
-install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "fastafs/include")
+install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
 
 # ----------------------------------------------------------------------
