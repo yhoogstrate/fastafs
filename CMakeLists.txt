@@ -122,12 +122,19 @@ add_library(libfastafs SHARED
 					src/utils.cpp
 					src/fuse.cpp
 )
+target_include_directories(libfastafs PUBLIC include)
+target_sources(libfastafs PUBLIC include/fastafs.hpp)
 
 set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
 set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(libfastafs PROPERTIES SOVERSION 1)
-set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER include/*.hpp)
 set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
+
+#set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
+# great, this doesn't go automagically with an entire dir
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/fuse.hpp;include/meson.build;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
+#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
 # ----------------------------------------------------------------------
 # ------------------------------ Testing -------------------------------
@@ -157,6 +164,6 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
-#install(TARGETS libfastafs DESTINATION "lib"  LIBRARY DESTINATION lib)
+install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "fastafs/include")
 
 # ----------------------------------------------------------------------
