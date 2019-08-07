@@ -22,7 +22,7 @@ If this metadata would be written in the header located before the sequence data
 |        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
 |        | [FILE FORMAT VERSION](#file-format-version) | [4 byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
 |        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
-|        | [FILE-POSITION-OF-INDEX] | [4 byte integer](#four-byte-integer) | Location in the file where the INDEX is located | 
+|        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4 byte integer](#four-byte-integer) | Location in the file where the INDEX is located | 
 | DATA [per sequence] | --- | --- | --- |
 |        | N-COMPRESSED-NUCLEOTIDES | uint32_t | Technical limit is thus 256^4 |
 |        | TWOBIT-DATA | char[] | length can be deduced from header |
