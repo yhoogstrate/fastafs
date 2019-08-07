@@ -20,7 +20,7 @@ If this metadata would be written in the header located before the sequence data
 | ------ | ------ | ------ | ------ |
 | GENERIC-HEADER |        |        |        |
 |        | [MAGIC](#magic) | 4 bytes | `\x0F\x0A\x46\x53` |
-|        | VERSION-SPECIFICATION | 4 bytes | The version of the file format specification. Currently only one version exists: `x00 x00 x00 x00` |
+|        | [FILE FORMAT VERSION](#file-format-version) | 4 bytes | `x00 x00 x00 x00` |
 |        | FASTAFS-FLAG | 2 bytes | metadata flag: is file being written, is file incomplete (has R-Regions) |         |
 |        | START-POSITION-OF-INDEX | to index | 
 | DATA [per sequence] | --- | --- | --- |
@@ -62,6 +62,20 @@ The bit representation of these bytes are:
 ```
     +--------+--------+--------+--------+
     |00001111|00001010|01000110|01010011|
+    +--------+--------+--------+--------+
+```
+
+#### FILE FORMAT VERSION ####
+
+The version of the file format specification implemented as four byte integer. Currently only one version exists: 
+
+`x00 x00 x00 x00`
+
+The bit representation of these bytes are:
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000000|
     +--------+--------+--------+--------+
 ```
 
