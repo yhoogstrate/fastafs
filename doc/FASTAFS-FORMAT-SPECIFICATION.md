@@ -55,10 +55,9 @@ If this metadata would be written in the header located before the sequence data
 
 #### Magic ####
 
-FA <- HEX
-FS <- ASCII
-
-`x0F x0A x46 x53`
+The file magic (first four bytes used to recognise binary file types) of FASTAFS are `x0F x0A x46 x53`.
+They stand for `FA` (as HEX) and `FS` (in ASCII).
+The bit representation of these bytes are:
 
 ```
     +--------+--------+--------+--------+
