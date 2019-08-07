@@ -1,5 +1,13 @@
 # fastafs: fuse layer and file system for storing FASTA files
 
+----
+
+Direct link to the file format specification:
+
+[https://github.com/yhoogstrate/fastafs/blob/master/doc/FASTAFS-FORMAT-SPECIFICATION.md](https://github.com/yhoogstrate/fastafs/blob/master/doc/FASTAFS-FORMAT-SPECIFICATION.md)
+
+----
+
 ![](https://bioinf-galaxian.erasmusmc.nl/public/images/fastafs/fastafs-example.gif)
 
 ## in a compressed and (randomly) accessible manner
