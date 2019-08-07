@@ -21,8 +21,8 @@ If this metadata would be written in the header located before the sequence data
 | GENERIC-HEADER |        |        |        |
 |        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
 |        | [FILE FORMAT VERSION](#file-format-version) | [4 byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
-|        | FASTAFS-FLAG | 2 bytes | metadata flag: is file being written, is file incomplete (has R-Regions) |
-|        | START-POSITION-OF-INDEX | to index | 
+|        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
+|        | [FILE-POSITION-OF-INDEX] | [4 byte integer](#four-byte-integer) | Location in the file where the INDEX is located | 
 | DATA [per sequence] | --- | --- | --- |
 |        | N-COMPRESSED-NUCLEOTIDES | uint32_t | Technical limit is thus 256^4 |
 |        | TWOBIT-DATA | char[] | length can be deduced from header |
@@ -103,6 +103,12 @@ bit 15  reserved
 
 File-complete set to 1 means that the file writing has completed.
 If this value is set to 0, the file is either being written or corrupt (because interrupted write process)
+
+
+#### File position of the index ####
+
+The index is located at the end of the data. This file offset in bytes from the files start position is indicated as [4 byte integer](#four-byte-integer).
+
 
 ### DATA ###
 
@@ -192,7 +198,7 @@ A four byte integer is a binary encoded integer value (using 4 bytes).
 
 ```
     +--------+--------+--------+--------+
-    |00000000|00000000|00000001|00000000|
+    |00000000|00000000|00000001|00000001|
     +--------+--------+--------+--------+
 ```
 
@@ -256,7 +262,7 @@ A four byte integer is a binary encoded integer value (using 4 bytes).
 
 ```
     +--------+--------+--------+--------+
-    |00000001|00000001|00000001|00000000|
+    |00000001|00000001|00000000|00000000|
     +--------+--------+--------+--------+
 ```
 
