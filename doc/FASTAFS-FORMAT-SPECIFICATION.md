@@ -19,8 +19,8 @@ If this metadata would be written in the header located before the sequence data
 | Section | Sub | Size | Description |
 | ------ | ------ | ------ | ------ |
 | GENERIC-HEADER |        |        |        |
-|        | MAGIC |        |         |
-|        | VERSION-SPECIFICATION | x00 x00 x00 x01 |         |
+|        | [MAGIC](#magic) | 4 bytes | `\x0F\x0A\x46\x53` |
+|        | VERSION-SPECIFICATION | 4 bytes | The version of the file format specification. Currently only one version exists: `x00 x00 x00 x00` |
 |        | FASTAFS-FLAG | 2 bytes | metadata flag: is file being written, is file incomplete (has R-Regions) |         |
 |        | START-POSITION-OF-INDEX | to index | 
 | DATA [per sequence] | --- | --- | --- |
