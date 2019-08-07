@@ -19,9 +19,9 @@ If this metadata would be written in the header located before the sequence data
 | Section | Sub | Size | Description |
 | ------ | ------ | ------ | ------ |
 | GENERIC-HEADER |        |        |        |
-|        | [MAGIC](#magic) | 4 bytes | `\x0F\x0A\x46\x53` |
-|        | [FILE FORMAT VERSION](#file-format-version) | 4 bytes | `x00 x00 x00 x00` |
-|        | FASTAFS-FLAG | 2 bytes | metadata flag: is file being written, is file incomplete (has R-Regions) |         |
+|        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
+|        | [FILE FORMAT VERSION](#file-format-version) | [4 byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
+|        | FASTAFS-FLAG | 2 bytes | metadata flag: is file being written, is file incomplete (has R-Regions) |
 |        | START-POSITION-OF-INDEX | to index | 
 | DATA [per sequence] | --- | --- | --- |
 |        | N-COMPRESSED-NUCLEOTIDES | uint32_t | Technical limit is thus 256^4 |
@@ -133,6 +133,135 @@ bit 15  reserved
 ### INDEX ###
 
 The index is put to the end because lots of information is unknown during conversion and requires large amounts of RAM allcoated
+ 
+ 
+ 
+#### Four Byte Integer ####
+
+A four byte integer is a binary encoded integer value (using 4 bytes).
+
+ - A 0 is encoded as follows (`x00 x00 x00 x00`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 1 is encoded as follows (`x00 x00 x00 x01`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000001|
+    +--------+--------+--------+--------+
+```
+
+ - A 2 is encoded as follows (`x00 x00 x00 x02`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000010|
+    +--------+--------+--------+--------+
+```
+
+ - A 3 is encoded as follows (`x00 x00 x00 x03`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000011|
+    +--------+--------+--------+--------+
+```
+
+ - A 255 is encoded as follows (`x00 x00 x00 xFF`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|11111111|
+    +--------+--------+--------+--------+
+```
+
+ - A 256 is encoded as follows (`x00 x00 x01 x00`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000001|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 257 is encoded as follows (`x00 x00 x01 x01`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000001|00000000|
+    +--------+--------+--------+--------+
+```
+
+Denote that this implementation is DIFFERENT than for the [UCSC implementation](#four-byte-integer-ucscu-implementation)!
+
+
+#### Four Byte Integer UCSC implementation ####
+
+A four byte integer is a binary encoded integer value (using 4 bytes). 
+
+
+ - A 0 is encoded as follows (`x00 x00 x00 x00`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 1 is encoded as follows (`x01 x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000001|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 2 is encoded as follows (`x02 x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000010|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 3 is encoded as follows (`x03 x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000011|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 255 is encoded as follows (`xFF x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |11111111|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 256 is encoded as follows (`x00 x01 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000001|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 257 is encoded as follows (`x01 x01 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000001|00000001|00000001|00000000|
+    +--------+--------+--------+--------+
+```
+
+
+Denote that this implementation is DIFFERENT than for the FASTAFS implementation!
  
 
 # TODO's #
