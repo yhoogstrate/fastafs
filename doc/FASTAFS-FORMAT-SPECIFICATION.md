@@ -26,7 +26,7 @@ If this metadata would be written in the header located before the sequence data
 | DATA | --- | --- | --- |
 |   -> per sequence | 
 |        | N-COMPRESSED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | The number of 2bit compressed nucleotides. Technical limit is 256^4 |
-|        | TWOBIT-DATA | sequence of 2bit-bytes | length can be deduced from header |
+|        | [TWOBIT-DATA](#twobit-data) | sequence of 2bit-bytes | length can be deduced from header |
 |        | UNKNOWN-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of N-entries |
 |        | N-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
 |        | N-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
@@ -137,12 +137,49 @@ bit 14  reserved
 bit 15  reserved
 ```
 
+#### TwoBit Data ####
+
+The TwoBit data is encoded in a long array of bytes in which each byte encodes four nucleotides.
+
+The following bits to nucleotide encoding is used:
+
+```
+    +--+---+
+    |00| T |
+    +--+---+
+    |01| C |
+    +--+---+
+    |10| A |
+    +--+---+
+    |11| G |
+    +--+---+
+```
+
+Encoded into a byte in the following order:
+
+```
+    +--------+------+
+    |00000000| TTTT |
+    +--------+------+
+    |00000011| TTTG |
+    +--------+------+
+    |00001100| TTGT |
+    +--------+------+
+    |00110000| TGTT |
+    +--------+------+
+    |11000000| GTTT |
+    +--------+------+
+```
+
+
+
 ### INDEX ###
 
 The index is put to the end because lots of information is unknown during conversion and requires large amounts of RAM allcoated
- 
- 
- 
+
+
+
+
 #### Four Byte Integer ####
 
 A four byte integer is a binary encoded integer value (using 4 bytes).
