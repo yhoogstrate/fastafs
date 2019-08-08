@@ -30,7 +30,7 @@ If this metadata would be written in the header located before the sequence data
 |        | UNKNOWN-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of N-entries |
 |        | N-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
 |        | N-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
-|        | *1: CHECKSUM | 16 x byte | MD5 compatible with CRAM, BAM, DICT & ENA |
+|        | *1: [MD5-CHECKSUM](#md5-checksum) | 16 x byte | MD5 compatible with CRAM, BAM, DICT & ENA |
 |        | *2: RESERVED-REGIONS | uint32_t as [4-byte integer](#four-byte-integer) | Number of R-entries (reserved regions ~ incomplete file) - not yet implemented and re enabled by a flag |
 |        | *2: R-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
 |        | *2: R-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
@@ -164,13 +164,18 @@ Encoded into a byte in the following order:
     +----------+------+
 ```
 
+#### MD5-checksum ####
+
+Per sequence, an MD5 checksum is stored as it's binary encoded digest.
+
+The MD5 checksum is calculated as described in the CRAM specification (section 11): https://samtools.github.io/hts-specs/CRAMv3.pdf
+
+Only nucleotides are included (no newlines, no whitespaces, no headers), all in uppercase.
+
 
 ### INDEX ###
 
 The index is put to the end because lots of information is unknown during conversion and requires large amounts of RAM allcoated
-
-
-
 
 #### Four Byte Integer ####
 
