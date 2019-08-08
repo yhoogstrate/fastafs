@@ -20,22 +20,22 @@ If this metadata would be written in the header located before the sequence data
 | ------ | ------ | ------ | ------ |
 | GENERIC-HEADER |        |        |        |
 |        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
-|        | [FILE FORMAT VERSION](#file-format-version) | [4 byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
+|        | [FILE FORMAT VERSION](#file-format-version) | [4-byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
 |        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
-|        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4 byte integer](#four-byte-integer) | Location in the file where the INDEX is located | 
+|        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4-byte integer](#four-byte-integer) | Location in the file where the INDEX is located | 
 | DATA [per sequence] | --- | --- | --- |
-|        | N-COMPRESSED-NUCLEOTIDES | uint32_t as [4 byte integer](#four-byte-integer) | Technical limit is 256^4 |
+|        | N-COMPRESSED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Technical limit is 256^4 |
 |        | TWOBIT-DATA | sequence of 2bit-bytes | length can be deduced from header |
-|        | UNKNOWN-NUCLEOTIDES | uint32_t as [4 byte integer](#four-byte-integer) | Number of N-entries |
-|        | N-STARTS | N x uint32_t as [4 byte integer](#four-byte-integer) | start positions (0-based) |
-|        | N-ENDS | N x uint32_t as [4 byte integer](#four-byte-integer) | end positions (0-based) |
+|        | UNKNOWN-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of N-entries |
+|        | N-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
+|        | N-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
 |        | *1: CHECKSUM | 16 x byte | MD5 compatible with CRAM, BAM, DICT & ENA |
-|        | *2: RESERVED-REGIONS | uint32_t | Number of R-entries (reserved regions ~ incomplete file) |
-|        | *2: R-STARTS | N x uint32_t | start positions (0-based) |
-|        | *2: R-ENDS | N x uint32_t | end positions (1-based) |
-|        | MASKED-NUCLEOTIDES | uint32_t | Number of M-entries (for lower case regions) |
-|        | M-STARTS | M x uint32_t | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
-|        | M-ENDS | M x uint32_t | end positions (1-based) |
+|        | *2: RESERVED-REGIONS | uint32_t as [4-byte integer](#four-byte-integer) | Number of R-entries (reserved regions ~ incomplete file) |
+|        | *2: R-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
+|        | *2: R-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
+|        | MASKED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of M-entries (for lower case regions) |
+|        | M-STARTS | M x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
+|        | M-ENDS | M x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
 | INDEX  | --- | --- |  |
 |        | NUMBER-SEQUENCES | uint32_t | Number of sequences included |
 |   -> per sequence | 
@@ -107,7 +107,7 @@ If this value is set to 0, the file is either being written or corrupt (because 
 
 #### File position of the index ####
 
-The index is located at the end of the data. This file offset in bytes from the files start position is indicated as [4 byte integer](#four-byte-integer).
+The index is located at the end of the data. This file offset in bytes from the files start position is indicated as [4-byte integer](#four-byte-integer).
 
 
 ### DATA ###
