@@ -275,10 +275,8 @@ Denote that this implementation is DIFFERENT than for the FASTAFS implementation
 Add SEQUENCE-TYPE (1 byte):
   * ACTG / ACUG
   * sequence size:
-   - 256^4 (uint)  <- current default and only option
-   - 256^8 (samtools (cram) ITF8)
-
-Add CRC check in SEQUENCE-HEADER section
+    - 256^4 (uint)  <- current default and only option
+    - 256^8 (samtools (cram) ITF8)
 
 Add DEFAULT-PADDING to GENERIC-HEADER
 
