@@ -49,7 +49,7 @@ If this metadata would be written in the header located before the sequence data
 | METADATA-ENTRY [per entry] |  ~ limits to 'only' 256 distinct types of metadata
 |          | METADATA-TYPE-FLAG | 2 bytes | 
 |          | ENTRY | type specific, examples below: |
-|          | => ORIGINAL PADDING | uint32_t as [4-byte integer](#four-byte-integer) | The number of nucleotides before a newline was added to the FASTA file |
+|          | => ORIGINAL PADDING | uint32_t as [4-byte integer](#four-byte-integer) | The number of nucleotides per line in the original FASTA file |
 
 
 ### GENERIC-HEADER ###
