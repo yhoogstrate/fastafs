@@ -143,23 +143,16 @@ The TwoBit data is encoded in a long array of bytes in which each byte encodes f
 
 The following bits to nucleotide encoding is used:
 
-```
-    +--+---+
-    |00| T |
-    +--+---+
-    |01| C |
-    +--+---+
-    |10| A |
-    +--+---+
-    |11| G |
-    +--+---+
-```
+| bits | Nucleotide |
+| ---- | - |
+| `00` | T |
+| `01` | C |
+| `10` | A |
+| `11` | G |
 
 Encoded into a byte in the following order:
 
 ```
-    +--------+------+
-    |00000000| TTTT |
     +--------+------+
     |00000011| TTTG |
     +--------+------+
@@ -170,7 +163,6 @@ Encoded into a byte in the following order:
     |11000000| GTTT |
     +--------+------+
 ```
-
 
 
 ### INDEX ###
