@@ -31,12 +31,12 @@ If this metadata would be written in the header located before the sequence data
 |        | N-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
 |        | N-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
 |        | *1: CHECKSUM | 16 x byte | MD5 compatible with CRAM, BAM, DICT & ENA |
-|        | *2: RESERVED-REGIONS | uint32_t as [4-byte integer](#four-byte-integer) | Number of R-entries (reserved regions ~ incomplete file) |
+|        | *2: RESERVED-REGIONS | uint32_t as [4-byte integer](#four-byte-integer) | Number of R-entries (reserved regions ~ incomplete file) - not yet implemented and needs to be enabled by a flag |
 |        | *2: R-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
-|        | *2: R-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
+|        | *2: R-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
 |        | MASKED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of M-entries (for lower case regions) |
 |        | M-STARTS | M x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
-|        | M-ENDS | M x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
+|        | M-ENDS | M x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
 | INDEX  | --- | --- |  |
 |        | NUMBER-SEQUENCES | uint32_t as [4-byte integer](#four-byte-integer) | Number of sequences included |
 |   -> per sequence | 
@@ -154,7 +154,7 @@ Encoded into a byte in the following order:
 
 ```
     +----------+------+
-    | 0000001 1| TTTG |
+    | 00000011 | TTTG |
     +----------+------+
     | 00001100 | TTGT |
     +----------+------+
