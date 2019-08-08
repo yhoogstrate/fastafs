@@ -44,7 +44,7 @@ If this metadata would be written in the header located before the sequence data
 |        | NAME-LENGTH | 1 byte as unsigned char | length in bytes; name cannot exceed 255 bytes |
 |        | NAME-FASTA | NAME-LENGTH x char | FASTA header; may not include new-lines or '>' |
 |        | START-POSITION-IN-BODY of N-COMPR-NUC | uint32_t as [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the DATA block for this sequence starts |
-| METADATA | by definition optional data |
+| METADATA | only first char is required, the rest is always optional |
 |          | N-METADATA-TAGS | 1 x char |
 | METADATA-ENTRY [per entry] |  ~ limits to 'only' 256 distinct types of metadata
 |          | METADATA-TYPE-FLAG | 2 bytes | 
