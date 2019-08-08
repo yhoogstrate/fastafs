@@ -48,8 +48,8 @@ If this metadata would be written in the header located before the sequence data
 |          | N-METADATA-TAGS | 1 x char |
 | METADATA-ENTRY [per entry] |  ~ limits to 'only' 256 distinct types of metadata
 |          | METADATA-TYPE-FLAG | 2 bytes | 
-|          | ENTRY | ~ type specific : |
-|          | => ORIGINAL PADDING | x uint32_t |
+|          | ENTRY | type specific, examples below: |
+|          | => ORIGINAL PADDING | uint32_t as [4-byte integer](#four-byte-integer) | The number of nucleotides before a newline was added to the FASTA file |
 
 
 ### GENERIC-HEADER ###
