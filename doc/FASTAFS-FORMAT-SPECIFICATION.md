@@ -23,8 +23,9 @@ If this metadata would be written in the header located before the sequence data
 |        | [FILE FORMAT VERSION](#file-format-version) | [4-byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
 |        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
 |        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4-byte integer](#four-byte-integer) | Location in the file where the INDEX is located | 
-| DATA [per sequence] | --- | --- | --- |
-|        | N-COMPRESSED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Technical limit is 256^4 |
+| DATA | --- | --- | --- |
+|   -> per sequence | 
+|        | N-COMPRESSED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | The number of 2bit compressed nucleotides. Technical limit is 256^4 |
 |        | TWOBIT-DATA | sequence of 2bit-bytes | length can be deduced from header |
 |        | UNKNOWN-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of N-entries |
 |        | N-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
@@ -37,12 +38,12 @@ If this metadata would be written in the header located before the sequence data
 |        | M-STARTS | M x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
 |        | M-ENDS | M x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
 | INDEX  | --- | --- |  |
-|        | NUMBER-SEQUENCES | uint32_t | Number of sequences included |
+|        | NUMBER-SEQUENCES | uint32_t as [4-byte integer](#four-byte-integer) | Number of sequences included |
 |   -> per sequence | 
-|        | SEQUENCE-FLAG | 2 bytes ~ uchar | storing metadata and type of data |
-|        | NAME-LENGTH | unsigned char | length in bytes; name cannot exceed 255 bytes |
-|        | NAME-FASTA | char[NAME-LENGTH] | FASTA header; may not include new-lines or '>' |
-|        | START-POSITION-IN-BODY of N-COMPR-NUC |  | Seems tricky; after two very long sequences this may exceed 4 uints |
+|        | SEQUENCE-FLAG | 2 bytes | storing metadata and type of data |
+|        | NAME-LENGTH | 1 byte as unsigned char | length in bytes; name cannot exceed 255 bytes |
+|        | NAME-FASTA | NAME-LENGTH x char | FASTA header; may not include new-lines or '>' |
+|        | START-POSITION-IN-BODY of N-COMPR-NUC | uint32_t as [4-byte integer](#four-byte-integer)  |
 | METADATA | by definition optional data |
 |          | N-METADATA-TAGS | 1 x char |
 | METADATA-ENTRY [per entry] |  ~ limits to 'only' 256 distinct types of metadata
