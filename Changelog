@@ -1,3 +1,9 @@
+2019-08-02  Youri Hoogstrate
+
+    * v1.5.0
+    * Support mounting 2bit files (without FASTAFS file(s))
+       - Requires c++-17 for several std::filesystem calls
+
 2019-06-05  Youri Hoogstrate
 
     * Changed SHA1 to MD5 hashes for BAM compatibility

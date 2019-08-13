@@ -19,50 +19,64 @@ If this metadata would be written in the header located before the sequence data
 | Section | Sub | Size | Description |
 | ------ | ------ | ------ | ------ |
 | GENERIC-HEADER |        |        |        |
-|        | MAGIC |        |         |
-|        | VERSION-SPECIFICATION | x00 x00 x00 x01 |         |
-|        | FASTAFS-FLAG | 2 bytes | metadata flag: is file being written, is file incomplete (has R-Regions) |         |
-|        | START-POSITION-OF-INDEX | to index | 
-| DATA [per sequence] | --- | --- | --- |
-|        | N-COMPRESSED-NUCLEOTIDES | uint32_t | Technical limit is thus 256^4 |
-|        | TWOBIT-DATA | char[] | length can be deduced from header |
-|        | UNKNOWN-NUCLEOTIDES | uint32_t | Number of N-entries |
-|        | N-STARTS | N x uint32_t | start positions (0-based) |
-|        | N-ENDS | N x uint32_t | end positions (0-based) |
-|        | 1* CHECKSUM | 16 x byte | MD5 |
-|        | 2* RESERVED-REGIONS | uint32_t | Number of R-entries (reserved regions ~ incomplete file) |
-|        | 2* R-STARTS | N x uint32_t | start positions (0-based) |
-|        | 2* R-ENDS | N x uint32_t | end positions (1-based) |
-|        | MASKED-NUCLEOTIDES | uint32_t | Number of M-entries (for lower case regions) |
-|        | M-STARTS | M x uint32_t | start positions (0-based) - default is CAPITAL, m-blocks are LOWER-case |
-|        | M-ENDS | M x uint32_t | end positions (1-based) |
-| INDEX  | --- | --- |  |
-|        | NUMBER-SEQUENCES | uint32_t | Number of sequences included |
+|        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
+|        | [FILE FORMAT VERSION](#file-format-version) | [4-byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
+|        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
+|        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the INDEX is located | 
+| DATA | --- | --- | --- |
 |   -> per sequence | 
-|        | SEQUENCE-FLAG | 2 bytes ~ uchar | storing metadata and type of data |
-|        | NAME-LENGTH | unsigned char | length in bytes; name cannot exceed 255 bytes |
-|        | NAME-FASTA | char[NAME-LENGTH] | FASTA header; may not include new-lines or '>' |
-|        | START-POSITION-IN-BODY of N-COMPR-NUC |  | Seems tricky; after two very long sequences this may exceed 4 uints |
-| METADATA | by definition optional data |
+|        | N-COMPRESSED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | The number of 2bit compressed nucleotides. Technical limit is 256^4 |
+|        | [TWOBIT-DATA](#twobit-data) | sequence of 2bit-bytes | length can be deduced from header |
+|        | UNKNOWN-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of N-entries |
+|        | N-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
+|        | N-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
+|        | [MD5-CHECKSUM](#md5-checksum) | 16 x byte | MD5 compatible with CRAM, BAM, DICT & ENA |
+|        | ** RESERVED-REGIONS | uint32_t as [4-byte integer](#four-byte-integer) | Number of R-entries (reserved regions ~ incomplete file) - not yet implemented and must be enabled by a flag |
+|        | ** R-STARTS | N x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) |
+|        | ** R-ENDS | N x uint32_t as [4-byte integer](#four-byte-integer) | end positions (1-based) |
+|        | MASKED-NUCLEOTIDES | uint32_t as [4-byte integer](#four-byte-integer) | Number of M-entries (for lower case regions) |
+|        | M-STARTS | M x uint32_t as [4-byte integer](#four-byte-integer) | start positions (0-based) - default is CAPITAL, within M-blocks is LOWER-case |
+|        | M-ENDS | M x uint32_t as [4-byte integer](#four-byte-integer) | end positions (0-based) |
+| INDEX  | --- | --- |  |
+|        | NUMBER-SEQUENCES | uint32_t as [4-byte integer](#four-byte-integer) | Number of sequences included |
+|   -> per sequence | 
+|        | [SEQUENCE-FLAG](#sequence-flag) | 2 bytes | storing metadata and type of data |
+|        | NAME-LENGTH | 1 byte as unsigned char | length in bytes; name cannot exceed 255 bytes |
+|        | NAME-FASTA | NAME-LENGTH x char | FASTA header; may not include new-lines or '>' |
+|        | START-POSITION-IN-BODY of N-COMPR-NUC | uint32_t as [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the DATA block for this sequence starts |
+| METADATA | only first char is required, the rest is always optional |
 |          | N-METADATA-TAGS | 1 x char |
 | METADATA-ENTRY [per entry] |  ~ limits to 'only' 256 distinct types of metadata
 |          | METADATA-TYPE-FLAG | 2 bytes | 
-|          | ENTRY | ~ type specific : |
-|          | => ORIGINAL PADDING | x uint32_t |
+|          | ENTRY | type specific, examples below: |
+|          | => ORIGINAL PADDING | uint32_t as [4-byte integer](#four-byte-integer) | The number of nucleotides per line in the original FASTA file |
 
 
 ### GENERIC-HEADER ###
 
 #### Magic ####
 
-FA <- HEX
-FS <- ASCII
-
-`x0F x0A x46 x53`
+The file magic (first four bytes used to recognise binary file types) of FASTAFS are `x0F x0A x46 x53`.
+They stand for `FA` (as HEX) and `FS` (in ASCII).
+The bit representation of these bytes are:
 
 ```
     +--------+--------+--------+--------+
     |00001111|00001010|01000110|01010011|
+    +--------+--------+--------+--------+
+```
+
+#### FILE FORMAT VERSION ####
+
+The version of the file format specification implemented as four byte integer. Currently only one version exists: 
+
+`x00 x00 x00 x00`
+
+The bit representation of these bytes are:
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000000|
     +--------+--------+--------+--------+
 ```
 
@@ -91,11 +105,19 @@ bit 15  reserved
 File-complete set to 1 means that the file writing has completed.
 If this value is set to 0, the file is either being written or corrupt (because interrupted write process)
 
+
+#### File position of the index ####
+
+The index is located at the end of the data. This file offset in bytes from the files start position is indicated as [4-byte integer](#four-byte-integer).
+
+
 ### DATA ###
 
 Repeated for every sequence, in order matching SEQUENCE-HEADER
 
 #### SEQUENCE-FLAG #### 
+
+The sequence flag allows to describe the following metadata for each sequence:
 
 ```
 bit 0   is-rna      [1 = yes, 0 = DNA]
@@ -117,19 +139,180 @@ bit 14  reserved
 bit 15  reserved
 ```
 
+#### TwoBit Data ####
+
+The TwoBit data is encoded in a long array of bytes in which each byte encodes four nucleotides.
+
+The following bits to nucleotide encoding is used:
+
+| bits | Nucleotide |
+| ---- | - |
+| `00` | T |
+| `01` | C |
+| `10` | A |
+| `11` | G |
+
+Encoded into a byte in the following order:
+
+```
+    +----------+------+
+    | 00000011 | TTTG |
+    +----------+------+
+    | 00001100 | TTGT |
+    +----------+------+
+    | 00110000 | TGTT |
+    +----------+------+
+    | 11000000 | GTTT |
+    +----------+------+
+```
+
+#### MD5 checksum ####
+
+Per sequence, an MD5 checksum is stored as it's binary encoded digest.
+
+The MD5 checksum is calculated as described in the CRAM specification (section 11): https://samtools.github.io/hts-specs/CRAMv3.pdf
+
+Only nucleotides are included (no newlines, no whitespaces, no headers), all in uppercase.
+
+
 ### INDEX ###
 
 The index is put to the end because lots of information is unknown during conversion and requires large amounts of RAM allcoated
+
+#### Four Byte Integer ####
+
+A four byte integer is a binary encoded integer value (using 4 bytes).
+
+ - A 0 is encoded as follows (`x00 x00 x00 x00`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 1 is encoded as follows (`x00 x00 x00 x01`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000001|
+    +--------+--------+--------+--------+
+```
+
+ - A 2 is encoded as follows (`x00 x00 x00 x02`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000010|
+    +--------+--------+--------+--------+
+```
+
+ - A 3 is encoded as follows (`x00 x00 x00 x03`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000011|
+    +--------+--------+--------+--------+
+```
+
+ - A 255 is encoded as follows (`x00 x00 x00 xFF`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|11111111|
+    +--------+--------+--------+--------+
+```
+
+ - A 256 is encoded as follows (`x00 x00 x01 x00`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000001|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 257 is encoded as follows (`x00 x00 x01 x01`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000001|00000001|
+    +--------+--------+--------+--------+
+```
+
+Denote that this implementation is DIFFERENT than for the [UCSC implementation](#four-byte-integer-ucscu-implementation)!
+
+
+#### Four Byte Integer UCSC implementation ####
+
+A four byte integer is a binary encoded integer value (using 4 bytes). 
+
+
+ - A 0 is encoded as follows (`x00 x00 x00 x00`):
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 1 is encoded as follows (`x01 x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000001|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 2 is encoded as follows (`x02 x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000010|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 3 is encoded as follows (`x03 x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000011|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 255 is encoded as follows (`xFF x00 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |11111111|00000000|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 256 is encoded as follows (`x00 x01 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000000|00000001|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+ - A 257 is encoded as follows (`x01 x01 x00 x00`) - DENOTE INVERSED ORDER OF INTEGERS:
+
+```
+    +--------+--------+--------+--------+
+    |00000001|00000001|00000000|00000000|
+    +--------+--------+--------+--------+
+```
+
+
+Denote that this implementation is DIFFERENT than for the FASTAFS implementation!
  
 
 # TODO's #
 Add SEQUENCE-TYPE (1 byte):
   * ACTG / ACUG
   * sequence size:
-   - 256^4 (uint)  <- current default and only option
-   - 256^8 (samtools (cram) ITF8)
-
-Add CRC check in SEQUENCE-HEADER section
+    - 256^4 (uint)  <- current default and only option
+    - 256^8 (samtools (cram) ITF8)
 
 Add DEFAULT-PADDING to GENERIC-HEADER
 

@@ -14,11 +14,13 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <filesystem>
 
 
 #include "fuse.hpp"
 #include "database.hpp"
 #include "fastafs.hpp"
+#include "ucsc2bit.hpp"
 
 
 // http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
@@ -26,24 +28,30 @@
 
 
 
-
-struct fastafs_fuse_instance {
+struct fuse_instance {
+    //fastasfs
     fastafs *f;
+    ffs2f_init *cache;
+    bool from_fastafs; // if false, from 2bit
+
+    // ucsc2bit
+    ucsc2bit *u2b;
+
+    // generic
     uint32_t padding;
     int argc_fuse;
-    //char *argv_fuse[];
-
-    ffs2f_init *cache; //
 };
+
 
 
 static int do_getattr(const char *path, struct stat *st)
 {
-    fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
+
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
-    printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->f->name.c_str(), ffi->padding);
+
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
     //		st_gid: 	The group ID of the file.
@@ -57,6 +65,7 @@ static int do_getattr(const char *path, struct stat *st)
     st->st_gid = getgid(); // The group of the file/directory is the same as the group of the user who mounted the filesystem
     st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
     st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
+
     if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0644;
         //st->st_nlink = 1;
@@ -65,56 +74,86 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
     } else {
-
-        std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
-        std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
-        std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
-        std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
-
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
 
-        if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-            st->st_size = ffi->f->fasta_filesize(ffi->padding);
-        } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
-            st->st_size = ffi->f->get_faidx(ffi->padding).size();
-        } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
-            st->st_size = ffi->f->ucsc2bit_filesize();
-        } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
-            st->st_size = ffi->f->dict_filesize();
+        if(ffi->from_fastafs) {
+            if(ffi->f != nullptr) {
+                printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->f->name.c_str(), ffi->padding);
+
+                std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
+                std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
+                std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
+                std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
+
+                if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+                    st->st_size = ffi->f->fasta_filesize(ffi->padding);
+                } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+                    st->st_size = ffi->f->get_faidx(ffi->padding).size();
+                } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
+                    st->st_size = ffi->f->ucsc2bit_filesize();
+                } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+                    st->st_size = ffi->f->dict_filesize();
+                }
+            }
+        } else {
+            if(ffi->u2b != nullptr) {
+                printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->u2b->name.c_str(), ffi->padding);
+
+                std::string virtual_fasta_filename = "/" + ffi->u2b->name + ".fa";
+                std::string virtual_faidx_filename = "/" + ffi->u2b->name + ".fa.fai";
+
+                if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+                    st->st_size = ffi->u2b->fasta_filesize(ffi->padding);
+                } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+                    st->st_size = ffi->u2b->get_faidx(ffi->padding).size();
+                }
+            }
         }
     }
-    printf("    st_size: %u\n", (uint32_t) st->st_size);
+
     return 0;
 }
 
 
+
 static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-    fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
-    printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
-
-    std::string virtual_fasta_filename = ffi->f->name + ".fa";
-    std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
-    std::string virtual_ucsc2bit_filename = ffi->f->name + ".2bit";
-    std::string virtual_dict_filename = ffi->f->name + ".dict";
 
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
 
-    if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
-        filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
-        filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
-        filler(buffer, virtual_ucsc2bit_filename.c_str(), NULL, 0);
-        filler(buffer, virtual_dict_filename.c_str(), NULL, 0);
+    if(ffi->from_fastafs) {
+        printf("\033[0;32m[%s]\033[0;33m fastafs::do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 
-        std::cout << "    " << virtual_fasta_filename << "\n";
-        std::cout << "    " << virtual_faidx_filename << "\n";
-        std::cout << "    " << virtual_dict_filename << "\n";
+        std::string virtual_fasta_filename = ffi->f->name + ".fa";
+        std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
+        std::string virtual_ucsc2bit_filename = ffi->f->name + ".2bit";
+        std::string virtual_dict_filename = ffi->f->name + ".dict";
+
+        if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
+            filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
+            filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
+            filler(buffer, virtual_ucsc2bit_filename.c_str(), NULL, 0);
+            filler(buffer, virtual_dict_filename.c_str(), NULL, 0);
+        }
+    } else {
+        if(ffi->u2b != nullptr) {
+            printf("\033[0;32m[%s]\033[0;33m 2bit::do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
+
+            std::string virtual_fasta_filename = ffi->u2b->name + ".fa";
+            std::string virtual_faidx_filename = ffi->u2b->name + ".fa.fai";
+
+            if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
+                filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
+                filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
+            }
+        }
     }
 
     return 0;
@@ -123,34 +162,47 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-    fastafs_fuse_instance *ffi = static_cast<fastafs_fuse_instance *>(fuse_get_context()->private_data);
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
-    printf("\033[0;32m[%s]\033[0;33m do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 
-    std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
-    std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
-    std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
-    std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
+    static int written = -1;
 
-    static int written;
-    if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-        written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
-        //printf("    return written=%u\n", written);
-    } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
-        written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
-        //printf("    return written=%u\n", written);
-    } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
-        written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
-        //printf("    return written=%u\n", written);
-    } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
-        written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
-        //printf("    return written=%u\n", written);
+    if(ffi->from_fastafs) {
+        printf("\033[0;32m[%s]\033[0;33m fastafs::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+
+        std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
+        std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
+        std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
+        std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
+
+        if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+            written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
+        } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+            written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
+        } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
+            written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
+        } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+            written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
+        }
     } else {
-        written = -1;
+        if(ffi->u2b != nullptr) {
+            printf("\033[0;32m[%s]\033[0;33m 2bit::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
+
+            std::string virtual_fasta_filename = "/" + ffi->u2b->name + ".fa";
+            std::string virtual_faidx_filename = "/" + ffi->u2b->name + ".fa.fai";
+
+            if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+                written = (signed int) ffi->u2b->view_fasta_chunk(ffi->padding, buffer, size, offset);
+            } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+                written = (signed int) ffi->u2b->view_faidx_chunk(ffi->padding, buffer, size, offset);
+            }
+        }
     }
+
+    //printf("    return written=%u\n", written);
 
     return written;
 }
@@ -211,6 +263,7 @@ void print_fuse_help()
     std::cout << "usage: fasfafs <mount: fastafs UID> <mountpoint> [options]\n";
     std::cout << "\n";
     std::cout << "general options:\n";
+    std::cout << "    -2   --2bit            virtualise a 2bit file rather than FASTAFS UID\n";
     std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
     std::cout << "    -o opt,[opt...]        mount options\n";
     std::cout << "    -h   --help            print help\n";
@@ -278,57 +331,71 @@ void print_fuse_help()
 }
 
 
-fastafs_fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
+fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 {
-    printf("parse args\n");
     // Certain arguments do not need to be put into fuse init, e.g "-p" "nextvalue"
     //char **argv_test = (char **) malloc(sizeof(char*) * argc);
-    //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 1, new char[argc]});
-    fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 50, 0, nullptr});
+    //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 1, new char[argc]});
+    //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 0, nullptr});
+
+    fuse_instance *fi = new fuse_instance({nullptr, nullptr, true, nullptr, 60, 0});
+
     //printf("argc=%i",argc);
-    argv_fuse[ffi->argc_fuse++] = (char *) "fasfafs mount";
-    //ffi->argv_fuse[0] = argv[0];
-    //ffi->argv_fuse[1] = argv[1];
+    argv_fuse[fi->argc_fuse++] = (char *) "fasfafs mount";
+
+    //fi->argv_fuse[0] = argv[0];
+    //fi->argv_fuse[1] = argv[1];
     int i = 2;
     while(i < argc) {
-        //printf("\nprocessing argv[%i] = '%s';", i, argv[i]);
+        printf("processing argv[%i] = '%s';\n", i, argv[i]);
         if(i < argc - 3) { // all arguments that take 2 arguments "--p", "50"
             if(strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) {
                 try {
-                    sscanf(argv[++i], "%u", &ffi->padding);
+                    sscanf(argv[++i], "%u", &fi->padding);
                 } catch(std::exception const & e) {
                     std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
                     exit(1);
                 }
             } else { // arguments that need to be send to fuse
-                //argv_test[ffi->argc_fuse] = argv[i];
-                argv_fuse[ffi->argc_fuse++] = argv[i];
+                //argv_test[fi->argc_fuse] = argv[i];
+                argv_fuse[fi->argc_fuse++] = argv[i];
             }
-        }
-        //else if(i < argc - 2) { // all arguments that one argument "--lowercase" switches etc
-        //}
-        else if(i == argc - 2) { // this refers to the fastafs object
-            database d = database();
-            std::string fname = d.get(argv[i]);
-            if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
-                print_fuse_help();
-                exit(1);
-            } else { // valid fastafs and bind fastafs object
-                fastafs *f = new fastafs(std::string(argv[i]));
-                f->load(fname);
-                ffi->f = f;
+        } else if(i < argc - 2) { // all arguments that one argument "--lowercase" switches etc
+            if(strcmp(argv[i], "-2") == 0 or strcmp(argv[i], "--2bit") == 0) {
+                fi->from_fastafs = false;
+            } else { // arguments that need to be send to fuse
+                //argv_test[fi->argc_fuse] = argv[i];
+                argv_fuse[fi->argc_fuse++] = argv[i];
+            }
+        } else if(i == argc - 2) { // this refers to the fastafs object
+            if(fi->from_fastafs) {
+                database d = database();
+                std::string fname = d.get(argv[i]);
 
-                printf("initializing cache, with true\n");
-                ffi->cache = f->init_ffs2f(ffi->padding, true);// allow mixed case
+                if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
+                    print_fuse_help();
+                    exit(1);
+                } else { // valid fastafs and bind fastafs object
+                    fi->f = new fastafs(std::string(argv[i]));
+                    fi->f->load(fname);
+
+                    fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
+                }
+            } else {
+                std::string basename = std::filesystem::path(std::string(argv[i])).filename();
+
+                fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
+                fi->u2b->load(std::string(argv[i]));
             }
         } else { // mountpoint
-            //argv_test[ffi->argc_fuse] = argv[i];
-            argv_fuse[ffi->argc_fuse++] = argv[i];
+            //argv_test[fi->argc_fuse] = argv[i];
+            argv_fuse[fi->argc_fuse++] = argv[i];
         }
+
         i++;
     }
 
-    return ffi;
+    return fi;
 }
 
 
@@ -339,7 +406,8 @@ void fuse(int argc, char *argv[])
     // part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
     //  - @todo at some point define that second mount is not really important? if possible
     char *argv2[argc];
-    fastafs_fuse_instance *ffi = parse_args(argc, argv, argv2);
+    fuse_instance *ffi = parse_args(argc, argv, argv2);
+
     // part 2 - print what the planning is
     char cur_time[100];
     time_t now = time(0);
@@ -348,18 +416,24 @@ void fuse(int argc, char *argv[])
     for(int i = 0; i < argc; i++) {
         printf(" argv[%u]=\"%s\"", i, argv[i]);
     }
+
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
     printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]", cur_time, ffi->argc_fuse);
     for(int i = 0; i < ffi->argc_fuse; i++) {
         printf(" argv[%u]=\"%s\"", i, argv2[i]);
     }
+
     printf("\n");
-    if(ffi->f == nullptr) { // no fastafs was loaded
+
+    if(ffi->f == nullptr && ffi->u2b == nullptr) { // no fastafs was loaded
         print_fuse_help();
         exit(0);
     } else {
-        printf("RUNNING FUSE CODE\n");
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
     }
     //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
 }
+
+
+
+

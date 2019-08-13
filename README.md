@@ -1,5 +1,13 @@
 # fastafs: fuse layer and file system for storing FASTA files
 
+----
+
+Direct link to the file format specification:
+
+[https://github.com/yhoogstrate/fastafs/blob/master/doc/FASTAFS-FORMAT-SPECIFICATION.md](https://github.com/yhoogstrate/fastafs/blob/master/doc/FASTAFS-FORMAT-SPECIFICATION.md)
+
+----
+
 ![](https://bioinf-galaxian.erasmusmc.nl/public/images/fastafs/fastafs-example.gif)
 
 ## in a compressed and (randomly) accessible manner
@@ -8,11 +16,8 @@ DNA sequences are typically stored in the FASTA format. Although very commonly u
 
 Here we propose a solution; a mixture of 2bit compression and random on FASTA very similar to UCSC TwoBit files, accessible as read-onl FASTA, FAI, DICT and 2BIT files via a FUSE file system layer. By simply mounting the compressed archive as a FASTA and necessary metadata files, we only virtualize the large FASTA file on request. Additional advantages of FASTAFS are the toolkit and interface and the possibility to crc check files, search for duplicate entries.
 
-FASTAFS is not compatible with 2bit files, but 2bit files can be convert to FASTAFS and, more importantly, a mounted FASTAFS mountpoint will not only virtualize the FASTA but also the 2bit file.
-So, is FASTAFS this famous 15th standard (<https://xkcd.com/927/>)?
-Partially, but it is not designed to replace FASTA nor 2bit as those mountpoints should be used as flat files did before. 
-Using 2bit files as backend for the FASTAFS toolkit was impossible as fastafs tries to also do other filesystem related things, such as adding checksums and preserving other metadata that is important, that are not implemented in 2bit.
-Nevertheless, the FASTAFS format is heavily inspired by 2bit.
+FASTAFS is compatible with 2bit files but 2bit has some limitations and does for instance not allow mounting DICT files needed for CRAM and Picard tools. The 2bit files can be convert to FASTAFS and, more importantly, a mounted FASTAFS mountpoint will not only virtualize the FASTA but also the 2bit file. Is FASTAFS this famous 15th standard (<https://xkcd.com/927/>)?
+Partially, but it is not designed to replace FASTA nor 2bit as those mountpoints should be used as flat files did before and the  virtualization of dict files is not possible when we mount 2bit files.
 
 ## installation and compilation
 
@@ -20,14 +25,50 @@ Currently the package uses cmake for compilation
 Required dependencies are:
 
  -   libboost (only for unit testing, will be come an optional dependency soon)
- -   libopenssl (for generating SHA hashes)
+ -   libopenssl (for generating MD5 hashes)
  -   libfuse (for access to the fuse layer system and file virtualization)
+ -   c++ compiler supporting c++-17
+
+Compilation is done using cmake. The build command to run cmake for common use is:
+
+```
+#!/bin/bash
+
+cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
+make "$@" -j `nproc`
+sudo make install
+```
+
+
+If you like to play with the code and like to help development, you can create a debug binary as follows:
+
+```
+$ cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
+$ make "$@" -j `nproc`
+$ make install
+```
+
+If you have patches, changes or even cool new features you believe are worth contributing, please run astyle with the following command:
+
+```
+$ make tidy
+```
+
+This styles the code in a more or less compatible way with the rest of the code.
+Thanks in advance(!)
 
 ## usage
 ### fastafs cache: adding files to fastafs
 We can add files to the fastafs database by running:
+
 ```
 $ fastafs cache test ./test.fa
+```
+
+Or, starting with 2bit:
+
+```
+$ fastafs cache test-from-2bit ./test.2bit
 ```
 
 ### fastafs list: overview of fastafs db

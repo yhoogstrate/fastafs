@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.4.0")
+set(PROJECT_VERSION "1.5.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -75,7 +75,7 @@ add_custom_target(tidy DEPENDS make_tidy )
 
 add_subdirectory(src)
 include_directories(include)
-add_definitions(-std=c++14)
+add_definitions(-std=c++17)
 
 # Boost
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
@@ -103,6 +103,7 @@ add_executable(fastafs
 					src/fasta_to_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/fastafs.cpp
+					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
@@ -110,6 +111,30 @@ add_executable(fastafs
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
+
+add_library(libfastafs SHARED
+					src/fasta_to_fastafs.cpp
+					src/ucsc2bit_to_fastafs.cpp
+					src/fastafs.cpp
+					src/ucsc2bit.cpp
+					src/twobit_byte.cpp
+					src/database.cpp
+					src/utils.cpp
+					src/fuse.cpp
+)
+target_include_directories(libfastafs PUBLIC include)
+target_sources(libfastafs PUBLIC include/fastafs.hpp)
+
+set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
+set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(libfastafs PROPERTIES SOVERSION 1)
+set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
+
+#set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
+# great, this doesn't go automagically with an entire dir
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/fuse.hpp;include/meson.build;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
+#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
 # ----------------------------------------------------------------------
 # ------------------------------ Testing -------------------------------
@@ -125,8 +150,9 @@ add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 #add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
-add_test(test_ucsc2bit            "${BUILD_TEST_DIR}/test_ucsc2bit")
+add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
+add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
 add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 
@@ -138,5 +164,6 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
+install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
 
 # ----------------------------------------------------------------------
