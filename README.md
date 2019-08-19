@@ -100,21 +100,69 @@ SEQUENCES:    7
 ```
 
 ### fastafs mount: mount fastafs archive to unlock fasta file(s)
+
 ```
-$ fastafs mount test /mnt/fastafs/hg19
-$ ls /mnt/fastafs/hg19/
-test.fa
-$ cat /mnt/fastafs/hg19/test.fa
+$ fastafs ./bin/fastafs mount hg19 /mnt/fastafs/hg19 
+$ ls /mnt/fastafs/hg19 
+hg19.2bit  hg19.dict  hg19.fa  hg19.fa.fai
+
+$ ls -alsh /mnt/fastafs/hg19
+total 0
+-rw-r--r-- 1 youri youri 779M Aug 19 15:26 hg19.2bit
+-rw-r--r-- 1 youri youri 7.9K Aug 19 15:26 hg19.dict
+-rw-r--r-- 1 youri youri 3.0G Aug 19 15:26 hg19.fa
+-rw-r--r-- 1 youri youri 3.5K Aug 19 15:26 hg19.fa.fai
+
+$ cat /mnt/fastafs/hg19/hg19.dict 
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:chr1	LN:249250621	M5:1b22b98cdeb4a9304cb5d48026a85128	UR:fastafs:///hg19
+@SQ	SN:chr2	LN:243199373	M5:a0d9851da00400dec1098a9255ac712e	UR:fastafs:///hg19
+@SQ	SN:chr3	LN:198022430	M5:641e4338fa8d52a5b781bd2a2c08d3c3	UR:fastafs:///hg19
+@SQ	SN:chr4	LN:191154276	M5:23dccd106897542ad87d2765d28a19a1	UR:fastafs:///hg19
+```
+
+### fastafs mount: use custom padding
+
+```
+$ fastafs mount test /mnt/fastafs/test        
+$ ls /mnt/fastafs/test 
+test.2bit  test.dict  test.fa  test.fa.fai
+
+$ cat /mnt/fastafs/test/test.fa
 >chr1
-TTTT
-CCCC
-AAAA
-GGGG
+ttttccccaaaagggg
+>chr2
+ACTGACTGnnnnACTG
+>chr3.1
+ACTGACTGaaaac
+>chr3.2
+ACTGACTGaaaacc
+>chr3.3
+ACTGACTGaaaaccc
+>chr4
+ACTGnnnn
+>chr5
+nnACTG
+
+$ umount /mnt/fastafs/test
+
+$ fastafs mount -p 4 test /mnt/fastafs/test        
+$ cat  /mnt/fastafs/test/test.fa | head -n 15
+>chr1
+tttt
+cccc
+aaaa
+gggg
 >chr2
 ACTG
 ACTG
-NNNN
-ACT
+nnnn
+ACTG
+>chr3.1
+ACTG
+ACTG
+aaaa
+c
 ```
 
 ## Contributing

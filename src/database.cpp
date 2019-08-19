@@ -47,7 +47,7 @@ void database::load()
 
 void database::list()
 {
-    std::cout << "FASTAFS NAME\t\tFASTFS ID\t\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT" << std::endl;
+    std::cout << "FASTAFS NAME\t\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT" << std::endl;
     std::ifstream infile(this->idx);
     std::string line;
     while(std::getline(infile, line)) {
@@ -61,9 +61,8 @@ void database::list()
         //http://fibrevillage.com/sysadmin/278-understanding-the-difference-between-etc-mtab-and-proc-mounts-on-linux
         // /proc/mounts via c? ->/proc/self/mountinfo -> /etc/mtab ?
         // use /etc/mtab
-        printf("%-24s%-24s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
+        printf("%-24s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
                line.c_str(),
-               std::string("uid").c_str(),
                std::string("v0-x32-2bit").c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
                (uint32_t) f.data.size(),
                f.n(),
