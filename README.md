@@ -71,12 +71,17 @@ Or, starting with 2bit:
 $ fastafs cache test-from-2bit ./test.2bit
 ```
 
+FASTAFS files will be saved in `~/.local/share/fastafs/<uid>.fastafs` and an entry will be added to the 'database' (`~/.local/share/fastafs/index`).
+
 ### fastafs list: overview of fastafs db
+
+The `list` command lists all FASTAFS files located in the 'database' (`~/.local/share/fastafs/index`):
+
 ```
 $ fastafs list
 
-FASTAFS NAME    FASTFS ID   FASTAFS        SEQUENCES    BASES   DISK SIZE    MOUNT POINT
-test            uid         v0-x32-2bit     7           88      214          /mnt/fastafs/hg19
+FASTAFS NAME    FASTAFS        SEQUENCES    BASES   DISK SIZE
+test            v0-x32-2bit    7            88      214      
 ```
 
 ### fastafs info: stats of cached fasta file
