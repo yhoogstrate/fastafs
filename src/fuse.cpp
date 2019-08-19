@@ -341,7 +341,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     fuse_instance *fi = new fuse_instance({nullptr, nullptr, true, nullptr, 60, 0});
 
     //printf("argc=%i",argc);
-    argv_fuse[fi->argc_fuse++] = (char *) "fasfafs mount";
+    argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
 
     //fi->argv_fuse[0] = argv[0];
     //fi->argv_fuse[1] = argv[1];

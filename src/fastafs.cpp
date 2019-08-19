@@ -38,7 +38,7 @@
 static const std::string dict_sq = "@SQ\tSN:";
 static const std::string dict_ln = "\tLN:";
 static const std::string dict_m5 = "\tM5:";
-static const std::string dict_ur = "\tUR:fastafs:///";
+static const std::string dict_ur = "\tUR:file://";
 
 
 fastafs_seq::fastafs_seq(): n(0)
@@ -1049,9 +1049,9 @@ size_t fastafs::view_dict_chunk(char *buffer, size_t buffer_size, off_t file_off
             }
 
             // file name
-            pos_limit += (uint32_t) this->name.size();
+            pos_limit += (uint32_t) this->filename.size();
             while(pos < pos_limit) {
-                buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
+                buffer[written++] = this->filename[this->filename.size() - (pos_limit - pos)];
                 pos++;
                 if(written >= buffer_size) {
                     return written;
@@ -1132,7 +1132,7 @@ size_t fastafs::dict_filesize(void)
     // every sequence has a:
     // '@SQ \t SN:' + '\t LN: ??len??? \t' + 'S1:' + 32 + '\t UR:fastafs:///' + this->name.size()  + '\n'
     //  ||| |  |||     |  |||           |     |||           | ||||||||||||||                           |
-    size += (31 + 32 + this->name.size()) * this->data.size();
+    size += (31 + 32 + this->filename.size()) * this->data.size();
 
     for(size_t i = 0; i < this->data.size(); i++) {
         size += this->data[i]->name.size();
