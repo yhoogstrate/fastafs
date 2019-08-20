@@ -212,29 +212,23 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
 static int do_getxattr(const char* path, const char* name, char* value, size_t size) {
     // if path == / and name == "fastafs-file" and size == 255
-    printf("attempting to set value!\n");
+    printf("loading data!\n");
 
-    value[0] = '/';
-    value[1] = 't';
-    value[2] = 'm';
-    value[3] = 'p';
-    value[4] = '/';
-    value[5] = 'b';
-    value[6] = 'l';
-    value[7] = 'a';
-    value[8] = '.';
-    value[9] = 'f';
-    value[10] = 'a';
-    value[11] = 's';
-    value[12] = 't';
-    value[13] = 'a';
-    value[14] = 'f';
-    value[15] = 's';
-    value[16] = '\0';
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
+
+    printf("attempting to set value! [%s]\n", ffi->f->filename.c_str() );
     
-    printf("written 15 chars?\n");
+    if(size > ffi->f->filename.size()) {
+        strncpy(value,  ffi->f->filename.c_str(), ffi->f->filename.size());
+        value[ffi->f->filename.size()] = '\0';
+        
+        return ffi->f->filename.size() + 1;
+    }
+    else {
+        printf("A %u size string wouldn't fit in %u bytes ram.... \n",(unsigned int)  ffi->f->filename.size(), (unsigned int) size);
+    }
     
-    return 16;
+    return 0;
 }
 
 

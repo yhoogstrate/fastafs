@@ -8,6 +8,7 @@
 
 #include "database.hpp"
 #include "fastafs.hpp"
+#include "lsfastafs.hpp"
 
 void database::force_db_exists()
 {
@@ -47,6 +48,8 @@ void database::load()
 
 void database::list()
 {
+    std::unordered_map<std::string, std::string > fastafs_fuse_mounts = get_fastafs_processes();
+    
     std::cout << "FASTAFS NAME\t\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT" << std::endl;
     std::ifstream infile(this->idx);
     std::string line;

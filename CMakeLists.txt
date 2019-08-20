@@ -108,6 +108,7 @@ add_executable(fastafs
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp
+					src/lsfastafs.cpp
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
@@ -121,6 +122,7 @@ add_library(libfastafs SHARED
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp
+					src/lsfastafs.cpp
 )
 target_include_directories(libfastafs PUBLIC include)
 target_sources(libfastafs PUBLIC include/fastafs.hpp)

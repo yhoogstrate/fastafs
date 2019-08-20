@@ -1,35 +1,30 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mount.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <string>
 #include <filesystem>
-
-#include <sys/types.h>
+#include <string.h>
 #include <sys/xattr.h>
+
+#include <unordered_map>
+#include <vector>
 
 /*
 g++ -std=c++17 -o lsfastafs src/lsfastafs.cpp
 */
 
-void get_fastafs_processes()
-{
-    // parse /proc/mounts
-    // find those that run fastafs
-    // from those, read the dict file [/../../basename/basename.dict]
-    // in there, parse the line containing UR://[/...fastafs]
-    
-    // https://android.googlesource.com/platform/system/core/+/jb-mr1.1-dev-plus-aosp/toolbox/mount.c
 
+/*
+ * What this function does:
+
+ * parses /proc/mounts
+ * find those that run fastafs
+ * from those, request the xattr 'fastafs-filename' :) propasgated by the fuse code
+*/
+std::unordered_map<std::string, std::string > get_fastafs_processes()
+{
+    std::unordered_map<std::string, std::string > out = {  };// this structure should be able to have multiple values per key [https://stackoverflow.com/questions/45142799/same-key-multiple-entries-for-stdunordered-map]
+    
     char xattr_fastafs[256];
 
     const char *arg = "fastafs";
+    const char *xattr = "fastafs-filename";
 
     FILE *f;
     char mount_dev[256];
@@ -38,10 +33,13 @@ void get_fastafs_processes()
     char mount_opts[256];
     int mount_freq;
     int mount_passno;
+
     int match;
+
     f = fopen("/proc/mounts", "r");
+
     if(!f) {
-        fprintf(stdout, "could not open /proc/mounts - are you sure this is running on linux?\n");
+        fprintf(stdout, "Could not open /proc/mounts - are you sure this is running on linux?\n");
     }
     do {
 
@@ -59,30 +57,16 @@ void get_fastafs_processes()
             std::string basename = std::filesystem::path(fn).filename();
             std::string dict_fn = std::string(mount_dir)  + "/" +  basename +  ".dict";
             
-            //char xattr_fastafs[256];
-            size_t w = getxattr(mount_dir, arg, xattr_fastafs, 255);
-
-            printf("possible fastafs mount at : %s\n", mount_dir);
-            
-            if(w != -1) {
-                printf("xattr[fastafs]: [%d] %s\n", w,  xattr_fastafs);
+            if(getxattr(mount_dir, xattr, xattr_fastafs, 255) != -1) {
+                printf("%s\t%s\n", xattr_fastafs, mount_dir);
+                out[std::string("xattr_fastafs")] = std::string(mount_dir);
             }
-            else {
-                printf("xattr[fastafs]: -1 / NULL\n", w,  xattr_fastafs);
-            }
-
-            fclose(f);
         }
     } while(match != EOF);
 
     fclose(f);
 
-
+    return out;
 }
 
-int main(int argc, char *argv[])
-{
-    get_fastafs_processes();
 
-    return 0;
-}
