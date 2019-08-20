@@ -209,6 +209,36 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
 
 
+
+static int do_getxattr(const char* path, const char* name, char* value, size_t size) {
+    // if path == / and name == "fastafs-file" and size == 255
+    printf("attempting to set value!\n");
+
+    value[0] = '/';
+    value[1] = 't';
+    value[2] = 'm';
+    value[3] = 'p';
+    value[4] = '/';
+    value[5] = 'b';
+    value[6] = 'l';
+    value[7] = 'a';
+    value[8] = '.';
+    value[9] = 'f';
+    value[10] = 'a';
+    value[11] = 's';
+    value[12] = 't';
+    value[13] = 'a';
+    value[14] = 'f';
+    value[15] = 's';
+    value[16] = '\0';
+    
+    printf("written 15 chars?\n");
+    
+    return 16;
+}
+
+
+
 fuse_operations operations  = {
     do_getattr, // int (*getattr) (const char *, struct stat *);
     nullptr,    // int (*readlink) (const char *, char *, size_t);
@@ -232,7 +262,7 @@ fuse_operations operations  = {
     nullptr,    // int (*release) (const char *, struct fuse_file_info *);
     nullptr,    // int (*fsync) (const char *, int, struct fuse_file_info *);
     nullptr,    // int (*setxattr) (const char *, const char *, const char *, size_t, int);
-    nullptr,    // int (*getxattr) (const char *, const char *, char *, size_t);
+    do_getxattr,    // int (*getxattr) (const char *, const char *, char *, size_t);
     nullptr,    // int (*listxattr) (const char *, char *, size_t);
     nullptr,    // int (*removexattr) (const char *, const char *);
     nullptr,    // int (*opendir) (const char *, struct fuse_file_info *);

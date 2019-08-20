@@ -11,6 +11,8 @@
 #include <string>
 #include <filesystem>
 
+#include <sys/types.h>
+#include <sys/xattr.h>
 
 /*
 g++ -std=c++17 -o lsfastafs src/lsfastafs.cpp
@@ -22,6 +24,10 @@ void get_fastafs_processes()
     // find those that run fastafs
     // from those, read the dict file [/../../basename/basename.dict]
     // in there, parse the line containing UR://[/...fastafs]
+    
+    // https://android.googlesource.com/platform/system/core/+/jb-mr1.1-dev-plus-aosp/toolbox/mount.c
+
+    char xattr_fastafs[256];
 
     const char *arg = "fastafs";
 
@@ -52,8 +58,18 @@ void get_fastafs_processes()
             std::string fn = std::string(mount_dir);
             std::string basename = std::filesystem::path(fn).filename();
             std::string dict_fn = std::string(mount_dir)  + "/" +  basename +  ".dict";
+            
+            //char xattr_fastafs[256];
+            size_t w = getxattr(mount_dir, arg, xattr_fastafs, 255);
 
-            printf("possible fastafs mount at : %s\n", dict_fn.c_str());
+            printf("possible fastafs mount at : %s\n", mount_dir);
+            
+            if(w != -1) {
+                printf("xattr[fastafs]: [%d] %s\n", w,  xattr_fastafs);
+            }
+            else {
+                printf("xattr[fastafs]: -1 / NULL\n", w,  xattr_fastafs);
+            }
 
             fclose(f);
         }
