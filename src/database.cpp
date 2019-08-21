@@ -48,7 +48,7 @@ void database::load()
 
 void database::list()
 {
-    std::unordered_multimap<std::string, std::string > fastafs_fuse_mounts = get_fastafs_processes();
+    std::unordered_multimap<std::string, std::pair<std::string, std::string> > fastafs_fuse_mounts = get_fastafs_processes();
 
     std::cout << "FASTAFS NAME\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT(S)" << std::endl;
     std::ifstream infile(this->idx);
@@ -75,10 +75,10 @@ void database::list()
             auto it = fastafs_fuse_mounts.find(fname);
             for(; it != fastafs_fuse_mounts.end() ; it++) {
                 if(is_first) {
-                    mountpoints = it->second;
+                    mountpoints = it->second.second;
                     is_first = false;
                 } else {
-                    mountpoints = mountpoints + "," + it->second;
+                    mountpoints = mountpoints + "," + it->second.second;
                 }
             }
         }

@@ -1,5 +1,10 @@
 2019-08-21  Youri Hoogstrate
 
+    * v1.6.1
+    * Adds process' pid to `fastafs ps`
+
+2019-08-21  Youri Hoogstrate
+
     * v1.6.0
     * `fastafs list` now supports view running instances of the fastafs files
     * function `lsfastafs()` allows finding all fuse mounted fastafs instances/mointpoints

@@ -218,9 +218,9 @@ int main(int argc, char *argv[])
             database d = database();
             d.list();
         } else if(strcmp(argv[1], "ps") == 0) {
-            std::unordered_multimap<std::string, std::string > fastafs_fuse_mounts = get_fastafs_processes();
+            std::unordered_multimap<std::string, std::pair<std::string, std::string> > fastafs_fuse_mounts = get_fastafs_processes();
             for(auto n : fastafs_fuse_mounts) {
-                std::cout << n.first << "\t" << n.second << "\n";
+                std::cout <<  n.second.first <<  "\t" << n.first << "\t" << n.second.second << "\n";
             }
         } else if(strcmp(argv[1], "check") == 0) {
             if(argc > 2) {

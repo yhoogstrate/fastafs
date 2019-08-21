@@ -209,25 +209,72 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
 
 
-
 static int do_getxattr(const char* path, const char* name, char* value, size_t size)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
-    if(ffi->from_fastafs && strcmp(name, FASTAFS_FILE_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
-        size_t filename_size = ffi->f->filename.size();
+    if(ffi->from_fastafs) {
+        if(strcmp(name, FASTAFS_FILE_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
+            size_t filename_size = ffi->f->filename.size();
 
-        if(size > filename_size) {
-            strncpy(value,  ffi->f->filename.c_str(), filename_size);
-            value[filename_size] = '\0';
+            if(size > filename_size) {
+                strncpy(value,  ffi->f->filename.c_str(), filename_size);
+                value[filename_size] = '\0';
 
-            return (int) filename_size + 1;
-        } else {
-            return ERANGE;
+                return (int) filename_size + 1;
+            } else {
+                return ERANGE;
+            }
+        } else if(strcmp(name, FASTAFS_PID_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
+            char mypid[8];
+            sprintf(mypid, "%d", getpid());
+            size_t pid_size = (size_t) strlen(mypid);
+
+            if(size > pid_size) {
+                strncpy(value,  mypid, pid_size);
+                value[pid_size] = '\0';
+
+                return (int) pid_size + 1;
+            } else {
+                return ERANGE;
+            }
         }
     }
 
     return -1; // returns -1 on other files
+}
+
+
+
+void do_destroy(void *pd)
+{
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
+
+    if(ffi->f != nullptr) {
+        delete ffi->f;
+    }
+    if(ffi->cache != nullptr) {
+        delete ffi->cache;
+    }
+    if(ffi->u2b != nullptr) {
+        delete ffi->u2b;
+    }
+
+    delete ffi;
+
+    /*
+    //fastasfs
+    fastafs *f;
+    ffs2f_init *cache;
+    bool from_fastafs; // if false, from 2bit
+
+    // ucsc2bit
+    ucsc2bit *u2b;
+
+    // generic
+    uint32_t padding;
+    int argc_fuse;
+    */
 }
 
 
@@ -263,7 +310,7 @@ fuse_operations operations  = {
     nullptr,    // int (*releasedir) (const char *, struct fuse_file_info *);
     nullptr,    // int (*fsyncdir) (const char *, int, struct fuse_file_info *);
     nullptr,    // void *(*init) (struct fuse_conn_info *conn);
-    nullptr,    // void (*destroy) (void *);
+    do_destroy, // void (*destroy) (void *); | void destroy(void* private_data);
     nullptr,    // int (*access) (const char *, int);
     nullptr,    // int (*create) (const char *, mode_t, struct fuse_file_info *);
     nullptr,    // int (*ftruncate) (const char *, off_t, struct fuse_file_info *);
