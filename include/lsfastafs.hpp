@@ -5,6 +5,6 @@
 #include <unordered_map>
 #include <vector>
 
-std::unordered_map<std::string, std::string > get_fastafs_processes();
+std::unordered_multimap<std::string, std::string > get_fastafs_processes();
 
 #endif

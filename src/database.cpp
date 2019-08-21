@@ -48,30 +48,50 @@ void database::load()
 
 void database::list()
 {
-    std::unordered_map<std::string, std::string > fastafs_fuse_mounts = get_fastafs_processes();
-    
-    std::cout << "FASTAFS NAME\t\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT" << std::endl;
+    std::unordered_multimap<std::string, std::string > fastafs_fuse_mounts = get_fastafs_processes();
+
+    std::cout << "FASTAFS NAME\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT(S)" << std::endl;
     std::ifstream infile(this->idx);
     std::string line;
     while(std::getline(infile, line)) {
         //std::istringstream iss(line);
         std::string fname = this->path + "/" + line + ".fastafs";
+
         fastafs f = fastafs(line);
         f.load(fname);
+
         std::ifstream file(fname, std::ios::in | std::ios::binary | std::ios::ate);
         uint32_t size = (uint32_t) file.tellg();
         file.close();
-        //http://fibrevillage.com/sysadmin/278-understanding-the-difference-between-etc-mtab-and-proc-mounts-on-linux
-        // /proc/mounts via c? ->/proc/self/mountinfo -> /etc/mtab ?
-        // use /etc/mtab
-        printf("%-24s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
+
+
+        std::string mountpoints = "-";
+        size_t n_mountpoints = fastafs_fuse_mounts.count(fname);
+
+        if(n_mountpoints > 0) {
+            mountpoints == "";
+            bool is_first = true;
+
+            auto it = fastafs_fuse_mounts.find(fname);
+            for(; it != fastafs_fuse_mounts.end() ; it++) {
+                if(is_first) {
+                    mountpoints = it->second;
+                    is_first = false;
+                } else {
+                    mountpoints = mountpoints + "," + it->second;
+                }
+            }
+        }
+
+
+        printf("%-16s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
                line.c_str(),
                std::string("v0-x32-2bit").c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
                (uint32_t) f.data.size(),
                f.n(),
                size,
                (float) 100.0 * (float) size / (float) f.fasta_filesize(50), // @todo fastafs file size!
-               "/mnt/"
+               mountpoints.c_str()
               );
     }
 }

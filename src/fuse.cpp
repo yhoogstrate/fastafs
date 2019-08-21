@@ -210,25 +210,24 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
 
 
-static int do_getxattr(const char* path, const char* name, char* value, size_t size) {
-    // if path == / and name == "fastafs-file" and size == 255
-    printf("loading data!\n");
-
+static int do_getxattr(const char* path, const char* name, char* value, size_t size)
+{
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
+    
+    if(ffi->from_fastafs && strcmp(name, FASTAFS_FILE_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
+        size_t filename_size = ffi->f->filename.size();
 
-    printf("attempting to set value! [%s]\n", ffi->f->filename.c_str() );
-    
-    if(size > ffi->f->filename.size()) {
-        strncpy(value,  ffi->f->filename.c_str(), ffi->f->filename.size());
-        value[ffi->f->filename.size()] = '\0';
-        
-        return ffi->f->filename.size() + 1;
+        if(size > filename_size) {
+            strncpy(value,  ffi->f->filename.c_str(), filename_size);
+            value[filename_size] = '\0';
+
+            return (int) filename_size + 1;
+        } else {
+            return ERANGE;
+        }
     }
-    else {
-        printf("A %u size string wouldn't fit in %u bytes ram.... \n",(unsigned int)  ffi->f->filename.size(), (unsigned int) size);
-    }
-    
-    return 0;
+
+    return -1; // returns -1 on other files
 }
 
 
@@ -256,7 +255,7 @@ fuse_operations operations  = {
     nullptr,    // int (*release) (const char *, struct fuse_file_info *);
     nullptr,    // int (*fsync) (const char *, int, struct fuse_file_info *);
     nullptr,    // int (*setxattr) (const char *, const char *, const char *, size_t, int);
-    do_getxattr,    // int (*getxattr) (const char *, const char *, char *, size_t);
+    do_getxattr,// int (*getxattr) (const char *, const char *, char *, size_t);
     nullptr,    // int (*listxattr) (const char *, char *, size_t);
     nullptr,    // int (*removexattr) (const char *, const char *);
     nullptr,    // int (*opendir) (const char *, struct fuse_file_info *);
