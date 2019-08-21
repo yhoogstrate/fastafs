@@ -4,6 +4,8 @@
     * `fastafs list` now supports view running instances of the fastafs files
     * function `lsfastafs()` allows finding all fuse mounted fastafs instances/mointpoints
       by making use of the 'fastafs-file'-xattr (`getfattr -n fastafs-file /mnt/fastafs/test`)
+    * Adds `fastafs ps` listing all mounted fastafs instances and their corresponding
+      mountpoints (also that are not present in the 'database').
 
 2019-08-02  Youri Hoogstrate
 

@@ -18,7 +18,7 @@ g++ -std=c++17 -o lsfastafs src/lsfastafs.cpp
 
  * parses /proc/mounts
  * find those that run fastafs
- * from those, request the xattr 'fastafs-filename' :) propasgated by the fuse code
+ * from those, request the xattr 'fastafs-file' :) propasgated by the fuse code
 */
 std::unordered_multimap<std::string, std::string > get_fastafs_processes()
 {

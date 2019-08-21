@@ -3,12 +3,14 @@
 #include <array>
 #include <vector>
 #include <string.h>
+#include <unordered_map>
 
 #include "config.hpp"
 #include "fasta_to_fastafs.hpp"
 #include "ucsc2bit_to_fastafs.hpp"
 #include "database.hpp"
 #include "fuse.hpp"
+#include "lsfastafs.hpp"
 
 
 // https://github.com/facebook/zstd/issues/521
@@ -20,6 +22,7 @@ void usage()
     std::cout << "usage: " << PACKAGE << " [--version] [--help]" << std::endl << std::endl;
     std::cout <<      "  [generic operations]" << std::endl;
     std::cout <<      "    list       overview of FASTAFS database" << std::endl;
+    std::cout <<      "    ps         overview of mounted FASTAFS instances and mountpoints" << std::endl;
     std::cout <<      std::endl;
     std::cout <<      "  [single fastafs operations]" << std::endl;
     std::cout <<      "    cache      adds FASTA file to cache" << std::endl;
@@ -214,6 +217,11 @@ int main(int argc, char *argv[])
         } else if(strcmp(argv[1], "list") == 0) {
             database d = database();
             d.list();
+        } else if(strcmp(argv[1], "ps") == 0) {
+            std::unordered_multimap<std::string, std::string > fastafs_fuse_mounts = get_fastafs_processes();
+            for(auto n : fastafs_fuse_mounts) {
+                std::cout << n.first << "\t" << n.second << "\n";
+            }
         } else if(strcmp(argv[1], "check") == 0) {
             if(argc > 2) {
                 bool from_file = false;

@@ -213,7 +213,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 static int do_getxattr(const char* path, const char* name, char* value, size_t size)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
-    
+
     if(ffi->from_fastafs && strcmp(name, FASTAFS_FILE_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
         size_t filename_size = ffi->f->filename.size();
 
