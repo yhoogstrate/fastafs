@@ -20,11 +20,12 @@ g++ -std=c++17 -o lsfastafs src/lsfastafs.cpp
  * find those that run fastafs
  * from those, request the xattr 'fastafs-file' :) propasgated by the fuse code
 */
-std::unordered_multimap<std::string, std::string > get_fastafs_processes()
+std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_fastafs_processes()
 {
-    std::unordered_multimap<std::string, std::string > out = {  };// this structure should be able to have multiple values per key [https://stackoverflow.com/questions/45142799/same-key-multiple-entries-for-stdunordered-map]
+    std::unordered_multimap<std::string, std::pair<std::string, std::string> > out = {  }; // this structure should be able to have multiple values per key [https://stackoverflow.com/questions/45142799/same-key-multiple-entries-for-stdunordered-map]
 
-    char xattr_fastafs[256];
+    char xattr_fastafs_file[256];
+    char xattr_fastafs_pid[256];
 
     const char *arg = "fastafs";
 
@@ -59,8 +60,15 @@ std::unordered_multimap<std::string, std::string > get_fastafs_processes()
             std::string basename = std::filesystem::path(fn).filename();
             std::string dict_fn = std::string(mount_dir)  + "/" +  basename +  ".dict";
 
-            if(getxattr(mount_dir, FASTAFS_FILE_XATTR_NAME.c_str(), xattr_fastafs, 255) != -1) {
-                out.insert({std::string(xattr_fastafs), std::string(mount_dir)});
+            if(getxattr(mount_dir, FASTAFS_FILE_XATTR_NAME.c_str(), xattr_fastafs_file, 255) != -1
+               &&
+               getxattr(mount_dir, FASTAFS_PID_XATTR_NAME.c_str(), xattr_fastafs_pid, 255) != -1
+              ) {
+                out.insert({std::string(xattr_fastafs_file),
+                    {std::string(xattr_fastafs_pid),  std::string(mount_dir)}
+
+                });
+
             }
         }
     } while(match != EOF);
