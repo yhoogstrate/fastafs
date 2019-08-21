@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.5.0")
+set(PROJECT_VERSION "1.6.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -108,6 +108,7 @@ add_executable(fastafs
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp
+					src/lsfastafs.cpp
 				)
 
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
@@ -121,6 +122,7 @@ add_library(libfastafs SHARED
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp
+					src/lsfastafs.cpp
 )
 target_include_directories(libfastafs PUBLIC include)
 target_sources(libfastafs PUBLIC include/fastafs.hpp)
@@ -150,7 +152,7 @@ add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 #add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
-add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_ucsc2bit")
+add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
 add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
 add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")

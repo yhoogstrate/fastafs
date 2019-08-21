@@ -209,6 +209,29 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
 
 
+
+static int do_getxattr(const char* path, const char* name, char* value, size_t size)
+{
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
+
+    if(ffi->from_fastafs && strcmp(name, FASTAFS_FILE_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
+        size_t filename_size = ffi->f->filename.size();
+
+        if(size > filename_size) {
+            strncpy(value,  ffi->f->filename.c_str(), filename_size);
+            value[filename_size] = '\0';
+
+            return (int) filename_size + 1;
+        } else {
+            return ERANGE;
+        }
+    }
+
+    return -1; // returns -1 on other files
+}
+
+
+
 fuse_operations operations  = {
     do_getattr, // int (*getattr) (const char *, struct stat *);
     nullptr,    // int (*readlink) (const char *, char *, size_t);
@@ -232,7 +255,7 @@ fuse_operations operations  = {
     nullptr,    // int (*release) (const char *, struct fuse_file_info *);
     nullptr,    // int (*fsync) (const char *, int, struct fuse_file_info *);
     nullptr,    // int (*setxattr) (const char *, const char *, const char *, size_t, int);
-    nullptr,    // int (*getxattr) (const char *, const char *, char *, size_t);
+    do_getxattr,// int (*getxattr) (const char *, const char *, char *, size_t);
     nullptr,    // int (*listxattr) (const char *, char *, size_t);
     nullptr,    // int (*removexattr) (const char *, const char *);
     nullptr,    // int (*opendir) (const char *, struct fuse_file_info *);
@@ -341,7 +364,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     fuse_instance *fi = new fuse_instance({nullptr, nullptr, true, nullptr, 60, 0});
 
     //printf("argc=%i",argc);
-    argv_fuse[fi->argc_fuse++] = (char *) "fasfafs mount";
+    argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
 
     //fi->argv_fuse[0] = argv[0];
     //fi->argv_fuse[1] = argv[1];

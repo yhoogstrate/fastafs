@@ -61,4 +61,6 @@ static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
 static const std::string DICT_HEADER = "@HD\tVN:1.0\tSO:unsorted\n";
 
 
+static const std::string FASTAFS_FILE_XATTR_NAME = "fastafs-file";
+
 #endif
