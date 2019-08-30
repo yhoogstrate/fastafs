@@ -412,8 +412,10 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
     fuse_instance *fi = new fuse_instance({nullptr, nullptr, true, nullptr, 60, 0});
 
-    //printf("argc=%i",argc);
+    //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
+    
+    std::vector<char*> fuse_options = {}; // those that need to be appended later
 
     char current_argument = '\0';// could be o for '-o', etc.
 
@@ -433,7 +435,8 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                     }
                 break;
                 default:
-                    argv_fuse[fi->argc_fuse++] = argv[i]; // -o contents must be send to fuse
+                    //argv_fuse[fi->argc_fuse++] = argv[i]; // -o contents must be send to fuse
+                    fuse_options.push_back(argv[i]);
                     printf("Skipping parsing following argument: -%c = %s\n", current_argument, argv[i]);
                 break;
             }
@@ -450,7 +453,8 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 printf(" -> parsing arg: %c\n", current_argument);
                 
                 if(argv[i][1] == 'o' or argv[i][1] == 'd' or argv[i][1] == 'f') {
-                    argv_fuse[fi->argc_fuse++] = argv[i];
+                    //argv_fuse[fi->argc_fuse++] = argv[i];
+                    fuse_options.push_back(argv[i]);
                 }
             }
         }
@@ -486,9 +490,13 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             printf("[%s : %s]\n", name.c_str(), fname.c_str());
 
             fi->f = new fastafs(name);
+            printf(" new \n");
+
             fi->f->load(fname);
+            printf("loaded!\n");
 
             fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
+            printf("initiated cache!\n");
         } else {
             std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
@@ -498,7 +506,9 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         
         //argv_fuse[fi->argc_fuse++] = argv[mount_target_arg];
         argv_fuse[fi->argc_fuse++] = argv[mount_target_arg + 1];
-        argv_fuse[fi->argc_fuse++] = "-f";
+        for(size_t j = 0; j < fuse_options.size(); j++) {
+            argv_fuse[fi->argc_fuse++] = fuse_options[j];
+        }
     }
 
     return fi;
