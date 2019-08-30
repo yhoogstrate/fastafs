@@ -110,8 +110,22 @@ add_executable(fastafs
 					src/fuse.cpp
 					src/lsfastafs.cpp
 				)
-
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
+
+# mount-only binary, without all the other stuff 'mount.fastafs' [for fstab]
+add_executable(mount.fastafs
+					src/main_mount.cpp
+					src/fasta_to_fastafs.cpp
+					src/ucsc2bit_to_fastafs.cpp
+					src/fastafs.cpp
+					src/ucsc2bit.cpp
+					src/twobit_byte.cpp
+					src/database.cpp
+					src/utils.cpp
+					src/fuse.cpp
+					src/lsfastafs.cpp
+				)
+set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
 add_library(libfastafs SHARED
 					src/fasta_to_fastafs.cpp
@@ -166,6 +180,7 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
+install(TARGETS mount.fastafs DESTINATION "bin")
 install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
 
 # ----------------------------------------------------------------------
