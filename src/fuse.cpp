@@ -230,8 +230,9 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
             sprintf(mypid, "%d", getpid());
             size_t pid_size = (size_t) strlen(mypid);
 
+
             if(size > pid_size) {
-                strncpy(value,  mypid, pid_size);
+                strcpy(value,  mypid);// if statement makes strncpy unneeded
                 value[pid_size] = '\0';
 
                 return (int) pid_size + 1;
@@ -414,56 +415,57 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
     //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
-    
+
     std::vector<char*> fuse_options = {}; // those that need to be appended later
 
     char current_argument = '\0';// could be o for '-o', etc.
 
-    int i = 1;
     std::vector<int> full_args = {};
-    while(i < argc) {
-        printf("processing argv[%i] = '%s';\n", i, argv[i]);
-        
+    for(unsigned int i = 0; i < argc; ++i) {
+        printf("processing argv[%i] = '%s'     [current argument=%i]\n", i, argv[i], (int) current_argument);
+
         if(current_argument != '\0') { // parse the arguments' value
             switch(current_argument) {
-                case 'p':
-                    try {
-                        sscanf(argv[i], "%u", &fi->padding);
-                    } catch(std::exception const & e) {
-                        std::cerr << "ERROR: invalid padding value, must be integer value ranging from 0 to max-int size\n";
-                        exit(1);
-                    }
-                break;
-                default:
-                    //argv_fuse[fi->argc_fuse++] = argv[i]; // -o contents must be send to fuse
-                    fuse_options.push_back(argv[i]);
-                    printf("Skipping parsing following argument: -%c = %s\n", current_argument, argv[i]);
-                break;
-            }
-        }
-        else if(argv[i][0] == '-') {
-            if(strlen(argv[i]) == 1) {
-                // error
-            }
-            else if(argv[i][1] == '2') { // implement flags
-                fi->from_fastafs = false;
-            }
-            else { // remaining are no flags but arguments with values that need to be parsed
-                current_argument = argv[i][1];
-                printf(" -> parsing arg: %c\n", current_argument);
-                
-                if(argv[i][1] == 'o' or argv[i][1] == 'd' or argv[i][1] == 'f') {
-                    //argv_fuse[fi->argc_fuse++] = argv[i];
-                    fuse_options.push_back(argv[i]);
+            case 'p': // scanning padding value
+                if(!sscanf(argv[i], "%u", &fi->padding)) {
+                    throw std::invalid_argument("Invalid argument (padding value): " + std::string(argv[i]));
                 }
+                break;
+            default:
+                //throw std::invalid_argument("Invalid argument: " + std::string(argv[i]));
+                fuse_options.push_back(argv[i]); // could be values that correspond to fuse arguments, such as: -o, -f, etc.
+                break;
             }
-        }
-        else {
-            full_args.push_back(i);
-            printf("   candidate of std-args of which last 2 are needed\n");
-        }
-        i++;
 
+            current_argument = '\0';// reset
+        } else if(argv[i][0] == '-') {
+            if(strlen(argv[i]) == 1) {
+                throw std::invalid_argument("Invalid argument: " + std::string(argv[i]));
+            }
+
+            switch(argv[i][1]) {
+            case '2': // a fastafs specific flag
+                fi->from_fastafs = false;
+                break;
+
+            case 'f': // fuse specific flags
+            case 's':
+            case 'd':
+                fuse_options.push_back(argv[i]);
+                break;
+
+            case 'o': // argument, fuse specific
+                current_argument = argv[i][1];
+                fuse_options.push_back(argv[i]); // fuse specific
+                break;
+
+            default: // argument, fastafs spcific (such as '-p' followed by '50')
+                current_argument = argv[i][1];
+                break;
+            }
+        } else {
+            full_args.push_back(i); // args such as 'sudo', 'fastafs' 'fastafs-uid' and '/mount/point' of which only the last 2 are needed
+        }
     }
 
     if(full_args.size() >= 2) {
@@ -479,31 +481,23 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 name = std::filesystem::path(fname).filename();
 
                 // remove .fastafs suffix
-                size_t lastindex = name.find_last_of("."); 
-                name = name.substr(0, lastindex); 
+                size_t lastindex = name.find_last_of(".");
+                name = name.substr(0, lastindex);
 
-            }
-            else {
+            } else {
                 name = std::string(argv[mount_target_arg]);
             }
 
-            printf("[%s : %s]\n", name.c_str(), fname.c_str());
-
             fi->f = new fastafs(name);
-            printf(" new \n");
-
             fi->f->load(fname);
-            printf("loaded!\n");
-
             fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
-            printf("initiated cache!\n");
         } else {
             std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
             fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
             fi->u2b->load(std::string(argv[mount_target_arg]));
         }
-        
+
         //argv_fuse[fi->argc_fuse++] = argv[mount_target_arg];
         argv_fuse[fi->argc_fuse++] = argv[mount_target_arg + 1];
         for(size_t j = 0; j < fuse_options.size(); j++) {

@@ -19,7 +19,7 @@ Here we propose a solution; a mixture of 2bit compression and random on FASTA ve
 FASTAFS is compatible with 2bit files but 2bit has some limitations and does for instance not allow mounting DICT files needed for CRAM and Picard tools. The 2bit files can be convert to FASTAFS and, more importantly, a mounted FASTAFS mountpoint will not only virtualize the FASTA but also the 2bit file. Is FASTAFS this famous 15th standard (<https://xkcd.com/927/>)?
 Partially, but it is not designed to replace FASTA nor 2bit as those mountpoints should be used as flat files did before and the  virtualization of dict files is not possible when we mount 2bit files.
 
-## installation and compilation
+## Installation and compilation
 
 Currently the package uses cmake for compilation
 Required dependencies are:
@@ -164,6 +164,30 @@ ACTG
 aaaa
 c
 ```
+
+### Find all running `fastafs mount` / `mount.fastafs` instances
+
+The output format of `fastafs ps` is: `<pid>\t<source>\t<destination>\n`
+
+```
+$ fastafs ps
+16383	/home/youri/.local/share/fastafs/test.fastafs	/mnt/tmp
+```
+
+### Mounting via fstab (for instance on linux boot)
+
+You can add the following line(s) to /etc/fstab to make fastafs mount during boot:
+
+```
+mount.fastafs#/home/youri/.local/share/fastafs/hg19.fastafs /mnt/fastafs/hg19 fuse auto,allow_other 0 0
+```
+
+Here `mount.fastafs` refers to the binary that only does mounting, without the rest of the toolkit.
+This is followed by a hash-tag and the path of the desired fastafs file. The next value is the mount point followed by the argument indicating it runs fuse.
+The `auto,allow_other` refers to the `-o` argument.
+Here `auto` ensures it is mounted automatically after boot.
+Given that a system mounts as root user, the default permission of the mount point will be only for root. 
+By setting `allow_other`, file system users get permissions to the mountpoint.
 
 ## Contributing
 Feel free to start a discussion or to contribute to the GPL licensed code.
