@@ -77,7 +77,12 @@ int main(int argc, char *argv[])
         if(strcmp(argv[1], "--help") == 0 or strcmp(argv[1], "-h") == 0) {
             usage();
         } else if(strcmp(argv[1], "--version") == 0) {
-            std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "\n\n";
+#if DEBUG
+            std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "-debug\n\n";
+#else
+            std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "-release\n\n";
+#endif //DEBUG
+
             std::cout << "Copyright (C) 2017 Youri Hoogstrate." << "\n";
             std::cout << "License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.\n";
             std::cout << "This is free software: you are free to change and redistribute it.\n";

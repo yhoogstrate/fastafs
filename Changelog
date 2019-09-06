@@ -1,3 +1,10 @@
+2019-09-06  Youri Hoogstrate
+
+    * v1.6.2
+    * Rewritten argument parsing of fuse/mounting
+    * Added binary `mount.fastafs` only for mounting, wihtout the toolkit
+    * `fastafs --version` will now also output whether the binary was compiled as debug or release.
+
 2019-08-21  Youri Hoogstrate
 
     * v1.6.1
