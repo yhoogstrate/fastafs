@@ -108,6 +108,7 @@ public:
     std::string basename();
 
     void load(std::string);
+    void view_layout(std::string);
     void view_fasta(ffs2f_init*);
 
     uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);//@todo remove _cached suffix

@@ -610,6 +610,138 @@ void fastafs::load(std::string afilename)
     }
 }
 
+void fastafs::view_layout(std::string afilename)
+{
+    std::streampos size;
+    char *memblock;
+
+    std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
+        // if a user can't compile this line, please replace it with C's
+        // 'realpath' function and delete/free afterwards and send a PR
+        this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
+        std::cout << "[" << this->filename << "]\n";
+
+        size = file.tellg();
+        printf("file size: %i bytes\n", size);
+
+        if(size < 16) {
+            file.close();
+            throw std::invalid_argument("Corrupt file: " + filename);
+        } else {
+            memblock = new char [20 + 1]; //sha1 is 20b
+            file.seekg(0, std::ios::beg);
+            uint32_t i;
+
+            // HEADER
+            file.read(memblock, 14);
+            memblock[16] = '\0';
+
+            // check magic
+            for(i = 0 ; i < 4;  i++) {
+                if(memblock[i] != FASTAFS_MAGIC[i]) {
+                    throw std::invalid_argument("Corrupt file: " + filename);
+                }
+            }
+            for(i = 4 ; i < 8;  i++) {
+                if(memblock[i] != FASTAFS_VERSION[i]) {
+                    throw std::invalid_argument("Corrupt file: " + filename);
+                }
+            }
+
+            this->flag = twobytes_to_uint(&memblock[8]);
+            std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
+            printf("index located at pos: %i\n", fourbytes_to_uint(&memblock[10], 0));
+
+            // INDEX
+            file.seekg(file_cursor, std::ios::beg);
+            file.read(memblock, 4);
+            this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
+
+            size_t j;
+            fastafs_seq *s;
+            for(i = 0; i < this->data.size(); i ++) {
+                s = new fastafs_seq;
+
+                // flag
+                file.read(memblock, 2);
+                s->flag = twobytes_to_uint(memblock);
+
+                // name length
+                file.read(memblock, 1);
+
+                // name
+                char name[memblock[0] + 1];
+                file.read(name, memblock[0]);
+                name[(unsigned char) memblock[0]] = '\0';
+                s->name = std::string(name);
+                std::cout << s->name << "\n";
+
+                // set cursor and save sequence data position
+                file.read(memblock, 4);
+                file_cursor = file.tellg();
+
+                s->data_position = fourbytes_to_uint(memblock, 0);
+                printf("jumping to data position: %i\n", s->data_position);
+                file.seekg((uint32_t) s->data_position, file.beg);
+                {
+                    // sequence stuff
+                    // n compressed nucleotides
+                    file.read(memblock, 4);
+                    s->n = fourbytes_to_uint(memblock, 0);
+                    printf("n compressed nucleotides = %i\n", s->n);
+
+
+                    printf("2bit data range: %i - %i\n", s->data_position + 4 , s->data_position + 4 + ((s->n + 3) / 4) );
+                    // skip nucleotides
+                    file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
+
+                    // N-blocks (and update this->n instantly)
+                    file.read(memblock, 4);
+                    uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
+                    s->n_starts.resize(N_blocks);
+                    s->n_ends.resize(N_blocks);
+                    for(j = 0; j < s->n_starts.size(); j++) {
+                        file.read(memblock, 4);
+                        s->n_starts[j] = fourbytes_to_uint(memblock, 0);
+                    }
+                    for(j = 0; j < s->n_ends.size(); j++) {
+                        file.read(memblock, 4);
+                        s->n_ends[j] = fourbytes_to_uint(memblock, 0);
+                        s->n += s->n_ends[j] - s->n_starts[j] + 1;
+                    }
+
+                    // MD5-checksum
+                    file.read(memblock, 16);
+                    for(int j = 0; j < 16 ; j ++) {
+                        s->md5_digest[j] = memblock[j];
+                    }
+
+                    // M-blocks
+                    file.read(memblock, 4);
+                    uint32_t M_blocks = fourbytes_to_uint(memblock, 0);
+                    s->m_starts.resize(M_blocks);
+                    s->m_ends.resize(M_blocks);
+                    for(j = 0; j < s->m_starts.size(); j++) {
+                        file.read(memblock, 4);
+                        s->m_starts[j] = fourbytes_to_uint(memblock, 0);
+                    }
+                    for(j = 0; j < s->m_ends.size(); j++) {
+                        file.read(memblock, 4);
+                        s->m_ends[j] = fourbytes_to_uint(memblock, 0);
+                    }
+                }
+                file.seekg(file_cursor, file.beg);
+                this->data[i] = s;
+            }
+            file.close();
+            delete[] memblock;
+        }
+    } else {
+        throw std::invalid_argument("Unable to open file '" + afilename + "'");
+    }
+}
+
 
 void fastafs::view_fasta(ffs2f_init* cache)
 {
