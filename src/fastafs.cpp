@@ -495,7 +495,8 @@ void fastafs::load(std::string afilename)
     if(file.is_open()) {
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
-        this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
+        //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
+        this->filename = realpath_cpp(afilename);
 
         size = file.tellg();
 

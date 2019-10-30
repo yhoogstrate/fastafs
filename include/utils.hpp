@@ -17,3 +17,7 @@ std::string std_string_nullbyte_safe(char *, size_t, size_t);
 std::string std_string_nullbyte_safe(char *, size_t);
 
 bool is_fasta_file(char *filename);
+
+std::string basename_cpp(std::string);
+std::string realpath_cpp(std::string);
+

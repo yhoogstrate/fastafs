@@ -1,4 +1,6 @@
 
+#include <libgen.h>
+#include <string.h>
 #include <iostream>
 
 #include <openssl/sha.h>
@@ -170,3 +172,33 @@ bool is_fasta_file(char *filename)
     return false;
 }
 
+
+// https://www.systutorials.com/241216/how-to-get-the-directory-path-and-file-name-from-a-absolute-path-in-c-on-linux/
+// https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::path(filename).filename();
+std::string basename_cpp(std::string fn) {
+	//char* ts1 = strdup(local_file);
+	char* ts2 = strdup(fn.c_str());
+	
+	//char* dir = dirname(ts1);
+	char* filename = basename(ts2);
+	std::string filenamepp = std::string(filename);
+
+	printf("basename: [%s]\n", filename);
+	std::cout << "basenamepp: |" << filenamepp << "|\n";
+	
+	return filenamepp;
+}
+
+
+// https://www.linuxquestions.org/questions/programming-9/how-to-get-the-full-path-of-a-file-in-c-841046/
+// https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::canonical(filename)
+std::string realpath_cpp(std::string fn) {
+	std::string out = "asd";
+	char *path = realpath(fn.c_str(), NULL);
+	printf("realpath: [%s]\n", path);
+
+	std::string realpathpp = std::string(path);
+	std::cout << "realpath: |" << realpathpp << "|\n";
+	
+	return realpathpp;
+}
