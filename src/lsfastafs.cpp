@@ -62,7 +62,7 @@ std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_f
             
             std::string basename = basename_cpp(fn);
             //std::string basename = std::filesystem::path(fn).filename();
-            std::cout << "basename: " << basename << "\n";
+            //std::cout << "basename: " << basename << "\n";
             
             std::string dict_fn = std::string(mount_dir)  + "/" +  basename +  ".dict";
 
