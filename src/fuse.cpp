@@ -478,7 +478,8 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             std::string name; // prefix name of mounted fasta dict 2bit and fai files
             if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
                 fname = std::string(argv[mount_target_arg]);
-                name = std::filesystem::path(fname).filename();
+                //name = std::filesystem::path(fname).filename();
+                name = basename_cpp(fname);
 
                 // remove .fastafs suffix
                 size_t lastindex = name.find_last_of(".");
@@ -492,7 +493,8 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             fi->f->load(fname);
             fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
         } else {
-            std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
+			std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
+            //std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
             fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
             fi->u2b->load(std::string(argv[mount_target_arg]));
