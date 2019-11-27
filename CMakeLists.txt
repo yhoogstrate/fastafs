@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.6.2")
+set(PROJECT_VERSION "1.7.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -161,16 +161,16 @@ enable_testing()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte")
+add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N) | ACUG(N)
+add_test(test_fourbit_byte         "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
 add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
-#add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
 add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
 add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
 add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
-
+#add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'
 #INCLUDE(Dart)
