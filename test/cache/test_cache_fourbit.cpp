@@ -139,5 +139,11 @@ BOOST_AUTO_TEST_CASE(Test_size)
 
 
 
+BOOST_AUTO_TEST_CASE(test_cache)
+{
+    size_t written = fasta_to_fourbit_fastafs("test/data/test_004.fa", "tmp/test_004.fastafs");
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()

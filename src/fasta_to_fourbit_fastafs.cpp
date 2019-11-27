@@ -8,20 +8,42 @@
 
 
 
-const static char nt[2] = "T";
-const static char nc[2] = "C";
 const static char na[2] = "A";
+const static char nc[2] = "C";
 const static char ng[2] = "G";
+const static char nt[2] = "T";
+
+const static char nu[2] = "U";
+const static char nr[2] = "R";
+const static char ny[2] = "Y";
+const static char nk[2] = "K";
+const static char nm[2] = "M";
+const static char ns[2] = "S";
+const static char nw[2] = "W";
+const static char nb[2] = "B";
+const static char nd[2] = "D";
+const static char nh[2] = "H";
+const static char nv[2] = "V";
+
 const static char nn[2] = "N";
+
+//const char fourbit_byte::fourbit_alhpabet[17] = "ACGTURYKMSWBDHVN";
 
 
 
 void fasta_seq_header_fourbit_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
+	std::cout << this->n_actg;
+	std::cout << "\n";
+	std::cout << " => " << std::to_string(fourbit_byte::iterator_to_offset(this->n_actg)) << "\n\n";
+	
+	// 0 -> 4
+	// 1 -> 0 toch?
+	
     this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
     // if fourth nucleotide, 2bit is complete; write to disk
-    if(this->n_actg % 4 == 3) {
+    if(this->n_actg % 2 == 1) {
         fh_fastafs << this->fourbit_data.data;
     }
 
@@ -50,10 +72,10 @@ void fasta_seq_header_fourbit_conversion_data::finish_sequence(std::ofstream &fh
     uint32_t j;
 
     // flush last nucleotide
-    if(this->n_actg % 4 != 0) {
-        for(j = this->n_actg % 4; j < 4; j++) {
+    if(this->n_actg % 2 != 0) {
+        //for(j = this->n_actg % 2; j < 1; j++) {
             this->fourbit_data.set(fourbit_byte::iterator_to_offset(j), 0);
-        }
+        //}
         fh_fastafs << this->fourbit_data.data;
     }
 
@@ -133,6 +155,8 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
         s = nullptr;
         while(s == nullptr and getline(fh_fasta, line)) {
             if(line[0] == '>') {
+				
+				// init new sequence
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
                 s = new fasta_seq_header_fourbit_conversion_data(fh_fastafs.tellp(), line);
                 fh_fastafs << "\x00\x00\x00\x00"s;// placeholder for sequence length
@@ -144,8 +168,9 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
             while(getline(fh_fasta, line)) {
                 if(line[0] == '>') {
                     s->finish_sequence(fh_fastafs);
+                    
+                    // init sequence
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
-
                     s = new fasta_seq_header_fourbit_conversion_data(fh_fastafs.tellp(), line);
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
                     index.push_back(s);
@@ -153,27 +178,23 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         switch(*it) {
 
-                        case 'U':
-                        case 'T':
+                        case 'A':
                             if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                 s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                 s->in_m_block = false;
                             }
 
-                            s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                            MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                            s->add_ACTG(0, fh_fastafs);
+                            MD5_Update(&s->ctx, na, 1);
                             break;
-                        case 'u':// lower case = m block
-                        case 't':
+                        case 'a':
                             if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
                                 s->m_block_starts.push_back(s->N + s->n_actg);
                                 s->in_m_block = true;
                             }
 
-                            s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                            MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                            s->add_ACTG(0, fh_fastafs);
+                            MD5_Update(&s->ctx, na, 1);
                             break;
                         case 'C':
                             if(s->in_m_block) {
@@ -182,8 +203,8 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                                 s->in_m_block = false;
                             }
 
-                            s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
-                            MD5_Update(&s->ctx, nc, 1);
+                            s->add_ACTG(1, fh_fastafs);
+                            MD5_Update(&s->ctx, na, 1);
                             break;
                         case 'c':
                             if(!s->in_m_block) {
@@ -192,27 +213,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                                 s->in_m_block = true;
                             }
 
-                            s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
-                            MD5_Update(&s->ctx, nc, 1);
-                            break;
-                        case 'A':
-                            if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                s->in_m_block = false;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
-                            MD5_Update(&s->ctx, na, 1);
-                            break;
-                        case 'a':
-                            if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
-                                s->m_block_starts.push_back(s->N + s->n_actg);
-                                s->in_m_block = true;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
+                            s->add_ACTG(1, fh_fastafs);
                             MD5_Update(&s->ctx, na, 1);
                             break;
                         case 'G':
@@ -222,7 +223,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                                 s->in_m_block = false;
                             }
 
-                            s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                            s->add_ACTG(2, fh_fastafs);
                             MD5_Update(&s->ctx, ng, 1);
                             break;
                         case 'g':
@@ -232,8 +233,251 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                                 s->in_m_block = true;
                             }
 
-                            s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                            s->add_ACTG(2, fh_fastafs);
                             MD5_Update(&s->ctx, ng, 1);
+                            break;
+                        case 'T':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(3, fh_fastafs);
+                            MD5_Update(&s->ctx, nt, 1);
+                            break;
+                        case 't':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(3, fh_fastafs);
+                            MD5_Update(&s->ctx, nt, 1);
+                            break;
+                        case 'U':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(4, fh_fastafs);
+                            MD5_Update(&s->ctx, nu, 1);
+                            break;
+                        case 'u':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(4, fh_fastafs);
+                            MD5_Update(&s->ctx, nu, 1);
+                            break;
+
+// ====================================================
+
+                        case 'R':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(5, fh_fastafs);
+                            MD5_Update(&s->ctx, nr, 1);
+                            break;
+                        case 'r':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(5, fh_fastafs);
+                            MD5_Update(&s->ctx, nr, 1);
+                            break;
+                        case 'Y':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(6, fh_fastafs);
+                            MD5_Update(&s->ctx, ny, 1);
+                            break;
+                        case 'y':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(6, fh_fastafs);
+                            MD5_Update(&s->ctx, ny, 1);
+                            break;
+                        case 'K':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(7, fh_fastafs);
+                            MD5_Update(&s->ctx, nk, 1);
+                            break;
+                        case 'k':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(7, fh_fastafs);
+                            MD5_Update(&s->ctx, nk, 1);
+                            break;
+                        case 'M':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(8, fh_fastafs);
+                            MD5_Update(&s->ctx, nm, 1);
+                            break;
+                        case 'm':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(8, fh_fastafs);
+                            MD5_Update(&s->ctx, nm, 1);
+                            break;
+                        case 'S':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(9, fh_fastafs);
+                            MD5_Update(&s->ctx, ns, 1);
+                            break;
+                        case 's':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(9, fh_fastafs);
+                            MD5_Update(&s->ctx, ns, 1);
+                            break;
+                        case 'W':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(10, fh_fastafs);
+                            MD5_Update(&s->ctx, nw, 1);
+                            break;
+                        case 'w':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(10, fh_fastafs);
+                            MD5_Update(&s->ctx, nw, 1);
+                            break;
+                        case 'B':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(11, fh_fastafs);
+                            MD5_Update(&s->ctx, nb, 1);
+                            break;
+                        case 'b':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(11, fh_fastafs);
+                            MD5_Update(&s->ctx, nb, 1);
+                            break;
+                        case 'D':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(12, fh_fastafs);
+                            MD5_Update(&s->ctx, nd, 1);
+                            break;
+                        case 'd':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(12, fh_fastafs);
+                            MD5_Update(&s->ctx, nd, 1);
+                            break;
+                        case 'H':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(13, fh_fastafs);
+                            MD5_Update(&s->ctx, nh, 1);
+                            break;
+                        case 'h':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(13, fh_fastafs);
+                            MD5_Update(&s->ctx, nh, 1);
+                            break;
+                        case 'V':
+                            if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }
+
+                            s->add_ACTG(14, fh_fastafs);
+                            MD5_Update(&s->ctx, nv, 1);
+                            break;
+                        case 'v':
+                            if(!s->in_m_block) {
+                                //printf("starting M block: %d\n", s->N + s->n_actg);
+                                s->m_block_starts.push_back(s->N + s->n_actg);
+                                s->in_m_block = true;
+                            }
+
+                            s->add_ACTG(14, fh_fastafs);
+                            MD5_Update(&s->ctx, nv, 1);
                             break;
                         case 'N':
                             if(s->in_m_block) {
@@ -242,7 +486,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                                 s->in_m_block = false;
                             }
 
-                            s->add_N();
+                            s->add_ACTG(15, fh_fastafs);
                             MD5_Update(&s->ctx, nn, 1);
                             break;
                         case 'n':
@@ -252,9 +496,10 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                                 s->in_m_block = true;
                             }
 
-                            s->add_N();
+                            s->add_ACTG(15, fh_fastafs);
                             MD5_Update(&s->ctx, nn, 1);
                             break;
+
                         default:
                             std::cerr << "invalid chars in FASTA file" << std::endl;
                             exit(1);

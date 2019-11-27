@@ -126,8 +126,8 @@ bit 1   combined sequence type
 
 | bit-0 | bit-1 | Type | Alphabet |
 | ---- | ---- | - | - |
-| `0` | `0` | DNA | `ACTG` + `N`) |
-| `1` | `0` | RNA | `ACUG` + `N`) |
+| `0` | `0` | DNA | `ACTG` + `N` |
+| `1` | `0` | RNA | `ACUG` + `N` |
 | `0` | `1` | IUPEC Nucleotide | `ACGTURYKMSWBDHVN` + `-` |
 | `1` | `1` | reserved for protein | to be determined |
 
