@@ -48,18 +48,18 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         //      ??????00
         //          11?? ~(3 << bit_offset)
         // data ????????
-        this->data = (unsigned char)(this->data & ~(3 << bit_offset));
+        this->data = (unsigned char)(this->data & ~( (2+1) << bit_offset));
         break;
     case 1://NUCLEOTIDE_C (01)
-        this->data = (unsigned char)(this->data & ~(2 << bit_offset));
-        this->data = (unsigned char)(this->data | (1 << bit_offset));
+        this->data = (unsigned char)(this->data & ~( (2  ) << bit_offset));
+        this->data = (unsigned char)(this->data |  ( (  1) << bit_offset));
         break;
     case 2://NUCLEOTIDE_A (10)
-        this->data = (unsigned char)(this->data & ~(1 << bit_offset));
-        this->data = (unsigned char)(this->data | (2 << bit_offset));
+        this->data = (unsigned char)(this->data & ~( (  1) << bit_offset));
+        this->data = (unsigned char)(this->data |  ( (2  ) << bit_offset));
         break;
     case 3://NUCLEOTIDE_G (11)
-        this->data = (unsigned char)(this->data | (nucleotide << bit_offset));
+        this->data = (unsigned char)(this->data |  ( (2+1) << bit_offset));
         break;
 #if DEBUG
     default:
