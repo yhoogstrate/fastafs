@@ -72,6 +72,7 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 
 // input char "AACCCTTGG"
 // N's are treated as 0, for some weird reason
+// this function seems specific for UCSC 2 bit format?! - if so, denote it like that
 void twobit_byte::set(char* buffer)
 {
     const std::array< unsigned char, 4> bit_offsets = {6, 4, 2, 0};

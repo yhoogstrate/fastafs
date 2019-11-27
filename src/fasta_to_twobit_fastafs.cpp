@@ -3,12 +3,20 @@
 
 #include "config.hpp"
 
-#include "fasta_to_fastafs.hpp"
+#include "fasta_to_twobit_fastafs.hpp"
 #include "utils.hpp"
 
 
 
-void fasta_seq_header_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
+const static char nt[2] = "T";
+const static char nc[2] = "C";
+const static char na[2] = "A";
+const static char ng[2] = "G";
+const static char nn[2] = "N";
+
+
+
+void fasta_seq_header_twobit_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
     this->twobit_data.set(twobit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
@@ -25,7 +33,7 @@ void fasta_seq_header_conversion_data::add_ACTG(unsigned char nucleotide, std::o
     this->n_actg++;
 }
 
-void fasta_seq_header_conversion_data::add_N()
+void fasta_seq_header_twobit_conversion_data::add_N()
 {
     if(!this->previous_was_N) {
         this->n_block_starts.push_back(this->n_actg + this->N);
@@ -37,7 +45,7 @@ void fasta_seq_header_conversion_data::add_N()
 
 
 
-void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs)
+void fasta_seq_header_twobit_conversion_data::finish_sequence(std::ofstream &fh_fastafs)
 {
     uint32_t j;
 
@@ -106,16 +114,10 @@ void fasta_seq_header_conversion_data::finish_sequence(std::ofstream &fh_fastafs
 
 
 
-const static char nt[2] = "T";
-const static char nc[2] = "C";
-const static char na[2] = "A";
-const static char ng[2] = "G";
-const static char nn[2] = "N";
-
-size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_file)
+size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string fastafs_file)
 {
-    std::vector<fasta_seq_header_conversion_data*> index;
-    fasta_seq_header_conversion_data* s;
+    std::vector<fasta_seq_header_twobit_conversion_data*> index;
+    fasta_seq_header_twobit_conversion_data* s;
 
     // @todo use ifstream and ofstream argument types
     std::string line;
@@ -132,7 +134,7 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
         while(s == nullptr and getline(fh_fasta, line)) {
             if(line[0] == '>') {
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
-                s = new fasta_seq_header_conversion_data(fh_fastafs.tellp(), line);
+                s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
                 fh_fastafs << "\x00\x00\x00\x00"s;// placeholder for sequence length
                 index.push_back(s);
             }
@@ -144,7 +146,7 @@ size_t fasta_to_fastafs(const std::string fasta_file, const std::string fastafs_
                     s->finish_sequence(fh_fastafs);
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
 
-                    s = new fasta_seq_header_conversion_data(fh_fastafs.tellp(), line);
+                    s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
                     index.push_back(s);
                 } else {

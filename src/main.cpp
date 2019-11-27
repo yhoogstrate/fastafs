@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "config.hpp"
-#include "fasta_to_fastafs.hpp"
+#include "fasta_to_twobit_fastafs.hpp"
 #include "ucsc2bit_to_fastafs.hpp"
 #include "database.hpp"
 #include "fuse.hpp"
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
                 std::string fname_out = d.add(argv[argc - 2]);
 
                 if(is_fasta_file(argv[argc - 1])) {
-                    fasta_to_fastafs(argv[argc - 1], fname_out);
+                    fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
                 } else {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 }

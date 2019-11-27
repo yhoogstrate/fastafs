@@ -1,11 +1,11 @@
-#define BOOST_TEST_MODULE fastfs_cache
+#define BOOST_TEST_MODULE fastfs_cache_twobit
 
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
 
 //#include "twobit_byte.hpp"
-#include "fasta_to_fastafs.hpp"
+#include "fasta_to_twobit_fastafs.hpp"
 
 
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(Test_size)
  */
 BOOST_AUTO_TEST_CASE(test_cache)
 {
-    size_t written = fasta_to_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+    size_t written = fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
 
     static std::string reference =
         // GENERIC-HEADER
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
 BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_fastafs("test/data/test_003.fa", "tmp/test_cachce_test_003.fastafs");
+    fasta_to_twobit_fastafs("test/data/test_003.fa", "tmp/test_cachce_test_003.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");

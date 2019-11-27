@@ -137,31 +137,79 @@ void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 // N's are treated as 0, for some weird reason
 void fourbit_byte::set(char* buffer)
 {
-    const std::array< unsigned char, 4> bit_offsets = {6, 4, 2, 0};
-    for(unsigned char i = 0; i < 4; i++) {
+    const std::array< unsigned char, 4> bit_offsets = {4, 0};
+    for(unsigned char i = 0; i < 2; i++) {
         switch(buffer[i]) {
-        case 't':
-        case 'T':
-        case 'n':
-        case 'N':
-            this->set(bit_offsets[i], 0);
-            break;
-        case 'c':
-        case 'C':
-            this->set(bit_offsets[i], 1);
-            break;
-        case 'a':
-        case 'A':
-            this->set(bit_offsets[i], 2);
-            break;
-        case 'g':
-        case 'G':
-            this->set(bit_offsets[i], 3);
-            break;
+
+			case 'A':// A (0000)
+			case 'a':
+				this->set(bit_offsets[i], 0);
+				break;
+			case 'C':// C (0001)
+			case 'c':
+				this->set(bit_offsets[i], 1);
+				break;
+			case 'G':// G (0010)
+			case 'g':
+				this->set(bit_offsets[i], 2);
+				break;
+			case 'T':// T (0011)
+			case 't':
+				this->set(bit_offsets[i], 3);
+				break;
+			case 'U':// U (0100)
+			case 'u':
+				this->set(bit_offsets[i], 4);
+				break;
+			case 'R':// R (0101)
+			case 'r':
+				this->set(bit_offsets[i], 5);
+				break;
+			case 'Y':// Y (0110)
+			case 'y':
+				this->set(bit_offsets[i], 6);
+				break;
+			case 'K':// K (0111)
+			case 'k':
+				this->set(bit_offsets[i], 7);
+				break;
+			case 'M':// M (1000)
+			case 'm':
+				this->set(bit_offsets[i], 8);
+				break;
+			case 'S':// S (1001)
+			case 's':
+				this->set(bit_offsets[i], 9);
+				break;
+			case 'W':// W (1010)
+			case 'w':
+				this->set(bit_offsets[i], 10);
+				break;
+			case 'B':// B (1011)
+			case 'b':
+				this->set(bit_offsets[i], 11);
+				break;
+			case 'D':// D (1100)
+			case 'd':
+				this->set(bit_offsets[i], 12);
+				break;
+			case 'H':// H (1101)
+			case 'h':
+				this->set(bit_offsets[i], 13);
+				break;
+			case 'V':// V (1110)
+			case 'v':
+				this->set(bit_offsets[i], 14);
+				break;
+			case 'N':// N (1111)
+			case 'n':
+				this->set(bit_offsets[i], 15);
+				break;
+
 #if DEBUG
-        default:
-            throw std::invalid_argument("fourbit_byte::set(char *) invalid value\n");
-            break;
+			default:
+				throw std::invalid_argument("fourbit_byte::set(char *) invalid value\n");
+				break;
 #endif //DEBUG
         }
     }

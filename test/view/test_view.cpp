@@ -8,7 +8,7 @@
 
 #include "config.hpp"
 
-#include "fasta_to_fastafs.hpp"
+#include "fasta_to_twobit_fastafs.hpp"
 #include "fastafs.hpp"
 
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
 
     std::string fastafs_file = "tmp/test.fastafs";
 
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";
 
-    fasta_to_fastafs(fasta_file, fastafs_file);
+    fasta_to_twobit_fastafs(fasta_file, fastafs_file);
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 
@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";
 
-    fasta_to_fastafs(fasta_file, fastafs_file);
+    fasta_to_twobit_fastafs(fasta_file, fastafs_file);
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";
 
-    fasta_to_fastafs(fasta_file, fastafs_file);
+    fasta_to_twobit_fastafs(fasta_file, fastafs_file);
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 

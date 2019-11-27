@@ -421,7 +421,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     char current_argument = '\0';// could be o for '-o', etc.
 
     std::vector<int> full_args = {};
-    for(unsigned int i = 0; i < argc; ++i) {
+    for(signed int i = 0; i < argc; ++i) {
         printf("processing argv[%i] = '%s'     [current argument=%i]\n", i, argv[i], (int) current_argument);
 
         if(current_argument != '\0') { // parse the arguments' value

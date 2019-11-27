@@ -7,11 +7,11 @@
 #include "utils.hpp"
 
 #include "fastafs.hpp"
-#include "twobit_byte.hpp"
+#include "fourbit_byte.hpp"
 
 
 
-class fasta_seq_header_conversion_data
+class fasta_seq_header_fourbit_conversion_data
 {
 public:
     void add_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
@@ -27,7 +27,7 @@ public:
     bool previous_was_N;
 
 
-    fasta_seq_header_conversion_data(off_t fof, std::string name):
+    fasta_seq_header_fourbit_conversion_data(off_t fof, std::string name):
         file_offset_in_fasta(fof),
         name(name),
         N(0),
@@ -53,9 +53,9 @@ public:
     std::vector<uint32_t> m_block_ends;
     bool in_m_block;
 
-    twobit_byte twobit_data;
+    fourbit_byte fourbit_data;
 };
 
 
-size_t fasta_to_fastafs(const std::string, const std::string);
+size_t fasta_to_fourbit_fastafs(const std::string, const std::string);
 
