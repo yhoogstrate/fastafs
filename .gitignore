@@ -18,3 +18,4 @@ repeats.txt
 build/
 xcheck.sh
 *.fa.fai
+*.o
