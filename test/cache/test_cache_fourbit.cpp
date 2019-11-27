@@ -125,6 +125,18 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
 
 
 
+/**
+ * @brief
+ *
+ * @test tests whether a fourbit object is indeed stored as a single byte
+ */
+BOOST_AUTO_TEST_CASE(Test_size)
+{
+    fourbit_byte b = fourbit_byte();
+    BOOST_CHECK_EQUAL(sizeof(b.data), 1);
+}
+
+
 
 
 
