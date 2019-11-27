@@ -111,11 +111,19 @@ void twobit_byte::set(char* buffer)
 **/
 char *twobit_byte::get(unsigned char length)
 {
+#if DEBUG
+	if(length > 4) {
+		throw std::invalid_argument("twobit_byte::get(unsigned char length) -> out of bound: " + std::to_string(length) + "\n");
+	}
+#endif //DEBUG
+
     char *seq = new char[length + 1];
+
     for(unsigned char i = 0; i < length; i++) { // length = 4: i = 0, 1, 2, 3
         seq[i] = twobit_byte::twobit_hash[this->data][i];
     }
     seq[length] = '\0';
+
     return seq;
 }
 

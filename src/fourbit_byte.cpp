@@ -221,6 +221,12 @@ void fourbit_byte::set(char* buffer)
 **/
 char *fourbit_byte::get(unsigned char length)
 {
+#if DEBUG
+	if(length > 2) {
+		throw std::invalid_argument("four_byte::get(unsigned char length) -> out of bound: " + std::to_string(length)+ "\n");
+	}
+#endif //DEBUG
+
     char *seq = new char[length + 1];
     for(unsigned char i = 0; i < length; i++) { // length = 4: i = 0, 1, 2, 3
         seq[i] = fourbit_byte::fourbit_hash[this->data][i];

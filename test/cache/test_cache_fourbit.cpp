@@ -21,61 +21,41 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
 
     char *seq1;
     char *seq2;
-    char *seq3;
-    char *seq4;
 
-    const char *seq;// don't dereference, pointer to static two_bit property
+    const char *seq;// don't dereference, pointer to static four_bit property
 
     // test 0000 0000 -> 00000000 -> 0
-    //b.set(6, NUCLEOTIDE_T);
-    //b.set(4, NUCLEOTIDE_T);
-    //b.set(2, NUCLEOTIDE_T);
-    //b.set(0, NUCLEOTIDE_T);
-    //BOOST_CHECK_EQUAL(b.data, 0);
+    b.set(4, 0);// A => 0
+    b.set(0, 0);
+    BOOST_CHECK_EQUAL(b.data, 0);
 	
-	/*
     seq1 = b.get(1);
     seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "TT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "TTT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "TTTT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq1, "A"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "AA"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "AA"), 0);
 
     delete[] seq1;
     delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
 
-
-    // test 00 00 11 00 -> 00001100 -> 8+4 -> 12
-    b.set(6, NUCLEOTIDE_T);
-    b.set(4, NUCLEOTIDE_T);
-    b.set(2, NUCLEOTIDE_G);
-    b.set(0, NUCLEOTIDE_T);
-    BOOST_CHECK_EQUAL(b.data, 12);
+    // test 11 10  11 11 -> 00001100 -> 239
+    b.set(4, 14); // V: 14
+    b.set(0, 15); // N: 15
+    BOOST_CHECK_EQUAL(b.data, 239);
 
     seq1 = b.get(1);
     seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "TT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "TTG"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "TTGT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq, "TTGT"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq1, "V"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "VN"), 0);
 
     delete[] seq1;
     delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
-
+    
+/*
 
     // test 00 11 00 00 -> 00110000 -> 16+32 -> 48
     b.set(6, NUCLEOTIDE_T);
