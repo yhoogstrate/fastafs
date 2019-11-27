@@ -120,18 +120,16 @@ Repeated for every sequence, in order matching SEQUENCE-HEADER
 The sequence flag allows to describe the following metadata for each sequence:
 
 ```
-bit 0   combined sequence
-bit 1   type
+bit 0   combined sequence type
+bit 1   combined sequence type
 ```
 
-| bit 0 | bit 1 | Type |
+| bit-0 | bit-1 | Type | Alphabet |
 | ---- | ---- | - |
-| `0` | `0` | DNA (`ACTG` + `N`) |
-| `1` | `0` | RNA (`ACUG` + `N`) |
-| `0` | `1` | Nucleotide IUPEC (`ACGTURYKMSWBDHVN` + `-`) |
-| `1` | `1` | reserved |
-
----
+| `0` | `0` | DNA | `ACTG` + `N`) |
+| `1` | `0` | RNA | `ACUG` + `N`) |
+| `0` | `1` | IUPEC Nucleotide | `ACGTURYKMSWBDHVN` + `-` |
+| `1` | `1` | reserved for protein | to be determined |
 
 ```
 bit 2   reserved    [reserved, library type 2 -> protein]
