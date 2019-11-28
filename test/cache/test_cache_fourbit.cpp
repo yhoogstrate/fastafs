@@ -148,24 +148,24 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x0F\x0A\x46\x53"s//     [0, 3]
         "\x00\x00\x00\x00"s//     [4, 7] version
         "\x00\x01"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
-        "\x00\x00\x01\x37"s //    [10, 13] index position in file (???)
+        "\x00\x00\x00\x68"s //    [10, 13] index position in file (104?)
 
         // DATA
-        "\x00\x00\x00\x10"s//     [14, 17] seq length (76)
+        "\x00\x00\x00\x4C"s//     [14, 17] seq length (76)
         "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 1    sequence (four bit format; n chars = 76/2 = 38)
         "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 2
         "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 3
         "\x00\x55\xAA\xFF\x00\x00\x00\x00"s// 4
         "\x00\x55\xAA\xFF\x00"s// 12
-        "\x00\x00\x00\x00"s//     [22, 25] n-blocks (2)
-        "\x00\x00\x00\x00"s//     [50, 53] n-block[0] starts (0)
-        "\x00\x00\x00\x0F"s//     [54, 57] n-block[0] starts (15)
-        "\x00\x00\x00\x00"s//     [50, 53] n-block[1] starts (0)
-        "\x00\x00\x00\x0F"s//     [54, 57] n-block[1] starts (15)
+        "\x00\x00\x00\x02"s//     [22, 25] n-blocks (2)
+        "\x00\x00\x00\x1A"s//     [50, 53] n-block[0] starts (26)
+        "\x00\x00\x00\x24"s//     [54, 57] n-block[0] ends (36|37)
+        "\x00\x00\x00\x4D"s//     [50, 53] n-block[1] starts (77)
+        "\x00\x00\x00\x4F"s//     [54, 57] n-block[1] ends (79)
         "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 45] checksum
         "\x00\x00\x00\x01"s//     [46, 49] m-blocks (1)
-        "\x00\x00\x00\x00"s//     [50, 53] m-block starts (0)
-        "\x00\x00\x00\x0F"s//     [54, 57] m-block starts (15)
+        "\x00\x00\x00\x00"s//     [50, 53] m-block starts (53)
+        "\x00\x00\x00\x0F"s//     [54, 57] m-block starts (65)
 
         // INDEX
         "\x00\x00\x00\x01"s     // [339, 342] 1 sequences
