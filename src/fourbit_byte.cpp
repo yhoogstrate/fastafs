@@ -237,6 +237,7 @@ char *fourbit_byte::get(unsigned char length)
         seq[i] = fourbit_byte::fourbit_hash[this->data][i];
     }
     seq[length] = '\0';
+
     return seq;
 }
 

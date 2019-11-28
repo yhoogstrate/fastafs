@@ -153,6 +153,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         switch(*it) {
 
+						// keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
                         case 'U':
                         case 'T':
                             if(s->in_m_block) {
@@ -280,7 +281,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
         s = index[i];
 
         // flag
-        fh_fastafs << "\x00\x08"s;// 00001000 (DNA + completed-with-checksum)
+        fh_fastafs << "\x00\x08"s;// 00001000 (DNA + completed-with-checksum) | this probably has to be mirrored as last and first bit are swapped
 
         // name
         unsigned char name_size = (unsigned char) s->name.size();

@@ -142,6 +142,42 @@ BOOST_AUTO_TEST_CASE(Test_size)
 BOOST_AUTO_TEST_CASE(test_cache)
 {
     size_t written = fasta_to_fourbit_fastafs("test/data/test_004.fa", "tmp/test_004.fastafs");
+    
+    static std::string reference =
+        // GENERIC-HEADER
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x00\x01"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
+        "\x00\x00\x01\x37"s //    [10, 13] index position in file (???)
+
+        // DATA
+        "\x00\x00\x00\x10"s//     [14, 17] seq length (76)
+        "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 1    sequence (four bit format; n chars = 76/2 = 38)
+        "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 2
+        "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 3
+        "\x00\x55\xAA\xFF\x00\x00\x00\x00"s// 4
+        "\x00\x55\xAA\xFF\x00"s// 12
+        "\x00\x00\x00\x00"s//     [22, 25] n-blocks (2)
+        "\x00\x00\x00\x00"s//     [50, 53] n-block[0] starts (0)
+        "\x00\x00\x00\x0F"s//     [54, 57] n-block[0] starts (15)
+        "\x00\x00\x00\x00"s//     [50, 53] n-block[1] starts (0)
+        "\x00\x00\x00\x0F"s//     [54, 57] n-block[1] starts (15)
+        "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 45] checksum
+        "\x00\x00\x00\x01"s//     [46, 49] m-blocks (1)
+        "\x00\x00\x00\x00"s//     [50, 53] m-block starts (0)
+        "\x00\x00\x00\x0F"s//     [54, 57] m-block starts (15)
+
+        // INDEX
+        "\x00\x00\x00\x01"s     // [339, 342] 1 sequences
+        "\x00\xA0"              // [343, 344] complete, IUPEC
+        "\x05"s "IUPAC"s        // [345, 349] name
+        "\x00\x00\x00\x0E"s     // [350, 353] data position in file (14)
+
+        // METADATA
+        "\x00"                  // [399] no metadata fields [padding will come soon?]
+        ;
+
+		BOOST_CHECK_EQUAL(written, 121);
 }
 
 

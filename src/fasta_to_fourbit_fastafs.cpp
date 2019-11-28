@@ -527,7 +527,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
         s = index[i];
 
         // flag
-        fh_fastafs << "\x00\x0A"s;// 00001010 (IUPEC + completed-with-checksum)
+        fh_fastafs << "\x00\x0A"s;// 00001010 (IUPEC + completed-with-checksum) | this probably has to be mirrored as last and first bit are swapped
 
         // name
         unsigned char name_size = (unsigned char) s->name.size();
