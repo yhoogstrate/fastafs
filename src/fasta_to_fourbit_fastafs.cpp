@@ -519,6 +519,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
+    //std::cout << " index file pos: " + std::to_string(index_file_position) + " \n";
     char buffer[4 +  1];
     uint_to_fourbytes(buffer, (uint32_t) index.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);

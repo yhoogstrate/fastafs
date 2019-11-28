@@ -151,33 +151,56 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00\x00\x00\x68"s //    [10, 13] index position in file (104?)
 
         // DATA
-        "\x00\x00\x00\x4C"s//     [14, 17] seq length (76)
-        "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 1    sequence (four bit format; n chars = 76/2 = 38)
-        "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 2
-        "\x00\x55\xAA\xFF\x00\x00\x00\x00\x00\x00"s// 3
-        "\x00\x55\xAA\xFF\x00\x00\x00\x00"s// 4
-        "\x00\x55\xAA\xFF\x00"s// 12
-        "\x00\x00\x00\x02"s//     [22, 25] n-blocks (2)
-        "\x00\x00\x00\x1A"s//     [50, 53] n-block[0] starts (26)
-        "\x00\x00\x00\x24"s//     [54, 57] n-block[0] ends (36|37)
-        "\x00\x00\x00\x4D"s//     [50, 53] n-block[1] starts (77)
-        "\x00\x00\x00\x4F"s//     [54, 57] n-block[1] ends (79)
-        "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 45] checksum
-        "\x00\x00\x00\x01"s//     [46, 49] m-blocks (1)
-        "\x00\x00\x00\x00"s//     [50, 53] m-block starts (53)
-        "\x00\x00\x00\x0F"s//     [54, 57] m-block starts (65)
+        "\x00\x00\x00\x4B"s//     [14, 17] seq length (75)
+        "\xFB\x70\xD8\xC1\x4A\x29\x6E\x35\xD2\xAE"s// [18, 27]    sequence (four bit format; n chars = 76/2 = 38)
+        "\x48\x3B\x9C\xFB\x26\x0C\xFD\x98\x43\x51"s// [28, 37]
+        "\x7A\xE9\xBD\xEC\xF5\x32\x61\x87\xA4\x00"s// [38, 47]
+        "\xE3\x9C\x7F\xB4\x2A\x8D\x65\x10"s// [48, 56]
+        "\x00\x00\x00\x02"s//     [, ] n-blocks (2)
+        "\x00\x00\x00\x1B"s//     [, ] n-block[0] starts (27)
+        "\x00\x00\x00\x4D"s//     [, ] n-block[1] starts (77)
+        "\x00\x00\x00\x24"s//     [, ] n-block[0] ends (36|37)
+        "\x00\x00\x00\x4F"s//     [, ] n-block[1] ends (79)
+        "\xEE\x09\x2F\x63\x4F\x6C\x87\xD0\x6B\x57\x1F\x07\xD1\x42\x73\x00"s// [76, ] checksum
+        "\x00\x00\x00\x01"s//     [92, ] m-blocks (1)
+        "\x00\x00\x00\x35"s//     [96, ] m-block starts (53)
+        "\x00\x00\x00\x44"s//     [100, ] m-block starts (68)
 
         // INDEX
-        "\x00\x00\x00\x01"s     // [339, 342] 1 sequences
-        "\x00\xA0"              // [343, 344] complete, IUPEC
-        "\x05"s "IUPAC"s        // [345, 349] name
-        "\x00\x00\x00\x0E"s     // [350, 353] data position in file (14)
+        "\x00\x00\x00\x01"s     // [104, ] 1 sequences
+        "\x00\x0A"              // [, ] complete, IUPEC
+        "\x05"s "IUPAC"s        // [, ] name
+        "\x00\x00\x00\x0E"s     // [, ] data position in file (14)
 
         // METADATA
-        "\x00"                  // [399] no metadata fields [padding will come soon?]
+        "\x00"                  // [120] no metadata fields [padding will come soon?]
         ;
 
-		BOOST_CHECK_EQUAL(written, 121);
+	BOOST_CHECK_EQUAL(written, 121);
+	
+    //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    std::ifstream file("tmp/test_004.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    file.close();
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
+		if(reference[i] != buffer[i]) {
+			printf("comparing char %i\n", i);
+			printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n", i, reference[i], buffer[i], buffer[i], buffer[i]);
+		}
+
+    }
+
+    delete[] buffer;
 }
 
 
