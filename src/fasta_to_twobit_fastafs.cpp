@@ -123,6 +123,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     std::string line;
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
     std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
+	s = nullptr;
     if(fh_fasta.is_open() and fh_fastafs.is_open()) {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
@@ -130,7 +131,6 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
         // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
-        s = nullptr;
         while(s == nullptr and getline(fh_fasta, line)) {
             if(line[0] == '>') {
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
