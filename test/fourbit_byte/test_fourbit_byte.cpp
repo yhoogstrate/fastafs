@@ -93,17 +93,22 @@ BOOST_AUTO_TEST_CASE(test_fourbit_conversions)
 
 BOOST_AUTO_TEST_CASE(test_fourbit_static_offset_conversion_test)
 {
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(0), 6);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(1), 4);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(2), 2);
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(0), 4);
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(1), 0);
+
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(2), 4);
     BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(3), 0);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(4), 6);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(5), 4);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(6), 2);
+
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(4), 4);
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(5), 0);
+
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(6), 4);
     BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(7), 0);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(8), 6);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(9), 4);
-    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(10), 2);
+
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(8), 4);
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(9), 0);
+
+    BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(10), 4);
     BOOST_CHECK_EQUAL(fourbit_byte::iterator_to_offset(11), 0);
 }
 

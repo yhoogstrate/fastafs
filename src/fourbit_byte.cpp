@@ -42,7 +42,12 @@ not sure what the quickest way is - this way all calculations are done as ints, 
  */
 unsigned char fourbit_byte::iterator_to_offset(uint32_t iterator)
 {
-    return (unsigned char)((3 - (iterator % 4)) * 2);
+	if(iterator % 2 == 0) {
+		return 4;
+	}
+	else {
+		return 0;
+	}
 }
 
 // @todo, offset needs to be second parameter
