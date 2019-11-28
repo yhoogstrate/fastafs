@@ -280,7 +280,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
         s = index[i];
 
         // flag
-        fh_fastafs << "\x00\x08"s;
+        fh_fastafs << "\x00\x08"s;// 00001000 (DNA + completed-with-checksum)
 
         // name
         unsigned char name_size = (unsigned char) s->name.size();

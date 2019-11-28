@@ -33,13 +33,6 @@ const static char nn[2] = "N";
 
 void fasta_seq_header_fourbit_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
-	std::cout << this->n_actg;
-	std::cout << "\n";
-	std::cout << " => " << std::to_string(fourbit_byte::iterator_to_offset(this->n_actg)) << "\n\n";
-	
-	// 0 -> 4
-	// 1 -> 0 toch?
-	
     this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
     // if fourth nucleotide, 2bit is complete; write to disk
@@ -73,9 +66,8 @@ void fasta_seq_header_fourbit_conversion_data::finish_sequence(std::ofstream &fh
 
     // flush last nucleotide
     if(this->n_actg % 2 != 0) {
-        //for(j = this->n_actg % 2; j < 1; j++) {
-            this->fourbit_data.set(fourbit_byte::iterator_to_offset(j), 0);
-        //}
+		this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), 0);
+        
         fh_fastafs << this->fourbit_data.data;
     }
 
@@ -499,6 +491,16 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
                             s->add_ACTG(15, fh_fastafs);
                             MD5_Update(&s->ctx, nn, 1);
                             break;
+                        case '-':
+                            /*if(s->in_m_block) {
+                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                s->in_m_block = false;
+                            }*/
+
+                            s->add_N();
+                            //MD5_Update(&s->ctx, nn, 1);
+                            break;
 
                         default:
                             std::cerr << "invalid chars in FASTA file" << std::endl;
@@ -525,7 +527,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
         s = index[i];
 
         // flag
-        fh_fastafs << "\x00\x08"s;
+        fh_fastafs << "\x00\x0A"s;// 00001010 (IUPEC + completed-with-checksum)
 
         // name
         unsigned char name_size = (unsigned char) s->name.size();
