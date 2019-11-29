@@ -493,7 +493,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             fi->f->load(fname);
             fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
         } else {
-			std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
+            std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
             //std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
             fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa

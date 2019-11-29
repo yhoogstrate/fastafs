@@ -8,7 +8,7 @@
 class fourbit_byte
 {
 public:
-	static const char fourbit_alhpabet[17];
+    static const char fourbit_alhpabet[17];
     static const char fourbit_hash[256][3];
 
     unsigned char data;

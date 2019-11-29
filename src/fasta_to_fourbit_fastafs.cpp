@@ -66,8 +66,8 @@ void fasta_seq_header_fourbit_conversion_data::finish_sequence(std::ofstream &fh
 
     // flush last nucleotide
     if(this->n_actg % 2 != 0) {
-		this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), 0);
-        
+        this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), 0);
+
         fh_fastafs << this->fourbit_data.data;
     }
 
@@ -137,7 +137,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
     std::string line;
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
     std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
-	s = nullptr;
+    s = nullptr;
     if(fh_fasta.is_open() and fh_fastafs.is_open()) {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
@@ -147,8 +147,8 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
         // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
         while(s == nullptr and getline(fh_fasta, line)) {
             if(line[0] == '>') {
-				
-				// init new sequence
+
+                // init new sequence
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
                 s = new fasta_seq_header_fourbit_conversion_data(fh_fastafs.tellp(), line);
                 fh_fastafs << "\x00\x00\x00\x00"s;// placeholder for sequence length
@@ -160,7 +160,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
             while(getline(fh_fasta, line)) {
                 if(line[0] == '>') {
                     s->finish_sequence(fh_fastafs);
-                    
+
                     // init sequence
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
                     s = new fasta_seq_header_fourbit_conversion_data(fh_fastafs.tellp(), line);

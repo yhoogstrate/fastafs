@@ -48,18 +48,18 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         //      ??????00
         //          11?? ~(3 << bit_offset)
         // data ????????
-        this->data = (unsigned char)(this->data & ~( (2+1) << bit_offset));
+        this->data = (unsigned char)(this->data & ~((2 + 1) << bit_offset));
         break;
     case 1://NUCLEOTIDE_C (01)
-        this->data = (unsigned char)(this->data & ~( (2  ) << bit_offset));
-        this->data = (unsigned char)(this->data |  ( (  1) << bit_offset));
+        this->data = (unsigned char)(this->data & ~((2) << bit_offset));
+        this->data = (unsigned char)(this->data | ((1) << bit_offset));
         break;
     case 2://NUCLEOTIDE_A (10)
-        this->data = (unsigned char)(this->data & ~( (  1) << bit_offset));
-        this->data = (unsigned char)(this->data |  ( (2  ) << bit_offset));
+        this->data = (unsigned char)(this->data & ~((1) << bit_offset));
+        this->data = (unsigned char)(this->data | ((2) << bit_offset));
         break;
     case 3://NUCLEOTIDE_G (11)
-        this->data = (unsigned char)(this->data |  ( (2+1) << bit_offset));
+        this->data = (unsigned char)(this->data | ((2 + 1) << bit_offset));
         break;
 #if DEBUG
     default:
@@ -112,9 +112,9 @@ void twobit_byte::set(char* buffer)
 char *twobit_byte::get(unsigned char length)
 {
 #if DEBUG
-	if(length > 4) {
-		throw std::invalid_argument("twobit_byte::get(unsigned char length) -> out of bound: " + std::to_string(length) + "\n");
-	}
+    if(length > 4) {
+        throw std::invalid_argument("twobit_byte::get(unsigned char length) -> out of bound: " + std::to_string(length) + "\n");
+    }
 #endif //DEBUG
 
     char *seq = new char[length + 1];

@@ -36,12 +36,14 @@
 
 
 
-void fastafs_flags::set(char *data) {
+void fastafs_flags::set(char *data)
+{
     this->bits[0] = data[0];
     this->bits[1] = data[1];
 }
 
-void fastafs_sequence_flags::set(char *data) {
+void fastafs_sequence_flags::set(char *data)
+{
     this->bits[0] = data[0];
     this->bits[1] = data[1];
 }

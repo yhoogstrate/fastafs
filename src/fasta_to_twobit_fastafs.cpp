@@ -123,7 +123,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     std::string line;
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
     std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
-	s = nullptr;
+    s = nullptr;
     if(fh_fasta.is_open() and fh_fastafs.is_open()) {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
@@ -153,7 +153,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         switch(*it) {
 
-						// keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
+                        // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
                         case 'U':
                         case 'T':
                             if(s->in_m_block) {

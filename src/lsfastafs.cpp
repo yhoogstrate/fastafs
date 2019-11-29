@@ -59,11 +59,11 @@ std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_f
             strstr(mount_dir, arg) != NULL)) {
 
             std::string fn = std::string(mount_dir);
-            
+
             std::string basename = basename_cpp(fn);
             //std::string basename = std::filesystem::path(fn).filename();
             //std::cout << "basename: " << basename << "\n";
-            
+
             std::string dict_fn = std::string(mount_dir)  + "/" +  basename +  ".dict";
 
             if(getxattr(mount_dir, FASTAFS_FILE_XATTR_NAME.c_str(), xattr_fastafs_file, 255) != -1

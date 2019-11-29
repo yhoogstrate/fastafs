@@ -42,12 +42,11 @@ not sure what the quickest way is - this way all calculations are done as ints, 
  */
 unsigned char fourbit_byte::iterator_to_offset(uint32_t iterator)
 {
-	if(iterator % 2 == 0) {
-		return 4;
-	}
-	else {
-		return 0;
-	}
+    if(iterator % 2 == 0) {
+        return 4;
+    } else {
+        return 0;
+    }
 }
 
 // @todo, offset needs to be second parameter
@@ -67,67 +66,67 @@ void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 
     switch(nucleotide) {
     case 0:// A (0000)
-        this->data = (unsigned char)(this->data & ~( (8+4+2+1) << bit_offset)); // set zero's
+        this->data = (unsigned char)(this->data & ~((8 + 4 + 2 + 1) << bit_offset)); // set zero's
         break;
     case 1:// C (0001)
-        this->data = (unsigned char)(this->data & ~( (8+4+2  ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (      1) << bit_offset)); // set one's
+        this->data = (unsigned char)(this->data & ~((8 + 4 + 2) << bit_offset)); // set zero's
+        this->data = (unsigned char)(this->data | ((1) << bit_offset));         // set one's
         break;
     case 2:// G (0010)
-        this->data = (unsigned char)(this->data & ~( (8+4  +1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (    2  ) << bit_offset)); // set one's
+        this->data = (unsigned char)(this->data & ~((8 + 4  + 1) << bit_offset)); // set zero's
+        this->data = (unsigned char)(this->data | ((2) << bit_offset));         // set one's
         break;
     case 3:// T (0011)
-        this->data = (unsigned char)(this->data & ~( (8+4    ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (    2+1) << bit_offset)); // set one's
+        this->data = (unsigned char)(this->data & ~((8 + 4) << bit_offset));    // set zero's
+        this->data = (unsigned char)(this->data | ((2 + 1) << bit_offset));     // set one's
         break;
-	case 4:// U (0100)
-        this->data = (unsigned char)(this->data & ~( (8  +2+1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (  4    ) << bit_offset)); // set one's
-		break;
-	case 5:// R (0101)
-        this->data = (unsigned char)(this->data & ~( (8  +2  ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (  4  +1) << bit_offset)); // set one's
-		break;
-	case 6:// Y (0110)
-        this->data = (unsigned char)(this->data & ~( (8    +1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (  4+2  ) << bit_offset)); // set one's
-		break;
-	case 7:// K (0111)
-        this->data = (unsigned char)(this->data & ~( (8      ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (  4+2+1) << bit_offset)); // set one's
-		break;
-	case 8:// M (1000)
-        this->data = (unsigned char)(this->data & ~( (  4+2+1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8      ) << bit_offset)); // set one's
-		break;
-	case 9:// S (1001)
-        this->data = (unsigned char)(this->data & ~( (  4+2  ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8    +1) << bit_offset)); // set one's
-		break;
-	case 10:// W (1010)
-        this->data = (unsigned char)(this->data & ~( (  4  +1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8  +2  ) << bit_offset)); // set one's
-		break;
-	case 11:// B (1011)
-        this->data = (unsigned char)(this->data & ~( (  4    ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8  +2+1) << bit_offset)); // set one's
-		break;
-	case 12:// D (1100)
-        this->data = (unsigned char)(this->data & ~( (    2+1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8+4    ) << bit_offset)); // set one's
-		break;
-	case 13:// H (1101)
-        this->data = (unsigned char)(this->data & ~( (    2  ) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8+4  +1) << bit_offset)); // set one's
-		break;
-	case 14:// V (1110)
-        this->data = (unsigned char)(this->data & ~( (     +1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data |  ( (8+4+2  ) << bit_offset)); // set one's
-		break;
-	case 15:// N (1111)
-        this->data = (unsigned char)(this->data |  ( (8+4+2+1) << bit_offset)); // set one's
-		break;
+    case 4:// U (0100)
+        this->data = (unsigned char)(this->data & ~((8  + 2 + 1) << bit_offset)); // set zero's
+        this->data = (unsigned char)(this->data | ((4) << bit_offset));         // set one's
+        break;
+    case 5:// R (0101)
+        this->data = (unsigned char)(this->data & ~((8  + 2) << bit_offset));   // set zero's
+        this->data = (unsigned char)(this->data | ((4  + 1) << bit_offset));    // set one's
+        break;
+    case 6:// Y (0110)
+        this->data = (unsigned char)(this->data & ~((8    + 1) << bit_offset)); // set zero's
+        this->data = (unsigned char)(this->data | ((4 + 2) << bit_offset));     // set one's
+        break;
+    case 7:// K (0111)
+        this->data = (unsigned char)(this->data & ~((8) << bit_offset));        // set zero's
+        this->data = (unsigned char)(this->data | ((4 + 2 + 1) << bit_offset)); // set one's
+        break;
+    case 8:// M (1000)
+        this->data = (unsigned char)(this->data & ~((4 + 2 + 1) << bit_offset)); // set zero's
+        this->data = (unsigned char)(this->data | ((8) << bit_offset));         // set one's
+        break;
+    case 9:// S (1001)
+        this->data = (unsigned char)(this->data & ~((4 + 2) << bit_offset));    // set zero's
+        this->data = (unsigned char)(this->data | ((8    + 1) << bit_offset));  // set one's
+        break;
+    case 10:// W (1010)
+        this->data = (unsigned char)(this->data & ~((4  + 1) << bit_offset));   // set zero's
+        this->data = (unsigned char)(this->data | ((8  + 2) << bit_offset));    // set one's
+        break;
+    case 11:// B (1011)
+        this->data = (unsigned char)(this->data & ~((4) << bit_offset));        // set zero's
+        this->data = (unsigned char)(this->data | ((8  + 2 + 1) << bit_offset)); // set one's
+        break;
+    case 12:// D (1100)
+        this->data = (unsigned char)(this->data & ~((2 + 1) << bit_offset));    // set zero's
+        this->data = (unsigned char)(this->data | ((8 + 4) << bit_offset));     // set one's
+        break;
+    case 13:// H (1101)
+        this->data = (unsigned char)(this->data & ~((2) << bit_offset));        // set zero's
+        this->data = (unsigned char)(this->data | ((8 + 4  + 1) << bit_offset)); // set one's
+        break;
+    case 14:// V (1110)
+        this->data = (unsigned char)(this->data & ~((+1) << bit_offset));       // set zero's
+        this->data = (unsigned char)(this->data | ((8 + 4 + 2) << bit_offset)); // set one's
+        break;
+    case 15:// N (1111)
+        this->data = (unsigned char)(this->data | ((8 + 4 + 2 + 1) << bit_offset)); // set one's
+        break;
 
 #if DEBUG
     default:
@@ -146,75 +145,75 @@ void fourbit_byte::set(char* buffer)
     for(unsigned char i = 0; i < 2; i++) {
         switch(buffer[i]) {
 
-			case 'A':// A (0000)
-			case 'a':
-				this->set(bit_offsets[i], 0);
-				break;
-			case 'C':// C (0001)
-			case 'c':
-				this->set(bit_offsets[i], 1);
-				break;
-			case 'G':// G (0010)
-			case 'g':
-				this->set(bit_offsets[i], 2);
-				break;
-			case 'T':// T (0011)
-			case 't':
-				this->set(bit_offsets[i], 3);
-				break;
-			case 'U':// U (0100)
-			case 'u':
-				this->set(bit_offsets[i], 4);
-				break;
-			case 'R':// R (0101)
-			case 'r':
-				this->set(bit_offsets[i], 5);
-				break;
-			case 'Y':// Y (0110)
-			case 'y':
-				this->set(bit_offsets[i], 6);
-				break;
-			case 'K':// K (0111)
-			case 'k':
-				this->set(bit_offsets[i], 7);
-				break;
-			case 'M':// M (1000)
-			case 'm':
-				this->set(bit_offsets[i], 8);
-				break;
-			case 'S':// S (1001)
-			case 's':
-				this->set(bit_offsets[i], 9);
-				break;
-			case 'W':// W (1010)
-			case 'w':
-				this->set(bit_offsets[i], 10);
-				break;
-			case 'B':// B (1011)
-			case 'b':
-				this->set(bit_offsets[i], 11);
-				break;
-			case 'D':// D (1100)
-			case 'd':
-				this->set(bit_offsets[i], 12);
-				break;
-			case 'H':// H (1101)
-			case 'h':
-				this->set(bit_offsets[i], 13);
-				break;
-			case 'V':// V (1110)
-			case 'v':
-				this->set(bit_offsets[i], 14);
-				break;
-			case 'N':// N (1111)
-			case 'n':
-				this->set(bit_offsets[i], 15);
-				break;
+        case 'A':// A (0000)
+        case 'a':
+            this->set(bit_offsets[i], 0);
+            break;
+        case 'C':// C (0001)
+        case 'c':
+            this->set(bit_offsets[i], 1);
+            break;
+        case 'G':// G (0010)
+        case 'g':
+            this->set(bit_offsets[i], 2);
+            break;
+        case 'T':// T (0011)
+        case 't':
+            this->set(bit_offsets[i], 3);
+            break;
+        case 'U':// U (0100)
+        case 'u':
+            this->set(bit_offsets[i], 4);
+            break;
+        case 'R':// R (0101)
+        case 'r':
+            this->set(bit_offsets[i], 5);
+            break;
+        case 'Y':// Y (0110)
+        case 'y':
+            this->set(bit_offsets[i], 6);
+            break;
+        case 'K':// K (0111)
+        case 'k':
+            this->set(bit_offsets[i], 7);
+            break;
+        case 'M':// M (1000)
+        case 'm':
+            this->set(bit_offsets[i], 8);
+            break;
+        case 'S':// S (1001)
+        case 's':
+            this->set(bit_offsets[i], 9);
+            break;
+        case 'W':// W (1010)
+        case 'w':
+            this->set(bit_offsets[i], 10);
+            break;
+        case 'B':// B (1011)
+        case 'b':
+            this->set(bit_offsets[i], 11);
+            break;
+        case 'D':// D (1100)
+        case 'd':
+            this->set(bit_offsets[i], 12);
+            break;
+        case 'H':// H (1101)
+        case 'h':
+            this->set(bit_offsets[i], 13);
+            break;
+        case 'V':// V (1110)
+        case 'v':
+            this->set(bit_offsets[i], 14);
+            break;
+        case 'N':// N (1111)
+        case 'n':
+            this->set(bit_offsets[i], 15);
+            break;
 
 #if DEBUG
-			default:
-				throw std::invalid_argument("fourbit_byte::set(char *) invalid value\n");
-				break;
+        default:
+            throw std::invalid_argument("fourbit_byte::set(char *) invalid value\n");
+            break;
 #endif //DEBUG
         }
     }
@@ -227,9 +226,9 @@ void fourbit_byte::set(char* buffer)
 char *fourbit_byte::get(unsigned char length)
 {
 #if DEBUG
-	if(length > 2) {
-		throw std::invalid_argument("four_byte::get(unsigned char length) -> out of bound: " + std::to_string(length)+ "\n");
-	}
+    if(length > 2) {
+        throw std::invalid_argument("four_byte::get(unsigned char length) -> out of bound: " + std::to_string(length) + "\n");
+    }
 #endif //DEBUG
 
     char *seq = new char[length + 1];

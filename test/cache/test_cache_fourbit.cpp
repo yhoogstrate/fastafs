@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
     b.set(4, 0);// A => 0
     b.set(0, 0);
     BOOST_CHECK_EQUAL(b.data, 0);
-	
+
     seq1 = b.get(1);
     seq2 = b.get(2);
     seq = b.get();
@@ -54,9 +54,9 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
 
     delete[] seq1;
     delete[] seq2;
-    
-	// GT: 0010 0011
-    b.set(4, 2); // G 
+
+    // GT: 0010 0011
+    b.set(4, 2); // G
     b.set(0, 3); // T
     BOOST_CHECK_EQUAL(b.data, 35);
 
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
     delete[] seq2;
 
 
-	// set to UR (0100 0101)
+    // set to UR (0100 0101)
     b.set(4, 4);
     b.set(0, 5);
     BOOST_CHECK_EQUAL(b.data, 69);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(Test_size)
 BOOST_AUTO_TEST_CASE(test_cache)
 {
     size_t written = fasta_to_fourbit_fastafs("test/data/test_004.fa", "tmp/test_004.fastafs");
-    
+
     static std::string reference =
         // GENERIC-HEADER
         "\x0F\x0A\x46\x53"s//     [0, 3]
@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00"                  // [120] no metadata fields [padding will come soon?]
         ;
 
-	BOOST_CHECK_EQUAL(written, 121);
-	
+    BOOST_CHECK_EQUAL(written, 121);
+
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_004.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
@@ -193,10 +193,10 @@ BOOST_AUTO_TEST_CASE(test_cache)
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
-		if(reference[i] != buffer[i]) {
-			printf("comparing char %i\n", i);
-			printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n", i, reference[i], buffer[i], buffer[i], buffer[i]);
-		}
+        if(reference[i] != buffer[i]) {
+            printf("comparing char %i\n", i);
+            printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n", i, reference[i], buffer[i], buffer[i], buffer[i]);
+        }
 
     }
 
