@@ -10,6 +10,63 @@
 #define FASTAFS_HPP
 
 
+
+
+class fastafs_flags {
+	private:
+		unsigned char bits[2];// 00000000 00000000
+	
+	public:
+		void set(char*);
+};
+
+class fastafs_sequence_flags {
+	private:
+		unsigned char bits[2];// 00000000 00000000
+
+		// set by flag
+		void set_flag(unsigned char, bool);// counting flag from bit 0(!)
+
+
+	public:
+		void set(char*);
+		
+		bool is_dna(); // alphabet: 'ACTG' + 'N'
+		bool is_rna(); // alphabet: 'ACUG' + 'N'
+		bool is_iupec_nucleotide(); // alphabet: 'ACGTURYKMSWBDHVN' + '-'
+		
+		bool is_complete();
+		bool is_incomplete() {return !this->is_complete(); };
+		
+		bool is_linear();
+		bool is_circular() {return !this->is_linear(); };
+		
+		bool get_flag(unsigned char);// counting flag position from bit 0
+
+
+		// set by entity
+		void set_dna();
+		void set_rna();
+		void set_iupec_nucleotide();
+
+		void set_complete();
+		void set_incomplete();
+
+		void set_linear();
+		void set_circular();
+
+};
+
+
+
+
+
+
+
+
+
+
+
 struct ffs2f_init_seq {
     // fasta seq size
     // fasta seq newlines/padding lines
@@ -55,7 +112,7 @@ public:
     uint32_t n;// number nucleotides
     std::vector<uint32_t> n_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> n_ends;// end positions (nucleotide positions; 0-based)
-    uint16_t flag;
+    fastafs_flags flags;
 
     std::vector<uint32_t> m_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> m_ends;// end positions (nucleotide positions; 0-based)

@@ -35,6 +35,20 @@
 
 
 
+
+void fastafs_flags::set(char *data) {
+    this->bits[0] = data[0];
+    this->bits[1] = data[1];
+}
+
+void fastafs_sequence_flags::set(char *data) {
+    this->bits[0] = data[0];
+    this->bits[1] = data[1];
+}
+
+
+
+
 static const std::string dict_sq = "@SQ\tSN:";
 static const std::string dict_ln = "\tLN:";
 static const std::string dict_m5 = "\tM5:";
@@ -539,7 +553,8 @@ void fastafs::load(std::string afilename)
 
                 // flag
                 file.read(memblock, 2);
-                s->flag = twobytes_to_uint(memblock);
+                s->flags = fastafs_flags();//twobytes_to_uint(memblock);
+                s->flags.set(memblock);
 
                 // name length
                 file.read(memblock, 1);

@@ -21,7 +21,7 @@ If this metadata would be written in the header located before the sequence data
 | GENERIC-HEADER |        |        |        |
 |        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
 |        | [FILE FORMAT VERSION](#file-format-version) | [4-byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
-|        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
+|        | [FASTAFS-FLAGS](#fastafs-flags) | 2 bytes | Certain binary flags |
 |        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the INDEX is located | 
 | DATA | --- | --- | --- |
 |   -> per sequence | 
@@ -40,7 +40,7 @@ If this metadata would be written in the header located before the sequence data
 | INDEX  | --- | --- |  |
 |        | NUMBER-SEQUENCES | uint32_t as [4-byte integer](#four-byte-integer) | Number of sequences included |
 |   -> per sequence | 
-|        | [SEQUENCE-FLAG](#sequence-flag) | 2 bytes | storing metadata and type of data |
+|        | [SEQUENCE-FLAGS](#sequence-flags) | 2 bytes | storing metadata and type of data |
 |        | NAME-LENGTH | 1 byte as unsigned char | length in bytes; name cannot exceed 255 bytes |
 |        | NAME-FASTA | NAME-LENGTH x char | FASTA header; may not include new-lines or '>' |
 |        | START-POSITION-IN-BODY of N-COMPR-NUC | uint32_t as [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the DATA block for this sequence starts |
@@ -80,7 +80,7 @@ The bit representation of these bytes are:
     +--------+--------+--------+--------+
 ```
 
-#### FASTAFS-FLAG ####
+#### FASTAFS-FLAGS ####
 
 ``` 
 bit 0   file-complete
@@ -115,7 +115,7 @@ The index is located at the end of the data. This file offset in bytes from the 
 
 Repeated for every sequence, in order matching SEQUENCE-HEADER
 
-#### SEQUENCE-FLAG #### 
+#### SEQUENCE-FLAGS #### 
 
 The sequence flag allows to describe the following metadata for each sequence:
 
