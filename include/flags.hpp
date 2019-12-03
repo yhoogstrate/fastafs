@@ -5,38 +5,24 @@
 
 #include <array>
 
-constexpr unsigned char mask0{ 0b0000'0001 }; // represents bit 0
-constexpr unsigned char mask1{ 0b0000'0010 }; // represents bit 1
-constexpr unsigned char mask2{ 0b0000'0100 }; // represents bit 2 
-constexpr unsigned char mask3{ 0b0000'1000 }; // represents bit 3
-constexpr unsigned char mask4{ 0b0001'0000 }; // represents bit 4
-constexpr unsigned char mask5{ 0b0010'0000 }; // represents bit 5
-constexpr unsigned char mask6{ 0b0100'0000 }; // represents bit 6
-constexpr unsigned char mask7{ 0b1000'0000 }; // represents bit 7
-
-
 constexpr std::array<unsigned char, 16> bitmasks = {
+	0b1000'0000, // represents bit 7
+	0b0100'0000, // represents bit 6
+	0b0010'0000, // represents bit 5
+	0b0001'0000, // represents bit 4
+	0b0000'1000, // represents bit 3
+	0b0000'0100, // represents bit 2 
+	0b0000'0010, // represents bit 1
+	0b0000'0001, // represents bit 0
 
- 0b1000'0000, // represents bit 7
- 0b0100'0000, // represents bit 6
- 0b0010'0000, // represents bit 5
- 0b0001'0000, // represents bit 4
- 0b0000'1000, // represents bit 3
- 0b0000'0100, // represents bit 2 
- 0b0000'0010, // represents bit 1
- 0b0000'0001, // represents bit 0
-
- 0b1000'0000, // represents bit 7
- 0b0100'0000, // represents bit 6
- 0b0010'0000, // represents bit 5
- 0b0001'0000, // represents bit 4
- 0b0000'1000, // represents bit 3
- 0b0000'0100, // represents bit 2 
- 0b0000'0010, // represents bit 1
- 0b0000'0001, // represents bit 0
-
-
-
+	0b1000'0000, // represents bit 7
+	0b0100'0000, // represents bit 6
+	0b0010'0000, // represents bit 5
+	0b0001'0000, // represents bit 4
+	0b0000'1000, // represents bit 3
+	0b0000'0100, // represents bit 2 
+	0b0000'0010, // represents bit 1
+	0b0000'0001, // represents bit 0
 };
 
 

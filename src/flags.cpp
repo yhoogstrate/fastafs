@@ -1,22 +1,5 @@
 
 
-
-/*
-#include <algorithm>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <filesystem>
-#include <fstream>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-*/
-
-//#include "config.hpp"
-
 #include <stdlib.h>
 
 #include "flags.hpp"
@@ -53,10 +36,12 @@ void twobit_flag::set_flag(unsigned char bit, bool enable) {
 
 
 	if(enable) { // 
-		 this->bits[bit / 8] |= bitmasks[bit];
+		 //this->bits[bit / 8] |= bitmasks[bit];
+		 this->bits[bit / 8] = (unsigned char) (this->bits[bit / 8] | bitmasks[bit]);
 	}
 	else {
-		 this->bits[bit / 8] &= ~bitmasks[bit];
+		 //this->bits[bit / 8] &= ~bitmasks[bit];
+		 this->bits[bit / 8] = (unsigned char) (this->bits[bit / 8] & ~bitmasks[bit]);
 	}
 }
 
