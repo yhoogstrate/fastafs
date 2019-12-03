@@ -65,9 +65,25 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
     BOOST_CHECK_EQUAL(f.is_complete(), false);
     BOOST_CHECK_EQUAL(f.is_incomplete(), true);
     
-	//f.set_complete();
-    //BOOST_CHECK_EQUAL(f.is_complete(), true);
-    //BOOST_CHECK_EQUAL(f.is_incomplete(), false);
+	f.set_complete();
+    BOOST_CHECK_EQUAL(f.is_complete(), true);
+    BOOST_CHECK_EQUAL(f.is_incomplete(), false);
+	f.set_complete();
+    BOOST_CHECK_EQUAL(f.is_complete(), true);
+    BOOST_CHECK_EQUAL(f.is_incomplete(), false);
+	f.set_complete();
+    BOOST_CHECK_EQUAL(f.is_complete(), true);
+    BOOST_CHECK_EQUAL(f.is_incomplete(), false);
+
+	f.set_incomplete();
+    BOOST_CHECK_EQUAL(f.is_complete(), false);
+    BOOST_CHECK_EQUAL(f.is_incomplete(), true);
+	f.set_incomplete();
+    BOOST_CHECK_EQUAL(f.is_complete(), false);
+    BOOST_CHECK_EQUAL(f.is_incomplete(), true);
+	f.set_incomplete();
+    BOOST_CHECK_EQUAL(f.is_complete(), false);
+    BOOST_CHECK_EQUAL(f.is_incomplete(), true);
 }
 
 
