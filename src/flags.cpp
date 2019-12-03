@@ -49,15 +49,81 @@ void twobit_flag::set_flag(unsigned char bit, bool enable) {
 
 
 bool fastafs_flags::is_complete() {
-	return this->get_flag(0);
+	return this->get_flag(FASTAFS_BITFLAG_COMPLETE);
 }
 
 void fastafs_flags::set_complete() {
-	this->set_flag(0, true);
+	this->set_flag(FASTAFS_BITFLAG_COMPLETE, true);
 }
 
 void fastafs_flags::set_incomplete() {
-	this->set_flag(0, false);
+	this->set_flag(FASTAFS_BITFLAG_COMPLETE, false);
+}
+
+
+
+
+// alphabet: 'ACTG' + 'N'
+bool fastafs_sequence_flags::is_dna() {
+	return (
+		this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
+		this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
+}
+
+// alphabet: 'ACUG' + 'N'
+bool fastafs_sequence_flags::is_rna() {
+	return (
+		this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
+		this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
+}
+
+// alphabet: 'ACGTURYKMSWBDHVN' + '-'
+bool fastafs_sequence_flags::is_iupec_nucleotide() {
+	return (
+		this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
+		this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
+}
+
+bool fastafs_sequence_flags::is_complete() {
+	return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE);
+}
+
+bool fastafs_sequence_flags::is_circular() {
+	return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR);
+}
+
+
+
+
+void fastafs_sequence_flags::set_dna() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, false); // 0,0
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, false);
+}
+
+void fastafs_sequence_flags::set_rna() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, true); // 1,0
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, false);
+}
+
+void fastafs_sequence_flags::set_iupec_nucleotide() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, false); // 0,1
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, true);
+}
+
+void fastafs_sequence_flags::set_complete() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE, true);
+}
+
+void fastafs_sequence_flags::set_incomplete() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE, false);
+}
+
+void fastafs_sequence_flags::set_linear() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR, false);
+}
+
+void fastafs_sequence_flags::set_circular() {
+	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR, true);
 }
 
 

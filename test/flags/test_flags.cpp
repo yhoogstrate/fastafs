@@ -87,6 +87,94 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 }
 
 
+BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
+{
+	fastafs_sequence_flags fs;
+	
+	fs.set_dna();
+    fs.set_rna();
+    fs.set_iupec_nucleotide();
+	BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), true);
+	BOOST_CHECK_EQUAL(fs.is_dna(), false);
+	BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
+
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	fs.set_dna();
+    fs.set_rna();
+    fs.set_iupec_nucleotide();
+	BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), true);
+	BOOST_CHECK_EQUAL(fs.is_dna(), false);
+	BOOST_CHECK_EQUAL(fs.is_rna(), false);
+
+
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	fs.set_dna();
+	fs.set_dna();
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+	BOOST_CHECK_EQUAL(fs.is_dna(), false);
+	BOOST_CHECK_EQUAL(fs.is_rna(), true);
+
+
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	fs.set_dna();
+	fs.set_dna();
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+	BOOST_CHECK_EQUAL(fs.is_dna(), false);
+	BOOST_CHECK_EQUAL(fs.is_rna(), true);
+
+
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	fs.set_dna();
+    fs.set_iupec_nucleotide();
+    fs.set_rna();
+	fs.set_dna();
+	BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+	BOOST_CHECK_EQUAL(fs.is_dna(), true);
+	BOOST_CHECK_EQUAL(fs.is_rna(), false);
+
+
+	fs.set_linear();
+	BOOST_CHECK_EQUAL(fs.is_linear(), true);
+	BOOST_CHECK_EQUAL(fs.is_circular(), false);
+
+	fs.set_circular();
+	fs.set_circular();
+	fs.set_linear();
+	BOOST_CHECK_EQUAL(fs.is_linear(), true);
+	BOOST_CHECK_EQUAL(fs.is_circular(), false);
+
+	fs.set_linear();
+	fs.set_linear();
+	fs.set_circular();
+	BOOST_CHECK_EQUAL(fs.is_linear(), false);
+	BOOST_CHECK_EQUAL(fs.is_circular(), true);
+
+
+	fs.set_complete();
+	BOOST_CHECK_EQUAL(fs.is_complete(), true);
+	BOOST_CHECK_EQUAL(fs.is_incomplete(), false);
+
+	fs.set_incomplete();
+	fs.set_incomplete();
+	fs.set_complete();
+	BOOST_CHECK_EQUAL(fs.is_complete(), true);
+	BOOST_CHECK_EQUAL(fs.is_incomplete(), false);
+
+	fs.set_complete();
+	fs.set_complete();
+	fs.set_incomplete();
+	BOOST_CHECK_EQUAL(fs.is_complete(), false);
+	BOOST_CHECK_EQUAL(fs.is_incomplete(), true);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()

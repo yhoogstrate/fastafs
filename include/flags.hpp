@@ -5,6 +5,18 @@
 
 #include <array>
 
+
+const unsigned char FASTAFS_BITFLAG_COMPLETE = 0;
+
+const unsigned char FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1 = 0;
+const unsigned char FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2 = 1;
+// const unsigned char FASTAFS_SEQUENCE_BITFLAG_???? = 2 ; // is reserved
+const unsigned char FASTAFS_SEQUENCE_BITFLAG_COMPLETE = 3;
+const unsigned char FASTAFS_SEQUENCE_BITFLAG_CIRCULAR = 4;
+
+
+
+
 constexpr std::array<unsigned char, 16> bitmasks = {
 	0b1000'0000, // represents bit 7
 	0b0100'0000, // represents bit 6
@@ -57,19 +69,10 @@ class fastafs_flags : public twobit_flag
 
 
 
-class fastafs_sequence_flags
+class fastafs_sequence_flags : public twobit_flag
 {
-private:
-    unsigned char bits[2];// 00000000 00000000
-
-    // set by flag
-    void set_flag(unsigned char, bool);// counting flag from bit 0(!)
-    bool get_flag(unsigned char);// counting flag position from bit 0
-
 
 public:
-    void set(char*);
-
     bool is_dna(); // alphabet: 'ACTG' + 'N'
     bool is_rna(); // alphabet: 'ACUG' + 'N'
     bool is_iupec_nucleotide(); // alphabet: 'ACGTURYKMSWBDHVN' + '-'
@@ -80,10 +83,10 @@ public:
         return !this->is_complete();
     };
 
-    bool is_linear();
-    bool is_circular()
+    bool is_circular();
+    bool is_linear()
     {
-        return !this->is_linear();
+        return !this->is_circular();
     };
 
 
