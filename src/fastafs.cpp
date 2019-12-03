@@ -35,22 +35,6 @@
 
 
 
-
-void fastafs_flags::set(char *data)
-{
-    this->bits[0] = data[0];
-    this->bits[1] = data[1];
-}
-
-void fastafs_sequence_flags::set(char *data)
-{
-    this->bits[0] = data[0];
-    this->bits[1] = data[1];
-}
-
-
-
-
 static const std::string dict_sq = "@SQ\tSN:";
 static const std::string dict_ln = "\tLN:";
 static const std::string dict_m5 = "\tM5:";

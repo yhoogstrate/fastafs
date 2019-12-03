@@ -102,6 +102,7 @@ add_executable(fastafs
 					src/main.cpp
 					src/fasta_to_twobit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
@@ -117,6 +118,7 @@ add_executable(mount.fastafs
 					src/main_mount.cpp
 					src/fasta_to_twobit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
@@ -130,6 +132,7 @@ set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD
 add_library(libfastafs SHARED
 					src/fasta_to_twobit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
@@ -166,6 +169,7 @@ add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N
 add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
 add_test(test_cache_twobit        "${BUILD_TEST_DIR}/test_cache_twobit")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
+add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
 add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")

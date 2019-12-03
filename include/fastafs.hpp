@@ -1,4 +1,10 @@
 
+
+#ifndef FASTAFS_HPP
+#define FASTAFS_HPP
+
+
+
 #include <vector>
 
 #include <openssl/sha.h>
@@ -6,73 +12,7 @@
 
 #include "utils.hpp"
 
-#ifndef FASTAFS_HPP
-#define FASTAFS_HPP
-
-
-
-
-class fastafs_flags
-{
-private:
-    unsigned char bits[2];// 00000000 00000000
-
-public:
-    void set(char*);
-};
-
-class fastafs_sequence_flags
-{
-private:
-    unsigned char bits[2];// 00000000 00000000
-
-    // set by flag
-    void set_flag(unsigned char, bool);// counting flag from bit 0(!)
-
-
-public:
-    void set(char*);
-
-    bool is_dna(); // alphabet: 'ACTG' + 'N'
-    bool is_rna(); // alphabet: 'ACUG' + 'N'
-    bool is_iupec_nucleotide(); // alphabet: 'ACGTURYKMSWBDHVN' + '-'
-
-    bool is_complete();
-    bool is_incomplete()
-    {
-        return !this->is_complete();
-    };
-
-    bool is_linear();
-    bool is_circular()
-    {
-        return !this->is_linear();
-    };
-
-    bool get_flag(unsigned char);// counting flag position from bit 0
-
-
-    // set by entity
-    void set_dna();
-    void set_rna();
-    void set_iupec_nucleotide();
-
-    void set_complete();
-    void set_incomplete();
-
-    void set_linear();
-    void set_circular();
-
-};
-
-
-
-
-
-
-
-
-
+#include "flags.hpp"
 
 
 struct ffs2f_init_seq {
