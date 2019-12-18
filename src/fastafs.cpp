@@ -31,6 +31,7 @@
 
 #include "twobit_byte.hpp"
 #include "fastafs.hpp"
+//#include "flags.hpp"
 #include "utils.hpp"
 
 
@@ -524,7 +525,11 @@ void fastafs::load(std::string afilename)
                 }
             }
 
-            this->flag = twobytes_to_uint(&memblock[8]);
+            this->flags.set(&memblock[8]);
+            if(this->flags.is_incomplete()) {
+                throw std::invalid_argument("Incomplete FASTAFS file (probably terminated during conversion): " + filename);
+            }
+            
             std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
 
             // INDEX
@@ -539,8 +544,7 @@ void fastafs::load(std::string afilename)
 
                 // flag
                 file.read(memblock, 2);
-                s->flags = fastafs_flags();//twobytes_to_uint(memblock);
-                s->flags.set(memblock);
+                s->flags.set(memblock);// should be initialized during construction of this class
 
                 // name length
                 file.read(memblock, 1);
@@ -564,7 +568,12 @@ void fastafs::load(std::string afilename)
                     s->n = fourbytes_to_uint(memblock, 0);
 
                     // skip nucleotides
-                    file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
+                    if(s->flags.is_twobit()) { // there fit 4 twobits in a byte, thus divide by 4,
+                        file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
+                    }
+                    else if(s->flags.is_fourbit()) { // there fit 2 fourbits in a byte, thus divide by 2,
+                        file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 2), file.beg);
+                    }
 
                     // N-blocks (and update this->n instantly)
                     file.read(memblock, 4);
@@ -581,10 +590,12 @@ void fastafs::load(std::string afilename)
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
                     }
 
-                    // MD5-checksum
-                    file.read(memblock, 16);
-                    for(int j = 0; j < 16 ; j ++) {
-                        s->md5_digest[j] = memblock[j];
+                    // MD5-checksum - only if sequence is complete
+                    if(s->flags.is_complete()) {
+                        file.read(memblock, 16);
+                        for(int j = 0; j < 16 ; j ++) {
+                            s->md5_digest[j] = memblock[j];
+                        }
                     }
 
                     // M-blocks
@@ -601,9 +612,11 @@ void fastafs::load(std::string afilename)
                         s->m_ends[j] = fourbytes_to_uint(memblock, 0);
                     }
                 }
+
                 file.seekg(file_cursor, file.beg);
                 this->data[i] = s;
             }
+
             file.close();
             delete[] memblock;
         }

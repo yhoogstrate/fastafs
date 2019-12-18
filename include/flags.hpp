@@ -92,6 +92,14 @@ public:
         return !this->is_circular();
     };
 
+    bool is_twobit()
+    {
+        return (this->is_dna() | this->is_rna());
+    };
+    bool is_fourbit()
+    {
+        return this->is_iupec_nucleotide();
+    };
 
 
     // set by entity

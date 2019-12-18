@@ -60,7 +60,7 @@ public:
     uint32_t n;// number nucleotides
     std::vector<uint32_t> n_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> n_ends;// end positions (nucleotide positions; 0-based)
-    fastafs_flags flags;
+    fastafs_sequence_flags flags;
 
     std::vector<uint32_t> m_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> m_ends;// end positions (nucleotide positions; 0-based)
@@ -106,7 +106,8 @@ public:
     std::string name;
     std::string filename;
     std::vector<fastafs_seq*> data;
-    uint16_t flag;
+    
+    fastafs_flags flags;
 
     uint32_t n();
 

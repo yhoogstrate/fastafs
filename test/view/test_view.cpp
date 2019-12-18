@@ -9,6 +9,7 @@
 #include "config.hpp"
 
 #include "fasta_to_twobit_fastafs.hpp"
+#include "fasta_to_fourbit_fastafs.hpp"
 #include "fastafs.hpp"
 
 
@@ -348,6 +349,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     delete cache_p999;
 }
 
+
+
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 {
     uint32_t written;
@@ -389,81 +392,99 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 
 
 
-BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
+//BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
+//{
+    //std::string test_name = "test_003";
+    //std::string fasta_file = "test/data/" + test_name + ".fa";
+    //std::string fastafs_file = "tmp/" + test_name + ".fastafs";
+
+    //fasta_to_twobit_fastafs(fasta_file, fastafs_file);
+    //fastafs fs = fastafs(test_name);
+    //fs.load(fastafs_file);
+
+    //BOOST_REQUIRE_EQUAL(fs.flags.is_complete(), true);
+
+    //uint32_t written;
+    //char *buffer = new char[2110];// file size on disk is 2108 bytes
+    //flush_buffer(buffer, 2110, '\0');
+
+    //std::string std_buffer;
+    //std::ifstream fh(fasta_file.c_str());
+    //BOOST_REQUIRE(fh.is_open());
+
+    //size_t size;
+
+    //fh.seekg(0, std::ios::end);
+    //size = fh.tellg();
+
+    //BOOST_REQUIRE_EQUAL(size, 2108);
+
+    //fh.seekg(0, std::ios::beg);
+    //fh.read(buffer, 2108);
+    //fh.close();
+    //std::string full_file = std::string(buffer);
+
+    //BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
+
+    //flush_buffer(buffer, 2110, '?');
+    //ffs2f_init* cache = fs.init_ffs2f(60, true);
+
+
+    ///* maak alle substrings:
+      //[....]
+      //[...]
+      //[..]
+      //[.]
+       //[...]
+       //[..]
+       //[.]
+        //[..]
+        //[.]
+         //[.]
+
+     //*/
+    //for(uint32_t start_pos = 0; start_pos < full_file.size(); start_pos++) {
+        //for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
+            //std::string substr_file = std::string(full_file, start_pos, buffer_len);
+
+            //written = fs.view_fasta_chunk_cached(cache, buffer, buffer_len, start_pos);
+            //std_buffer = std::string(buffer, substr_file.size());
+            //BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
+            //BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
+            ///* debug
+            //if(std_buffer.compare(substr_file) != 0) {
+                //printf("   %d:  %d  \n", start_pos, buffer_len);
+
+                //std::cout << "---- ref: ----\n";
+                //std::cout << substr_file << "\n";
+                //std::cout << "----found:----\n";
+                //std::cout << std_buffer << "\n";
+                //std::cout << "--------------\n";
+
+                //exit(1);
+            //}*/
+            //flush_buffer(buffer, 2110, '?');
+        //}
+    //}
+
+    //delete[] buffer;
+    //delete cache;
+//}
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 {
-    std::string test_name = "test_003";
+    std::string test_name = "test_004";
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";
 
-    fasta_to_twobit_fastafs(fasta_file, fastafs_file);
+    fasta_to_fourbit_fastafs(fasta_file, fastafs_file);
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 
-    uint32_t written;
-    char *buffer = new char[2110];// file size on disk is 2108 bytes
-    flush_buffer(buffer, 2110, '\0');
-
-    std::string std_buffer;
-    std::ifstream fh(fasta_file.c_str());
-    BOOST_REQUIRE(fh.is_open());
-
-    size_t size;
-
-    fh.seekg(0, std::ios::end);
-    size = fh.tellg();
-
-    BOOST_REQUIRE_EQUAL(size, 2108);
-
-    fh.seekg(0, std::ios::beg);
-    fh.read(buffer, 2108);
-    fh.close();
-    std::string full_file = std::string(buffer);
-
-    BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
-
-    flush_buffer(buffer, 2110, '?');
-    ffs2f_init* cache = fs.init_ffs2f(60, true);
-
-
-    /* maak alle substrings:
-      [....]
-      [...]
-      [..]
-      [.]
-       [...]
-       [..]
-       [.]
-        [..]
-        [.]
-         [.]
-
-     */
-    for(uint32_t start_pos = 0; start_pos < full_file.size(); start_pos++) {
-        for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
-            std::string substr_file = std::string(full_file, start_pos, buffer_len);
-
-            written = fs.view_fasta_chunk_cached(cache, buffer, buffer_len, start_pos);
-            std_buffer = std::string(buffer, substr_file.size());
-            BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
-            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
-            /* debug
-            if(std_buffer.compare(substr_file) != 0) {
-                printf("   %d:  %d  \n", start_pos, buffer_len);
-
-                std::cout << "---- ref: ----\n";
-                std::cout << substr_file << "\n";
-                std::cout << "----found:----\n";
-                std::cout << std_buffer << "\n";
-                std::cout << "--------------\n";
-
-                exit(1);
-            }*/
-            flush_buffer(buffer, 2110, '?');
-        }
-    }
-
-    delete[] buffer;
-    delete cache;
+    BOOST_REQUIRE_EQUAL(fs.flags.is_complete(), true);
 }
 
 

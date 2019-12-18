@@ -22,7 +22,7 @@ add_executable(test_twobit_byte         twobit_byte/test_twobit_byte.cpp ../src/
 add_executable(test_fourbit_byte        fourbit_byte/test_fourbit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
 add_executable(test_cache_twobit        cache/test_cache_twobit.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)
 add_executable(test_cache_fourbit       cache/test_cache_fourbit.cpp ../src/fasta_to_fourbit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp)
-add_executable(test_view                view/test_view.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)
+add_executable(test_view                view/test_view.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/fasta_to_fourbit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp)
 add_executable(test_flags               flags/test_flags.cpp ../src/flags.cpp ../src/utils.cpp)
 add_executable(test_fastafs             fastafs/test_fastafs.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)
 add_executable(test_fastafs_as_ucsc2bit fastafs/test_ucsc2bit.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/utils.cpp)

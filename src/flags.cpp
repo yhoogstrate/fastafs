@@ -107,6 +107,8 @@ bool fastafs_sequence_flags::is_circular() {
 
 
 
+
+
 void fastafs_sequence_flags::set_dna() {
 	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, false); // 0,0
 	this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, false);
