@@ -310,11 +310,9 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
 
     // update header: set to updated
     fh_fastafs.seekp(8, std::ios::beg);
-
     ffsf.set_complete();
     fh_fastafs << ffsf.get_bits()[0];
     fh_fastafs << ffsf.get_bits()[1];
-
 
     uint_to_fourbytes(buffer, index_file_position);//position of header
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);

@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
         // GENERIC-HEADER
         "\x0F\x0A\x46\x53"s//     [0, 3]
         "\x00\x00\x00\x00"s//     [4, 7] version
-        "\x00\x01"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
         "\x00\x00\x00\x68"s //    [10, 13] index position in file (104?)
 
         // DATA
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
         // INDEX
         "\x00\x00\x00\x01"s     // [104, ] 1 sequences
-        "\x00\x0A"              // [, ] complete, IUPEC
+        "\x50\x00"              // [, ] complete, IUPEC [01010000]
         "\x05"s "IUPAC"s        // [, ] name
         "\x00\x00\x00\x0E"s     // [, ] data position in file (14)
 
