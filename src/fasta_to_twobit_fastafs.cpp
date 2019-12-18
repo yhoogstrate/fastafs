@@ -4,6 +4,7 @@
 #include "config.hpp"
 
 #include "fasta_to_twobit_fastafs.hpp"
+#include "flags.hpp"
 #include "utils.hpp"
 
 
@@ -119,6 +120,9 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     std::vector<fasta_seq_header_twobit_conversion_data*> index;
     fasta_seq_header_twobit_conversion_data* s;
 
+    fastafs_flags ffsf;
+    ffsf.set_incomplete();
+
     // @todo use ifstream and ofstream argument types
     std::string line;
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
@@ -127,7 +131,11 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     if(fh_fasta.is_open() and fh_fastafs.is_open()) {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
-        fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
+        
+        // the flag for now, set to INCOMPLETE as writing is in progress || spacer that will be overwritten later
+        fh_fastafs << ffsf.get_bits()[0];
+        fh_fastafs << ffsf.get_bits()[1];
+
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
         // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
@@ -280,8 +288,13 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     for(size_t i = 0; i < index.size(); i++) {
         s = index[i];
 
-        // flag
-        fh_fastafs << "\x00\x08"s;// 00001000 (DNA + completed-with-checksum) | this probably has to be mirrored as last and first bit are swapped
+        // set and write flag
+        fastafs_sequence_flags fsf;
+        fsf.set_linear();
+        fsf.set_dna();
+        fsf.set_complete();
+        fh_fastafs << fsf.get_bits()[0];
+        fh_fastafs << fsf.get_bits()[1];
 
         // name
         unsigned char name_size = (unsigned char) s->name.size();
@@ -297,7 +310,11 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
 
     // update header: set to updated
     fh_fastafs.seekp(8, std::ios::beg);
-    fh_fastafs << "\x00\x01"s; // updated flag
+
+    ffsf.set_complete();
+    fh_fastafs << ffsf.get_bits()[0];
+    fh_fastafs << ffsf.get_bits()[1];
+
 
     uint_to_fourbytes(buffer, index_file_position);//position of header
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);

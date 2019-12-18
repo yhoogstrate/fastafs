@@ -6,6 +6,13 @@
 
 
 
+twobit_flag::twobit_flag() {
+	// ensure all bits are set, this prevents unexpected or undefined behaviour
+	this->bits[0] = '\0';
+    this->bits[1] = '\0';
+}
+
+
 
 void twobit_flag::set(char *data)
 {
@@ -43,6 +50,11 @@ void twobit_flag::set_flag(unsigned char bit, bool enable) {
 		 //this->bits[bit / 8] &= ~bitmasks[bit];
 		 this->bits[bit / 8] = (unsigned char) (this->bits[bit / 8] & ~bitmasks[bit]);
 	}
+}
+
+
+std::array<unsigned char,2> &twobit_flag::get_bits(void) {
+	return this->bits;
 }
 
 

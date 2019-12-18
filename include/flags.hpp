@@ -43,7 +43,9 @@ constexpr std::array<unsigned char, 16> bitmasks = {
 
 class twobit_flag {
 	protected:
-		unsigned char bits[2];// 00000000 00000000
+		twobit_flag();
+	
+		std::array<unsigned char,2> bits;// 00000000 00000000
 
 		// set by flag
 		void set_flag(unsigned char, bool);// counting flag from bit 0(!)
@@ -51,6 +53,7 @@ class twobit_flag {
 
 	public:
 		void set(char *);
+		std::array<unsigned char,2> &get_bits(void); // get bit 0 or bit 1
 };
 
 

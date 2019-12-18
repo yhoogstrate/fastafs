@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
         // GENERIC-HEADER
         "\x0F\x0A\x46\x53"s//     [0, 3]
         "\x00\x00\x00\x00"s//     [4, 7] version
-        "\x00\x01"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
         "\x00\x00\x01\x37"s //    [10, 13] index position in file (153)
 
         // DATA
@@ -292,25 +292,25 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
         // INDEX
         "\x00\x00\x00\x07"s     // [339, 342] 7 sequences
-        "\x00\x08"              // [343, 344] complete, DNA and not circular
+        "\x010\x00"             // [343, 344] complete, DNA and not circular
         "\x04"s "chr1"s         // [345, 349] name
         "\x00\x00\x00\x0E"s     // [350, 353] data position in file (14)
-        "\x00\x08"              // [354, 355] complete, DNA and not circular
+        "\x010\x00"             // [354, 355] complete, DNA and not circular
         "\x04"s "chr2"s         // [356, 360] name
         "\x00\x00\x00\x36"s     // [361, 364] data position in file (54)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x06"s "chr3.1"s       // [, ] name
         "\x00\x00\x00\x65"s     // [, ] data position in file (101)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x06"s "chr3.2"s       // [, ] name
         "\x00\x00\x00\x8D"s     // [, ] data position in file (141)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x06"s "chr3.3"s       // [, ] name
         "\x00\x00\x00\xB5"s     // [, ] data position in file (181)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x04"s "chr4"s         // [, ] name
         "\x00\x00\x00\xDD"s     // [, ] data position in file (221)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x04"s "chr5"s         // [, ] name
         "\x00\x00\x01\x0A"s     // [, ] data position in file (290)
 

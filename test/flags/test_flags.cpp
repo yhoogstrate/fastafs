@@ -175,6 +175,26 @@ BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
 	BOOST_CHECK_EQUAL(fs.is_complete(), false);
 	BOOST_CHECK_EQUAL(fs.is_incomplete(), true);
 
+
+
+	// get characters
+	fs.set_incomplete();
+	fs.set_linear();
+	fs.set_dna();
+
+	std::array<unsigned char,2> bits = fs.get_bits();
+	BOOST_CHECK_EQUAL(bits[0], '\0');
+	BOOST_CHECK_EQUAL(bits[1], '\0');
+
+
+	fs.set_complete();
+	fs.set_circular();
+	fs.set_iupec_nucleotide();
+
+	bits = fs.get_bits();
+	BOOST_CHECK_EQUAL(bits[0], '\x58');// 1011000 
+	BOOST_CHECK_EQUAL(bits[1], '\0');
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()
