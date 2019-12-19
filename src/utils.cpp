@@ -186,7 +186,11 @@ std::string basename_cpp(std::string fn)
     //printf("basename: [%s]\n", filename);
     //std::cout << "basenamepp: |" << filenamepp << "|\n";
 
-    return std::string(filename);
+    std::string filename_cpp = std::string(filename);
+    delete[] ts;
+    delete[] filename;
+
+    return filename_cpp;
 }
 
 
@@ -194,12 +198,8 @@ std::string basename_cpp(std::string fn)
 // https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::canonical(filename)
 std::string realpath_cpp(std::string fn)
 {
-    //std::string out = "asd";
-    char *path = realpath(fn.c_str(), NULL);
-    //printf("realpath: [%s]\n", path);
-
-    //std::string realpathpp = std::string(path);
-    //std::cout << "realpath: |" << realpathpp << "|\n";
-
-    return std::string(path);
+    char buf[1024];
+    char *path = realpath(fn.c_str(), buf);
+    
+    return std::string(buf);
 }

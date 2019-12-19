@@ -61,6 +61,8 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
     return 1 + (uint32_t) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
 
+
+
 void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
 {
     char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
@@ -566,6 +568,7 @@ void fastafs::load(std::string afilename)
                     // n compressed nucleotides
                     file.read(memblock, 4);
                     s->n = fourbytes_to_uint(memblock, 0);
+                    printf(" s->n: %u   %i \n", s->n, s->n);
 
                     // skip nucleotides
                     if(s->flags.is_twobit()) { // there fit 4 twobits in a byte, thus divide by 4,
@@ -1103,7 +1106,11 @@ size_t fastafs::fasta_filesize(uint32_t padding)
     //if(file.is_open()) {
     //    file.close();
 
+    printf("this->n() = %u   %i\n", this->n() , this->n());
+    printf("data.size: %i\n", this->data.size());
+    
     for(size_t i = 0; i < this->data.size(); i++) {
+        printf("  s->n = %u   %i\n", this->data[i]->n , this->data[i]->n);
         n += this->data[i]->fasta_filesize(padding);
     }
 
@@ -1398,8 +1405,9 @@ uint32_t fastafs::n()
 }
 
 
-
+/*
 std::string fastafs::basename()
 {
     return "";
 }
+*/
