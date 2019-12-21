@@ -485,13 +485,23 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     fs.load(fastafs_file);
 
     BOOST_REQUIRE_EQUAL(fs.flags.is_complete(), true);
-    BOOST_REQUIRE_EQUAL(fs.fasta_filesize(999), 98);
     
-    
-    char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
-    flush_buffer(buffer, 100, '?');
+    printf("number sequences in 4bit fs: %i\n", fs.data.size());
+	printf("number sequences in 4bit fs[0] nucleotides: %i\n", fs.data[0]->n);
 
-    ffs2f_init* cache_p999 = fs.init_ffs2f(999, false);
+    BOOST_REQUIRE_EQUAL(fs.fasta_filesize(999), 98);
+
+    printf("number sequences in 4bit fs: %i\n", fs.data.size());
+	printf("number sequences in 4bit fs[0] nucleotides: %i\n", fs.data[0]->n);
+
+	
+    //char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
+    //flush_buffer(buffer, 100, '?');
+
+    //ffs2f_init* cache_p999 = fs.init_ffs2f(999, false);
+	
+	
+	
     //uint32_t written = fs.view_fasta_chunk_cached(cache_p999, buffer, 100, 0);
     //BOOST_CHECK_EQUAL(written, 100);
     // std_buffer = std::string(buffer, 100);
