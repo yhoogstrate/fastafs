@@ -199,7 +199,7 @@ std::string basename_cpp(std::string fn)
 std::string realpath_cpp(std::string fn)
 {
     char buf[1024];
-    char *path = realpath(fn.c_str(), buf);
+    realpath(fn.c_str(), buf);
     
     return std::string(buf);
 }
