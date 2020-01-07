@@ -501,8 +501,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     ffs2f_init* cache_p32 = fs.init_ffs2f(32, false);
 	
 	
-	
     uint32_t written = fs.view_fasta_chunk_cached(cache_p32, buffer, 100, 0);
+	printf("\n------\n%s\n------\n", buffer);
+
     //BOOST_CHECK_EQUAL(written, 100);
     // std_buffer = std::string(buffer, 100);
     // //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG

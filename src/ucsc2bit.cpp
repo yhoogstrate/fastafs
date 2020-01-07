@@ -96,7 +96,7 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), std::ios::beg);// std::ios::beg | fh->beg
 
     twobit_byte t = twobit_byte();
-    const char *chunk = twobit_byte::twobit_hash[0];
+    const char *chunk = twobit_byte::encode_hash[0];
 
     unsigned char twobit_offset = nucleotide_pos % 4;
 

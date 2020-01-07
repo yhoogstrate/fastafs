@@ -119,7 +119,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             // parse and convert sequence
             fh_ucsc2bit.read(buffer, 4);
             twobit_byte t_in = twobit_byte();
-            const char *decoded_in = t_in.twobit_hash[0];// unnecessary initialization but otherwise gcc whines
+            const char *decoded_in = t_in.encode_hash[0];// unnecessary initialization but otherwise gcc whines
             twobit_byte t_out = twobit_byte();
 
             uint32_t k = 0; // iterator in fastafs format

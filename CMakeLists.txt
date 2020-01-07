@@ -106,6 +106,7 @@ add_executable(fastafs
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
+					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp
@@ -122,6 +123,7 @@ add_executable(mount.fastafs
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
+					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp

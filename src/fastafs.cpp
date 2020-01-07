@@ -30,6 +30,7 @@
 #include "config.hpp"
 
 #include "twobit_byte.hpp"
+#include "fourbit_byte.hpp"
 #include "fastafs.hpp"
 //#include "flags.hpp"
 #include "utils.hpp"
@@ -144,13 +145,11 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
 {
     printf("check: ");
     if(this->flags.is_dna()) {
-        printf("A\n ");
         return this->view_fasta_chunk_cached_twobit(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+        //return this->view_fasta_chunk_cached_fourbit<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
     else {
-        printf("B\n ");
-        
-        throw std::runtime_error("[fastafs_seq::view_fasta_chunk_cached] no 4-bit support yet\n");
+        return this->view_fasta_chunk_cached_fourbit<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
 
         return 0;
     }
@@ -246,8 +245,161 @@ uint32_t fastafs_seq::view_fasta_chunk_cached_twobit(
 
     */
     twobit_byte t = twobit_byte();
-    const char *chunk = twobit_byte::twobit_hash[0];
+    const char *chunk = twobit_byte::encode_hash[0];
     unsigned char twobit_offset = (nucleotide_pos - n_passed) % 4;
+    if(twobit_offset != 0) {
+        fh->read((char*)(&t.data), 1);
+        chunk = t.get();
+    }
+    while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
+        n_block--;
+    }
+    while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
+        m_block--;
+    }
+
+    // write sequence
+    pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
+    while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+        pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
+
+        // write nucleotides
+        while(pos < pos_limit) {// while next sequence-containing-line is open
+            if(pos >= cache->n_starts[n_block]) {
+                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+                    buffer[written++] = 'n';
+                } else {
+                    buffer[written++] = 'N';
+                }
+            } else {
+                if(twobit_offset % 4 == 0) {
+                    fh->read((char*)(&t.data), 1);
+                    chunk = t.get();
+                }
+
+                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+                    buffer[written++] = (unsigned char)(chunk[twobit_offset] + 32);
+                } else {
+                    buffer[written++] = chunk[twobit_offset];
+                }
+
+                twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
+            }
+            if(pos == cache->n_ends[n_block]) {
+                n_block++;
+            }
+            if(pos == cache->m_ends[m_block]) {
+                m_block++;
+            }
+            pos++;
+
+            if(written >= buffer_size) {
+                //fh->clear();
+                return written;
+            }
+        }
+
+        // write newline
+        pos_limit += 1;
+        if(pos < pos_limit) {
+            buffer[written++] = '\n';
+            pos++;
+            if(written >= buffer_size) {
+                //fh->clear();
+                return written;
+            }
+        }
+        newlines_passed++;
+    }
+    //fh->clear();
+    return written;
+}
+
+
+
+
+//@todo template T <twobit_byte | fourbit_byte>
+template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
+    ffs2f_init_seq* cache,
+    char *buffer,
+
+    size_t buffer_size,
+    off_t start_pos_in_fasta,
+
+    std::ifstream *fh)
+{
+#if DEBUG
+    if(cache == nullptr) {
+        throw std::runtime_error("Empty cache was provided\n");
+    }
+#endif //DEBUG
+
+    T t = T();// nice way of having this templated object on stack :)
+    uint32_t written = 0;
+    printf("Hello world -  T(4bit)::nucleotides_per_byte = %i  [ 2?!] \n", t.nucleotides_per_byte);
+    printf("Hello world -  T(4bit)::nucleotides_per_byte = %i  [ 2?!] \n", T::nucleotides_per_byte);
+
+
+    if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
+        return written;
+    }
+
+    uint32_t pos = (uint32_t) start_pos_in_fasta;
+    uint32_t pos_limit = 0;
+
+    // >
+    pos_limit += 1;
+    if(pos < pos_limit) {
+        buffer[written++] = '>';
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+
+    // sequence name
+    pos_limit += (uint32_t) this->name.size();
+    while(pos < pos_limit) {
+        buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+
+    // \n
+    pos_limit += 1;
+    if(pos < pos_limit) {
+        buffer[written++] = '\n';
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+
+    const uint32_t offset_from_sequence_line = pos - pos_limit;
+    size_t n_block = cache->n_starts.size();
+    size_t m_block = cache->m_starts.size();
+    uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
+    uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+
+    // calculate file position for next twobit
+    // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
+    uint32_t n_passed = 0;
+    this->get_n_offset(nucleotide_pos, &n_passed);
+    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / 4), fh->beg);
+    /*
+     0  0  0  0  1  1  1  1 << desired offset from starting point
+     A  C  T  G  A  C  T  G
+    *
+
+    handigste is om file pointer naar de byte ervoor te zetten
+    vervolgens wanneer twobit_offset gelijk is aan nul, lees je de volgende byte
+    * nooit out of bound
+
+    */
+    const char *chunk = T::encode_hash[0];// init
+    unsigned char twobit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
     if(twobit_offset != 0) {
         fh->read((char*)(&t.data), 1);
         chunk = t.get();

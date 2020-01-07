@@ -21,7 +21,7 @@ binary:		IUPEC
  */
 
 const char fourbit_byte::fourbit_alhpabet[17] = "ACGTURYKMSWBDHVN";
-const char fourbit_byte::fourbit_hash[256][3] = {"AA", "AC", "AG", "AT", "AU", "AR", "AY", "AK", "AM", "AS", "AW", "AB", "AD", "AH", "AV", "AN", "CA", "CC", "CG", "CT", "CU", "CR", "CY", "CK", "CM", "CS", "CW", "CB", "CD", "CH", "CV", "CN", "GA", "GC", "GG", "GT", "GU", "GR", "GY", "GK", "GM", "GS", "GW", "GB", "GD", "GH", "GV", "GN", "TA", "TC", "TG", "TT", "TU", "TR", "TY", "TK", "TM", "TS", "TW", "TB", "TD", "TH", "TV", "TN", "UA", "UC", "UG", "UT", "UU", "UR", "UY", "UK", "UM", "US", "UW", "UB", "UD", "UH", "UV", "UN", "RA", "RC", "RG", "RT", "RU", "RR", "RY", "RK", "RM", "RS", "RW", "RB", "RD", "RH", "RV", "RN", "YA", "YC", "YG", "YT", "YU", "YR", "YY", "YK", "YM", "YS", "YW", "YB", "YD", "YH", "YV", "YN", "KA", "KC", "KG", "KT", "KU", "KR", "KY", "KK", "KM", "KS", "KW", "KB", "KD", "KH", "KV", "KN", "MA", "MC", "MG", "MT", "MU", "MR", "MY", "MK", "MM", "MS", "MW", "MB", "MD", "MH", "MV", "MN", "SA", "SC", "SG", "ST", "SU", "SR", "SY", "SK", "SM", "SS", "SW", "SB", "SD", "SH", "SV", "SN", "WA", "WC", "WG", "WT", "WU", "WR", "WY", "WK", "WM", "WS", "WW", "WB", "WD", "WH", "WV", "WN", "BA", "BC", "BG", "BT", "BU", "BR", "BY", "BK", "BM", "BS", "BW", "BB", "BD", "BH", "BV", "BN", "DA", "DC", "DG", "DT", "DU", "DR", "DY", "DK", "DM", "DS", "DW", "DB", "DD", "DH", "DV", "DN", "HA", "HC", "HG", "HT", "HU", "HR", "HY", "HK", "HM", "HS", "HW", "HB", "HD", "HH", "HV", "HN", "VA", "VC", "VG", "VT", "VU", "VR", "VY", "VK", "VM", "VS", "VW", "VB", "VD", "VH", "VV", "VN", "NA", "NC", "NG", "NT", "NU", "NR", "NY", "NK", "NM", "NS", "NW", "NB", "ND", "NH", "NV", "NN"};
+const char fourbit_byte::encode_hash[256][3] = {"AA", "AC", "AG", "AT", "AU", "AR", "AY", "AK", "AM", "AS", "AW", "AB", "AD", "AH", "AV", "AN", "CA", "CC", "CG", "CT", "CU", "CR", "CY", "CK", "CM", "CS", "CW", "CB", "CD", "CH", "CV", "CN", "GA", "GC", "GG", "GT", "GU", "GR", "GY", "GK", "GM", "GS", "GW", "GB", "GD", "GH", "GV", "GN", "TA", "TC", "TG", "TT", "TU", "TR", "TY", "TK", "TM", "TS", "TW", "TB", "TD", "TH", "TV", "TN", "UA", "UC", "UG", "UT", "UU", "UR", "UY", "UK", "UM", "US", "UW", "UB", "UD", "UH", "UV", "UN", "RA", "RC", "RG", "RT", "RU", "RR", "RY", "RK", "RM", "RS", "RW", "RB", "RD", "RH", "RV", "RN", "YA", "YC", "YG", "YT", "YU", "YR", "YY", "YK", "YM", "YS", "YW", "YB", "YD", "YH", "YV", "YN", "KA", "KC", "KG", "KT", "KU", "KR", "KY", "KK", "KM", "KS", "KW", "KB", "KD", "KH", "KV", "KN", "MA", "MC", "MG", "MT", "MU", "MR", "MY", "MK", "MM", "MS", "MW", "MB", "MD", "MH", "MV", "MN", "SA", "SC", "SG", "ST", "SU", "SR", "SY", "SK", "SM", "SS", "SW", "SB", "SD", "SH", "SV", "SN", "WA", "WC", "WG", "WT", "WU", "WR", "WY", "WK", "WM", "WS", "WW", "WB", "WD", "WH", "WV", "WN", "BA", "BC", "BG", "BT", "BU", "BR", "BY", "BK", "BM", "BS", "BW", "BB", "BD", "BH", "BV", "BN", "DA", "DC", "DG", "DT", "DU", "DR", "DY", "DK", "DM", "DS", "DW", "DB", "DD", "DH", "DV", "DN", "HA", "HC", "HG", "HT", "HU", "HR", "HY", "HK", "HM", "HS", "HW", "HB", "HD", "HH", "HV", "HN", "VA", "VC", "VG", "VT", "VU", "VR", "VY", "VK", "VM", "VS", "VW", "VB", "VD", "VH", "VV", "VN", "NA", "NC", "NG", "NT", "NU", "NR", "NY", "NK", "NM", "NS", "NW", "NB", "ND", "NH", "NV", "NN"};
 
 
 /*
@@ -233,7 +233,7 @@ char *fourbit_byte::get(unsigned char length)
 
     char *seq = new char[length + 1];
     for(unsigned char i = 0; i < length; i++) { // length = 4: i = 0, 1, 2, 3
-        seq[i] = fourbit_byte::fourbit_hash[this->data][i];
+        seq[i] = fourbit_byte::encode_hash[this->data][i];
     }
     seq[length] = '\0';
 
@@ -244,5 +244,5 @@ char *fourbit_byte::get(unsigned char length)
 
 const char *fourbit_byte::get()
 {
-    return fourbit_byte::fourbit_hash[this->data];
+    return fourbit_byte::encode_hash[this->data];
 }

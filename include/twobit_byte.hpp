@@ -8,7 +8,10 @@
 class twobit_byte
 {
 public:
-    static const char twobit_hash[256][5];
+    static const char encode_hash[256][5];
+
+    static const char bits_per_nucleotide = 2;
+    static const char nucleotides_per_byte = 8 / bits_per_nucleotide ;
 
     unsigned char data;
     void set(unsigned char, unsigned char);
