@@ -387,7 +387,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / 4), fh->beg);
+    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::bits_per_nucleotide), fh->beg);
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
      A  C  T  G  A  C  T  G
@@ -411,13 +411,20 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
         m_block--;
     }
 
+    printf(" check \n");
+    printf(" cache->total_sequence_containing_lines: %i \n", cache->total_sequence_containing_lines);
+
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
     while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+        printf("  - entering line \n");
         pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
 
+        printf("  %i  <   %i     (pos, pos_limit) \n", pos, pos_limit);
+        
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
+            printf("   twobit offset: %i\n", twobit_offset);
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
                     buffer[written++] = 'n';
@@ -425,7 +432,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
                     buffer[written++] = 'N';
                 }
             } else {
-                if(twobit_offset % 4 == 0) {
+                if(twobit_offset % T::nucleotides_per_byte == 0) {
                     fh->read((char*)(&t.data), 1);
                     chunk = t.get();
                 }
@@ -436,7 +443,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
                     buffer[written++] = chunk[twobit_offset];
                 }
 
-                twobit_offset = (unsigned char)(twobit_offset + 1) % 4;
+                twobit_offset = (unsigned char)(twobit_offset + 1) % T::nucleotides_per_byte;
             }
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
