@@ -498,7 +498,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 100, '?');
 
-    //ffs2f_init* cache_p999 = fs.init_ffs2f(999, false);
+    ffs2f_init* cache_p32 = fs.init_ffs2f(32, false);
 	
 	
 	

@@ -110,6 +110,7 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
         data->n_starts[i] = fasta_header_size + this->n_starts[i] + (this->n_starts[i] / padding);
         data->n_ends[i] = fasta_header_size + this->n_ends[i] + (this->n_ends[i] / padding);
     }
+
     block_size = data->n_starts.size();
     data->n_starts[block_size - 1]  = max_val;
     data->n_ends[block_size - 1] = max_val;
@@ -129,6 +130,28 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
     return data;
 }
 
+
+
+// @todo templating like stuff
+uint32_t fastafs_seq::view_fasta_chunk_cached(
+    ffs2f_init_seq* cache,
+    char *buffer,
+
+    size_t buffer_size,
+    off_t start_pos_in_fasta,
+
+    std::ifstream *fh)
+{
+    if(this->flags.is_dna()) {
+        return this->view_fasta_chunk_cached_twobit(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+    }
+    else {
+        std::runtime_error("[fastafs_seq::view_fasta_chunk_cached] no 4-bit support yet\n");
+
+        return 0;
+    }
+}
+
 /*
  * fastafs_seq::view_fasta_chunk_cached -
  *
@@ -143,7 +166,7 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
  *
  * @todo see if this can be a std::ifstream or some kind of stream type of object?
 */
-uint32_t fastafs_seq::view_fasta_chunk_cached(
+uint32_t fastafs_seq::view_fasta_chunk_cached_twobit(
     ffs2f_init_seq* cache,
     char *buffer,
 
