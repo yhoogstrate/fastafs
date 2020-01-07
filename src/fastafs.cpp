@@ -59,7 +59,7 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
     }
 #endif
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
-    
+
     return 1 + (uint32_t) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
 
@@ -145,8 +145,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
 {
     if(this->flags.is_dna()) {
         return this->view_fasta_chunk_cached_generalized<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
-    }
-    else {
+    } else {
         return this->view_fasta_chunk_cached_generalized<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
 }
@@ -561,19 +560,19 @@ void fastafs::load(std::string afilename)
             if(this->flags.is_incomplete()) {
                 throw std::invalid_argument("Incomplete FASTAFS file (probably terminated during conversion): " + filename);
             }
-			
-			/*
-			unsigned char bits;
-			unsigned char bits_per_byte;
-			if(this->flags.is_twobit()) {
-				bits = 2;
-				bits_per_byte = 4;
-			}
-			else {
-				bits = 4;
-				bits_per_byte = 2;
-			}*/
-            
+
+            /*
+            unsigned char bits;
+            unsigned char bits_per_byte;
+            if(this->flags.is_twobit()) {
+            	bits = 2;
+            	bits_per_byte = 4;
+            }
+            else {
+            	bits = 4;
+            	bits_per_byte = 2;
+            }*/
+
             std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
 
             // INDEX
@@ -614,8 +613,7 @@ void fastafs::load(std::string afilename)
                     // skip nucleotides
                     if(s->flags.is_twobit()) { // there fit 4 twobits in a byte, thus divide by 4,
                         file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
-                    }
-                    else if(s->flags.is_fourbit()) { // there fit 2 fourbits in a byte, thus divide by 2,
+                    } else if(s->flags.is_fourbit()) { // there fit 2 fourbits in a byte, thus divide by 2,
                         file.seekg((uint32_t) s->data_position + 4 + ((s->n + 1) / 2), file.beg);
                     }
 
@@ -1156,7 +1154,7 @@ size_t fastafs::fasta_filesize(uint32_t padding)
     //if(file.is_open()) {
     //    file.close();
 
-    
+
     for(size_t i = 0; i < this->data.size(); i++) {
         n += this->data[i]->fasta_filesize(padding);
     }

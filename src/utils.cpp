@@ -200,6 +200,6 @@ std::string realpath_cpp(std::string fn)
 {
     char buf[1024];
     realpath(fn.c_str(), buf);
-    
+
     return std::string(buf);
 }

@@ -495,67 +495,67 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     ffs2f_init* cache_p32 = fs.init_ffs2f(32, true);// allow masking = T
     ffs2f_init* cache_p999 = fs.init_ffs2f(999, true);
 
-	std::string std_buffer;
-	uint32_t written;
+    std::string std_buffer;
+    uint32_t written;
 
 
-	// padding = 32, offset = 0
+    // padding = 32, offset = 0
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 98);
     std_buffer = std::string(buffer, 98);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 1
+    // padding = 32, offset = 1
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 1);
     BOOST_CHECK_EQUAL(written, 97);
     std_buffer = std::string(buffer, 97);
     BOOST_CHECK_EQUAL(std_buffer.compare("IUPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 2
+    // padding = 32, offset = 2
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 2);
     BOOST_CHECK_EQUAL(written, 96);
     std_buffer = std::string(buffer, 96);
     BOOST_CHECK_EQUAL(std_buffer.compare("UPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 5
+    // padding = 32, offset = 5
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 5);
     BOOST_CHECK_EQUAL(written, 93);
     std_buffer = std::string(buffer, 93);
     BOOST_CHECK_EQUAL(std_buffer.compare("C\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 6
+    // padding = 32, offset = 6
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 6);
     BOOST_CHECK_EQUAL(written, 92);
     std_buffer = std::string(buffer, 92);
     BOOST_CHECK_EQUAL(std_buffer.compare("\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 7
+    // padding = 32, offset = 7
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 7);
     BOOST_CHECK_EQUAL(written, 91);
     std_buffer = std::string(buffer, 91);
     BOOST_CHECK_EQUAL(std_buffer.compare("NBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 8
+    // padding = 32, offset = 8
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 8);
     BOOST_CHECK_EQUAL(written, 90);
     std_buffer = std::string(buffer, 90);
     BOOST_CHECK_EQUAL(std_buffer.compare("BKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 9
+    // padding = 32, offset = 9
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 9);
     BOOST_CHECK_EQUAL(written, 89);
     std_buffer = std::string(buffer, 89);
     BOOST_CHECK_EQUAL(std_buffer.compare("KAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 32, offset = 10
+    // padding = 32, offset = 10
     written = fs.view_fasta_chunk_cached(cache_p32, buffer, 200, 10);
     BOOST_CHECK_EQUAL(written, 88);
     std_buffer = std::string(buffer, 88);
@@ -563,21 +563,21 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     flush_buffer(buffer, 200, '?');
 
 
-	// padding = 1, offset = 0
+    // padding = 1, offset = 0
     written = fs.view_fasta_chunk_cached(cache_p1, buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 183);
     std_buffer = std::string(buffer, 183);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nN\nB\nK\nA\nH\nM\nD\nC\nU\nW\nG\nS\nY\nV\nT\nR\nH\nG\nW\nV\nU\nM\nT\nB\nS\nD\nN\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\nB\nG\nY\nA\nD\nN\nH\nS\nM\nU\nT\nR\nC\nK\nW\nV\ns\nb\nh\nv\nd\nn\nr\nt\ng\ny\nc\nm\nk\nw\nu\na\nA\nV\nT\nS\nD\nK\nN\nB\n-\n-\n-\nU\nG\nW\nM\nH\nY\nR\nC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 5, offset = 0
+    // padding = 5, offset = 0
     written = fs.view_fasta_chunk_cached(cache_p5, buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 113);
     std_buffer = std::string(buffer, 113);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nNBKAH\nMDCUW\nGSYVT\nRHGWV\nUMTBS\nDN---\n-----\n--BGY\nADNHS\nMUTRC\nKWVsb\nhvdnr\ntgycm\nkwuaA\nVTSDK\nNB---\nUGWMH\nYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
-	// padding = 999, offset = 0
+    // padding = 999, offset = 0
     written = fs.view_fasta_chunk_cached(cache_p999, buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 96);
     std_buffer = std::string(buffer, 96);

@@ -131,7 +131,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     if(fh_fasta.is_open() and fh_fastafs.is_open()) {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
-        
+
         // the flag for now, set to INCOMPLETE as writing is in progress || spacer that will be overwritten later
         fh_fastafs << ffsf.get_bits()[0];
         fh_fastafs << ffsf.get_bits()[1];

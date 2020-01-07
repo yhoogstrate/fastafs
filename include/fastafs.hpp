@@ -108,7 +108,7 @@ public:
     std::string name;
     std::string filename;
     std::vector<fastafs_seq*> data;
-    
+
     fastafs_flags flags;
 
     uint32_t n();
