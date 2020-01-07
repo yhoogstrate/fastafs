@@ -855,6 +855,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 header_offset_previous++;
             }
         }
+
         ffs2f_init* cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
         for(i = 0; i < this->data.size(); i++) {
             sequence = this->data[i];
@@ -895,6 +896,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                         return written;
                     }
                 }
+
                 uint_to_fourbytes_ucsc2bit(n_seq, sequence->n_ends[k] - sequence->n_starts[k] + 1);
                 pos_limit += 4;
                 while(pos < pos_limit) {
@@ -913,6 +915,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             while(pos < pos_limit) {
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
+
                 if(written >= buffer_size) {
                     delete cache;
                     return written;
@@ -926,6 +929,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 while(pos < pos_limit) {
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
+
                     if(written >= buffer_size) {
                         delete cache;
                         return written;
@@ -937,6 +941,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 while(pos < pos_limit) {
                     buffer[written++] = n_seq[4 - (pos_limit - pos)];
                     pos++;
+
                     if(written >= buffer_size) {
                         delete cache;
                         return written;
@@ -949,6 +954,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             while(pos < pos_limit) {
                 buffer[written++] = '\0';
                 pos++;
+
                 if(written >= buffer_size) {
                     delete cache;
                     return written;
@@ -959,6 +965,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             uint32_t full_twobits = sequence->n / 4;
             twobit_byte t;
             pos_limit += full_twobits;
+
             while(pos < pos_limit) {
                 //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
                 //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
