@@ -142,11 +142,15 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
 
     std::ifstream *fh)
 {
+    printf("check: ");
     if(this->flags.is_dna()) {
+        printf("A\n ");
         return this->view_fasta_chunk_cached_twobit(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
     else {
-        std::runtime_error("[fastafs_seq::view_fasta_chunk_cached] no 4-bit support yet\n");
+        printf("B\n ");
+        
+        throw std::runtime_error("[fastafs_seq::view_fasta_chunk_cached] no 4-bit support yet\n");
 
         return 0;
     }
