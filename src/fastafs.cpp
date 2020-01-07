@@ -58,6 +58,7 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
     }
 #endif
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines
+    
     return 1 + (uint32_t) this->name.size() + 1 + this->n + (this->n + (padding - 1)) / padding;
 }
 
@@ -1129,11 +1130,8 @@ size_t fastafs::fasta_filesize(uint32_t padding)
     //if(file.is_open()) {
     //    file.close();
 
-    printf("this->n() = %u   %i\n", this->n() , this->n());
-    printf("data.size: %i\n", this->data.size());
     
     for(size_t i = 0; i < this->data.size(); i++) {
-        printf("  s->n = %u   %i\n", this->data[i]->n , this->data[i]->n);
         n += this->data[i]->fasta_filesize(padding);
     }
 

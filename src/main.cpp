@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             std::cout << PACKAGE << " v" << PACKAGE_VERSION << GIT_SHA1_STRING << "-release\n\n";
 #endif //DEBUG
 
-            std::cout << "Copyright (C) 2017 Youri Hoogstrate." << "\n";
+            std::cout << "Copyright (C) 2017 Dr. Youri Hoogstrate." << "\n";
             std::cout << "License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.\n";
             std::cout << "This is free software: you are free to change and redistribute it.\n";
             std::cout << "There is NO WARRANTY, to the extent permitted by law.\n\n";
