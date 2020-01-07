@@ -498,18 +498,15 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 100, '?');
 
-    ffs2f_init* cache_p32 = fs.init_ffs2f(32, false);
+    ffs2f_init* cache_p32 = fs.init_ffs2f(32, true);// allow masking = T
 	
 	
     uint32_t written = fs.view_fasta_chunk_cached(cache_p32, buffer, 100, 0);
-	printf("\n------\n%s\n------\n", buffer);
 
-    //BOOST_CHECK_EQUAL(written, 100);
-    // std_buffer = std::string(buffer, 100);
-    // //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG
-    // //----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
-    //BOOST_CHECK_EQUAL(std_buffer.compare(">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\n"), 0);
-    //flush_buffer(buffer, 100, '?');
+    BOOST_CHECK_EQUAL(written, 98);
+    std::string std_buffer = std::string(buffer, 98);
+    BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
+    flush_buffer(buffer, 100, '?');
 
     /*
     char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer

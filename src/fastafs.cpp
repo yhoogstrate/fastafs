@@ -394,13 +394,13 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
     *
 
     handigste is om file pointer naar de byte ervoor te zetten
-    vervolgens wanneer twobit_offset gelijk is aan nul, lees je de volgende byte
+    vervolgens wanneer bit_offset gelijk is aan nul, lees je de volgende byte
     * nooit out of bound
 
     */
     const char *chunk = T::encode_hash[0];// init
-    unsigned char twobit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
-    if(twobit_offset != 0) {
+    unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+    if(bit_offset != 0) {
         fh->read((char*)(&t.data), 1);
         chunk = t.get();
     }
@@ -413,6 +413,8 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
 
     printf(" check \n");
     printf(" cache->total_sequence_containing_lines: %i \n", cache->total_sequence_containing_lines);
+    printf(" m-blocks: %i   %i\n", this->m_starts.size(), cache->m_ends.size());
+    printf(" m-block[0] %i ... %i   %i\n", cache->m_starts[0], cache->m_ends[0],  m_starts[m_block]);
 
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
@@ -424,7 +426,6 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
         
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            printf("   twobit offset: %i\n", twobit_offset);
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
                     buffer[written++] = T::n_fill_masked;
@@ -432,18 +433,18 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
                     buffer[written++] = T::n_fill_unmasked;
                 }
             } else {
-                if(twobit_offset % T::nucleotides_per_byte == 0) {
+                if(bit_offset % T::nucleotides_per_byte == 0) {
                     fh->read((char*)(&t.data), 1);
                     chunk = t.get();
                 }
 
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = (unsigned char)(chunk[twobit_offset] + 32);
+                    buffer[written++] = (unsigned char)(chunk[bit_offset] + 32);
                 } else {
-                    buffer[written++] = chunk[twobit_offset];
+                    buffer[written++] = chunk[bit_offset];
                 }
 
-                twobit_offset = (unsigned char)(twobit_offset + 1) % T::nucleotides_per_byte;
+                bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_byte;
             }
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
