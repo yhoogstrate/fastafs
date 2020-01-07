@@ -409,19 +409,11 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
         m_block--;
     }
 
-    printf(" check \n");
-    printf(" cache->total_sequence_containing_lines: %i \n", cache->total_sequence_containing_lines);
-    printf(" m-blocks: %i   %i\n", this->m_starts.size(), cache->m_ends.size());
-    printf(" m-block[0] %i ... %i   %i\n", cache->m_starts[0], cache->m_ends[0],  m_starts[m_block]);
-
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
     while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
-        printf("  - entering line \n");
         pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
 
-        printf("  %i  <   %i     (pos, pos_limit) \n", pos, pos_limit);
-        
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
             if(pos >= cache->n_starts[n_block]) {
