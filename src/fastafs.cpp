@@ -833,6 +833,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
         for(uint32_t i = 0; i < this->data.size(); i++) {
             this->data[i]->view_fasta(cache->sequences[i], &file);
         }
+
         file.close();
     }
 }
