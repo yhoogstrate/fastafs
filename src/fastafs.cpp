@@ -336,8 +336,6 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
 
     T t = T();// nice way of having this templated object on stack :)
     uint32_t written = 0;
-    printf("Hello world -  T(4bit)::nucleotides_per_byte = %i  [ 2?!] \n", t.nucleotides_per_byte);
-    printf("Hello world -  T(4bit)::nucleotides_per_byte = %i  [ 2?!] \n", T::nucleotides_per_byte);
 
 
     if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
@@ -387,7 +385,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::bits_per_nucleotide), fh->beg);
+    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
      A  C  T  G  A  C  T  G
