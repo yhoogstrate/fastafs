@@ -427,9 +427,9 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
             printf("   twobit offset: %i\n", twobit_offset);
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = 'n';
+                    buffer[written++] = T::n_fill_masked;
                 } else {
-                    buffer[written++] = 'N';
+                    buffer[written++] = T::n_fill_unmasked;
                 }
             } else {
                 if(twobit_offset % T::nucleotides_per_byte == 0) {

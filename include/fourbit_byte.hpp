@@ -10,6 +10,8 @@ class fourbit_byte
 public:
     static const char fourbit_alhpabet[17];
     static const char encode_hash[256][3];
+    static const char n_fill_unmasked = '-';
+    static const char n_fill_masked = '-';
 
     static const char bits_per_nucleotide = 4;
     static const char nucleotides_per_byte = 8 / bits_per_nucleotide ;
