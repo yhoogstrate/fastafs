@@ -143,7 +143,6 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
 
     std::ifstream *fh)
 {
-    printf("check: ");
     if(this->flags.is_dna()) {
         return this->view_fasta_chunk_cached_twobit(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         //return this->view_fasta_chunk_cached_fourbit<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
@@ -762,7 +761,6 @@ void fastafs::load(std::string afilename)
                     // n compressed nucleotides
                     file.read(memblock, 4);
                     s->n = fourbytes_to_uint(memblock, 0);
-                    printf(" s->n: %u   %i \n", s->n, s->n);
 
                     // skip nucleotides
                     if(s->flags.is_twobit()) { // there fit 4 twobits in a byte, thus divide by 4,
@@ -771,12 +769,11 @@ void fastafs::load(std::string afilename)
                     else if(s->flags.is_fourbit()) { // there fit 2 fourbits in a byte, thus divide by 2,
                         file.seekg((uint32_t) s->data_position + 4 + ((s->n + 1) / 2), file.beg);
                     }
-					printf(" s->n: %u   %i  [post skip]\n", s->n, s->n);
 
                     // N-blocks (and update this->n instantly)
                     file.read(memblock, 4);
                     uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
-					printf(" N blocks: %u   %i  \n", N_blocks, N_blocks);
+
                     s->n_starts.resize(N_blocks);
                     s->n_ends.resize(N_blocks);
                     for(j = 0; j < s->n_starts.size(); j++) {
@@ -788,8 +785,6 @@ void fastafs::load(std::string afilename)
                         s->n_ends[j] = fourbytes_to_uint(memblock, 0);
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
                     }
-					printf(" s->n: %u   %i  [post n]\n", s->n, s->n);
-					
 
                     // MD5-checksum - only if sequence is complete
                     if(s->flags.is_complete()) {
@@ -798,7 +793,6 @@ void fastafs::load(std::string afilename)
                             s->md5_digest[j] = memblock[j];
                         }
                     }
-					printf(" s->n: %u   %i  [post m5]\n", s->n, s->n);
 
                     // M-blocks
                     file.read(memblock, 4);
@@ -813,20 +807,14 @@ void fastafs::load(std::string afilename)
                         file.read(memblock, 4);
                         s->m_ends[j] = fourbytes_to_uint(memblock, 0);
                     }
-					printf(" s->n: %u   %i  [post M]\n", s->n, s->n);
                 }
 
                 file.seekg(file_cursor, file.beg);
-				printf(" s->n: %u   %i \n", s->n, s->n);
                 this->data[i] = s;
-				printf(" data[i]->n: %u   %i \n", this->data[i]->n, this->data[i]->n);
-				printf("---\n");
             }
 
             file.close();
             delete[] memblock;
-			
-			printf("safe exist?!\n");
         }
     } else {
         throw std::invalid_argument("Unable to open file '" + afilename + "'");
