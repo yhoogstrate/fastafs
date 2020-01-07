@@ -452,6 +452,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
             if(pos == cache->m_ends[m_block]) {
                 m_block++;
             }
+
             pos++;
 
             if(written >= buffer_size) {
@@ -465,13 +466,16 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_fourbit(
         if(pos < pos_limit) {
             buffer[written++] = '\n';
             pos++;
+
             if(written >= buffer_size) {
                 //fh->clear();
                 return written;
             }
         }
+
         newlines_passed++;
     }
+
     //fh->clear();
     return written;
 }
