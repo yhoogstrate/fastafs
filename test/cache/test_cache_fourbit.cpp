@@ -189,7 +189,12 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
     file.seekg(0, std::ios::beg);
     file.read(buffer, size);
+    BOOST_CHECK_EQUAL(file.gcount(), size);
     file.close();
+    
+    //BOOST_CHECK_UNEQUAL(ret, -1);
+    
+    
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
