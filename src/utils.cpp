@@ -187,8 +187,8 @@ std::string basename_cpp(std::string fn)
     //std::cout << "basenamepp: |" << filenamepp << "|\n";
 
     std::string filename_cpp = std::string(filename);
-    delete[] ts;
-    delete[] filename;
+    //delete[] ts;
+    //delete[] filename; // deleting these affects the std::string somehow
 
     return filename_cpp;
 }

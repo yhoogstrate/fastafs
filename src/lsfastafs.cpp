@@ -47,7 +47,6 @@ std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_f
         fprintf(stdout, "Could not open /proc/mounts - are you sure this is running on linux?\n");
     }
     do {
-
         match = fscanf(f, "%255s %255s %255s %255s %d %d\n", mount_dev, mount_dir, mount_type, mount_opts, &mount_freq, &mount_passno);
         mount_dev[255] = 0;
         mount_dir[255] = 0;
@@ -65,7 +64,6 @@ std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_f
             //std::cout << "basename: " << basename << "\n";
 
             std::string dict_fn = std::string(mount_dir)  + "/" +  basename +  ".dict";
-
             if(getxattr(mount_dir, FASTAFS_FILE_XATTR_NAME.c_str(), xattr_fastafs_file, 255) != -1
                &&
                getxattr(mount_dir, FASTAFS_PID_XATTR_NAME.c_str(), xattr_fastafs_pid, 255) != -1
@@ -77,6 +75,7 @@ std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_f
 
             }
         }
+        // else: line did not contain fastafs mount point
     } while(match != EOF);
 
     fclose(f);
