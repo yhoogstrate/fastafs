@@ -1,5 +1,8 @@
 project('fastafs', 'cpp')
 
+add_global_arguments('-O3', language : 'cpp')
+add_global_arguments('-D_FILE_OFFSET_BITS=64', language : 'cpp')
+
 src = ['./src/fasta_to_fourbit_fastafs.cpp', './src/fasta_to_twobit_fastafs.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/fastafs.cpp', './src/fuse.cpp', './src/utils.cpp', './src/database.cpp', './src/lsfastafs.cpp', './src/main.cpp']
 
 incdir = include_directories('include')
