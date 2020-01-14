@@ -1,4 +1,6 @@
-project('fastafs', 'cpp')
+project('fastafs', 'cpp',
+	version : '1.7.0', default_options : ['warning_level=3', 'cpp_std=c++14'])
+
 
 add_global_arguments('-O3', language : 'cpp')
 add_global_arguments('-D_FILE_OFFSET_BITS=64', language : 'cpp')
