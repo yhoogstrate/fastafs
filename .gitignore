@@ -19,3 +19,5 @@ build/
 xcheck.sh
 *.fa.fai
 *.o
+/bin-meson
+/build-meson
