@@ -1,5 +1,8 @@
 project('fastafs', 'cpp',
-	version : '1.7.0', default_options : ['warning_level=3', 'cpp_std=c++14'])
+    version : run_command('bash', '-c' , 'grep PROJECT_VERSION CMakeLists.txt | grep -Po \'".+"\' | grep -Po \'[^"]+\'').stdout().strip(), default_options : ['warning_level=3', 'cpp_std=c++14'])
+
+project_version = run_command('bash', '-c' , 'grep PROJECT_VERSION CMakeLists.txt | grep -Po \'".+"\' | grep -Po \'[^"]+\'').stdout().strip()
+
 
 add_global_arguments('-O3', language : 'cpp')
 add_global_arguments('-D_FILE_OFFSET_BITS=64', language : 'cpp')
@@ -9,7 +12,8 @@ add_global_arguments('-D_FILE_OFFSET_BITS=64', language : 'cpp')
 # prefix = get_option('prefix')
 # https://mesonbuild.com/Configuration.html#a-full-example
 conf_data = configuration_data()
-conf_data.set('PACKAGE', '"fastafs"')
+conf_data.set('PROJECT_VERSION', project_version)
+conf_data.set('CMAKE_PROJECT_NAME', 'fastafs')
 conf_data.set('DEBUG', 'false')
 configure_file(input : 'include/config.hpp.in',
                output : 'config.hpp',
