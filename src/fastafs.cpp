@@ -508,7 +508,7 @@ bool fastafs_seq::get_n_offset(uint32_t pos, uint32_t *num_Ns)
 
 
 fastafs::fastafs(std::string arg_name) :
-    name(arg_name)
+    name(arg_name), crc32f(0)
 {
 }
 
@@ -659,6 +659,18 @@ void fastafs::load(std::string afilename)
 
                 file.seekg(file_cursor, file.beg);
                 this->data[i] = s;
+            }
+
+            // metadata section - empty for now
+            file.read(memblock, 1);
+
+            // crc32 checksum - may be missing because fastafs::load is also used before fastafs::get_crc32 is ran to obtain the checksum
+            file.read(memblock, 4);
+            if(file.gcount() == 4) {
+                this->crc32f = fourbytes_to_uint(memblock, 0);
+            }
+            else {
+                //printf("crc32 checksum missing\n");
             }
 
             file.close();
@@ -1473,44 +1485,41 @@ uint32_t fastafs::get_crc32(void)
 //false = corrupt
 bool fastafs::check_file_integrity()
 {
-    if(this->filename.size() == 0) {
-        throw std::invalid_argument("No filename found");
+    uint32_t crc32_current = this->get_crc32();
+
+    char buf_old[5] = "\x00\x00\x00\x00";
+    uint_to_fourbytes(buf_old, (uint32_t) this->crc32f);
+
+    if(crc32_current != this->crc32f) {
+
+        char buf_new[5] = "\x00\x00\x00\x00";
+        uint_to_fourbytes(buf_new, (uint32_t) crc32_current);    
+        
+        printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (in-file)  !=  %02hhx%02hhx%02hhx%02hhx (actual file)\n--\n",
+        buf_old[0],
+        buf_old[1],
+        buf_old[2],
+        buf_old[3],
+
+        buf_new[0],
+        buf_new[1],
+        buf_new[2],
+        buf_new[3]
+
+        );
+        
+    }
+    else {
+        printf("OK\t%02hhx%02hhx%02hhx%02hhx\n--\n",
+        buf_old[0],
+        buf_old[1],
+        buf_old[2],
+        buf_old[3]
+
+        );
     }
     
-    // starts at 4th 
-    uint32_t total_bytes_to_be_read = this->fastafs_filesize() - 4 - 4 ;
-
-    uLong crc = crc32(0L, Z_NULL, 0);
-
-    const int buffer_size = 4;
-    char buffer[buffer_size + 1];
-
-    uint32_t bytes_to_be_read_this_iter;
-    uint32_t bytes_actually_read_this_iter;
-
-    // now calculate crc32 checksum, as all bits have been set.
-    std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
-    fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
-
-    while(total_bytes_to_be_read > 0) {
-        bytes_to_be_read_this_iter = std::min( (uint32_t) buffer_size, total_bytes_to_be_read) ;
-        fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
-        total_bytes_to_be_read -= bytes_to_be_read_this_iter;
-
-        bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
-        if(bytes_actually_read_this_iter == 0) {
-            total_bytes_to_be_read  = 0;
-        }
-        else {
-            crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
-        }
-    }
-
-    char byte_enc[5] = "\x00\x01\x02\x00";
-    uint_to_fourbytes(byte_enc, (uint32_t) crc);
-    printf("[%i][%i][%i][%i]\n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
-
-    return true;
+    return (crc32_current == this->crc32f);
 }
 
 
