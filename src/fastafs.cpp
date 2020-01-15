@@ -1428,6 +1428,47 @@ int fastafs::info(bool ena_verify_checksum)
     return 0;
 }
 
+
+// skips first four bytes and does not include crc32 at the end either
+uint32_t fastafs::get_crc32(void)
+{
+    if(this->filename.size() == 0) {
+        throw std::invalid_argument("No filename found");
+    }
+    
+    // starts at 4th 
+    uint32_t total_bytes_to_be_read = this->fastafs_filesize() - 4 - 4 ;
+
+    uLong crc = crc32(0L, Z_NULL, 0);
+
+    const int buffer_size = 4;
+    char buffer[buffer_size + 1];
+
+    uint32_t bytes_to_be_read_this_iter;
+    uint32_t bytes_actually_read_this_iter;
+
+    // now calculate crc32 checksum, as all bits have been set.
+    std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
+    fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
+
+    while(total_bytes_to_be_read > 0) {
+        bytes_to_be_read_this_iter = std::min( (uint32_t) buffer_size, total_bytes_to_be_read) ;
+        fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
+        total_bytes_to_be_read -= bytes_to_be_read_this_iter;
+
+        bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
+        if(bytes_actually_read_this_iter == 0) {
+            total_bytes_to_be_read  = 0; // unexpected eof?
+        }
+        else {
+            crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
+        }
+    }
+
+    return crc;
+}
+
+
 //true = integer
 //false = corrupt
 bool fastafs::check_file_integrity()
@@ -1437,8 +1478,8 @@ bool fastafs::check_file_integrity()
     }
     
     // starts at 4th 
-    uint32_t total_bytes_to_be_read = this->fastafs_filesize() -4 - 4 ;
-    
+    uint32_t total_bytes_to_be_read = this->fastafs_filesize() - 4 - 4 ;
+
     uLong crc = crc32(0L, Z_NULL, 0);
 
     const int buffer_size = 4;
@@ -1464,7 +1505,6 @@ bool fastafs::check_file_integrity()
             crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
         }
     }
-
 
     char byte_enc[5] = "\x00\x01\x02\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc);

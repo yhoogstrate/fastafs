@@ -108,6 +108,7 @@ public:
     std::string name;
     std::string filename;
     std::vector<fastafs_seq*> data;
+    uint32_t crc32f;// crc32 as found in fastafs file
 
     fastafs_flags flags;
 
@@ -123,6 +124,7 @@ public:
     uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);
     size_t   view_dict_chunk(char *, size_t, off_t);
 
+    uint32_t get_crc32(void);// returns a 'new' crc32, estimated on file contents
     size_t fastafs_filesize(void);
     size_t fasta_filesize(uint32_t);
     size_t ucsc2bit_filesize(void);
