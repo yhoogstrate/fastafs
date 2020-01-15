@@ -1457,7 +1457,12 @@ bool fastafs::check_file_integrity()
         total_bytes_to_be_read -= bytes_to_be_read_this_iter;
 
         bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
-        crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
+        if(bytes_actually_read_this_iter == 0) {
+            total_bytes_to_be_read  = 0;
+        }
+        else {
+            crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
+        }
     }
 
 
