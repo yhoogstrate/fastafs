@@ -25,6 +25,7 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <zlib.h> // crc32
 
 
 #include "config.hpp"
@@ -1146,6 +1147,40 @@ size_t fastafs::view_dict_chunk(char *buffer, size_t buffer_size, off_t file_off
 
 
 
+//@todo add unit tests
+size_t fastafs::fastafs_filesize(void)
+{
+    // header + n-sequences
+    size_t n = 4 + 4 + 2 + 4;
+
+    // number sequences
+    n += 4;
+
+    // per sequence
+    for(uint32_t i = 0; i < this->data.size(); i++) {
+        n += 2;// flags
+        n += 1; // name length
+        n += this->data[i]->name.size();// name
+        n += 4; // reference to compr. data
+
+        // compr dataa
+        n += 4 + 4 + 4;// compressed nuc. + n blocks + m blocks
+        n += this->data[i]->n_twobits();
+        n += this->data[i]->n_starts.size() * 8;
+        n += 16;//md5 sum, always present?
+        n += this->data[i]->m_starts.size() * 8;
+    }
+    
+    // metadata
+    n += 1; // @ todo more sophi.
+
+    // crc32
+    n += 4; 
+
+    return n;
+}
+
+
 size_t fastafs::fasta_filesize(uint32_t padding)
 {
     size_t n = 0;
@@ -1393,14 +1428,65 @@ int fastafs::info(bool ena_verify_checksum)
     return 0;
 }
 
+//true = integer
+//false = corrupt
+bool fastafs::check_file_integrity()
+{
+    if(this->filename.size() == 0) {
+        throw std::invalid_argument("No filename found");
+    }
+    
+    // starts at 4th 
+    uint32_t n_bytes = this->fastafs_filesize();
+    printf("n bytes: %i == 403??\n", n_bytes);
+    n_bytes -= 4; // position where crc32 should start - may actually be absent if conversion crashed(!)
 
-int fastafs::check_integrity()
+
+
+
+    bool retcode = true;
+    char buffer[5];
+    
+
+    // now calculate crc32 checksum, as all bits have been set.
+    std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
+    fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
+    
+    uLong crc = crc32(0L, Z_NULL, 0);
+    
+    bool terminate = false;
+    bool togo = true;
+    while(togo)
+    {
+        if(!fh_fastafs_crc.read(buffer, 4)) {
+            terminate = true;
+        }
+        //printf("alive [%i]\n", fh_fastafs_crc.gcount());
+        //printf("--\n");
+        crc = crc32(crc, (const Bytef*)& buffer, fh_fastafs_crc.gcount());
+        
+        if(terminate) {
+            togo = false;
+        }
+    };
+
+    char byte_enc[5];
+    uint_to_fourbytes(byte_enc, (uint32_t) crc);
+
+    return retcode;
+}
+
+
+//true = integer
+//false = corrupt
+bool fastafs::check_sequence_integrity()
 {
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
 
-    int retcode = 0;
+    bool retcode = true;
+
     char md5_hash[32 + 1] = "";
     md5_hash[32] = '\0';
     std::string old_hash;
@@ -1413,20 +1499,12 @@ int fastafs::check_integrity()
             md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
             old_hash = std::string(md5_hash);
 
-            /*
-             *     const uint32_t padding;// padding used for this sequence, cannot be 0
-            const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
-
-            std::vector<uint32_t> n_starts;
-            std::vector<uint32_t> n_ends;
-             * */
-
             std::string new_hash = this->data[i]->md5(cache->sequences[i], &file);
             if(old_hash.compare(new_hash) == 0) {
                 printf("OK\t%s\n", this->data[i]->name.c_str());
             } else {
                 printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
-                retcode = EIO;
+                retcode = false;
             }
         }
         file.close();

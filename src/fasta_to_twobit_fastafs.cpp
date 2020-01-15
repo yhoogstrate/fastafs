@@ -338,7 +338,6 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
             terminate = true;
         }
         //printf("alive [%i]\n", fh_fastafs_crc.gcount());
-        printf("--\n");
         crc = crc32(crc, (const Bytef*)& buffer, fh_fastafs_crc.gcount());
         
         if(terminate) {
@@ -352,6 +351,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     uint_to_fourbytes(byte_enc, (uint32_t) crc);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
     
+    // finalize file
     size_t written = fh_fastafs.tellp();
     fh_fastafs.close();
 

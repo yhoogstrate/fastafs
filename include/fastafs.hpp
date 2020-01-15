@@ -123,6 +123,7 @@ public:
     uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);
     size_t   view_dict_chunk(char *, size_t, off_t);
 
+    size_t fastafs_filesize(void);
     size_t fasta_filesize(uint32_t);
     size_t ucsc2bit_filesize(void);
     size_t dict_filesize(void);
@@ -130,7 +131,8 @@ public:
     std::string get_faidx(uint32_t);//@todo get rid of this, make it full chunked
 
     int info(bool);
-    int check_integrity(void);
+    bool check_file_integrity(void);
+    bool check_sequence_integrity(void);
 };
 
 

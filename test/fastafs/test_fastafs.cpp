@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
-    BOOST_CHECK_EQUAL(fs.check_integrity(), 0);
+    BOOST_CHECK_EQUAL(fs.check_sequence_integrity(), 0);
 }
 
 
