@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include "zlib.h"
 
 #include "config.hpp"
 
@@ -319,10 +320,41 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
 
     // calc written size
     fh_fastafs.seekp(0, std::ios::end);
-    size_t written = fh_fastafs.tellp();
 
     fh_fasta.close();
+
+    // 
+    // now calculate crc32 checksum, as all bits have been set.
+    std::ifstream fh_fastafs_crc(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
+    fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
+    
+    uLong crc = crc32(0L, Z_NULL, 0);
+    
+    bool terminate = false;
+    bool togo = true;
+    while(togo)
+    {
+        if(!fh_fastafs_crc.read(buffer, 4)) {
+            terminate = true;
+        }
+        //printf("alive [%i]\n", fh_fastafs_crc.gcount());
+        printf("--\n");
+        crc = crc32(crc, (const Bytef*)& buffer, fh_fastafs_crc.gcount());
+        
+        if(terminate) {
+            togo = false;
+        }
+    };
+    // --
+
+    //write crc
+    char byte_enc[5];
+    uint_to_fourbytes(byte_enc, (uint32_t) crc);
+    fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
+    
+    size_t written = fh_fastafs.tellp();
     fh_fastafs.close();
+
 
     return written;
 }

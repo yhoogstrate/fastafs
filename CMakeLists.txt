@@ -87,9 +87,11 @@ else()
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+
 link_libraries(ssl)
 link_libraries(crypto)
 link_libraries(fuse)
+link_libraries(z)# zlib; -lz; for crc32 checks on whole file integrity
 
 
 if(DEBUG)
