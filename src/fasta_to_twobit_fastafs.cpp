@@ -319,13 +319,10 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     uint_to_fourbytes(buffer, index_file_position);//position of header
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
-    // calc written size
-    fh_fastafs.seekp(0, std::ios::end);
-
     fh_fasta.close();
 
-    // 
     // now calculate crc32 checksum, as all bits have been set.
+    fh_fastafs.seekp(0, std::ios::end);
 
     fastafs f("");
     f.load(fastafs_file);

@@ -447,6 +447,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
 
 
 
+// @todo make this->n_bits<T>
 uint32_t fastafs_seq::n_twobits()
 {
     // if n actg bits is:

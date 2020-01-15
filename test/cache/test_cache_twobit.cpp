@@ -4,8 +4,8 @@
 
 #include "config.hpp"
 
-//#include "twobit_byte.hpp"
 #include "fasta_to_twobit_fastafs.hpp"
+//#include "fastafs.hpp"
 
 
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(Test_size)
  */
 BOOST_AUTO_TEST_CASE(test_cache)
 {
-    size_t written = fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+    size_t written = fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
 
     static std::string reference =
         // GENERIC-HEADER
@@ -315,13 +315,16 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00\x00\x01\x0A"s     // [, ] data position in file (290)
 
         // METADATA
-        "\x00"                  // [399] no metadata fields [padding will come soon?]
+        "\x00"s                 // [399] no metadata fields [padding will come soon?]
+        
+        // CRC32 checksums
+        "\x1e\x77\x77\x22"s
         ;
 
-    BOOST_CHECK_EQUAL(written, 399);
+    BOOST_CHECK_EQUAL(written, 403);
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
-    std::ifstream file("tmp/test_cachce_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file("tmp/test_cache_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
     std::streampos size;
@@ -345,6 +348,12 @@ BOOST_AUTO_TEST_CASE(test_cache)
     }
 
     delete[] buffer;
+    
+    
+    // check computed file size
+    fastafs f = fastafs("");
+    f.load("tmp/test_cache_test.fastafs");
+    BOOST_CHECK_EQUAL( f.fastafs_filesize() , 403 );
 }
 
 
@@ -358,11 +367,11 @@ BOOST_AUTO_TEST_CASE(test_cache)
 BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
-    f2.load("tmp/test_cachce_test.fastafs");
+    f2.load("tmp/test_cache_test.fastafs");
 
     const uint32_t padding = 60;
     ffs2f_init* cache_p60_uc = f2.init_ffs2f(padding, false); // upper case
@@ -418,11 +427,11 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test_003.fa", "tmp/test_cachce_test_003.fastafs");
+    fasta_to_twobit_fastafs("test/data/test_003.fa", "tmp/test_cache_test_003.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
-    f2.load("tmp/test_cachce_test_003.fastafs");
+    f2.load("tmp/test_cache_test_003.fastafs");
 
     const uint32_t padding = 60;
     ffs2f_init* cache_p60 = f2.init_ffs2f(padding, false);

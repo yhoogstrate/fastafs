@@ -5,6 +5,7 @@
 #include "config.hpp"
 
 #include "fasta_to_fourbit_fastafs.hpp"
+//#include "fastafs.hpp"
 
 
 
@@ -173,10 +174,13 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00\x00\x00\x0E"s     // [, ] data position in file (14)
 
         // METADATA
-        "\x00"                  // [120] no metadata fields [padding will come soon?]
+        "\x00"s                  // [120] no metadata fields [padding will come soon?]
+
+        // CRC32
+        "\x41\x2f\x3c\x72"s
         ;
 
-    BOOST_CHECK_EQUAL(written, 121);
+    BOOST_CHECK_EQUAL(written, 125);
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_004.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
@@ -206,6 +210,13 @@ BOOST_AUTO_TEST_CASE(test_cache)
     }
 
     delete[] buffer;
+
+
+
+    // check fastafs filesize
+    //fastafs f = fastafs("");
+    //f.load("tmp/test_004.fastafs");
+    //BOOST_CHECK_EQUAL(f.fastafs_filesize() , 125);
 }
 
 
