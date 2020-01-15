@@ -1437,28 +1437,28 @@ bool fastafs::check_file_integrity()
     }
     
     // starts at 4th 
-    uint32_t bytes_to_read = this->fastafs_filesize() -4 - 4 ;
+    uint32_t total_bytes_to_be_read = this->fastafs_filesize() -4 - 4 ;
     
     uLong crc = crc32(0L, Z_NULL, 0);
 
     const int buffer_size = 4;
     char buffer[buffer_size + 1];
-    uint32_t iii;
+
+    uint32_t bytes_to_be_read_this_iter;
+    uint32_t bytes_actually_read_this_iter;
 
     // now calculate crc32 checksum, as all bits have been set.
     std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
 
-    while(bytes_to_read > 0) {
-        //printf("still to read: %i\n", bytes_to_read);
+    while(total_bytes_to_be_read > 0) {
+        bytes_to_be_read_this_iter = std::min( (uint32_t) buffer_size, total_bytes_to_be_read) ;
+        fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
+        total_bytes_to_be_read -= bytes_to_be_read_this_iter;
 
-        iii = std::min( (uint32_t) buffer_size, bytes_to_read) ;
-        fh_fastafs_crc.read(buffer, iii);
-        bytes_to_read -= iii;
-
-        crc = crc32(crc, (const Bytef*)& buffer, fh_fastafs_crc.gcount());
+        bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
+        crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
     }
-
 
 
     char byte_enc[5] = "\x00\x01\x02\x00";
