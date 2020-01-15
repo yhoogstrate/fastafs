@@ -21,3 +21,5 @@ xcheck.sh
 *.o
 /bin-meson
 /build-meson
+*.ninja
+.ninja*

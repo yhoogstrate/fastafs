@@ -1477,7 +1477,7 @@ uint32_t fastafs::get_crc32(void)
         }
     }
 
-    return crc;
+    return (uint32_t) crc;
 }
 
 
