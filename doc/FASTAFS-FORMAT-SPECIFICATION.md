@@ -50,7 +50,7 @@ If this metadata would be written in the header located before the sequence data
 |          | METADATA-TYPE-FLAG | 2 bytes | 
 |          | ENTRY | type specific, examples below: |
 |          | => ORIGINAL PADDING | uint32_t as [4-byte integer](#four-byte-integer) | The number of nucleotides per line in the original FASTA file |
-
+| CRC32  | Checksum on entire file | 4 bytes | To ensure whole file integrity |
 
 ### GENERIC-HEADER ###
 
