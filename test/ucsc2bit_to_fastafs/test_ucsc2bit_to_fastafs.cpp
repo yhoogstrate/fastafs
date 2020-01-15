@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     std::istream_iterator<char> b2(ifs2), e2;
 
     BOOST_CHECK_EQUAL_COLLECTIONS(b1, e1, b2, e2);
-    BOOST_CHECK_EQUAL(written, (size_t) 399);
+    BOOST_CHECK_EQUAL(written, (size_t) 403);
 }
 
 

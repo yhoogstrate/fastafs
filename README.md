@@ -27,7 +27,7 @@ Required dependencies are:
  -   libboost (only for unit testing, will be come an optional dependency soon)
  -   libopenssl (for generating MD5 hashes)
  -   libfuse (for access to the fuse layer system and file virtualization)
- -   c++ compiler supporting c++-17
+ -   c++ compiler supporting c++-14
 
 Compilation is done using cmake. The build command to run cmake for common use is:
 

@@ -263,11 +263,24 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
 
-    fh_fastafs.seekp(0, std::ios::end);
-    size_t written = fh_fastafs.tellp();
-
-    fh_fastafs.close();
     fh_ucsc2bit.close();
+
+    fh_fastafs.seekp(0, std::ios::end);
+
+
+   fastafs f("");
+    f.load(fastafs_file);
+    uint32_t crc32c = f.get_crc32();
+
+    char byte_enc[5] = "\x00\x00\x00\x00";
+    uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
+    //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
+    fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
+
+
+
+    size_t written = fh_fastafs.tellp();
+    fh_fastafs.close();
 
     return written;
 }

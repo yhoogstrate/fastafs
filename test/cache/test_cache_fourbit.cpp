@@ -214,9 +214,9 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
 
     // check fastafs filesize
-    //fastafs f = fastafs("");
-    //f.load("tmp/test_004.fastafs");
-    //BOOST_CHECK_EQUAL(f.fastafs_filesize() , 125);
+    fastafs f = fastafs("");
+    f.load("tmp/test_004.fastafs");
+    BOOST_CHECK_EQUAL(f.fastafs_filesize() , 125);
 }
 
 
