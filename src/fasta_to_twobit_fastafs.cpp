@@ -333,7 +333,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
 
     char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
-    printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
+    //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
 
     
