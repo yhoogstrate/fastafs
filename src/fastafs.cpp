@@ -1437,22 +1437,26 @@ bool fastafs::check_file_integrity()
     }
     
     // starts at 4th 
-    uint32_t n_bytes = this->fastafs_filesize();
-    printf("n bytes: %i == 403??\n", n_bytes);
-    n_bytes -= 4; // position where crc32 should start - may actually be absent if conversion crashed(!)
+    uint32_t bytes_to_read = this->fastafs_filesize() -4 - 4 ;
+    
+    uLong crc = crc32(0L, Z_NULL, 0);
 
-
-
-
-    bool retcode = true;
     char buffer[5];
     
 
     // now calculate crc32 checksum, as all bits have been set.
     std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
-    
-    uLong crc = crc32(0L, Z_NULL, 0);
+
+    while(bytes_to_read > 0) {
+        printf("still to read: %i\n", bytes_to_read);
+        
+        
+        bytes_to_read -= std::min( (uint32_t) 4, bytes_to_read);
+        printf(" - now reading:     4 \n", bytes_to_read);
+        printf(" - still remaining: %i\n", bytes_to_read);
+    }
+
     
     bool terminate = false;
     bool togo = true;
@@ -1470,10 +1474,11 @@ bool fastafs::check_file_integrity()
         }
     };
 
-    char byte_enc[5];
+    char byte_enc[5] = "\x00\x01\x02\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc);
+    printf("[%i][%i][%i][%i]\n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
 
-    return retcode;
+    return true;
 }
 
 
