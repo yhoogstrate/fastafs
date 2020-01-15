@@ -1441,8 +1441,8 @@ bool fastafs::check_file_integrity()
     
     uLong crc = crc32(0L, Z_NULL, 0);
 
-    char buffer[5];
-    uint32_t nnn = 0;
+    const int buffer_size = 4;
+    char buffer[buffer_size + 1];
     uint32_t iii;
 
     // now calculate crc32 checksum, as all bits have been set.
@@ -1450,25 +1450,13 @@ bool fastafs::check_file_integrity()
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
 
     while(bytes_to_read > 0) {
-        printf("still to read: %i\n", bytes_to_read);
-        
-        
-        iii = std::min( (uint32_t) 4, bytes_to_read) ;
+        //printf("still to read: %i\n", bytes_to_read);
+
+        iii = std::min( (uint32_t) buffer_size, bytes_to_read) ;
         fh_fastafs_crc.read(buffer, iii);
         bytes_to_read -= iii;
-        printf(" - now reading:     %i \n", iii  );
+
         crc = crc32(crc, (const Bytef*)& buffer, fh_fastafs_crc.gcount());
-        
-        /*
-        if(fh_fastafs_crc.read(buffer, std::min( (uint32_t) 4, bytes_to_read))) {
-            
-        }
-        else {
-            bytes_to_read = 0;// unexpected EOF
-        }
-        */
-        //bytes_to_read -= ;
-        printf(" - still remaining: %i\n", bytes_to_read);
     }
 
 

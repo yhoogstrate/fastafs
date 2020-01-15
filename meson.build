@@ -34,8 +34,9 @@ incdir = include_directories('include')
 fuse = dependency('fuse')
 crypto = dependency('libcrypto')
 openssl = dependency('openssl')
+zlib = dependency('zlib')
 
 executable('fastafs', src, 
 							include_directories : incdir,
-							dependencies: [crypto, openssl, fuse])
+							dependencies: [crypto, openssl, fuse, zlib])
 

@@ -1,3 +1,9 @@
+2012-01-15  Youri Hoogstrate
+
+   * v1.7.0
+   * CRC32 checksums for file integratity
+   * converting to meson because of insane build times using cmake+make and re-building files that have not changed
+
 2019-09-06  Youri Hoogstrate
 
     * v1.6.2
