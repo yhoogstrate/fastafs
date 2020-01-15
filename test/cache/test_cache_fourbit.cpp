@@ -195,10 +195,10 @@ BOOST_AUTO_TEST_CASE(test_cache)
     file.read(buffer, size);
     BOOST_CHECK_EQUAL(file.gcount(), size);
     file.close();
-    
+
     //BOOST_CHECK_UNEQUAL(ret, -1);
-    
-    
+
+
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
     // check fastafs filesize
     fastafs f = fastafs("");
     f.load("tmp/test_004.fastafs");
-    BOOST_CHECK_EQUAL(f.fastafs_filesize() , 125);
+    BOOST_CHECK_EQUAL(f.fastafs_filesize(), 125);
 }
 
 

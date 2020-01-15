@@ -416,7 +416,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
 
-	printf("checkpoint a\n");
+    printf("checkpoint a\n");
 
     std::vector<char*> fuse_options = {}; // those that need to be appended later
 
@@ -472,12 +472,12 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
-	printf("checkpoint b\n");
+    printf("checkpoint b\n");
 
 
     if(full_args.size() > 2) {
-		printf("checkpoint c\n");
-		printf("full_args.size() = %i\n", full_args.size());
+        printf("checkpoint c\n");
+        printf("full_args.size() = %i\n", full_args.size());
         int mount_target_arg = full_args[full_args.size() - 2 ]; // last two arguments are <fastafs file> and <mount point>, location to last 2 args not starting with --/- are in this vector
         printf("out of bound???\n");
 
@@ -517,7 +517,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
-	printf("checkpoint c\n");
+    printf("checkpoint c\n");
 
     return fi;
 }
@@ -533,7 +533,7 @@ void fuse(int argc, char *argv[])
     //  - @todo at some point define that second mount is not really important? if possible
     char *argv2[argc];
     fuse_instance *ffi = parse_args(argc, argv, argv2);
-    
+
     printf("checkpoint\n");
 
     // part 2 - print what the planning is

@@ -333,16 +333,16 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
 
-    
+
     /*
     std::ifstream fh_fastafs_crc(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
-    
+
     uint32_t nnn = 0;
     uint32_t iii;
-    
+
     uLong crc = crc32(0L, Z_NULL, 0);
-    
+
     bool terminate = false;
     bool togo = true;
     while(togo)
@@ -354,7 +354,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
         iii = fh_fastafs_crc.gcount();
         crc = crc32(crc, (const Bytef*)& buffer, iii);
         nnn += iii;
-        
+
         if(terminate) {
             togo = false;
         }

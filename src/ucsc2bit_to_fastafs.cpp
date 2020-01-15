@@ -268,7 +268,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     fh_fastafs.seekp(0, std::ios::end);
 
 
-   fastafs f("");
+    fastafs f("");
     f.load(fastafs_file);
     uint32_t crc32c = f.get_crc32();
 

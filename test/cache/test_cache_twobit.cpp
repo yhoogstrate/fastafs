@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
         // METADATA
         "\x00"s                 // [399] no metadata fields [padding will come soon?]
-        
+
         // CRC32 checksums
         "\x1e\x77\x77\x22"s
         ;
@@ -348,12 +348,12 @@ BOOST_AUTO_TEST_CASE(test_cache)
     }
 
     delete[] buffer;
-    
-    
+
+
     // check computed file size
     fastafs f = fastafs("");
     f.load("tmp/test_cache_test.fastafs");
-    BOOST_CHECK_EQUAL( f.fastafs_filesize() , 403 );
+    BOOST_CHECK_EQUAL(f.fastafs_filesize(), 403);
 }
 
 

@@ -669,8 +669,7 @@ void fastafs::load(std::string afilename)
             file.read(memblock, 4);
             if(file.gcount() == 4) {
                 this->crc32f = fourbytes_to_uint(memblock, 0);
-            }
-            else {
+            } else {
                 //printf("crc32 checksum missing\n");
             }
 
@@ -1183,12 +1182,12 @@ size_t fastafs::fastafs_filesize(void)
         n += 16;//md5 sum, always present?
         n += this->data[i]->m_starts.size() * 8;
     }
-    
+
     // metadata
     n += 1; // @ todo more sophi.
 
     // crc32
-    n += 4; 
+    n += 4;
 
     return n;
 }
@@ -1448,8 +1447,8 @@ uint32_t fastafs::get_crc32(void)
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }
-    
-    // starts at 4th 
+
+    // starts at 4th
     uint32_t total_bytes_to_be_read = this->fastafs_filesize() - 4 - 4 ;
 
     uLong crc = crc32(0L, Z_NULL, 0);
@@ -1465,15 +1464,14 @@ uint32_t fastafs::get_crc32(void)
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
 
     while(total_bytes_to_be_read > 0) {
-        bytes_to_be_read_this_iter = std::min( (uint32_t) buffer_size, total_bytes_to_be_read) ;
+        bytes_to_be_read_this_iter = std::min((uint32_t) buffer_size, total_bytes_to_be_read) ;
         fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
         total_bytes_to_be_read -= bytes_to_be_read_this_iter;
 
         bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
         if(bytes_actually_read_this_iter == 0) {
             total_bytes_to_be_read  = 0; // unexpected eof?
-        }
-        else {
+        } else {
             crc = crc32(crc, (const Bytef*)& buffer, bytes_actually_read_this_iter);
         }
     }
@@ -1494,32 +1492,31 @@ bool fastafs::check_file_integrity()
     if(crc32_current != this->crc32f) {
 
         char buf_new[5] = "\x00\x00\x00\x00";
-        uint_to_fourbytes(buf_new, (uint32_t) crc32_current);    
-        
+        uint_to_fourbytes(buf_new, (uint32_t) crc32_current);
+
         printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (in-file)  !=  %02hhx%02hhx%02hhx%02hhx (actual file)\n--\n",
-        buf_old[0],
-        buf_old[1],
-        buf_old[2],
-        buf_old[3],
+               buf_old[0],
+               buf_old[1],
+               buf_old[2],
+               buf_old[3],
 
-        buf_new[0],
-        buf_new[1],
-        buf_new[2],
-        buf_new[3]
+               buf_new[0],
+               buf_new[1],
+               buf_new[2],
+               buf_new[3]
 
-        );
-        
-    }
-    else {
+              );
+
+    } else {
         printf("OK\t%02hhx%02hhx%02hhx%02hhx\n--\n",
-        buf_old[0],
-        buf_old[1],
-        buf_old[2],
-        buf_old[3]
+               buf_old[0],
+               buf_old[1],
+               buf_old[2],
+               buf_old[3]
 
-        );
+              );
     }
-    
+
     return (crc32_current == this->crc32f);
 }
 

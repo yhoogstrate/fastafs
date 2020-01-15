@@ -257,8 +257,7 @@ int main(int argc, char *argv[])
                 bool check2 = f.check_sequence_integrity();
                 if(check1 and check2) {
                     return 0;
-                }
-                else {
+                } else {
                     return EIO;
                 }
             } else {
