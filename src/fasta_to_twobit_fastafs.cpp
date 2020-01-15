@@ -4,6 +4,7 @@
 
 #include "config.hpp"
 
+#include "fastafs.hpp"
 #include "fasta_to_twobit_fastafs.hpp"
 #include "flags.hpp"
 #include "utils.hpp"
@@ -325,6 +326,18 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
 
     // 
     // now calculate crc32 checksum, as all bits have been set.
+
+    fastafs f("");
+    f.load(fastafs_file);
+    uint32_t crc32c = f.get_crc32();
+
+    char byte_enc[5] = "\x00\x00\x00\x00";
+    uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
+    printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
+    fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
+
+    
+    /*
     std::ifstream fh_fastafs_crc(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
     
@@ -353,14 +366,16 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
     printf("nnn = %i\n",nnn);
 
     //write crc
-    char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc);
     printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
-    
+    */
+
     // finalize file
     size_t written = fh_fastafs.tellp();
     fh_fastafs.close();
+
+
 
 
     return written;
