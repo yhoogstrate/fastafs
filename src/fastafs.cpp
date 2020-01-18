@@ -447,7 +447,8 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
 
 
 
-uint32_t fastafs_seq::n_bits() {
+uint32_t fastafs_seq::n_bits()
+{
     uint32_t n = this->n;// number of characters
 
     // minus number of masked characters
@@ -461,11 +462,9 @@ uint32_t fastafs_seq::n_bits() {
         // 0 -> 0
         // 1,2,3 and 4 -> 1
         return (n + (twobit_byte::nucleotides_per_byte - 1)) / twobit_byte::nucleotides_per_byte;
-    }
-    else if (this->flags.is_fourbit()) {
+    } else if(this->flags.is_fourbit()) {
         return (n + (fourbit_byte::nucleotides_per_byte - 1)) / fourbit_byte::nucleotides_per_byte;
-    }
-    else {
+    } else {
         return 0; // unclear yet
     }
 }
@@ -1516,26 +1515,22 @@ bool fastafs::check_file_integrity()
         uint_to_fourbytes(buf_new, (uint32_t) crc32_current);
 
         printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (in-file)  !=  %02hhx%02hhx%02hhx%02hhx (actual file)\n--\n",
-               buf_old[0],
-               buf_old[1],
-               buf_old[2],
-               buf_old[3],
+               (unsigned char) buf_old[0],
+               (unsigned char) buf_old[1],
+               (unsigned char) buf_old[2],
+               (unsigned char) buf_old[3],
 
-               buf_new[0],
-               buf_new[1],
-               buf_new[2],
-               buf_new[3]
-
-              );
+               (unsigned char) buf_new[0],
+               (unsigned char) buf_new[1],
+               (unsigned char) buf_new[2],
+               (unsigned char) buf_new[3]);
 
     } else {
         printf("OK\t%02hhx%02hhx%02hhx%02hhx\n--\n",
-               buf_old[0],
-               buf_old[1],
-               buf_old[2],
-               buf_old[3]
-
-              );
+               (unsigned char) buf_old[0],
+               (unsigned char) buf_old[1],
+               (unsigned char) buf_old[2],
+               (unsigned char) buf_old[3]);
     }
 
     return (crc32_current == this->crc32f);

@@ -28,7 +28,7 @@ public:
 
 
     fasta_seq_header_fourbit_conversion_data(off_t arg_fof,
-        std::string &arg_name):
+            std::string &arg_name):
         file_offset_in_fasta(arg_fof),
         name(arg_name),
         N(0),
