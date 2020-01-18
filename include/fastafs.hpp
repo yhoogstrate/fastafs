@@ -80,8 +80,7 @@ public:
     std::string sha1(ffs2f_init_seq*, std::ifstream*);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
     std::string md5(ffs2f_init_seq*, std::ifstream*);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
 
-    uint32_t n_twobits();
-    uint32_t n_fourbits();
+    uint32_t n_bits();
 
     static uint32_t n_padding(uint32_t, uint32_t, uint32_t);
     bool get_n_offset(uint32_t, uint32_t *);

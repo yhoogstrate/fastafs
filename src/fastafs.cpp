@@ -447,18 +447,39 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
 
 
 
-// @todo make this->n_bits<T>
-uint32_t fastafs_seq::n_twobits()
+uint32_t fastafs_seq::n_bits() {
+    uint32_t n = this->n;// number of characters
+
+    // minus number of masked characters
+    for(uint32_t i = 0; i < this->n_starts.size(); i++) {
+        n -= n_ends[i] - this->n_starts[i] + 1;
+    }
+
+    // divided by bits per bytes
+    if(this->flags.is_twobit()) {
+        // if n actg bits is:
+        // 0 -> 0
+        // 1,2,3 and 4 -> 1
+        return (n + (twobit_byte::nucleotides_per_byte - 1)) / twobit_byte::nucleotides_per_byte;
+    }
+    else if (this->flags.is_fourbit()) {
+        return (n + (fourbit_byte::nucleotides_per_byte - 1)) / fourbit_byte::nucleotides_per_byte;
+    }
+    else {
+        return 0; // unclear yet
+    }
+}
+
+
+/*
+uint32_t fastafs_seq::n_bits()
 {
-    // if n actg bits is:
-    // 0 -> 0
-    // 1,2,3 and 4 -> 1
     uint32_t n = this->n;
     for(uint32_t i = 0; i < this->n_starts.size(); i++) {
         n -= n_ends[i] - this->n_starts[i] + 1;
     }
     return (n + 3) / 4;
-}
+}*/
 
 
 //@brief calculates the number of paddings found in a sequence of length N with
@@ -1177,7 +1198,7 @@ size_t fastafs::fastafs_filesize(void)
 
         // compr dataa
         n += 4 + 4 + 4;// compressed nuc. + n blocks + m blocks
-        n += this->data[i]->n_twobits();
+        n += this->data[i]->n_bits();
         n += this->data[i]->n_starts.size() * 8;
         n += 16;//md5 sum, always present?
         n += this->data[i]->m_starts.size() * 8;
