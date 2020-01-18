@@ -27,9 +27,10 @@ public:
     bool previous_was_N;
 
 
-    fasta_seq_header_fourbit_conversion_data(off_t fof, std::string name):
-        file_offset_in_fasta(fof),
-        name(name),
+    fasta_seq_header_fourbit_conversion_data(off_t arg_fof,
+        std::string &arg_name):
+        file_offset_in_fasta(arg_fof),
+        name(arg_name),
         N(0),
         n_actg(0),
         previous_was_N(false),
@@ -57,5 +58,5 @@ public:
 };
 
 
-size_t fasta_to_fourbit_fastafs(const std::string, const std::string);
+size_t fasta_to_fourbit_fastafs(const std::string &, const std::string &);
 

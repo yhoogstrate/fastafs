@@ -131,7 +131,7 @@ void fasta_seq_header_fourbit_conversion_data::finish_sequence(std::ofstream &fh
 
 
 
-size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string fastafs_file)
+size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string &fastafs_file)
 {
     std::vector<fasta_seq_header_fourbit_conversion_data*> index;
     fasta_seq_header_fourbit_conversion_data* s;
@@ -571,7 +571,7 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
 
     fh_fastafs.seekp(0, std::ios::end);
 
-    printf("file size now: %i\n", fh_fastafs.tellp());
+    printf("file size now: %i\n", (uint32_t) fh_fastafs.tellp());
 
 
 
@@ -590,14 +590,15 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
             terminate = true;
         }
         //printf("alive [%i]\n", fh_fastafs_crc.gcount());
-        iii = fh_fastafs_crc.gcount();
+        iii = (uint32_t) fh_fastafs_crc.gcount();
         crc = crc32(crc, (const Bytef*)& buffer, iii);
         nnn += iii;
 
         if(terminate) {
             togo = false;
         }
-    };
+    }
+
     // --
     printf("nnn = %i\n", nnn);
 
@@ -612,15 +613,15 @@ size_t fasta_to_fourbit_fastafs(const std::string fasta_file, const std::string 
 
 
 
-
     // calc written size
     fh_fastafs.seekp(0, std::ios::end);
     size_t written = fh_fastafs.tellp();
 
 
-    printf("file size now: %i\n", fh_fastafs.tellp());
+    //printf("file size now: %i\n", fh_fastafs.tellp());
 
     fh_fastafs.close();
 
     return written;
 }
+

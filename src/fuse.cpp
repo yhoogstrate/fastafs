@@ -477,7 +477,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
     if(full_args.size() > 2) {
         printf("checkpoint c\n");
-        printf("full_args.size() = %i\n", full_args.size());
+        printf("full_args.size() = %u\n", (uint32_t) full_args.size());
         int mount_target_arg = full_args[full_args.size() - 2 ]; // last two arguments are <fastafs file> and <mount point>, location to last 2 args not starting with --/- are in this vector
         printf("out of bound???\n");
 
