@@ -1,4 +1,4 @@
-# fastafs: fuse layer and file system for storing FASTA files
+# FASTAFS: toolkit for file system virtualisation of random access compressed FASTA files
 
 ----
 
