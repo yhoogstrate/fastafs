@@ -28,6 +28,7 @@ add_executable(test_fastafs             fastafs/test_fastafs.cpp ../src/fasta_to
 add_executable(test_fastafs_as_ucsc2bit fastafs/test_ucsc2bit.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp)
 add_executable(test_ucsc2bit_to_fastafs ucsc2bit_to_fastafs/test_ucsc2bit_to_fastafs.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/ucsc2bit_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp)
 add_executable(test_ucsc2bit_as_fasta   ucsc2bit/test_ucsc2bit_as_fasta.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/ucsc2bit.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp)
+add_executable(test_sequenceregion      sequenceregion/test_sequenceregion.cpp ../src/SequenceRegion.cpp)
 add_executable(test_utils               utils/test_utils.cpp ../src/utils.cpp)
 #add_executable(test_tree                tree/test_tree.cpp)
 
@@ -53,6 +54,8 @@ set_target_properties(test_fourbit_byte
 set_target_properties(test_ucsc2bit_to_fastafs
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_ucsc2bit_as_fasta
+                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
+set_target_properties(test_sequenceregion
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_utils
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
