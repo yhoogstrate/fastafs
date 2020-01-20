@@ -83,10 +83,13 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_nlink = 1;
     } else if(strlen(path) > 4 &&  strncmp(path, "/seq/", 5) == 0) {
         // API: "/seq/chr1:123-456"
-        printf("setting to FILE because /seq/...\n");
+        printf("setting to FILE [%s] because /seq/...\n", path);
         // @ todo - run a check on wether the chr exists and return err otherwise
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
+
+        //@todo this needs to be defined with some api stuff:!!
+        st->st_size = 4096;
     } else {
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
@@ -108,6 +111,8 @@ static int do_getattr(const char *path, struct stat *st)
                     st->st_size = ffi->f->ucsc2bit_filesize();
                 } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
                     st->st_size = ffi->f->dict_filesize();
+                } else if(strncmp(path, "/seq/", 5) == 0) { // api access
+                    printf("filesize: set to 4096\n");
                 }
             }
         } else {
@@ -171,6 +176,7 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
     }
 
     filler(buffer, "seq", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
+    filler(buffer, "seq/chr1:123", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
 
     return 0;
 }
@@ -184,7 +190,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
 
-    static int written = -1;
+    static int written = -2;// -1 = permission deinied, -2 = missing file or directory
 
     if(ffi->from_fastafs) {
         printf("\033[0;32m[%s]\033[0;33m fastafs::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
@@ -204,6 +210,14 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
+            buffer[0] = 't';
+            buffer[1] = 'e';
+            buffer[2] = 's';
+            buffer[3] = 't';
+            //buffer[4] = '\0';
+            written = 4;
+
+            /*
             printf("!! [[%s]]\n", path);
             // 01 : convert chrom loc to string with chr
             int p = -1;
@@ -221,7 +235,8 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
             // 02 : check if 'chr' is equals this->data[i].name
             fastafs_seq *fsq = nullptr;
-            for(size_t i = 0; i < ffi->f->data.size() && fsq == nullptr; i++ ) {
+            size_t i;
+            for(i = 0; i < ffi->f->data.size() && fsq == nullptr; i++ ) {
                 printf("[%s] == [%s]   \n", chr.c_str() , ffi->f->data[i]->name.c_str());
                 if( chr.compare(ffi->f->data[i]->name) == 0) {
                     fsq = ffi->f->data[i];
@@ -229,11 +244,40 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
             }
 
             // 03 - if chr was found , ok, otherise, not ok
-            if(fsq == nullptr) {
-                return -2;// -1 = permission deinied, -2 = missing file or directory
-            } else {
-                return 0;
-            }
+            if(fsq != nullptr) {
+                buffer[0] = 't';
+                buffer[1] = 'e';
+                buffer[2] = 's';
+                buffer[3] = 't';
+                buffer[4] = '\0';
+                written = 4096;
+                
+                // code below seems to work, but copying to buf doesn't seem to work?
+
+                std::ifstream file(ffi->f->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+                if(file.is_open()) {
+                    printf("alive?\n");
+                    printf("padding: %i\n", ffi->cache_p0->sequences[i]->padding);
+
+                    written = (signed int) fsq->view_fasta_chunk_cached(
+                        ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
+                        buffer, // char *buffer
+                        (size_t) size, // size_t buffer_size,
+                        (off_t) 0, // off_t start_pos_in_fasta,
+                        &file //     std::ifstream *fh)
+                        );
+                    
+                    printf("\nwritten: %i\n", (int) written);
+                    
+                    for(int kk = 0; kk < written ; kk++) {
+                        printf("%c", buffer[kk]);
+                    }
+
+                    printf("\nwritten: %i\n", (int) written);
+
+                }
+                file.close();
+                */
         }
     } else {
         if(ffi->u2b != nullptr) {
@@ -550,6 +594,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             fi->f = new fastafs(name);
             fi->f->load(fname);
             fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
+            fi->cache_p0 = fi->f->init_ffs2f(0, true);// allow mixed case
         } else {
             std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
             //std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
