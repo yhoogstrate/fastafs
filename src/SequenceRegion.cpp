@@ -39,10 +39,34 @@ void SequenceRegion::parse(char * seqstr) {
 		printf(": %s :\n", this->seq_name.c_str());
 	}
 	
-	if(p != -1) {
+	printf("\n");
+	// chr1:1
+	// p = 4
+	// strlen = 6
+	if(p != -1 and strlen(seqstr) > (p + 1)) {
 		// we can parse numbers
-		
 		// find position of '-' character
+
+		ssize_t p2 = -1;
+
+		for(size_t i = p; i < strlen(seqstr) && p2 == -1; i++) {
+			if(seqstr[i] == ':') {
+				p2 = (size_t) i;
+			}
+		}
+
+		printf("p2 = %i , p = %i\n", p2, p);
+		if(p2 == p) {// chrA:-123
+			printf("yes!\n");
+			this->start = 0;
+			printf(" end = [%s]\n", std::string(seqstr,p + 2,strlen(seqstr)).c_str());
+			this->end = std::stoi( std::string(seqstr,p + 2,strlen(seqstr)) ) ;
+		}
+		else if(p2 > strlen(seqstr) + 2) {
+			
+		}
+
+		printf("p2 = %i\n", (int) p);
 	}
 
 }

@@ -13,16 +13,16 @@
 
 
 class SequenceRegion {
-	std::string seq_name;
-
-	bool has_range;
-	bool has_end;
-	
-	off_t start;
-	off_t end;
-	
 	public:
 		SequenceRegion(char *);
+
+		std::string seq_name;
+
+		bool has_range;
+		bool has_end;
+		
+		off_t start;
+		off_t end;
 	
 	private:
 		void parse(char *);

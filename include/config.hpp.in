@@ -64,4 +64,8 @@ static const std::string DICT_HEADER = "@HD\tVN:1.0\tSO:unsorted\n";
 static const std::string FASTAFS_FILE_XATTR_NAME = "fastafs-file";
 static const std::string FASTAFS_PID_XATTR_NAME = "fastafs-pid";
 
+
+static const size_t MAX_SIZE_SEQ_NAME = 255;
+
+
 #endif
