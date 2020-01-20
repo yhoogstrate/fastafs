@@ -205,6 +205,35 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
             printf("!! [[%s]]\n", path);
+            // 01 : convert chrom loc to string with chr
+            int p = -1;
+            for(int i = 5; i < std::min( (int) 256, (int) strlen(path)) && p == -1; i++) {
+                printf(":: %c\n",path[i]);
+                if(path[i] == ':') {
+                    p = i;
+                }
+            }
+            if(p == -1) {
+                p = std::min((int) 256, (int) strlen(path));
+            }
+            std::string chr = std::string(path, 5, p - 5);
+            std::cout << "{" << chr << "}" << "\n";
+
+            // 02 : check if 'chr' is equals this->data[i].name
+            fastafs_seq *fsq = nullptr;
+            for(size_t i = 0; i < ffi->f->data.size() && fsq == nullptr; i++ ) {
+                printf("[%s] == [%s]   \n", chr.c_str() , ffi->f->data[i]->name.c_str());
+                if( chr.compare(ffi->f->data[i]->name) == 0) {
+                    fsq = ffi->f->data[i];
+                }
+            }
+
+            // 03 - if chr was found , ok, otherise, not ok
+            if(fsq == nullptr) {
+                return -2;// -1 = permission deinied, -2 = missing file or directory
+            } else {
+                return 0;
+            }
         }
     } else {
         if(ffi->u2b != nullptr) {
