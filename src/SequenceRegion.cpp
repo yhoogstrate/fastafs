@@ -41,20 +41,8 @@ void SequenceRegion::parse(char * seqstr) {
 	
 	if(p != -1) {
 		// we can parse numbers
+		
+		// find position of '-' character
 	}
-	
 
-/*
-            for(int i = 5; i < std::min( (int) 256, (int) strlen(path)) && p == -1; i++) {
-                printf(":: %c\n",path[i]);
-                if(path[i] == ':') {
-                    p = i;
-                }
-            }
-            if(p == -1) {
-                p = std::min((int) 256, (int) strlen(path));
-            }
-            std::string chr = std::string(path, 5, p - 5);
-            std::cout << "{" << chr << "}" << "\n";
-            */
 }
