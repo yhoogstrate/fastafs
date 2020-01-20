@@ -210,14 +210,15 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
+            /*
             buffer[0] = 't';
             buffer[1] = 'e';
             buffer[2] = 's';
             buffer[3] = 't';
             //buffer[4] = '\0';
             written = 4;
+            */
 
-            /*
             printf("!! [[%s]]\n", path);
             // 01 : convert chrom loc to string with chr
             int p = -1;
@@ -245,13 +246,6 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
             // 03 - if chr was found , ok, otherise, not ok
             if(fsq != nullptr) {
-                buffer[0] = 't';
-                buffer[1] = 'e';
-                buffer[2] = 's';
-                buffer[3] = 't';
-                buffer[4] = '\0';
-                written = 4096;
-                
                 // code below seems to work, but copying to buf doesn't seem to work?
 
                 std::ifstream file(ffi->f->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -263,7 +257,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
                         ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
                         buffer, // char *buffer
                         (size_t) size, // size_t buffer_size,
-                        (off_t) 0, // off_t start_pos_in_fasta,
+                        (off_t) 2 + fsq->name.size(), // off_t start_pos_in_fasta,
                         &file //     std::ifstream *fh)
                         );
                     
@@ -277,7 +271,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
                 }
                 file.close();
-                */
+            }
         }
     } else {
         if(ffi->u2b != nullptr) {
