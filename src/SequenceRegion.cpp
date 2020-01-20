@@ -4,69 +4,82 @@
 
 
 SequenceRegion::SequenceRegion(char * seqstr) :
-    seq_name("") , has_range(false), has_end(false), start(0), end(0) {
+    seq_name("") , has_defined_end(false), start(0), end(0) {
 
-	parse(seqstr);
+    parse(seqstr);
 
 }
 
 
 void SequenceRegion::parse(char * seqstr) {
-	printf("123'\n");
-	printf("[%s]\n", seqstr);
-	printf("---\n");
+    // the + 1 is the also allow parsing "sequence-of-size-255-...-:123-345"
+    size_t string_max_pos = std::min(MAX_SIZE_SEQ_NAME + 1, strlen(seqstr));
+    ssize_t p = -1;
+    for(size_t i = 0; i < string_max_pos && p == -1; i++) {
+        if(seqstr[i] == ':') {
+            p = (size_t) i;
+        }
+    }
+    
+    if(p > 0) {
+        this->seq_name = std::string(seqstr , 0 , p);
+    } else if(p == -1) {
+        
+        // either with string > 255 chars or string smaller than 255 without ':'
+        this->seq_name = std::string(seqstr , 0 , string_max_pos);
+    }
+    
+    // chr1:1
+    // p = 4
+    // strlen = 6
+    if(p != -1 and strlen(seqstr) > (p + 1)) {
+        // we can parse numbers
+        // find position of '-' character
 
-	printf("strlen: %i\n", strlen(seqstr));
+        ssize_t p2 = -1;
 
-	// the + 1 is the also allow parsing "sequence-of-size-255-...-:123-345"
-	size_t string_max_pos = std::min(MAX_SIZE_SEQ_NAME + 1, strlen(seqstr));
-	ssize_t p = -1;
-	for(size_t i = 0; i < string_max_pos && p == -1; i++) {
-		if(seqstr[i] == ':') {
-			p = (size_t) i;
-		}
-	}
-	
-	printf("p = %i\n", (int) p);
-	
-	if(p > 0) {
-		this->seq_name = std::string(seqstr , 0 , p);
-		printf("| %s |\n", this->seq_name.c_str());
-	} else if(p == -1) {
-		
-		// either with string > 255 chars or string smaller than 255 without ':'
-		this->seq_name = std::string(seqstr , 0 , string_max_pos);
-		printf(": %s :\n", this->seq_name.c_str());
-	}
-	
-	printf("\n");
-	// chr1:1
-	// p = 4
-	// strlen = 6
-	if(p != -1 and strlen(seqstr) > (p + 1)) {
-		// we can parse numbers
-		// find position of '-' character
+        for(size_t i = p; i < strlen(seqstr) && p2 == -1; i++) {
+            if(seqstr[i] == '-') {
+                p2 = (size_t) i;
+            }
+        }
 
-		ssize_t p2 = -1;
+        
+        if(p2 == -1) { // chrA:123
+            std::string start = std::string(seqstr,p + 1,p2 - p - 1);
 
-		for(size_t i = p; i < strlen(seqstr) && p2 == -1; i++) {
-			if(seqstr[i] == ':') {
-				p2 = (size_t) i;
-			}
-		}
+            this->start = std::stoi( start );
 
-		printf("p2 = %i , p = %i\n", p2, p);
-		if(p2 == p) {// chrA:-123
-			printf("yes!\n");
-			this->start = 0;
-			printf(" end = [%s]\n", std::string(seqstr,p + 2,strlen(seqstr)).c_str());
-			this->end = std::stoi( std::string(seqstr,p + 2,strlen(seqstr)) ) ;
-		}
-		else if(p2 > strlen(seqstr) + 2) {
-			
-		}
+            this->has_defined_end = true;
+            this->end = this->start;
+        } else if(p2 == (p + 1)) {// chrA:-123
+            std::string end = std::string(seqstr,p2 + 1,strlen(seqstr) - p2 - 1);
 
-		printf("p2 = %i\n", (int) p);
-	}
+            this->start = 0;
+            this->end = std::stoi( end ) ;
 
+            this->has_defined_end = true;
+        } else if(p2 > (p + 1)) { // chrA:123- | chrA:123-456 | chrA:123-456ERR
+            if(p2 + 1 == strlen(seqstr)) { // chrA:123-
+                std::string start = std::string(seqstr,p + 1,p2 - p - 1);
+                
+                this->start = std::stoi(start);
+                this->has_defined_end = false;
+            } else { // chrA:123-456 | chrA:123-456ERR
+                std::string start = std::string(seqstr,p + 1,p2 - p - 1);
+                std::string end = std::string(seqstr,p2 + 1,strlen(seqstr) - p2 - 1);
+
+
+                this->start = std::stoi( start ) ;
+
+                this->has_defined_end = true;
+                this->end = std::stoi( end ) ;
+            }
+        }
+
+    }
+
+    if(this->has_defined_end and this->start > this->end) {
+        throw std::invalid_argument("Invalid region - start larger than end.");
+    }
 }

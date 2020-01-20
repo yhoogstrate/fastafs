@@ -18,8 +18,7 @@ class SequenceRegion {
 
 		std::string seq_name;
 
-		bool has_range;
-		bool has_end;
+		bool has_defined_end;
 		
 		off_t start;
 		off_t end;
