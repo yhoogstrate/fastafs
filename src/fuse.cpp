@@ -32,6 +32,8 @@ struct fuse_instance {
     //fastasfs
     fastafs *f;
     ffs2f_init *cache;
+    ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
+
     bool from_fastafs; // if false, from 2bit
 
     // ucsc2bit
@@ -66,6 +68,7 @@ static int do_getattr(const char *path, struct stat *st)
     st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
     st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
 
+    printf("[%s]\n" , path);
     if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0644;
         //st->st_nlink = 1;
@@ -73,6 +76,17 @@ static int do_getattr(const char *path, struct stat *st)
         //directory
         st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
+    } else if(strlen(path) == 4 && strncmp(path, "/seq", 4) == 0) {
+        //directory
+        printf("setting to DIR because /seq\n");
+        st->st_mode = S_IFDIR | 0755;
+        st->st_nlink = 1;
+    } else if(strlen(path) > 4 &&  strncmp(path, "/seq/", 5) == 0) {
+        // API: "/seq/chr1:123-456"
+        printf("setting to FILE because /seq/...\n");
+        // @ todo - run a check on wether the chr exists and return err otherwise
+        st->st_mode = S_IFREG | 0644;
+        st->st_nlink = 1;
     } else {
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
@@ -156,6 +170,8 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
         }
     }
 
+    filler(buffer, "seq", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
+
     return 0;
 }
 
@@ -178,6 +194,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
         std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
 
+        printf("?? [[%s]]\n", path);
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
@@ -186,6 +203,8 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
             written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
+        } else if(strncmp(path, "/seq/", 5) == 0) { // api access
+            printf("!! [[%s]]\n", path);
         }
     } else {
         if(ffi->u2b != nullptr) {
@@ -411,7 +430,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 1, new char[argc]});
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 0, nullptr});
 
-    fuse_instance *fi = new fuse_instance({nullptr, nullptr, true, nullptr, 60, 0});
+    fuse_instance *fi = new fuse_instance({nullptr, nullptr, nullptr, true, nullptr, 60, 0});
 
     //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
