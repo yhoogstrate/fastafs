@@ -12,19 +12,20 @@
 
 
 
-class sequence_region {
-	public:
-		sequence_region(char *);
-		sequence_region(const char *);
+class sequence_region
+{
+public:
+    sequence_region(char *);
+    sequence_region(const char *);
 
-		std::string seq_name;
+    std::string seq_name;
 
-		bool has_defined_end;
-		
-		off_t start;
-		off_t end;
-	
-	private:
-		void parse(const char *);
+    bool has_defined_end;
+
+    off_t start;
+    off_t end;
+
+private:
+    void parse(const char *);
 };
 

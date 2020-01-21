@@ -4,21 +4,24 @@
 
 
 sequence_region::sequence_region(char * seqstr) :
-    seq_name("") , has_defined_end(false), start(0), end(0) {
+    seq_name(""), has_defined_end(false), start(0), end(0)
+{
 
     parse((const char *) seqstr);// char* can be converted to cost char*, but not vice versa
 
 }
 
 sequence_region::sequence_region(const char * seqstr) :
-    seq_name("") , has_defined_end(false), start(0), end(0) {
+    seq_name(""), has_defined_end(false), start(0), end(0)
+{
 
     parse(seqstr);
 
 }
 
 
-void sequence_region::parse(const char * seqstr) {
+void sequence_region::parse(const char * seqstr)
+{
     // the + 1 is the also allow parsing "sequence-of-size-255-...-:123-345"
     size_t string_max_pos = std::min(MAX_SIZE_SEQ_NAME + 1, strlen(seqstr));
     ssize_t p = -1;
@@ -27,15 +30,15 @@ void sequence_region::parse(const char * seqstr) {
             p = (size_t) i;
         }
     }
-    
+
     if(p > 0) {
-        this->seq_name = std::string(seqstr , 0 , p);
+        this->seq_name = std::string(seqstr, 0, p);
     } else if(p == -1) {
-        
+
         // either with string > 255 chars or string smaller than 255 without ':'
-        this->seq_name = std::string(seqstr , 0 , string_max_pos);
+        this->seq_name = std::string(seqstr, 0, string_max_pos);
     }
-    
+
     // chr1:1
     // p = 4
     // strlen = 6
@@ -51,36 +54,36 @@ void sequence_region::parse(const char * seqstr) {
             }
         }
 
-        
-        if(p2 == -1) { // chrA:123
-            std::string start = std::string(seqstr,p + 1,p2 - p - 1);
 
-            this->start = std::stoi( start );
+        if(p2 == -1) { // chrA:123
+            std::string start = std::string(seqstr, p + 1, p2 - p - 1);
+
+            this->start = std::stoi(start);
 
             this->has_defined_end = true;
             this->end = this->start;
         } else if(p2 == (p + 1)) {// chrA:-123
-            std::string end = std::string(seqstr,p2 + 1,strlen(seqstr) - p2 - 1);
+            std::string end = std::string(seqstr, p2 + 1, strlen(seqstr) - p2 - 1);
 
             this->start = 0;
-            this->end = std::stoi( end ) ;
+            this->end = std::stoi(end) ;
 
             this->has_defined_end = true;
         } else if(p2 > (p + 1)) { // chrA:123- | chrA:123-456 | chrA:123-456ERR
             if(p2 + 1 == strlen(seqstr)) { // chrA:123-
-                std::string start = std::string(seqstr,p + 1,p2 - p - 1);
-                
+                std::string start = std::string(seqstr, p + 1, p2 - p - 1);
+
                 this->start = std::stoi(start);
                 this->has_defined_end = false;
             } else { // chrA:123-456 | chrA:123-456ERR
-                std::string start = std::string(seqstr,p + 1,p2 - p - 1);
-                std::string end = std::string(seqstr,p2 + 1,strlen(seqstr) - p2 - 1);
+                std::string start = std::string(seqstr, p + 1, p2 - p - 1);
+                std::string end = std::string(seqstr, p2 + 1, strlen(seqstr) - p2 - 1);
 
 
-                this->start = std::stoi( start ) ;
+                this->start = std::stoi(start) ;
 
                 this->has_defined_end = true;
-                this->end = std::stoi( end ) ;
+                this->end = std::stoi(end) ;
             }
         }
 

@@ -69,7 +69,7 @@ static int do_getattr(const char *path, struct stat *st)
     st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
     st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
 
-    printf("[%s]\n" , path);
+    printf("[%s]\n", path);
     if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0644;
         //st->st_nlink = 1;
@@ -176,8 +176,9 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
         }
     }
 
-    filler(buffer, "seq", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
-    filler(buffer, "seq/chr1:123", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
+    if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
+        filler(buffer, "seq", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
+    }
 
     return 0;
 }
@@ -212,13 +213,13 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
             // parse "chr..:..-.." string
-            sequence_region sr = sequence_region( (strchr(path, '/') + 5) );
+            sequence_region sr = sequence_region((strchr(path, '/') + 5));
             std::cout << "[" << sr.seq_name << "]\n";
 
             // 02 : check if 'chr' is equals this->data[i].name
             fastafs_seq *fsq = nullptr;
             size_t i;
-            for(i = 0; i < ffi->f->data.size() && fsq == nullptr; i++ ) {
+            for(i = 0; i < ffi->f->data.size() && fsq == nullptr; i++) {
                 if(sr.seq_name.compare(ffi->f->data[i]->name) == 0) {
                     fsq = ffi->f->data[i];
                 }
@@ -232,36 +233,28 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
                     size_t total_requested_size;
                     if(sr.has_defined_end) {
                         total_requested_size = sr.end + 1;
-                    }
-                    else {
+                    } else {
                         total_requested_size = fsq->n;
                     }
                     printf("total requested length: %i\n", (int) total_requested_size);
-                    
+
                     total_requested_size -= sr.start;
                     printf("total requested length: %i\n", (int) total_requested_size);
 
                     total_requested_size = std::min(size, total_requested_size);
                     printf("total requested length: %i\n", (int) total_requested_size);
 
-                    
-                    printf("padding: %i\n", ffi->cache_p0->sequences[i]->padding);
-
                     written = (signed int) fsq->view_fasta_chunk_cached(
-                        ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
-                        buffer, // char *buffer
-                        (size_t) total_requested_size, // size_t buffer_size,
-                        (off_t) 2 + fsq->name.size() + sr.start, // off_t start_pos_in_fasta,
-                        &file //     std::ifstream *fh)
-                        );
-                    
-                    printf("\nwritten: %i\n", (int) written);
-                    
+                                  ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
+                                  buffer, // char *buffer
+                                  (size_t) total_requested_size, // size_t buffer_size,
+                                  (off_t) 2 + fsq->name.size() + sr.start, // off_t start_pos_in_fasta,
+                                  &file //     std::ifstream *fh)
+                              );
+
                     for(int kk = 0; kk < written ; kk++) {
                         printf("%c", buffer[kk]);
                     }
-
-                    printf("\nwritten: %i\n", (int) written);
 
                 }
                 file.close();
