@@ -346,6 +346,7 @@ uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache, sequence_regio
     }
 
     total_requested_size -= sr->start;
+    total_requested_size -= offset;
     total_requested_size = std::min(size, total_requested_size);
 
     written = (uint32_t) this->view_fasta_chunk(
