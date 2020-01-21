@@ -33,7 +33,6 @@
 #include "twobit_byte.hpp"
 #include "fourbit_byte.hpp"
 #include "fastafs.hpp"
-#include "sequence_region.hpp"
 #include "utils.hpp"
 
 
@@ -315,6 +314,55 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     //fh->clear();
+    return written;
+}
+
+
+
+
+uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache, sequence_region* sr, char *buffer, size_t size, off_t offset , std::ifstream *fh) {
+#if DEBUG
+    if(cache == nullptr) {
+        throw std::invalid_argument("fastafs_seq::view_sequence_region - error 01\n");
+    }
+
+    if(sr == nullptr) {
+        throw std::invalid_argument("fastafs_seq::view_sequence_region - error 02\n");
+    }
+
+    if(size == 0) { // requestedsize must be larger than 0
+        throw std::invalid_argument("fastafs_seq::view_sequence_region - error 03\n");
+    }
+
+#endif
+
+    uint32_t written = 0;
+
+    size_t total_requested_size;
+    if(sr->has_defined_end) {
+        total_requested_size = sr->end + 1;
+        printf("----------- AAAAA\ntotal_requested_size must be 0: %i\n",total_requested_size);
+    } else {
+        total_requested_size = this->n;
+        printf("----------- BBBBB\ntotal_requested_size must be 0: %i\n",total_requested_size);
+    }
+
+    total_requested_size -= sr->start;
+
+    printf("total_requested_size must be 0: %i\n",total_requested_size);
+
+    total_requested_size = std::min(size, total_requested_size);
+
+    printf("total_requested_size must be 0: %i\n",total_requested_size);
+
+    written = (uint32_t) this->view_fasta_chunk(
+                  cache, // ffs2f_init_seq* cache,
+                  buffer, // char *buffer
+                  (size_t) total_requested_size, // size_t buffer_size,
+                  (off_t) 2 + this->name.size() + sr->start + offset, // offset is for chunked reading
+                  fh
+              );
+
     return written;
 }
 
@@ -743,21 +791,19 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
     }
 #endif
 
+    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(file.is_open()) {
+        // parse "chr..:..-.." string
+        sequence_region sr = sequence_region(seq_region_arg);
 
-    // parse "chr..:..-.." string
-    sequence_region sr = sequence_region(seq_region_arg);
-    std::cout << "[" << sr.seq_name << "]\n";
-
-    // 02 : check if 'chr' is equals this->data[i].name
-    //fastafs_seq *fsq = nullptr;
-    size_t i;
-    for(i = 0; i < this->data.size(); i++) {
-        if(sr.seq_name.compare(this->data[i]->name) == 0) {
-            return 4; //ffi->f->data[i]->
+        // 02 : check if 'chr' is equals this->data[i].name
+        for(size_t i = 0; i < this->data.size(); i++) {
+            if(sr.seq_name.compare(this->data[i]->name) == 0) {
+                return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset , &file);
+            }
         }
     }
 
-    
     return 0;
 }
 

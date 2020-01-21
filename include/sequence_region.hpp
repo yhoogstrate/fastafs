@@ -1,3 +1,10 @@
+
+
+
+#ifndef SEQUENCE_REGION_HPP
+#define SEQUENCE_REGION_HPP
+
+
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -28,4 +35,9 @@ public:
 private:
     void parse(const char *);
 };
+
+
+
+#endif
+
 
