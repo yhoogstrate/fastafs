@@ -1,9 +1,16 @@
 
-#include "SequenceRegion.hpp"
+#include "sequence_region.hpp"
 
 
 
-SequenceRegion::SequenceRegion(char * seqstr) :
+sequence_region::sequence_region(char * seqstr) :
+    seq_name("") , has_defined_end(false), start(0), end(0) {
+
+    parse((const char *) seqstr);// char* can be converted to cost char*, but not vice versa
+
+}
+
+sequence_region::sequence_region(const char * seqstr) :
     seq_name("") , has_defined_end(false), start(0), end(0) {
 
     parse(seqstr);
@@ -11,7 +18,7 @@ SequenceRegion::SequenceRegion(char * seqstr) :
 }
 
 
-void SequenceRegion::parse(char * seqstr) {
+void sequence_region::parse(const char * seqstr) {
     // the + 1 is the also allow parsing "sequence-of-size-255-...-:123-345"
     size_t string_max_pos = std::min(MAX_SIZE_SEQ_NAME + 1, strlen(seqstr));
     ssize_t p = -1;

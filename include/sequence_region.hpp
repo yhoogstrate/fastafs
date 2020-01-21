@@ -12,9 +12,10 @@
 
 
 
-class SequenceRegion {
+class sequence_region {
 	public:
-		SequenceRegion(char *);
+		sequence_region(char *);
+		sequence_region(const char *);
 
 		std::string seq_name;
 
@@ -24,6 +25,6 @@ class SequenceRegion {
 		off_t end;
 	
 	private:
-		void parse(char *);
+		void parse(const char *);
 };
 

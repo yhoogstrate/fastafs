@@ -4,7 +4,7 @@
 
 #include "config.hpp"
 
-#include "SequenceRegion.hpp"
+#include "sequence_region.hpp"
 
 
 //#include <iostream>
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
 {
     {
         char arg[] = "/seq/chr1";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
         
         BOOST_CHECK_EQUAL(sr.seq_name , "chr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end , false); // not defined; sequence's end
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
 
     {
         char arg[] = "/seq/chr1:";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end , false); // not defined; sequence's end
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
 
     {
         char arg[] = "/seq/chr1:123";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chr1");
         BOOST_CHECK_EQUAL(sr.start , 123);
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
 
     {
         char arg[] = "/seq/chr1:-123";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chr1");
         BOOST_CHECK_EQUAL(sr.start , 0);
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
     
     {
         char arg[] = "/seq/chr1:123-456";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chr1");
         BOOST_CHECK_EQUAL(sr.start , 123);
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
 
     {
         char arg[] = "/seq/chr1:123-";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chr1");
         BOOST_CHECK_EQUAL(sr.start , 123);
@@ -92,9 +92,9 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
     {
         char arg[] = "/seq/chr1:456-123";
 
-        SequenceRegion *sr = nullptr;
+        sequence_region *sr = nullptr;
         if(sr == nullptr) {// compiler doesn't understand this otherwise
-            BOOST_CHECK_THROW(sr = new SequenceRegion(&(arg[5])) , std::invalid_argument);
+            BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])) , std::invalid_argument);
         }
     }
 
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
 {
     {
         char arg[] = "/seq/chrRr1";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
         
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end , false); // not defined; sequence's end
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
 
     {
         char arg[] = "/seq/chrRr1:";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end , false); // not defined; sequence's end
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
 
     {
         char arg[] = "/seq/chrRr1:1234";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 1234);
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
 
     {
         char arg[] = "/seq/chrRr1:-1234";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 0);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
     
     {
         char arg[] = "/seq/chrRr1:1234-1235";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 1234);
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
 
     {
         char arg[] = "/seq/chrRr1:1234-";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 1234);
@@ -168,9 +168,9 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
     {
         char arg[] = "/seq/chrRr1:1235-1234";
 
-        SequenceRegion *sr = nullptr;
+        sequence_region *sr = nullptr;
         if(sr == nullptr) {// compiler doesn't understand this otherwise
-            BOOST_CHECK_THROW(sr = new SequenceRegion(&(arg[5])) , std::invalid_argument);
+            BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])) , std::invalid_argument);
         }
     }
 
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
 {
     {
         char arg[] = "/seq/chrRr1";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
         
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end , false); // not defined; sequence's end
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
 
     {
         char arg[] = "/seq/chrRr1:";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end , false); // not defined; sequence's end
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
 
     {
         char arg[] = "/seq/chrRr1:123";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 123);
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
 
     {
         char arg[] = "/seq/chrRr1:-123";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 0);
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
     
     {
         char arg[] = "/seq/chrRr1:123-456";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 123);
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
 
     {
         char arg[] = "/seq/chrRr1:123-";
-        SequenceRegion sr = SequenceRegion(&(arg[5]));
+        sequence_region sr = sequence_region(&(arg[5]));
 
         BOOST_CHECK_EQUAL(sr.seq_name , "chrRr1");
         BOOST_CHECK_EQUAL(sr.start , 123);
@@ -245,9 +245,9 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
     {
         char arg[] = "/seq/chrRr1:456-123";
 
-        SequenceRegion *sr = nullptr;
+        sequence_region *sr = nullptr;
         if(sr == nullptr) {// compiler doesn't understand this otherwise
-            BOOST_CHECK_THROW(sr = new SequenceRegion(&(arg[5])) , std::invalid_argument);
+            BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])) , std::invalid_argument);
         }
     }
 

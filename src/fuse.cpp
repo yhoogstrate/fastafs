@@ -21,6 +21,7 @@
 #include "database.hpp"
 #include "fastafs.hpp"
 #include "ucsc2bit.hpp"
+#include "sequence_region.hpp"
 
 
 // http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
@@ -210,36 +211,15 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
-            /*
-            buffer[0] = 't';
-            buffer[1] = 'e';
-            buffer[2] = 's';
-            buffer[3] = 't';
-            //buffer[4] = '\0';
-            written = 4;
-            */
-
-            printf("!! [[%s]]\n", path);
-            // 01 : convert chrom loc to string with chr
-            int p = -1;
-            for(int i = 5; i < std::min( (int) 256, (int) strlen(path)) && p == -1; i++) {
-                printf(":: %c\n",path[i]);
-                if(path[i] == ':') {
-                    p = i;
-                }
-            }
-            if(p == -1) {
-                p = std::min((int) 256, (int) strlen(path));
-            }
-            std::string chr = std::string(path, 5, p - 5);
-            std::cout << "{" << chr << "}" << "\n";
+            // parse "chr..:..-.." string
+            sequence_region sr = sequence_region( (strchr(path, '/') + 5) );
+            std::cout << "[" << sr.seq_name << "]\n";
 
             // 02 : check if 'chr' is equals this->data[i].name
             fastafs_seq *fsq = nullptr;
             size_t i;
             for(i = 0; i < ffi->f->data.size() && fsq == nullptr; i++ ) {
-                printf("[%s] == [%s]   \n", chr.c_str() , ffi->f->data[i]->name.c_str());
-                if( chr.compare(ffi->f->data[i]->name) == 0) {
+                if(sr.seq_name.compare(ffi->f->data[i]->name) == 0) {
                     fsq = ffi->f->data[i];
                 }
             }
@@ -247,17 +227,31 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
             // 03 - if chr was found , ok, otherise, not ok
             if(fsq != nullptr) {
                 // code below seems to work, but copying to buf doesn't seem to work?
-
                 std::ifstream file(ffi->f->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
                 if(file.is_open()) {
-                    printf("alive?\n");
+                    size_t total_requested_size;
+                    if(sr.has_defined_end) {
+                        total_requested_size = sr.end + 1;
+                    }
+                    else {
+                        total_requested_size = fsq->n;
+                    }
+                    printf("total requested length: %i\n", (int) total_requested_size);
+                    
+                    total_requested_size -= sr.start;
+                    printf("total requested length: %i\n", (int) total_requested_size);
+
+                    total_requested_size = std::min(size, total_requested_size);
+                    printf("total requested length: %i\n", (int) total_requested_size);
+
+                    
                     printf("padding: %i\n", ffi->cache_p0->sequences[i]->padding);
 
                     written = (signed int) fsq->view_fasta_chunk_cached(
                         ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
                         buffer, // char *buffer
-                        (size_t) size, // size_t buffer_size,
-                        (off_t) 2 + fsq->name.size(), // off_t start_pos_in_fasta,
+                        (size_t) total_requested_size, // size_t buffer_size,
+                        (off_t) 2 + fsq->name.size() + sr.start, // off_t start_pos_in_fasta,
                         &file //     std::ifstream *fh)
                         );
                     
@@ -271,6 +265,8 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
                 }
                 file.close();
+            } else {
+                // should return exit code of not 0
             }
         }
     } else {

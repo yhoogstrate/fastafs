@@ -111,6 +111,7 @@ add_executable(fastafs
 					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
+					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
 				)
@@ -128,35 +129,36 @@ add_executable(mount.fastafs
 					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
+					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
 				)
 set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
-add_library(libfastafs SHARED
-					src/fasta_to_twobit_fastafs.cpp
-					src/ucsc2bit_to_fastafs.cpp
-					src/flags.cpp
-					src/fastafs.cpp
-					src/ucsc2bit.cpp
-					src/twobit_byte.cpp
-					src/fourbit_byte.cpp
-					src/database.cpp
-					src/utils.cpp
-					src/fuse.cpp
-					src/lsfastafs.cpp
-)
-target_include_directories(libfastafs PUBLIC include)
-target_sources(libfastafs PUBLIC include/fastafs.hpp)
+#add_library(libfastafs SHARED
+					#src/fasta_to_twobit_fastafs.cpp
+					#src/ucsc2bit_to_fastafs.cpp
+					#src/flags.cpp
+					#src/fastafs.cpp
+					#src/ucsc2bit.cpp
+					#src/twobit_byte.cpp
+					#src/fourbit_byte.cpp
+					#src/database.cpp
+					#src/utils.cpp
+					#src/fuse.cpp
+					#src/lsfastafs.cpp
+#)
+#target_include_directories(libfastafs PUBLIC include)
+#target_sources(libfastafs PUBLIC include/fastafs.hpp)
 
-set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
-set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(libfastafs PROPERTIES SOVERSION 1)
-set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
+#set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
+#set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
+#set_target_properties(libfastafs PROPERTIES SOVERSION 1)
+#set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
 
 #set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
 # great, this doesn't go automagically with an entire dir
-set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_twobit_fastafs.hpp;include/fuse.hpp;include/meson.build;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_twobit_fastafs.hpp;include/fuse.hpp;include/meson.build;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
 #set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
 #set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
@@ -192,6 +194,8 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
 install(TARGETS mount.fastafs DESTINATION "bin")
-install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
+
+# don't build during debug at least
+#install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
 
 # ----------------------------------------------------------------------
