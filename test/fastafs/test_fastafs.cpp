@@ -400,7 +400,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -418,7 +417,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -436,7 +434,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -454,7 +451,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -472,7 +468,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -491,7 +486,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -510,7 +504,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -528,7 +521,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -547,7 +539,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -565,7 +556,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -583,7 +573,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -601,7 +590,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -620,7 +608,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -639,7 +626,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -659,7 +645,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -676,7 +661,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -701,7 +685,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -717,12 +700,31 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr4:-1";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+        BOOST_CHECK_EQUAL(buffer[1], 'C');
+        //BOOST_CHECK_EQUAL(buffer[2], 'T');
+        //BOOST_CHECK_EQUAL(buffer[3], 'G');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr3.1:1-2";
 
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -742,7 +744,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         size_t written;
         char *buffer;
 
-        // for buffer size ...  {
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
@@ -775,6 +776,38 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
     }
 
 
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr5:2-5";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 2); // small buffer size
+
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'T');
+        BOOST_CHECK_EQUAL(buffer[1], 'G');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chrDOESNOTEXIST";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0); // small buffer size
+
+        BOOST_CHECK_EQUAL(written, 0);
+    }
 
 }
 
