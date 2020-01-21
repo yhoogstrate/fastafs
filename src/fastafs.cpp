@@ -340,20 +340,13 @@ uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache, sequence_regio
 
     size_t total_requested_size;
     if(sr->has_defined_end) {
-        total_requested_size = sr->end + 1;
-        printf("----------- AAAAA\ntotal_requested_size must be 0: %i\n",total_requested_size);
+        total_requested_size = std::min((size_t) this->n, (size_t) sr->end + 1);
     } else {
         total_requested_size = this->n;
-        printf("----------- BBBBB\ntotal_requested_size must be 0: %i\n",total_requested_size);
     }
 
     total_requested_size -= sr->start;
-
-    printf("total_requested_size must be 0: %i\n",total_requested_size);
-
     total_requested_size = std::min(size, total_requested_size);
-
-    printf("total_requested_size must be 0: %i\n",total_requested_size);
 
     written = (uint32_t) this->view_fasta_chunk(
                   cache, // ffs2f_init_seq* cache,
