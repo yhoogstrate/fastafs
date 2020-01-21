@@ -61,11 +61,11 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     uint32_t ret;
     char chunk[4];
     for(uint32_t i = 0; i < 23; i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p100->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(ret, 1);
     }
     for(uint32_t i = 23; i < 23 + 5; i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p100->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(ret, 0);
     }
 
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
     std::string ref = ">chr1\nttttccccaaaagggg\n";
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p23->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p23->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
@@ -115,13 +115,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     std::string ref = ">chr1\nttttccccaaaagggg\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
+    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
 
     file.close();
@@ -156,13 +156,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     std::string ref = ">chr1\nTTTTCCCCAAAAGGGG\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
+    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
 
     file.close();
@@ -378,6 +378,39 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
 
     delete[] buffer;
     // }
+}
+
+/**
+ * @description tests reading a request like "chr1:123-456" etc.
+ */
+BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
+{
+    std::string fastafs_file = "tmp/test.fastafs";
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
+
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    BOOST_REQUIRE(fs.data.size() > 0);
+
+
+    ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+    const char arg[] = "/seq/chr2:0-4";
+    
+
+
+    size_t written;
+    char *buffer;
+
+    // for buffer size ...  {
+    buffer = new char[READ_BUFFER_SIZE + 1];
+    flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+
+    written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+
+
+    BOOST_CHECK_EQUAL(written, 4);
 }
 
 

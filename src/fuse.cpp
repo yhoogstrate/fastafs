@@ -204,7 +204,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
         printf("?? [[%s]]\n", path);
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-            written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
+            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
@@ -244,7 +244,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
                     total_requested_size = std::min(size, total_requested_size);
                     printf("total requested length: %i\n", (int) total_requested_size);
 
-                    written = (signed int) fsq->view_fasta_chunk_cached(
+                    written = (signed int) fsq->view_fasta_chunk(
                                   ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
                                   buffer, // char *buffer
                                   (size_t) total_requested_size, // size_t buffer_size,

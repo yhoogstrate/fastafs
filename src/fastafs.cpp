@@ -33,7 +33,7 @@
 #include "twobit_byte.hpp"
 #include "fourbit_byte.hpp"
 #include "fastafs.hpp"
-//#include "flags.hpp"
+#include "sequence_region.hpp"
 #include "utils.hpp"
 
 
@@ -72,12 +72,12 @@ void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
     uint32_t offset = 0;
 
     //@todo figure out if a do {} while() loop isn't more in place here?
-    uint32_t written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
+    uint32_t written = this->view_fasta_chunk(cache, buffer, READ_BUFFER_SIZE, offset, fh);
     while(written > 0) {
         std::cout << std::string(buffer, written);
         offset += written;
 
-        written = this->view_fasta_chunk_cached(cache, buffer, READ_BUFFER_SIZE, offset, fh);
+        written = this->view_fasta_chunk(cache, buffer, READ_BUFFER_SIZE, offset, fh);
     }
 }
 
@@ -135,7 +135,7 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
 
 
 // @todo templating like stuff
-uint32_t fastafs_seq::view_fasta_chunk_cached(
+uint32_t fastafs_seq::view_fasta_chunk(
     ffs2f_init_seq* cache,
     char *buffer,
 
@@ -145,16 +145,16 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
     std::ifstream *fh)
 {
     if(this->flags.is_twobit()) {
-        return this->view_fasta_chunk_cached_generalized<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+        return this->view_fasta_chunk_generalized<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     } else {
-        return this->view_fasta_chunk_cached_generalized<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+        return this->view_fasta_chunk_generalized<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
 }
 
 
 
 /*
- * fastafs_seq::view_fasta_chunk_cached -
+ * fastafs_seq::view_fasta_chunk -
  *
  * @padding = number of spaces?
  * @char buffer =
@@ -167,7 +167,7 @@ uint32_t fastafs_seq::view_fasta_chunk_cached(
  *
  * @todo see if this can be a std::ifstream or some kind of stream type of object?
 */
-template <class T> uint32_t fastafs_seq::view_fasta_chunk_cached_generalized(
+template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     ffs2f_init_seq* cache,
     char *buffer,
 
@@ -369,7 +369,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
-        this->view_fasta_chunk_cached(cache, chunk,
+        this->view_fasta_chunk(cache, chunk,
                                       chunksize,
                                       header_offset + (i * chunksize),
                                       fh);
@@ -377,7 +377,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
     }
 
     if(remaining_bytes > 0) {
-        this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
+        this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
         SHA1_Update(&ctx, chunk, remaining_bytes);
         //chunk[remaining_bytes] = '\0';
     }
@@ -421,7 +421,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
 
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
-        this->view_fasta_chunk_cached(cache, chunk,
+        this->view_fasta_chunk(cache, chunk,
                                       chunksize,
                                       header_offset + (i * chunksize),
                                       fh);
@@ -429,7 +429,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     }
 
     if(remaining_bytes > 0) {
-        this->view_fasta_chunk_cached(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
+        this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
         MD5_Update(&ctx, chunk, remaining_bytes);
         chunk[remaining_bytes] = '\0';
     }
@@ -470,15 +470,7 @@ uint32_t fastafs_seq::n_bits()
 }
 
 
-/*
-uint32_t fastafs_seq::n_bits()
-{
-    uint32_t n = this->n;
-    for(uint32_t i = 0; i < this->n_starts.size(); i++) {
-        n -= n_ends[i] - this->n_starts[i] + 1;
-    }
-    return (n + 3) / 4;
-}*/
+
 
 
 //@brief calculates the number of paddings found in a sequence of length N with
@@ -732,8 +724,48 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
     return ddata;
 }
 
+
+
+
+
+uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region_arg , char *buffer, size_t buffer_size, off_t file_offset) {
+#if DEBUG
+    if(cache == nullptr) {
+        throw std::invalid_argument("fastafs::view_sequence_region - error 01\n");
+    }
+
+    if(cache->padding_arg != 0) {
+        throw std::invalid_argument("fastafs::view_sequence_region - error 02\n");
+    }
+
+    if(cache->sequences.size() == 0) {
+        throw std::invalid_argument("fastafs::view_sequence_region - error 03\n");
+    }
+#endif
+
+
+    // parse "chr..:..-.." string
+    sequence_region sr = sequence_region(seq_region_arg);
+    std::cout << "[" << sr.seq_name << "]\n";
+
+    // 02 : check if 'chr' is equals this->data[i].name
+    //fastafs_seq *fsq = nullptr;
+    size_t i;
+    for(i = 0; i < this->data.size(); i++) {
+        if(sr.seq_name.compare(this->data[i]->name) == 0) {
+            return 4; //ffi->f->data[i]->
+        }
+    }
+
+    
+    return 0;
+}
+
+
+
+
 /*
- * fastafs::view_fasta_chunk_cached -
+ * fastafs::view_fasta_chunk -
  *
  * @cache:
  * @buffer:
@@ -742,12 +774,7 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
  *
  * returns
  */
-uint32_t fastafs::view_fasta_chunk_cached(
-    ffs2f_init* cache,
-    char *buffer,
-
-    size_t buffer_size,
-    off_t file_offset)
+uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
 {
     uint32_t written = 0;
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -761,7 +788,7 @@ uint32_t fastafs::view_fasta_chunk_cached(
             const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
 
             if(pos < sequence_file_size) {
-                const uint32_t written_seq = seq->view_fasta_chunk_cached(
+                const uint32_t written_seq = seq->view_fasta_chunk(
                                                  cache->sequences[i],
                                                  &buffer[written],
                                                  std::min((uint32_t) buffer_size - written, sequence_file_size),
@@ -783,7 +810,7 @@ uint32_t fastafs::view_fasta_chunk_cached(
         }
         file.close();
     } else {
-        throw std::runtime_error("[fastafs::view_fasta_chunk_cached] could not load fastafs: " + this->filename);
+        throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
     }
     return written;
 }
@@ -1000,7 +1027,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             while(pos < pos_limit) {
                 //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
                 //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
-                sequence->view_fasta_chunk_cached(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), &file);
+                sequence->view_fasta_chunk(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), &file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
@@ -1020,7 +1047,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 if(pos < pos_limit) {
                     //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, sequence->n - (full_twobits * 4),  sequence->n - j);
                     //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
-                    sequence->view_fasta_chunk_cached(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, &file);
+                    sequence->view_fasta_chunk(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, &file);
                     t.set(n_seq);
                     buffer[written++] = t.data;
                     pos++;
@@ -1034,7 +1061,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
         delete cache;
         file.close();
     } else {
-        throw std::runtime_error("[fastafs::view_fasta_chunk_cached] could not load fastafs: " + this->filename);
+        throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
     }
     return written;
 }
@@ -1325,6 +1352,9 @@ uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer
 
     return written;
 }
+
+
+
 
 /*
 https://www.ebi.ac.uk/ena/cram/sha1/7716832754e642d068e6fbd8f792821ca5544309

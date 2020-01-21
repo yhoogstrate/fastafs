@@ -74,8 +74,8 @@ public:
     uint32_t fasta_filesize(uint32_t padding);
     void view_fasta(ffs2f_init_seq*, std::ifstream *);
 
-    uint32_t view_fasta_chunk_cached(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
-    template <class T> uint32_t view_fasta_chunk_cached_generalized(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
+    uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
+    template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
 
     std::string sha1(ffs2f_init_seq*, std::ifstream*);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
     std::string md5(ffs2f_init_seq*, std::ifstream*);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
@@ -111,14 +111,15 @@ public:
 
     fastafs_flags flags;
 
-    uint32_t n();
+    uint32_t n();// number nucleotdies
 
     std::string basename();
 
     void load(std::string);
     void view_fasta(ffs2f_init*);
 
-    uint32_t view_fasta_chunk_cached(ffs2f_init*, char*, size_t, off_t);//@todo remove _cached suffix
+    uint32_t view_sequence_region(ffs2f_init*, const char * , char*, size_t, off_t);// read stuff like "chr1:123-456" into the buffer
+    uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t);
     uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
     uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);
     size_t   view_dict_chunk(char *, size_t, off_t);

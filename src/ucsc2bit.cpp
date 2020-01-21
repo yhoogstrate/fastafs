@@ -374,7 +374,7 @@ void ucsc2bit::load(std::string afilename)
 
 
 /*
-* ucsc2bit::view_fasta_chunk_cached -
+* ucsc2bit::view_fasta_chunk -
 *
 * @padding: size of padding - placement of newlines (default = 60)
 * @buffer:
@@ -422,7 +422,7 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
         file.close();
 
     } else {
-        throw std::runtime_error("[ucsc2bit::view_fasta_chunk_cached] could not load ucsc2bit: " + this->filename);
+        throw std::runtime_error("[ucsc2bit::view_fasta_chunk] could not load ucsc2bit: " + this->filename);
     }
 
     return written;

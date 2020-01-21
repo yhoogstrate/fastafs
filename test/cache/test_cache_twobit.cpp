@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     std::string output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk_cached(cache_p60_uc, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60_uc, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk_cached(cache_p60_mc, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60_mc, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
     std::string output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk_cached(cache_p60, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
