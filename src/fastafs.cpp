@@ -320,7 +320,8 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
 
-uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache, sequence_region* sr, char *buffer, size_t size, off_t offset , std::ifstream *fh) {
+uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache, sequence_region* sr, char *buffer, size_t size, off_t offset, std::ifstream *fh)
+{
 #if DEBUG
     if(cache == nullptr) {
         throw std::invalid_argument("fastafs_seq::view_sequence_region - error 01\n");
@@ -412,9 +413,9 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
         this->view_fasta_chunk(cache, chunk,
-                                      chunksize,
-                                      header_offset + (i * chunksize),
-                                      fh);
+                               chunksize,
+                               header_offset + (i * chunksize),
+                               fh);
         SHA1_Update(&ctx, chunk, chunksize);
     }
 
@@ -464,9 +465,9 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
         this->view_fasta_chunk(cache, chunk,
-                                      chunksize,
-                                      header_offset + (i * chunksize),
-                                      fh);
+                               chunksize,
+                               header_offset + (i * chunksize),
+                               fh);
         MD5_Update(&ctx, chunk, chunksize);
     }
 
@@ -770,7 +771,8 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 
 
 
-uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region_arg , char *buffer, size_t buffer_size, off_t file_offset) {
+uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region_arg, char *buffer, size_t buffer_size, off_t file_offset)
+{
 #if DEBUG
     if(cache == nullptr) {
         throw std::invalid_argument("fastafs::view_sequence_region - error 01\n");
@@ -793,7 +795,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
         // 02 : check if 'chr' is equals this->data[i].name
         for(size_t i = 0; i < this->data.size(); i++) {
             if(sr.seq_name.compare(this->data[i]->name) == 0) {
-                return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset , &file);
+                return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, &file);
             }
         }
     }

@@ -212,55 +212,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
-            // parse "chr..:..-.." string
-            sequence_region sr = sequence_region((strchr(path, '/') + 5));
-            std::cout << "[" << sr.seq_name << "]\n";
-
-            // 02 : check if 'chr' is equals this->data[i].name
-            fastafs_seq *fsq = nullptr;
-            size_t i;
-            for(i = 0; i < ffi->f->data.size() && fsq == nullptr; i++) {
-                if(sr.seq_name.compare(ffi->f->data[i]->name) == 0) {
-                    fsq = ffi->f->data[i];
-                }
-            }
-
-            // 03 - if chr was found , ok, otherise, not ok
-            if(fsq != nullptr) {
-                // code below seems to work, but copying to buf doesn't seem to work?
-                std::ifstream file(ffi->f->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-                if(file.is_open()) {
-                    size_t total_requested_size;
-                    if(sr.has_defined_end) {
-                        total_requested_size = sr.end + 1;
-                    } else {
-                        total_requested_size = fsq->n;
-                    }
-                    printf("total requested length: %i\n", (int) total_requested_size);
-
-                    total_requested_size -= sr.start;
-                    printf("total requested length: %i\n", (int) total_requested_size);
-
-                    total_requested_size = std::min(size, total_requested_size);
-                    printf("total requested length: %i\n", (int) total_requested_size);
-
-                    written = (signed int) fsq->view_fasta_chunk(
-                                  ffi->cache_p0->sequences[i], // ffs2f_init_seq* cache,
-                                  buffer, // char *buffer
-                                  (size_t) total_requested_size, // size_t buffer_size,
-                                  (off_t) 2 + fsq->name.size() + sr.start, // off_t start_pos_in_fasta,
-                                  &file //     std::ifstream *fh)
-                              );
-
-                    for(int kk = 0; kk < written ; kk++) {
-                        printf("%c", buffer[kk]);
-                    }
-
-                }
-                file.close();
-            } else {
-                // should return exit code of not 0
-            }
+            written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
         }
     } else {
         if(ffi->u2b != nullptr) {
