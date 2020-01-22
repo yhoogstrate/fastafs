@@ -135,8 +135,8 @@ public:
     std::string get_faidx(uint32_t);//@todo get rid of this, make it full chunked
 
     int info(bool);
-    bool check_file_integrity(void);
-    bool check_sequence_integrity(void);
+    bool check_file_integrity(bool);
+    bool check_sequence_integrity(bool);
 };
 
 

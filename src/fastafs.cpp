@@ -1574,7 +1574,7 @@ uint32_t fastafs::get_crc32(void)
 
 //true = integer
 //false = corrupt
-bool fastafs::check_file_integrity()
+bool fastafs::check_file_integrity(bool verbose)
 {
     uint32_t crc32_current = this->get_crc32();
 
@@ -1586,23 +1586,26 @@ bool fastafs::check_file_integrity()
         char buf_new[5] = "\x00\x00\x00\x00";
         uint_to_fourbytes(buf_new, (uint32_t) crc32_current);
 
-        printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (in-file)  !=  %02hhx%02hhx%02hhx%02hhx (actual file)\n--\n",
-               (unsigned char) buf_old[0],
-               (unsigned char) buf_old[1],
-               (unsigned char) buf_old[2],
-               (unsigned char) buf_old[3],
+        if(verbose) {
+            printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (in-file)  !=  %02hhx%02hhx%02hhx%02hhx (actual file)\n--\n",
+                   (unsigned char) buf_old[0],
+                   (unsigned char) buf_old[1],
+                   (unsigned char) buf_old[2],
+                   (unsigned char) buf_old[3],
 
-               (unsigned char) buf_new[0],
-               (unsigned char) buf_new[1],
-               (unsigned char) buf_new[2],
-               (unsigned char) buf_new[3]);
-
+                   (unsigned char) buf_new[0],
+                   (unsigned char) buf_new[1],
+                   (unsigned char) buf_new[2],
+                   (unsigned char) buf_new[3]);
+        }
     } else {
-        printf("OK\t%02hhx%02hhx%02hhx%02hhx\n--\n",
-               (unsigned char) buf_old[0],
-               (unsigned char) buf_old[1],
-               (unsigned char) buf_old[2],
-               (unsigned char) buf_old[3]);
+        if(verbose) {
+            printf("OK\t%02hhx%02hhx%02hhx%02hhx\n--\n",
+                   (unsigned char) buf_old[0],
+                   (unsigned char) buf_old[1],
+                   (unsigned char) buf_old[2],
+                   (unsigned char) buf_old[3]);
+        }
     }
 
     return (crc32_current == this->crc32f);
@@ -1611,7 +1614,7 @@ bool fastafs::check_file_integrity()
 
 //true = integer
 //false = corrupt
-bool fastafs::check_sequence_integrity()
+bool fastafs::check_sequence_integrity(bool verbose)
 {
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
@@ -1633,9 +1636,13 @@ bool fastafs::check_sequence_integrity()
 
             std::string new_hash = this->data[i]->md5(cache->sequences[i], &file);
             if(old_hash.compare(new_hash) == 0) {
-                printf("OK\t%s\n", this->data[i]->name.c_str());
+                if(verbose) {
+                    printf("OK\t%s\n", this->data[i]->name.c_str());
+                }
             } else {
-                printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
+                if(verbose) {
+                    printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
+                }
                 retcode = false;
             }
         }

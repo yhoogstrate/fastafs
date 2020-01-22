@@ -253,8 +253,8 @@ int main(int argc, char *argv[])
                 fastafs f = fastafs(std::string(argv[argc - 1]));
                 f.load(fname);
 
-                bool check1 = f.check_file_integrity();
-                bool check2 = f.check_sequence_integrity();
+                bool check1 = f.check_file_integrity(true);
+                bool check2 = f.check_sequence_integrity(true);
                 if(check1 and check2) {
                     return 0;
                 } else {

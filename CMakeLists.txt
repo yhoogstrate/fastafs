@@ -178,6 +178,7 @@ add_test(test_cache_fourbit       "${BUILD_TEST_DIR}/test_cache_fourbit")
 #add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
+add_test(test_check               "${BUILD_TEST_DIR}/test_check") # file integrity checks
 add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
 add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
