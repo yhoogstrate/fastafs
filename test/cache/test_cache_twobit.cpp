@@ -237,8 +237,8 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00\x00\x00\x10"s//     [14, 17] seq length (16) (of 2bit encoded bytes; n-blocks are excluded)
         "\x00\x55\xAA\xFF"s//     [18, 21] sequence
         "\x00\x00\x00\x00"s//     [22, 25] n-blocks (0)
-        "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 45] checksum
-        "\x00\x00\x00\x01"s//     [46, 49] m-blocks (1)
+        "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 41] checksum
+        "\x00\x00\x00\x01"s//     [42, ] m-blocks (1)
         "\x00\x00\x00\x00"s//     [50, 53] m-block starts (0)
         "\x00\x00\x00\x0F"s//     [54, 57] m-block starts (15)
         "\x00\x00\x00\x0C"s//     [58, 61] seq length (12) (of 2bit encoded bytes; n-blocks are excluded)

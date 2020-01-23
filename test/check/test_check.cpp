@@ -28,7 +28,10 @@ BOOST_AUTO_TEST_CASE(test_file_integrity)
     BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), true);
     BOOST_CHECK_EQUAL(f.check_file_integrity(false), true);
 
-    for(int i = 5; i < 403 - 5 - 1 - 1 ; i ++) {
+    static const int i_min = 5;
+    static const int i_max = 403 - 5 - 1 - 1;
+
+    for(int i = i_min; i < i_max ; i ++) {
         char buffer[400];
 
         std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
@@ -57,15 +60,75 @@ BOOST_AUTO_TEST_CASE(test_file_integrity)
         fastafs f = fastafs("");
         f.filename = tmp_file; // don't load
         BOOST_CHECK_EQUAL(f.check_file_integrity(false), false);
-
-        // make a new loop and only test those that are affected, as the checksums can then be loaded appropriately
-        if(f.check_sequence_integrity(true)) {
-            printf("[%i][!true]\n", i);
-        } else {
-            printf("[%i][!false]\n", i);
-        }
-
     }
+
+
+    for(int i = 18; i <= 21 ; i ++) {
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+    for(int i = 58; i <= 60 ; i ++) {
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+    for(int i = 113; i <= 116  ; i ++) {
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+    for(int i = 157; i <= 160  ; i ++) {
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+    for(int i = 201; i <= 204  ; i ++) {
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+    {
+        int i = 245;
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+    {
+        int i = 294;
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+
+        fastafs f = fastafs("");
+        f.load(tmp_file);
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), false);
+    }
+
+
+
+    for(int i = i_min; i < i_max ; i ++) {
+        std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
+        remove(tmp_file.c_str());
+    }
+
 }
 
 

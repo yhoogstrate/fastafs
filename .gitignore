@@ -23,3 +23,4 @@ xcheck.sh
 /build-meson
 *.ninja
 .ninja*
+test-mount.sh

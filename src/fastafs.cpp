@@ -1643,10 +1643,13 @@ bool fastafs::check_sequence_integrity(bool verbose)
                 if(verbose) {
                     printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
                 }
+
                 retcode = false;
             }
         }
         file.close();
+    } else {
+        throw std::runtime_error("[fastafs::check_sequence_integrity] could not load fastafs: " + this->filename);
     }
 
     delete cache;
