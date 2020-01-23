@@ -1449,11 +1449,26 @@ int fastafs::info(bool ena_verify_checksum)
 
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
-        std::cout << "FASTAFS NAME: " << this->filename << "\n";
-        printf("SEQUENCES:    %u\n", (uint32_t) this->data.size());
+        std::cout << "# FASTAFS NAME: " << this->filename << "\n";
+        printf("# SEQUENCES:    %u\n", (uint32_t) this->data.size());
 
         for(uint32_t i = 0; i < this->data.size(); i++) {
             md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
+
+            std::string compression_type;
+            if(this->data[i]->flags.is_twobit()) {
+                compression_type = "2bit";
+            } else if(this->data[i]->flags.is_twobit()) {
+                compression_type = "4bit";
+            } else {
+                compression_type = "????";
+            }
+
+
+            // print sequence name & size & checksum
+            printf("%-24s%-12i%s    %s", this->data[i]->name.c_str(), this->data[i]->n, compression_type.c_str(), md5_hash);
+
+
             if(ena_verify_checksum) {
                 //wget header of:
                 //https://www.ebi.ac.uk/ena/cram/md5/<md5>
@@ -1464,7 +1479,6 @@ int fastafs::info(bool ena_verify_checksum)
                 //struct sockadfiledr_in address;
                 int sock = 0;
                 struct sockaddr_in serv_addr;
-                //std::string hello2 = "GET /ena/cram/md5/" + std::string(md5_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
                 std::string hello2 = "GET /ena/cram/md5/" + std::string(md5_hash) + " HTTP/1.1\r\nHost: www.ebi.ac.uk\r\nConnection: Keep-Alive\r\n\r\n";
 
                 //char *hello = &hello2.c_str();
@@ -1516,15 +1530,15 @@ int fastafs::info(bool ena_verify_checksum)
 
                 int NNvalread = SSL_read(ssl, buffer, 32);
                 if(NNvalread < 0) {
-                    printf("    >%-24s%-12i%s   <connection error>\n", this->data[i]->name.c_str(), this->data[i]->n, md5_hash);
+                    printf("   <connection error>");
                 } else if(std::string(buffer).find(" 200 ") != (size_t) -1) { // sequence is in ENA
-                    printf("    >%-24s%-12i%s   https://www.ebi.ac.uk/ena/cram/md5/%s\n", this->data[i]->name.c_str(), this->data[i]->n, md5_hash, md5_hash);
+                    printf("   https://www.ebi.ac.uk/ena/cram/md5/%s", md5_hash);
                 } else {
-                    printf("    >%-24s%-12i%s   ---\n", this->data[i]->name.c_str(), this->data[i]->n, md5_hash);
+                    printf("   ---");
                 }
-            } else {
-                printf("    >%-24s%-12i%s\n", this->data[i]->name.c_str(), this->data[i]->n, md5_hash);
             }
+            
+            printf("\n");
         }
         file.close();
     }
