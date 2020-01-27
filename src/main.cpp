@@ -67,7 +67,9 @@ void usage_check(void)
 
 void usage_cache(void)
 {
-    std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file | ucsc TwoBit file>\n\n";
+    std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file | ucsc TwoBit file>\n";
+    std::cout << "                         cache -o <fastafs-file-path> <fasta file | ucsc TwoBit file>\n\n";
+    std::cout << "  -o, --output-file    Explicitly define fastafs output file and do not write to database (cache)" << std::endl;
     std::cout << "\n";
 }
 
@@ -92,13 +94,33 @@ int main(int argc, char *argv[])
             exit(0);
         } else if(strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
-                database d = database();
-                std::string fname_out = d.add(argv[argc - 2]);
+                bool to_cache = true;
+                if(argc > 4 && strlen(argv[argc - 3]) >= 2) {
+                    if(
+                        (strcmp(argv[argc - 3], "-o") == 0)
+                        or
+                        (strcmp(argv[argc - 3], "--output-file") == 0)
+
+                    ) {
+                        to_cache = false;
+                    }
+                }
+
+                std::string fname_out;
+                if(to_cache) {
+                    database d = database();
+                    std::string fname_out = d.add(argv[argc - 2]);
+                } else {
+                    fname_out = std::string(argv[argc - 2]);
+                }
 
                 if(is_fasta_file(argv[argc - 1])) {
                     fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
-                } else {
+                } else if(is_ucsc2bit_file(argv[argc - 1])) {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
+                } else {
+                    throw std::runtime_error("[main::cache] Invalid file format");
+                    return 1;
                 }
             } else {
                 usage_cache();

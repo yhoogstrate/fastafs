@@ -1537,7 +1537,7 @@ int fastafs::info(bool ena_verify_checksum)
                     printf("   ---");
                 }
             }
-            
+
             printf("\n");
         }
         file.close();

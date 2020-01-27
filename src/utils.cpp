@@ -156,7 +156,7 @@ bool is_fasta_file(char *filename)
     FILE *fp;
 
     if((fp = fopen(filename, "rb")) == NULL) {
-        fclose(fp);
+        //fclose(fp); segfault if NULL
         throw std::runtime_error("Could not read first byte of putative FASTA file.");
         return false;
     }
@@ -166,6 +166,37 @@ bool is_fasta_file(char *filename)
         return (buf[0] == '>');// return true if first byte equals >
     } else {
         fclose(fp);
+
+        throw std::runtime_error("Could not read sufficient data.");
+    }
+
+    return false;
+}
+
+
+
+bool is_ucsc2bit_file(char *filename)
+{
+    char buf[2];
+    FILE *fp;
+
+    if((fp = fopen(filename, "rb")) == NULL) {
+        //fclose(fp); segfault if NULL
+        throw std::runtime_error("Could not read first byte of putative FASTA file.");
+        return false;
+    }
+
+    if(fread(buf, 1, 4, fp) == 4) {
+        fclose(fp);
+        return (
+                   buf[0] == UCSC2BIT_MAGIC[0] and
+                   buf[1] == UCSC2BIT_MAGIC[1] and
+                   buf[2] == UCSC2BIT_MAGIC[2] and
+                   buf[3] == UCSC2BIT_MAGIC[3]
+               );// return true if first byte equals >
+    } else {
+        fclose(fp);
+
         throw std::runtime_error("Could not read sufficient data.");
     }
 
