@@ -1,6 +1,8 @@
-2012-01-15  Youri Hoogstrate
+2020-01-27  Youri Hoogstrate
 
    * v1.7.0
+   * `fastafs cache -o` for custom output files and bypassing the config
+   * Random access retrievement via file system: `<mount>/seq/chr1:100-200`
    * CRC32 checksums for file integratity
    * converting to meson because of insane build times using cmake+make and re-building files that have not changed
 
