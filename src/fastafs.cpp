@@ -320,7 +320,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
 
-uint32_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_region* sr, std::ifstream *fh)
+size_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_region* sr, std::ifstream *fh)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -342,21 +342,6 @@ uint32_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_
     }
 
     total_requested_size -= sr->start;
-    //total_requested_size -= offset;
-    //total_requested_size = std::min(size, total_requested_size);
-
-    /*
-        written = (uint32_t) this->view_fasta_chunk(
-                      cache, // ffs2f_init_seq* cache,
-                      buffer, // char *buffer
-                      (size_t) total_requested_size, // size_t buffer_size,
-                      (off_t) 2 + this->name.size() + sr->start + offset, // offset is for chunked reading
-                      fh
-                  );
-
-        return written;
-        */
-
     return total_requested_size;
 }
 
@@ -811,7 +796,7 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 
 
 // estimates the whole file size of a file such as "/seq/chr1:56-"
-uint32_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_region_arg)
+size_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_region_arg)
 {
 #if DEBUG
     if(cache == nullptr) {

@@ -79,7 +79,7 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
     } else if(strlen(path) == 4 && strncmp(path, "/seq", 4) == 0) {
         //directory
-        printf("setting to DIR because /seq\n");
+        //printf("setting to DIR because /seq\n");
         st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 1;
     } else if(strlen(path) > 4 &&  strncmp(path, "/seq/", 5) == 0) {
@@ -90,7 +90,7 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_nlink = 1;
 
         //@todo this needs to be defined with some api stuff:!!
-        st->st_size = 4096;
+        st->st_size = (signed int) ffi->f->view_sequence_region_size(ffi->cache_p0, (strchr(path, '/') + 5));
     } else {
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
@@ -112,9 +112,10 @@ static int do_getattr(const char *path, struct stat *st)
                     st->st_size = ffi->f->ucsc2bit_filesize();
                 } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
                     st->st_size = ffi->f->dict_filesize();
-                } else if(strncmp(path, "/seq/", 5) == 0) { // api access
-                    printf("filesize: set to 4096\n");
                 }
+                //else if(strncmp(path, "/seq/", 5) == 0) { // api access
+                //printf("filesize: set to 4096\n");
+                //}
             }
         } else {
             if(ffi->u2b != nullptr) {

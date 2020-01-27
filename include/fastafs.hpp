@@ -75,7 +75,7 @@ public:
     uint32_t fasta_filesize(uint32_t padding);
     void view_fasta(ffs2f_init_seq*, std::ifstream *);
 
-    uint32_t view_sequence_region_size(ffs2f_init_seq*, sequence_region*, std::ifstream *);
+    size_t view_sequence_region_size(ffs2f_init_seq*, sequence_region*, std::ifstream *);
     uint32_t view_sequence_region(ffs2f_init_seq*, sequence_region*, char *, size_t, off_t, std::ifstream *);
     uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
     template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
@@ -121,7 +121,7 @@ public:
     void load(std::string);
     void view_fasta(ffs2f_init*);
 
-    uint32_t view_sequence_region_size(ffs2f_init*, const char *); // read stuff like "chr1:123-456" into the buffer
+    size_t view_sequence_region_size(ffs2f_init*, const char *); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_sequence_region(ffs2f_init*, const char *, char*, size_t, off_t); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t);
     uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);

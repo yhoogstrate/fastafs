@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                 std::string fname_out;
                 if(to_cache) {
                     database d = database();
-                    std::string fname_out = d.add(argv[argc - 2]);
+                    fname_out = d.add(argv[argc - 2]);
                 } else {
                     fname_out = std::string(argv[argc - 2]);
                 }
