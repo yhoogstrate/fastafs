@@ -103,6 +103,7 @@ endif()
 add_executable(fastafs
 					src/main.cpp
 					src/fasta_to_twobit_fastafs.cpp
+					src/fasta_to_fourbit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/flags.cpp
 					src/fastafs.cpp

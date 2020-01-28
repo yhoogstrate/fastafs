@@ -267,8 +267,7 @@ size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string f
                             MD5_Update(&s->ctx, nn, 1);
                             break;
                         default:
-                            std::cerr << "invalid chars in FASTA file" << std::endl;
-                            exit(1);
+                            throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
                             break;
                         }
                     }

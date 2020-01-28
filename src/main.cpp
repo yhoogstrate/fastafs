@@ -7,6 +7,7 @@
 
 #include "config.hpp"
 #include "fasta_to_twobit_fastafs.hpp"
+#include "fasta_to_fourbit_fastafs.hpp"
 #include "ucsc2bit_to_fastafs.hpp"
 #include "database.hpp"
 #include "fuse.hpp"
@@ -69,8 +70,7 @@ void usage_cache(void)
 {
     std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file | ucsc TwoBit file>\n";
     std::cout << "                         cache -o <fastafs-file-path> <fasta file | ucsc TwoBit file>\n\n";
-    std::cout << "  -o, --output-file    Explicitly define fastafs output file and do not write to database (cache)" << std::endl;
-    std::cout << "\n";
+    std::cout << "  -o, --output-file    Explicitly define fastafs output file and do not write to database (cache)\n";
 }
 
 int main(int argc, char *argv[])
@@ -115,7 +115,12 @@ int main(int argc, char *argv[])
                 }
 
                 if(is_fasta_file(argv[argc - 1])) {
-                    fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
+                    try {
+                        fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
+                    }
+                    catch(std::runtime_error) {
+                        fasta_to_fourbit_fastafs(argv[argc - 1], fname_out);
+                    }
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 } else {
