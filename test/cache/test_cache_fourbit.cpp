@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00\x00\x00\x4D"s//     [, ] n-block[1] starts (77)
         "\x00\x00\x00\x24"s//     [, ] n-block[0] ends (36|37)
         "\x00\x00\x00\x4F"s//     [, ] n-block[1] ends (79)
-        "\xEE\x09\x2F\x63\x4F\x6C\x87\xD0\x6B\x57\x1F\x07\xD1\x42\x73\x00"s// [76, ] checksum
+        "\x4A\x4D\x43\xFF\x09\x08\x29\xCD\x05\x9A\x08\x3C\x48\x3F\xEB\x3C"s// [76, ] checksum
         "\x00\x00\x00\x01"s//     [92, ] m-blocks (1)
         "\x00\x00\x00\x35"s//     [96, ] m-block starts (53)
         "\x00\x00\x00\x44"s//     [100, ] m-block starts (68)
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
         "\x00"s                  // [120] no metadata fields [padding will come soon?]
 
         // CRC32
-        "\x41\x2f\x3c\x72"s
+        "\x3d\xbf\x6e\xbf"s
         ;
 
     BOOST_CHECK_EQUAL(written, 125);
@@ -202,10 +202,10 @@ BOOST_AUTO_TEST_CASE(test_cache)
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
-        //if(reference[i] != buffer[i]) {
-        //    printf("comparing char %u\n", i);
-        //    printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n", i, reference[i], buffer[i], buffer[i], buffer[i]);
-        //}
+        if(reference[i] != buffer[i]) {
+            printf("comparing char %u\n", i);
+            printf(" ** mismatch [%d] [ref] %d != [buf] %d (%c x %02hhX)\n", i, reference[i], buffer[i], buffer[i], buffer[i]);
+        }
 
     }
 
