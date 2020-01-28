@@ -6,6 +6,7 @@ uint32_t fourbytes_to_uint_ucsc2bit(char *, unsigned char);
 uint16_t twobytes_to_uint(char *);
 void uint_to_twobytes(char *chars, uint16_t n);
 
+size_t remove_chars(char *s, int c, size_t l);// to remove - characters from string
 void uint_to_fourbytes(char *, uint32_t);
 void uint_to_fourbytes_ucsc2bit(char *, uint32_t);
 

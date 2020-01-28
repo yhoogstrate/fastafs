@@ -177,6 +177,7 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
                     index.push_back(s);
                 } else {
+                    std::cout << "{";
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         switch(*it) {
 
@@ -206,7 +207,7 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
                             }
 
                             s->add_ACTG(1, fh_fastafs);
-                            MD5_Update(&s->ctx, na, 1);
+                            MD5_Update(&s->ctx, nc, 1);
                             break;
                         case 'c':
                             if(!s->in_m_block) {
@@ -216,7 +217,7 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
                             }
 
                             s->add_ACTG(1, fh_fastafs);
-                            MD5_Update(&s->ctx, na, 1);
+                            MD5_Update(&s->ctx, nc, 1);
                             break;
                         case 'G':
                             if(s->in_m_block) {
@@ -513,8 +514,7 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
                             break;
 
                         default:
-                            std::cerr << "invalid chars in FASTA file" << std::endl;
-                            exit(1);
+                            throw std::runtime_error("[fasta_to_fourbit_fastafs] invalid chars in FASTA file");
                             break;
                         }
                     }

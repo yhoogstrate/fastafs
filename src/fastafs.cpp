@@ -462,6 +462,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 }
 
 
+
 std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
 {
 #if DEBUG
@@ -487,18 +488,29 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     unsigned long n_iterations = (unsigned long) this->n / chunksize;
     signed int remaining_bytes = this->n % chunksize;
 
+    size_t written;
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
-        this->view_fasta_chunk(cache, chunk,
+        written = this->view_fasta_chunk(cache, chunk,
                                chunksize,
                                header_offset + (i * chunksize),
                                fh);
-        MD5_Update(&ctx, chunk, chunksize);
+        
+        if(this->flags.is_fourbit()) {
+            written = remove_chars(chunk, '-', written);
+        }
+
+        MD5_Update(&ctx, chunk, written);
     }
 
     if(remaining_bytes > 0) {
-        this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
-        MD5_Update(&ctx, chunk, remaining_bytes);
+        written = this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
+        
+        if(this->flags.is_fourbit()) {
+            written = remove_chars(chunk, '-', written);
+        }
+        
+        MD5_Update(&ctx, chunk, written);
         chunk[remaining_bytes] = '\0';
     }
 
@@ -1660,7 +1672,7 @@ bool fastafs::check_file_integrity(bool verbose)
         uint_to_fourbytes(buf_new, (uint32_t) crc32_current);
 
         if(verbose) {
-            printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (in-file)  !=  %02hhx%02hhx%02hhx%02hhx (actual file)\n--\n",
+            printf("ERROR\t%02hhx%02hhx%02hhx%02hhx (encoded in fastafs)  !=  %02hhx%02hhx%02hhx%02hhx (on disk)\n--\n",
                    (unsigned char) buf_old[0],
                    (unsigned char) buf_old[1],
                    (unsigned char) buf_old[2],
@@ -1714,7 +1726,7 @@ bool fastafs::check_sequence_integrity(bool verbose)
                 }
             } else {
                 if(verbose) {
-                    printf("ERROR\t%s\t%s != %s\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
+                    printf("ERROR\t%s\t%s (encoded in fastafs)  !=  %s (on disk)\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
                 }
 
                 retcode = false;
