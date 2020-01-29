@@ -14,13 +14,14 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <filesystem>
+//#include <filesystem>
 
 
 #include "fuse.hpp"
 #include "database.hpp"
 #include "fastafs.hpp"
 #include "ucsc2bit.hpp"
+#include "sequence_region.hpp"
 
 
 // http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
@@ -32,6 +33,8 @@ struct fuse_instance {
     //fastasfs
     fastafs *f;
     ffs2f_init *cache;
+    ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
+
     bool from_fastafs; // if false, from 2bit
 
     // ucsc2bit
@@ -39,6 +42,7 @@ struct fuse_instance {
 
     // generic
     uint32_t padding;
+    bool allow_masking;
     int argc_fuse;
 };
 
@@ -66,6 +70,7 @@ static int do_getattr(const char *path, struct stat *st)
     st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
     st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
 
+    printf("[%s]\n", path);
     if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0644;
         //st->st_nlink = 1;
@@ -73,6 +78,20 @@ static int do_getattr(const char *path, struct stat *st)
         //directory
         st->st_mode = S_IFDIR | 0755;
         st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
+    } else if(strlen(path) == 4 && strncmp(path, "/seq", 4) == 0) {
+        //directory
+        //printf("setting to DIR because /seq\n");
+        st->st_mode = S_IFDIR | 0755;
+        st->st_nlink = 1;
+    } else if(strlen(path) > 4 &&  strncmp(path, "/seq/", 5) == 0) {
+        // API: "/seq/chr1:123-456"
+        printf("setting to FILE [%s] because /seq/...\n", path);
+        // @ todo - run a check on wether the chr exists and return err otherwise
+        st->st_mode = S_IFREG | 0644;
+        st->st_nlink = 1;
+
+        //@todo this needs to be defined with some api stuff:!!
+        st->st_size = (signed int) ffi->f->view_sequence_region_size(ffi->cache_p0, (strchr(path, '/') + 5));
     } else {
         st->st_mode = S_IFREG | 0644;
         st->st_nlink = 1;
@@ -95,6 +114,9 @@ static int do_getattr(const char *path, struct stat *st)
                 } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
                     st->st_size = ffi->f->dict_filesize();
                 }
+                //else if(strncmp(path, "/seq/", 5) == 0) { // api access
+                //printf("filesize: set to 4096\n");
+                //}
             }
         } else {
             if(ffi->u2b != nullptr) {
@@ -156,6 +178,10 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
         }
     }
 
+    if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
+        filler(buffer, "seq", NULL, 0); // Directed indexed API access to subsequence "<mount>/seq/chr1:123-456
+    }
+
     return 0;
 }
 
@@ -168,7 +194,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
 
-    static int written = -1;
+    static int written = -2;// -1 = permission deinied, -2 = missing file or directory
 
     if(ffi->from_fastafs) {
         printf("\033[0;32m[%s]\033[0;33m fastafs::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
@@ -178,14 +204,17 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
         std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
 
+        printf("?? [[%s]]\n", path);
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-            written = (signed int) ffi->f->view_fasta_chunk_cached(ffi->cache, buffer, size, offset);
+            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
+        } else if(strncmp(path, "/seq/", 5) == 0) { // api access
+            written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
         }
     } else {
         if(ffi->u2b != nullptr) {
@@ -337,6 +366,7 @@ void print_fuse_help()
     std::cout << "\n";
     std::cout << "general options:\n";
     std::cout << "    -2   --2bit            virtualise a 2bit file rather than FASTAFS UID\n";
+    std::cout << "    -m   --no-masking      Disable masking; bases in lower-case (not for 2bit output)\n";
     std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
     std::cout << "    -o opt,[opt...]        mount options\n";
     std::cout << "    -h   --help            print help\n";
@@ -411,17 +441,32 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 1, new char[argc]});
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 0, nullptr});
 
-    fuse_instance *fi = new fuse_instance({nullptr, nullptr, true, nullptr, 60, 0});
+
+
+    fuse_instance *fi = new fuse_instance({
+        nullptr, // pointer to fastafs decoder - if from_fasta is set to true
+        nullptr,// pointer to fastafs_init with defined padding
+        nullptr, // pointer to fastafs_init with cache size of 0 (for mounting ./seq/chr1:123-456
+        true, // from fastafs
+        nullptr, // pointer to ucsc2bit decoder - if from_fasta is set to false
+        60, // default_padding
+        true, // allow_masking
+        0 // argc_fuse
+    });
 
     //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
+
+    printf("checkpoint a\n");
 
     std::vector<char*> fuse_options = {}; // those that need to be appended later
 
     char current_argument = '\0';// could be o for '-o', etc.
 
+
+
     std::vector<int> full_args = {};
-    for(unsigned int i = 0; i < argc; ++i) {
+    for(signed int i = 0; i < argc; ++i) {
         printf("processing argv[%i] = '%s'     [current argument=%i]\n", i, argv[i], (int) current_argument);
 
         if(current_argument != '\0') { // parse the arguments' value
@@ -447,6 +492,9 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             case '2': // a fastafs specific flag
                 fi->from_fastafs = false;
                 break;
+            case 'm': // disable masking
+                fi->allow_masking = false;
+                break;
 
             case 'f': // fuse specific flags
             case 's':
@@ -460,7 +508,13 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 break;
 
             default: // argument, fastafs spcific (such as '-p' followed by '50')
-                current_argument = argv[i][1];
+                if(strcmp(argv[i], "--2bit") == 0) {
+                    fi->from_fastafs = false;;
+                } else if(strcmp(argv[i], "--no-masking") == 0) {
+                    fi->allow_masking = false;
+                } else {
+                    current_argument = argv[i][1];
+                }
                 break;
             }
         } else {
@@ -468,8 +522,14 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
-    if(full_args.size() >= 2) {
+    printf("checkpoint b\n");
+
+
+    if(full_args.size() > 2) {
+        printf("checkpoint c\n");
+        printf("full_args.size() = %u\n", (uint32_t) full_args.size());
         int mount_target_arg = full_args[full_args.size() - 2 ]; // last two arguments are <fastafs file> and <mount point>, location to last 2 args not starting with --/- are in this vector
+        printf("out of bound???\n");
 
         if(fi->from_fastafs) {
             database d = database();
@@ -491,9 +551,10 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
             fi->f = new fastafs(name);
             fi->f->load(fname);
-            fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
+            fi->cache = fi->f->init_ffs2f(fi->padding, fi->allow_masking);
+            fi->cache_p0 = fi->f->init_ffs2f(0, true);// allow mixed case
         } else {
-			std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
+            std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
             //std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
             fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
@@ -507,6 +568,8 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
+    printf("checkpoint c\n");
+
     return fi;
 }
 
@@ -515,10 +578,14 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
 void fuse(int argc, char *argv[])
 {
+    printf("wake up\n");
+
     // part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
     //  - @todo at some point define that second mount is not really important? if possible
     char *argv2[argc];
     fuse_instance *ffi = parse_args(argc, argv, argv2);
+
+    printf("checkpoint\n");
 
     // part 2 - print what the planning is
     char cur_time[100];

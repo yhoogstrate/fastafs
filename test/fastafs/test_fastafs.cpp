@@ -8,7 +8,7 @@
 
 #include "config.hpp"
 
-#include "fasta_to_fastafs.hpp"
+#include "fasta_to_twobit_fastafs.hpp"
 #include "fastafs.hpp"
 
 
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
@@ -61,11 +61,11 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     uint32_t ret;
     char chunk[4];
     for(uint32_t i = 0; i < 23; i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p100->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(ret, 1);
     }
     for(uint32_t i = 23; i < 23 + 5; i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p100->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p100->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(ret, 0);
     }
 
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
     std::string ref = ">chr1\nttttccccaaaagggg\n";
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p23->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p23->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
@@ -115,13 +115,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     std::string ref = ">chr1\nttttccccaaaagggg\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
+    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
 
     file.close();
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
 
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
@@ -156,13 +156,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     std::string ref = ">chr1\nTTTTCCCCAAAAGGGG\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, i, &file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, &file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk_cached(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
+    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), &file);
     BOOST_CHECK_EQUAL(ret, 0);
 
     file.close();
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_md5)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test_002.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test_002.fa", fastafs_file);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
-    BOOST_CHECK_EQUAL(fs.check_integrity(), 0);
+    BOOST_CHECK_EQUAL(fs.check_sequence_integrity(false), true);
 }
 
 
@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
      */
 
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
 
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
@@ -378,6 +378,510 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
 
     delete[] buffer;
     // }
+}
+
+/**
+ * @description tests reading a request like "chr1:123-456" etc.
+ */
+BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
+{
+    std::string fastafs_file = "tmp/test.fastafs";
+    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
+
+    fastafs fs = fastafs("test");
+    fs.load(fastafs_file);
+
+    BOOST_REQUIRE(fs.data.size() > 0);
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr1:0";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 't');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr1:3";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 't');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr1:4";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'c');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr1:15";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'g');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr1:16";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 0);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 0);
+        //BOOST_CHECK_EQUAL(buffer[0], '\n');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:0";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:1";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'C');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:7";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'G');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:8";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'n');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:9";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'n');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:10";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'n');
+    }
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:11";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'n');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:12";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:15";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 1);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 1);
+        BOOST_CHECK_EQUAL(buffer[0], 'G');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:14-15";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 2);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'T');
+        BOOST_CHECK_EQUAL(buffer[1], 'G');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:14-99999";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 2);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'T');
+        BOOST_CHECK_EQUAL(buffer[1], 'G');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr2:16";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 0);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 0);
+        //BOOST_CHECK_EQUAL(buffer[0], 'G');
+    }
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr4";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 8);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 8);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+        BOOST_CHECK_EQUAL(buffer[1], 'C');
+        BOOST_CHECK_EQUAL(buffer[2], 'T');
+        BOOST_CHECK_EQUAL(buffer[3], 'G');
+        BOOST_CHECK_EQUAL(buffer[4], 'n');
+        BOOST_CHECK_EQUAL(buffer[5], 'n');
+        BOOST_CHECK_EQUAL(buffer[6], 'n');
+        BOOST_CHECK_EQUAL(buffer[7], 'n');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr4:4-";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 4);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(buffer[0], 'n');
+        BOOST_CHECK_EQUAL(buffer[1], 'n');
+        BOOST_CHECK_EQUAL(buffer[2], 'n');
+        BOOST_CHECK_EQUAL(buffer[3], 'n');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr4:-1";// from left to 1: <0,1]
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 2);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+        BOOST_CHECK_EQUAL(buffer[1], 'C');
+        //BOOST_CHECK_EQUAL(buffer[2], 'T');
+        //BOOST_CHECK_EQUAL(buffer[3], 'G');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr3.1:1-2";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 2);
+
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'C');
+        BOOST_CHECK_EQUAL(buffer[1], 'T');
+    }
+
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr3.3";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 15);
+
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 0); // small buffer size
+        BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+        BOOST_CHECK_EQUAL(buffer[1], 'C');
+        BOOST_CHECK_EQUAL(buffer[2], 'T');
+        BOOST_CHECK_EQUAL(buffer[3], 'G');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 15);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 4); // small buffer size
+        BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(buffer[0], 'A');
+        BOOST_CHECK_EQUAL(buffer[1], 'C');
+        BOOST_CHECK_EQUAL(buffer[2], 'T');
+        BOOST_CHECK_EQUAL(buffer[3], 'G');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 15);
+
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 8); // small buffer size
+        BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(buffer[0], 'a');
+        BOOST_CHECK_EQUAL(buffer[1], 'a');
+        BOOST_CHECK_EQUAL(buffer[2], 'a');
+        BOOST_CHECK_EQUAL(buffer[3], 'a');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 15);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 12); // small buffer size
+        BOOST_CHECK_EQUAL(written, 3);
+        BOOST_CHECK_EQUAL(buffer[0], 'c');
+        BOOST_CHECK_EQUAL(buffer[1], 'c');
+        BOOST_CHECK_EQUAL(buffer[2], 'c');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 15);
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chr5:2-5";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 4);
+
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 2); // small buffer size
+        BOOST_CHECK_EQUAL(written, 2);
+        BOOST_CHECK_EQUAL(buffer[0], 'T');
+        BOOST_CHECK_EQUAL(buffer[1], 'G');
+    }
+
+
+    {
+        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        const char arg[] = "/seq/chrDOESNOTEXIST";
+
+        size_t written;
+        char *buffer;
+
+        buffer = new char[READ_BUFFER_SIZE + 1];
+        flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
+
+
+        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        BOOST_CHECK_EQUAL(written, 0);
+
+        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0); // small buffer size
+        BOOST_CHECK_EQUAL(written, 0);
+    }
+
 }
 
 

@@ -11,7 +11,7 @@
 
 
 
-class fasta_seq_header_conversion_data
+class fasta_seq_header_twobit_conversion_data
 {
 public:
     void add_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
@@ -27,7 +27,7 @@ public:
     bool previous_was_N;
 
 
-    fasta_seq_header_conversion_data(off_t fof, std::string name):
+    fasta_seq_header_twobit_conversion_data(off_t fof, const std::string &name):
         file_offset_in_fasta(fof),
         name(name),
         N(0),
@@ -57,5 +57,5 @@ public:
 };
 
 
-size_t fasta_to_fastafs(const std::string, const std::string);
+size_t fasta_to_twobit_fastafs(const std::string &, const std::string &);
 

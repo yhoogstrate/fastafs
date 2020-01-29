@@ -18,3 +18,9 @@ repeats.txt
 build/
 xcheck.sh
 *.fa.fai
+*.o
+/bin-meson
+/build-meson
+*.ninja
+.ninja*
+test-mount.sh

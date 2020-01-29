@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include <filesystem>
+//#include <filesystem>
 
 
 #include "config.hpp"
@@ -96,7 +96,7 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), std::ios::beg);// std::ios::beg | fh->beg
 
     twobit_byte t = twobit_byte();
-    const char *chunk = twobit_byte::twobit_hash[0];
+    const char *chunk = twobit_byte::encode_hash[0];
 
     unsigned char twobit_offset = nucleotide_pos % 4;
 
@@ -374,7 +374,7 @@ void ucsc2bit::load(std::string afilename)
 
 
 /*
-* ucsc2bit::view_fasta_chunk_cached -
+* ucsc2bit::view_fasta_chunk -
 *
 * @padding: size of padding - placement of newlines (default = 60)
 * @buffer:
@@ -422,7 +422,7 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
         file.close();
 
     } else {
-        throw std::runtime_error("[ucsc2bit::view_fasta_chunk_cached] could not load ucsc2bit: " + this->filename);
+        throw std::runtime_error("[ucsc2bit::view_fasta_chunk] could not load ucsc2bit: " + this->filename);
     }
 
     return written;

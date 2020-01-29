@@ -8,7 +8,7 @@ project(fastafs)
 # Do this once in a while - find different bugs
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.6.2")
+set(PROJECT_VERSION "1.7.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -41,7 +41,11 @@ else()
 	set(DEBUG "false")
 endif()
 
-configure_file("include/config.hpp.in" "include/config.hpp")
+configure_file("include/config.hpp.in" "include/config.hpp")# implies building is done from project root
+#configure_file("include/config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/config.hpp")
+#configure_file("include/config.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp")
+configure_file("include/config.hpp.in" "${BUILD_DIR}/include/config.hpp")
+
 
 # ----------------------------------------------------------------------
 # ------------------------------ Styling -------------------------------
@@ -75,7 +79,9 @@ add_custom_target(tidy DEPENDS make_tidy )
 
 add_subdirectory(src)
 include_directories(include)
-add_definitions(-std=c++17)
+#include_directories(${BUILD_DIR})
+include_directories("${BUILD_DIR}/include")
+add_definitions(-std=c++14)
 
 # Boost
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
@@ -87,9 +93,11 @@ else()
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+
 link_libraries(ssl)
 link_libraries(crypto)
 link_libraries(fuse)
+link_libraries(z)# zlib; -lz; for crc32 checks on whole file integrity
 
 
 if(DEBUG)
@@ -100,13 +108,17 @@ endif()
 
 add_executable(fastafs
 					src/main.cpp
-					src/fasta_to_fastafs.cpp
+					src/fasta_to_twobit_fastafs.cpp
+					src/fasta_to_fourbit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
+					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
+					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
 				)
@@ -115,24 +127,29 @@ set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}"
 # mount-only binary, without all the other stuff 'mount.fastafs' [for fstab]
 add_executable(mount.fastafs
 					src/main_mount.cpp
-					src/fasta_to_fastafs.cpp
+					src/fasta_to_twobit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
+					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
+					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
 				)
 set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
 add_library(libfastafs SHARED
-					src/fasta_to_fastafs.cpp
+					src/fasta_to_twobit_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
+					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/fuse.cpp
@@ -146,11 +163,11 @@ set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(libfastafs PROPERTIES SOVERSION 1)
 set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
 
-#set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
-# great, this doesn't go automagically with an entire dir
-set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/fuse.hpp;include/meson.build;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
-#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
-#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
+##set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
+## great, this doesn't go automagically with an entire dir
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fourbit_fastafs.hpp;include/fasta_to_twobit_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
+##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
 # ----------------------------------------------------------------------
 # ------------------------------ Testing -------------------------------
@@ -161,16 +178,20 @@ enable_testing()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
-add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte")
-add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
+add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N) | ACUG(N)
+add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
+add_test(test_cache_twobit        "${BUILD_TEST_DIR}/test_cache_twobit")
+add_test(test_cache_fourbit       "${BUILD_TEST_DIR}/test_cache_fourbit")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
-#add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
+add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
+add_test(test_check               "${BUILD_TEST_DIR}/test_check") # file integrity checks
 add_test(test_fastafs_as_ucsc2bit "${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit")
 add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
 add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
+add_test(test_sequenceregion      "${BUILD_TEST_DIR}/test_sequenceregion")
 add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
-
+#add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'
 #INCLUDE(Dart)
@@ -181,6 +202,8 @@ add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
 # The compiled binary, usually to: /usr/local/bin/fastafs
 install(TARGETS fastafs DESTINATION "bin")
 install(TARGETS mount.fastafs DESTINATION "bin")
+
+# don't build during debug at least
 install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
 
 # ----------------------------------------------------------------------

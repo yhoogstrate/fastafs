@@ -1,3 +1,23 @@
+2020-01-27  Youri Hoogstrate
+
+   * v1.7.0
+   * `fastafs cache -o` for custom output files and bypassing the config
+   * Random access subsequence retrieval diretly via filesystem: `<mount>/seq/chr1:100-200`
+   * Implements CRC32 checksums for whole-file integritity
+   * Converting to meson because of insane build times using cmake+make and re-building files that have not changed
+   * `fastafs view|mount -m/--no-masking` virtualises fasta files without masking (uppercase)
+   * Minor support for building with meson and ninja
+   * cmake template allows building for guix (+guix file provided)
+   * Changed requirement from c++17 on c++14 to avoid large compatibility issues
+   * Implements bitflags with corresponding class
+   * Implements fourbit (and automatically switches over if non ACTGUN chars are found
+   * Implements functions `is_fasta_file`, and `is_ucsc2bit_file` using file MAGIC
+   * Creates by FASTAFS files that are first flagged as incomplete, that are unflagged after conversion has completed
+   * MD5sums working for fourbit compressed sequences
+   * Implements `fastafs cache -o` to export to desired output fastafs file
+   * Adds compression type to `fastafs list` output
+   * More and improved testing, including file integrity detection
+
 2019-09-06  Youri Hoogstrate
 
     * v1.6.2

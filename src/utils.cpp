@@ -63,6 +63,20 @@ void uint_to_twobytes(char *chars, uint16_t n)
 
 
 
+size_t remove_chars(char *s, int c, size_t l)
+{
+    size_t j = 0;
+    size_t n = l;
+
+    for(size_t i = j = 0; i < n; i++)
+        if(s[i] != c) {
+            s[j++] = s[i];
+        }
+
+    s[j] = '\0';
+
+    return j;
+}
 
 
 void uint_to_fourbytes(char *chars, uint32_t n)
@@ -156,7 +170,7 @@ bool is_fasta_file(char *filename)
     FILE *fp;
 
     if((fp = fopen(filename, "rb")) == NULL) {
-        fclose(fp);
+        //fclose(fp); segfault if NULL
         throw std::runtime_error("Could not read first byte of putative FASTA file.");
         return false;
     }
@@ -166,6 +180,37 @@ bool is_fasta_file(char *filename)
         return (buf[0] == '>');// return true if first byte equals >
     } else {
         fclose(fp);
+
+        throw std::runtime_error("Could not read sufficient data.");
+    }
+
+    return false;
+}
+
+
+
+bool is_ucsc2bit_file(char *filename)
+{
+    char buf[4 + 1];
+    FILE *fp;
+
+    if((fp = fopen(filename, "rb")) == NULL) {
+        //fclose(fp); segfault if NULL
+        throw std::runtime_error("Could not read first byte of putative FASTA file.");
+        return false;
+    }
+
+    if(fread(buf, 1, 4, fp) == 4) {
+        fclose(fp);
+        return (
+                   buf[0] == UCSC2BIT_MAGIC[0] and
+                   buf[1] == UCSC2BIT_MAGIC[1] and
+                   buf[2] == UCSC2BIT_MAGIC[2] and
+                   buf[3] == UCSC2BIT_MAGIC[3]
+               );// return true if first byte equals >
+    } else {
+        fclose(fp);
+
         throw std::runtime_error("Could not read sufficient data.");
     }
 
@@ -175,29 +220,31 @@ bool is_fasta_file(char *filename)
 
 // https://www.systutorials.com/241216/how-to-get-the-directory-path-and-file-name-from-a-absolute-path-in-c-on-linux/
 // https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::path(filename).filename();
-std::string basename_cpp(std::string fn) {
-	char* ts = strdup(fn.c_str());
-	
-	//char* dir = dirname(ts1);
-	char* filename = basename(ts);
-	//std::string filenamepp = std::string(filename);
+std::string basename_cpp(std::string fn)
+{
+    char* ts = strdup(fn.c_str());
 
-	//printf("basename: [%s]\n", filename);
-	//std::cout << "basenamepp: |" << filenamepp << "|\n";
-	
-	return std::string(filename);
+    //char* dir = dirname(ts1);
+    char* filename = basename(ts);
+    //std::string filenamepp = std::string(filename);
+
+    //printf("basename: [%s]\n", filename);
+    //std::cout << "basenamepp: |" << filenamepp << "|\n";
+
+    std::string filename_cpp = std::string(filename);
+    //delete[] ts;
+    //delete[] filename; // deleting these affects the std::string somehow
+
+    return filename_cpp;
 }
 
 
 // https://www.linuxquestions.org/questions/programming-9/how-to-get-the-full-path-of-a-file-in-c-841046/
 // https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::canonical(filename)
-std::string realpath_cpp(std::string fn) {
-	//std::string out = "asd";
-	char *path = realpath(fn.c_str(), NULL);
-	//printf("realpath: [%s]\n", path);
+std::string realpath_cpp(std::string fn)
+{
+    char buf[1024];
+    realpath(fn.c_str(), buf);
 
-	//std::string realpathpp = std::string(path);
-	//std::cout << "realpath: |" << realpathpp << "|\n";
-	
-	return std::string(path);
+    return std::string(buf);
 }

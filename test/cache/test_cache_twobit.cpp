@@ -1,11 +1,11 @@
-#define BOOST_TEST_MODULE fastfs_cache
+#define BOOST_TEST_MODULE fastfs_cache_twobit
 
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
 
-//#include "twobit_byte.hpp"
-#include "fasta_to_fastafs.hpp"
+#include "fasta_to_twobit_fastafs.hpp"
+//#include "fastafs.hpp"
 
 
 
@@ -224,21 +224,21 @@ BOOST_AUTO_TEST_CASE(Test_size)
  */
 BOOST_AUTO_TEST_CASE(test_cache)
 {
-    size_t written = fasta_to_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+    size_t written = fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
 
     static std::string reference =
         // GENERIC-HEADER
         "\x0F\x0A\x46\x53"s//     [0, 3]
         "\x00\x00\x00\x00"s//     [4, 7] version
-        "\x00\x01"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
         "\x00\x00\x01\x37"s //    [10, 13] index position in file (153)
 
         // DATA
         "\x00\x00\x00\x10"s//     [14, 17] seq length (16) (of 2bit encoded bytes; n-blocks are excluded)
         "\x00\x55\xAA\xFF"s//     [18, 21] sequence
         "\x00\x00\x00\x00"s//     [22, 25] n-blocks (0)
-        "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 45] checksum
-        "\x00\x00\x00\x01"s//     [46, 49] m-blocks (1)
+        "\x75\x25\x5C\x6D\x90\x77\x89\x99\xAD\x36\x43\xA2\xE6\x9D\x43\x44"s// [26, 41] checksum
+        "\x00\x00\x00\x01"s//     [42, ] m-blocks (1)
         "\x00\x00\x00\x00"s//     [50, 53] m-block starts (0)
         "\x00\x00\x00\x0F"s//     [54, 57] m-block starts (15)
         "\x00\x00\x00\x0C"s//     [58, 61] seq length (12) (of 2bit encoded bytes; n-blocks are excluded)
@@ -292,36 +292,39 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
         // INDEX
         "\x00\x00\x00\x07"s     // [339, 342] 7 sequences
-        "\x00\x08"              // [343, 344] complete, DNA and not circular
+        "\x010\x00"             // [343, 344] complete, DNA and not circular
         "\x04"s "chr1"s         // [345, 349] name
         "\x00\x00\x00\x0E"s     // [350, 353] data position in file (14)
-        "\x00\x08"              // [354, 355] complete, DNA and not circular
+        "\x010\x00"             // [354, 355] complete, DNA and not circular
         "\x04"s "chr2"s         // [356, 360] name
         "\x00\x00\x00\x36"s     // [361, 364] data position in file (54)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x06"s "chr3.1"s       // [, ] name
         "\x00\x00\x00\x65"s     // [, ] data position in file (101)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x06"s "chr3.2"s       // [, ] name
         "\x00\x00\x00\x8D"s     // [, ] data position in file (141)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x06"s "chr3.3"s       // [, ] name
         "\x00\x00\x00\xB5"s     // [, ] data position in file (181)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x04"s "chr4"s         // [, ] name
         "\x00\x00\x00\xDD"s     // [, ] data position in file (221)
-        "\x00\x08"              // [, ] complete, DNA and not circular
+        "\x010\x00"             // [, ] complete, DNA and not circular
         "\x04"s "chr5"s         // [, ] name
         "\x00\x00\x01\x0A"s     // [, ] data position in file (290)
 
         // METADATA
-        "\x00"                  // [399] no metadata fields [padding will come soon?]
+        "\x00"s                 // [399] no metadata fields [padding will come soon?]
+
+        // CRC32 checksums
+        "\x1e\x77\x77\x22"s
         ;
 
-    BOOST_CHECK_EQUAL(written, 399);
+    BOOST_CHECK_EQUAL(written, 403);
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
-    std::ifstream file("tmp/test_cachce_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    std::ifstream file("tmp/test_cache_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
 
     std::streampos size;
@@ -345,6 +348,12 @@ BOOST_AUTO_TEST_CASE(test_cache)
     }
 
     delete[] buffer;
+
+
+    // check computed file size
+    fastafs f = fastafs("");
+    f.load("tmp/test_cache_test.fastafs");
+    BOOST_CHECK_EQUAL(f.fastafs_filesize(), 403);
 }
 
 
@@ -358,11 +367,11 @@ BOOST_AUTO_TEST_CASE(test_cache)
 BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_fastafs("test/data/test.fa", "tmp/test_cachce_test.fastafs");
+    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
-    f2.load("tmp/test_cachce_test.fastafs");
+    f2.load("tmp/test_cache_test.fastafs");
 
     const uint32_t padding = 60;
     ffs2f_init* cache_p60_uc = f2.init_ffs2f(padding, false); // upper case
@@ -377,7 +386,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     std::string output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk_cached(cache_p60_uc, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60_uc, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -392,7 +401,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk_cached(cache_p60_mc, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60_mc, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -418,11 +427,11 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_fastafs("test/data/test_003.fa", "tmp/test_cachce_test_003.fastafs");
+    fasta_to_twobit_fastafs("test/data/test_003.fa", "tmp/test_cache_test_003.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
-    f2.load("tmp/test_cachce_test_003.fastafs");
+    f2.load("tmp/test_cache_test_003.fastafs");
 
     const uint32_t padding = 60;
     ffs2f_init* cache_p60 = f2.init_ffs2f(padding, false);
@@ -435,7 +444,7 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
     std::string output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk_cached(cache_p60, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60, buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }

@@ -1,18 +1,19 @@
 
-#ifndef TWOBIT_BYTE_HPP
-#define TWOBIT_BYTE_HPP
+#ifndef fourbit_BYTE_HPP
+#define fourbit_BYTE_HPP
 
 #include <array>
 #include "config.hpp"
 
-class twobit_byte
+class fourbit_byte
 {
 public:
-    static const char encode_hash[256][5];
-    static const char n_fill_unmasked = 'N';
-    static const char n_fill_masked = 'n';
+    static const char fourbit_alhpabet[17];
+    static const char encode_hash[256][3];
+    static const char n_fill_unmasked = '-';
+    static const char n_fill_masked = '-';
 
-    static const char bits_per_nucleotide = 2;
+    static const char bits_per_nucleotide = 4;
     static const char nucleotides_per_byte = 8 / bits_per_nucleotide ;
 
     unsigned char data;

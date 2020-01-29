@@ -4,6 +4,7 @@
 #include "config.hpp"
 
 #include "ucsc2bit_to_fastafs.hpp"
+#include "flags.hpp"
 #include "utils.hpp"
 
 
@@ -29,6 +30,9 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     fastafs fs_new = fastafs("");
     uint32_t i, j, n;
 
+    fastafs_flags ffsf;
+    ffsf.set_incomplete();
+
     ucsc2bit_seq_header *s;
     ucsc2bit_seq_header_conversion_data *t;
 
@@ -39,7 +43,11 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         // Write header
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
-        fh_fastafs << "\x00\x00"s;// the flag for now, set to INCOMPLETE as writing is in progress
+
+        // the flag for now, set to INCOMPLETE as writing is in progress || spacer that will be overwritten later
+        fh_fastafs << ffsf.get_bits()[0];
+        fh_fastafs << ffsf.get_bits()[1];
+
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
         // Read UCSC2bit header (n seq)
@@ -111,7 +119,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             // parse and convert sequence
             fh_ucsc2bit.read(buffer, 4);
             twobit_byte t_in = twobit_byte();
-            const char *decoded_in = t_in.twobit_hash[0];// unnecessary initialization but otherwise gcc whines
+            const char *decoded_in = t_in.encode_hash[0];// unnecessary initialization but otherwise gcc whines
             twobit_byte t_out = twobit_byte();
 
             uint32_t k = 0; // iterator in fastafs format
@@ -222,8 +230,13 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             s = data[i];
             t = data2[i];
 
-            // flag
-            fh_fastafs << "\x00\x08"s;
+            // set and write flag
+            fastafs_sequence_flags fsf;
+            fsf.set_linear();
+            fsf.set_dna();
+            fsf.set_complete();
+            fh_fastafs << fsf.get_bits()[0];
+            fh_fastafs << fsf.get_bits()[1];
 
             // name
             fh_fastafs.write((char *) &s->name_size, (size_t) 1); // name size
@@ -242,16 +255,32 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
         // update header: set to updated
         fh_fastafs.seekp(8, std::ios::beg);
-        fh_fastafs << "\x00\x01"s; // updated flag
+        ffsf.set_complete();
+        fh_fastafs << ffsf.get_bits()[0];
+        fh_fastafs << ffsf.get_bits()[1];
+
         uint_to_fourbytes(buffer, index_file_position);//position of header
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
 
-    fh_fastafs.seekp(0, std::ios::end);
-    size_t written = fh_fastafs.tellp();
-
-    fh_fastafs.close();
     fh_ucsc2bit.close();
+
+    fh_fastafs.seekp(0, std::ios::end);
+
+
+    fastafs f("");
+    f.load(fastafs_file);
+    uint32_t crc32c = f.get_crc32();
+
+    char byte_enc[5] = "\x00\x00\x00\x00";
+    uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
+    //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
+    fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
+
+
+
+    size_t written = fh_fastafs.tellp();
+    fh_fastafs.close();
 
     return written;
 }
