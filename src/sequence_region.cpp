@@ -35,7 +35,7 @@ void sequence_region::parse(const char * seqstr)
 
     if(p > 0) {
         this->seq_name = std::string(seqstr, 0, p);
-    } else if(p == false) {
+    } else if(proceed == true) {
         // either with string > 255 chars or string smaller than 255 without ':'
         this->seq_name = std::string(seqstr, 0, string_max_pos);
     }

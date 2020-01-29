@@ -191,7 +191,7 @@ bool is_fasta_file(char *filename)
 
 bool is_ucsc2bit_file(char *filename)
 {
-    char buf[2];
+    char buf[4+1];
     FILE *fp;
 
     if((fp = fopen(filename, "rb")) == NULL) {
