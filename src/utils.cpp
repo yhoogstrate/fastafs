@@ -63,18 +63,20 @@ void uint_to_twobytes(char *chars, uint16_t n)
 
 
 
-size_t remove_chars(char *s, int c, size_t l){ 
+size_t remove_chars(char *s, int c, size_t l)
+{
     size_t j = 0;
-    size_t n = l; 
+    size_t n = l;
 
-    for (size_t i=j=0; i < n; i++) 
-       if (s[i] != c) 
-          s[j++] = s[i]; 
-      
-    s[j] = '\0'; 
-    
+    for(size_t i = j = 0; i < n; i++)
+        if(s[i] != c) {
+            s[j++] = s[i];
+        }
+
+    s[j] = '\0';
+
     return j;
-} 
+}
 
 
 void uint_to_fourbytes(char *chars, uint32_t n)

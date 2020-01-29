@@ -492,10 +492,10 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     // half iteration remainder = this->n % chunk_size; if this number > 0; do it too
     for(uint32_t i = 0; i < n_iterations; i++) {
         written = this->view_fasta_chunk(cache, chunk,
-                               chunksize,
-                               header_offset + (i * chunksize),
-                               fh);
-        
+                                         chunksize,
+                                         header_offset + (i * chunksize),
+                                         fh);
+
         if(this->flags.is_fourbit()) {
             written = remove_chars(chunk, '-', written);
         }
@@ -505,11 +505,11 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
 
     if(remaining_bytes > 0) {
         written = this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
-        
+
         if(this->flags.is_fourbit()) {
             written = remove_chars(chunk, '-', written);
         }
-        
+
         MD5_Update(&ctx, chunk, written);
         chunk[remaining_bytes] = '\0';
     }

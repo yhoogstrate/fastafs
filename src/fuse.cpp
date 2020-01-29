@@ -42,6 +42,7 @@ struct fuse_instance {
 
     // generic
     uint32_t padding;
+    bool allow_masking;
     int argc_fuse;
 };
 
@@ -365,6 +366,7 @@ void print_fuse_help()
     std::cout << "\n";
     std::cout << "general options:\n";
     std::cout << "    -2   --2bit            virtualise a 2bit file rather than FASTAFS UID\n";
+    std::cout << "    -m   --no-masking      Disable masking; bases in lower-case (not for 2bit output)\n";
     std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
     std::cout << "    -o opt,[opt...]        mount options\n";
     std::cout << "    -h   --help            print help\n";
@@ -439,7 +441,18 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 1, new char[argc]});
     //fastafs_fuse_instance *ffi = new fastafs_fuse_instance({nullptr, 60, 0, nullptr});
 
-    fuse_instance *fi = new fuse_instance({nullptr, nullptr, nullptr, true, nullptr, 60, 0});
+
+
+    fuse_instance *fi = new fuse_instance({
+        nullptr, // pointer to fastafs decoder - if from_fasta is set to true
+        nullptr,// pointer to fastafs_init with defined padding
+        nullptr, // pointer to fastafs_init with cache size of 0 (for mounting ./seq/chr1:123-456
+        true, // from fastafs
+        nullptr, // pointer to ucsc2bit decoder - if from_fasta is set to false
+        60, // default_padding
+        true, // allow_masking
+        0 // argc_fuse
+    });
 
     //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
@@ -479,6 +492,9 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             case '2': // a fastafs specific flag
                 fi->from_fastafs = false;
                 break;
+            case 'm': // disable masking
+                fi->allow_masking = false;
+                break;
 
             case 'f': // fuse specific flags
             case 's':
@@ -492,7 +508,13 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 break;
 
             default: // argument, fastafs spcific (such as '-p' followed by '50')
-                current_argument = argv[i][1];
+                if(strcmp(argv[i], "--2bit") == 0) {
+                    fi->from_fastafs = false;;
+                } else if(strcmp(argv[i], "--no-masking") == 0) {
+                    fi->allow_masking = false;
+                } else {
+                    current_argument = argv[i][1];
+                }
                 break;
             }
         } else {
@@ -529,7 +551,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
             fi->f = new fastafs(name);
             fi->f->load(fname);
-            fi->cache = fi->f->init_ffs2f(fi->padding, true);// allow mixed case
+            fi->cache = fi->f->init_ffs2f(fi->padding, fi->allow_masking);
             fi->cache_p0 = fi->f->init_ffs2f(0, true);// allow mixed case
         } else {
             std::string basename = basename_cpp(std::string(argv[mount_target_arg]));

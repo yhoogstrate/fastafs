@@ -5,6 +5,7 @@
    * Random access retrievement via file system: `<mount>/seq/chr1:100-200`
    * CRC32 checksums for file integratity
    * converting to meson because of insane build times using cmake+make and re-building files that have not changed
+   * `fastafs view|mount -m/--no-masking` virtualises fasta files without masking (uppercase)
 
 2019-09-06  Youri Hoogstrate
 

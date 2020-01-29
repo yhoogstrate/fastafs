@@ -118,8 +118,7 @@ int main(int argc, char *argv[])
                 if(is_fasta_file(argv[argc - 1])) {
                     try {
                         fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
-                    }
-                    catch(std::runtime_error& e) {
+                    } catch(std::runtime_error& e) {
                         fasta_to_fourbit_fastafs(argv[argc - 1], fname_out);
                     }
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
@@ -145,6 +144,7 @@ int main(int argc, char *argv[])
 
                 bool from_file = false;
                 bool skip_argument = false;
+                bool allow_masking = true;// allow upper and lower case
 
                 for(int i = 2; i < argc - 1; i++) {
                     if(skip_argument) {
@@ -152,6 +152,8 @@ int main(int argc, char *argv[])
                     } else {
                         if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                             from_file = true;
+                        } else if(strcmp(argv[i], "-m") == 0 or strcmp(argv[i], "--no-masking") == 0) {
+                            allow_masking = false;
                         } else if((strcmp(argv[i], "-p") == 0 or strcmp(argv[i], "--padding") == 0) and i + 1 < argc - 1) {
                             try {
                                 sscanf(argv[++i], "%u", &padding);
@@ -194,7 +196,7 @@ int main(int argc, char *argv[])
                         written = f.view_ucsc2bit_chunk(buffer, READ_BUFFER_SIZE, offset);
                     }
                 } else {
-                    ffs2f_init* cache = f.init_ffs2f(padding, true);
+                    ffs2f_init* cache = f.init_ffs2f(padding, allow_masking);
                     f.view_fasta(cache);//@todo make argument parsing
 
                     delete cache;
