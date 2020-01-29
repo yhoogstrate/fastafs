@@ -42,6 +42,10 @@ else()
 endif()
 
 configure_file("include/config.hpp.in" "include/config.hpp")
+configure_file("include/config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/config.hpp")
+configure_file("include/config.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp")
+configure_file("include/config.hpp.in" "${BUILD_DIR}/config.hpp")
+
 
 # ----------------------------------------------------------------------
 # ------------------------------ Styling -------------------------------
@@ -75,6 +79,8 @@ add_custom_target(tidy DEPENDS make_tidy )
 
 add_subdirectory(src)
 include_directories(include)
+include_directories(${BUILD_DIR})
+include_directories(${BUILD_DIR}"/include")
 add_definitions(-std=c++14)
 
 # Boost
