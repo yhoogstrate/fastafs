@@ -571,7 +571,7 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
 
     fh_fastafs.seekp(0, std::ios::end);
 
-    printf("file size now: %i\n", (uint32_t) fh_fastafs.tellp());
+    //printf("file size now: %i\n", (uint32_t) fh_fastafs.tellp());
 
 
 
@@ -600,15 +600,15 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
     }
 
     // --
-    printf("nnn = %i\n", nnn);
+    //printf("nnn = %i\n", nnn);
 
 
 
     //write crc as 4 bytes
     char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc);
-    printf("[%i][%i][%i][%i] ~   %02hhx%02hhx%02hhx%02hhx \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3],
-           byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
+    //printf("[%i][%i][%i][%i] ~   %02hhx%02hhx%02hhx%02hhx \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3],
+    //       byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
 
 

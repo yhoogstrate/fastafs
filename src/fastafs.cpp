@@ -55,7 +55,7 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
 {
 #if DEBUG
     if(padding == 0) {
-        throw std::invalid_argument("Padding is set to 0, should have been set to this->n elsewhere.\n");
+        throw std::invalid_argument("[fastafs_seq::fasta_filesize] Padding is set to 0, should have been set to this->n elsewhere.\n");
     }
 #endif
     //               >                   chr                 \n  ACTG NNN  /number of newlines corresponding to ACTG NNN lines

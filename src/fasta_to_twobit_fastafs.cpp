@@ -117,7 +117,7 @@ void fasta_seq_header_twobit_conversion_data::finish_sequence(std::ofstream &fh_
 
 
 
-size_t fasta_to_twobit_fastafs(const std::string fasta_file, const std::string &fastafs_file)
+size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string &fastafs_file)
 {
     std::vector<fasta_seq_header_twobit_conversion_data*> index;
     fasta_seq_header_twobit_conversion_data* s;
