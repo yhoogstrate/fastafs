@@ -40,6 +40,7 @@ void usage_view(void)
     std::cout << "View FASTAFS file in FASTA format" << std::endl << std::endl;
     std::cout << "  -f, --file           Provide fastafs by file path, not from database (cache)" << std::endl;
     std::cout << "  -p, --padding        Number of nucleotides before delimited with a newline [default=60]" << std::endl;
+    std::cout << "  -m, --no-masking     Disable masking; bases in lower-case (not for 2bit output)" << std::endl;
     std::cout << "  -2, --2bit           View in UCSC twoBit/2bit format" << std::endl;
     std::cout << "                         http://genome.ucsc.edu/FAQ/FAQformat.html#format7" << std::endl;
     std::cout << std::endl;
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
                     try {
                         fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
                     }
-                    catch(std::runtime_error) {
+                    catch(std::runtime_error& e) {
                         fasta_to_fourbit_fastafs(argv[argc - 1], fname_out);
                     }
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
