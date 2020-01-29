@@ -24,17 +24,18 @@ void sequence_region::parse(const char * seqstr)
 {
     // the + 1 is the also allow parsing "sequence-of-size-255-...-:123-345"
     size_t string_max_pos = std::min(MAX_SIZE_SEQ_NAME + 1, strlen(seqstr));
-    ssize_t p = -1;
-    for(size_t i = 0; i < string_max_pos && p == -1; i++) {
+    size_t p = 0;
+    bool proceed = true;
+    for(size_t i = 0; i < string_max_pos && proceed == true; i++) {
         if(seqstr[i] == ':') {
-            p = (size_t) i;
+            p = i;
+            proceed = false;
         }
     }
 
     if(p > 0) {
         this->seq_name = std::string(seqstr, 0, p);
-    } else if(p == -1) {
-
+    } else if(p == false) {
         // either with string > 255 chars or string smaller than 255 without ':'
         this->seq_name = std::string(seqstr, 0, string_max_pos);
     }
@@ -42,20 +43,22 @@ void sequence_region::parse(const char * seqstr)
     // chr1:1
     // p = 4
     // strlen = 6
-    if(p != -1 and strlen(seqstr) > (p + 1)) {
+    if(proceed == false and strlen(seqstr) > (p + 1)) {
         // we can parse numbers
         // find position of '-' character
 
-        ssize_t p2 = -1;
+        size_t p2 = 0;
+        bool proceed2 = true;
 
-        for(size_t i = p; i < strlen(seqstr) && p2 == -1; i++) {
+        for(size_t i = p; i < strlen(seqstr) && proceed2 == true; i++) {
             if(seqstr[i] == '-') {
                 p2 = (size_t) i;
+                proceed2 = false;
             }
         }
 
 
-        if(p2 == -1) { // chrA:123
+        if(proceed2 == true) { // chrA:123
             std::string start = std::string(seqstr, p + 1, p2 - p - 1);
 
             this->start = std::stoi(start);
