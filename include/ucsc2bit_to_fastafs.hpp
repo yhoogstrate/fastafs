@@ -29,7 +29,7 @@ struct ucsc2bit_seq_header {
     std::vector<uint32_t> m_block_sizes;
 
     ucsc2bit_seq_header():
-        name_size(0), name(nullptr) { }
+        name_size(0), name(nullptr), n_blocks(0) { }
 };
 
 struct ucsc2bit_seq_header_conversion_data {

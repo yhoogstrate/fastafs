@@ -142,32 +142,32 @@ add_executable(mount.fastafs
 				)
 set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
-#add_library(libfastafs SHARED
-					#src/fasta_to_twobit_fastafs.cpp
-					#src/ucsc2bit_to_fastafs.cpp
-					#src/flags.cpp
-					#src/fastafs.cpp
-					#src/ucsc2bit.cpp
-					#src/twobit_byte.cpp
-					#src/fourbit_byte.cpp
-					#src/database.cpp
-					#src/utils.cpp
-					#src/fuse.cpp
-					#src/lsfastafs.cpp
-#)
-#target_include_directories(libfastafs PUBLIC include)
-#target_sources(libfastafs PUBLIC include/fastafs.hpp)
+add_library(libfastafs SHARED
+					src/fasta_to_twobit_fastafs.cpp
+					src/ucsc2bit_to_fastafs.cpp
+					src/flags.cpp
+					src/fastafs.cpp
+					src/ucsc2bit.cpp
+					src/twobit_byte.cpp
+					src/fourbit_byte.cpp
+					src/database.cpp
+					src/utils.cpp
+					src/fuse.cpp
+					src/lsfastafs.cpp
+)
+target_include_directories(libfastafs PUBLIC include)
+target_sources(libfastafs PUBLIC include/fastafs.hpp)
 
-#set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
-#set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
-#set_target_properties(libfastafs PROPERTIES SOVERSION 1)
-#set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
+set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
+set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(libfastafs PROPERTIES SOVERSION 1)
+set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
 
-#set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
-# great, this doesn't go automagically with an entire dir
-#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_twobit_fastafs.hpp;include/fuse.hpp;include/meson.build;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
-#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
-#set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
+##set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
+## great, this doesn't go automagically with an entire dir
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fourbit_fastafs.hpp;include/fasta_to_twobit_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
+##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
 # ----------------------------------------------------------------------
 # ------------------------------ Testing -------------------------------
@@ -182,7 +182,7 @@ add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N
 add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
 add_test(test_cache_twobit        "${BUILD_TEST_DIR}/test_cache_twobit")
 add_test(test_cache_fourbit       "${BUILD_TEST_DIR}/test_cache_fourbit")
-#add_test(test_view                "${BUILD_TEST_DIR}/test_view")
+add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")
 add_test(test_check               "${BUILD_TEST_DIR}/test_check") # file integrity checks
@@ -204,6 +204,6 @@ install(TARGETS fastafs DESTINATION "bin")
 install(TARGETS mount.fastafs DESTINATION "bin")
 
 # don't build during debug at least
-#install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
+install(TARGETS libfastafs LIBRARY DESTINATION "lib" PUBLIC_HEADER DESTINATION "include/libfastafs")
 
 # ----------------------------------------------------------------------
