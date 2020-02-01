@@ -200,5 +200,6 @@ By setting `allow_other`, file system users get permissions to the mountpoint.
 
 ## Contributing
 Feel free to start a discussion or to contribute to the GPL licensed code.
+If you are willing to make even the smallest contribution to this project in any way, really, feel free to open an issue or to send an e-mail.
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c90c7d61651d4e18aa82a4b02f3599fa)](https://www.codacy.com/app/yhoogstrate/fastafs?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yhoogstrate/fastafs&amp;utm_campaign=Badge_Grade)
