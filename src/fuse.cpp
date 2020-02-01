@@ -67,33 +67,36 @@ static int do_getattr(const char *path, struct stat *st)
     //		st_size:	This specifies the size of a regular file in bytes. For files that are really devices this field isn’t usually meaningful. For symbolic links this specifies the length of the file name the link refers to.
     st->st_uid = getuid(); // The owner of the file/directory is the user who mounted the filesystem
     st->st_gid = getgid(); // The group of the file/directory is the same as the group of the user who mounted the filesystem
+
     st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
     st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
 
+    st->st_nlink = 1;
+
     printf("[%s]\n", path);
     if(strcmp(path, "/") == 0) {
-        //st->st_mode = S_IFREG | 0644;
+        //st->st_mode = S_IFREG | 0444;
         //st->st_nlink = 1;
         //st->st_size = 1024;
         //directory
-        st->st_mode = S_IFDIR | 0755;
+        st->st_mode = S_IFDIR | 0555;
         st->st_nlink = 2; // Why "two" hardlinks instead of "one"? The answer is here: http://unix.stackexchange.com/a/101536
     } else if(strlen(path) == 4 && strncmp(path, "/seq", 4) == 0) {
         //directory
         //printf("setting to DIR because /seq\n");
-        st->st_mode = S_IFDIR | 0755;
+        st->st_mode = S_IFDIR | 0555;
         st->st_nlink = 1;
     } else if(strlen(path) > 4 &&  strncmp(path, "/seq/", 5) == 0) {
         // API: "/seq/chr1:123-456"
         printf("setting to FILE [%s] because /seq/...\n", path);
         // @ todo - run a check on wether the chr exists and return err otherwise
-        st->st_mode = S_IFREG | 0644;
+        st->st_mode = S_IFREG | 0444;
         st->st_nlink = 1;
 
         //@todo this needs to be defined with some api stuff:!!
         st->st_size = (signed int) ffi->f->view_sequence_region_size(ffi->cache_p0, (strchr(path, '/') + 5));
     } else {
-        st->st_mode = S_IFREG | 0644;
+        st->st_mode = S_IFREG | 0444;
         st->st_nlink = 1;
 
         if(ffi->from_fastafs) {
@@ -271,7 +274,7 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
         }
     }
 
-    return -1; // returns -1 on other files
+    return ENODATA; // returns -1 on other files
 }
 
 
