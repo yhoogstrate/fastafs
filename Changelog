@@ -1,3 +1,9 @@
+2020-02-01  Youri Hoogstrate
+
+   * v1.7.1
+   * Fixed an errornous syscall (when `ls -l` requests a certain xattr
+   * Set chmods to 0555 and 0777
+
 2020-01-27  Youri Hoogstrate
 
    * v1.7.0
