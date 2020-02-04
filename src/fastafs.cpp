@@ -243,10 +243,21 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     * nooit out of bound
 
     */
+
+    // big buffer
+    char *from_file_buffer;
+    from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size / 4) + 2));  // kan zeker 4x kleiner
+    uint ff = 0;
+
+    fh->read(from_file_buffer, (buffer_size / 4) + 1);
+
     const char *chunk = T::encode_hash[0];// init
     unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
     if(bit_offset != 0) {
-        fh->read((char*)(&t.data), 1);
+        //fh->read((char*)(&t.data), 1);
+        t.data = from_file_buffer[ff];
+        ff++;
+
         chunk = t.get();
     }
     while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
@@ -255,6 +266,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
         m_block--;
     }
+
 
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
@@ -271,7 +283,10 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
                 }
             } else {
                 if(bit_offset % T::nucleotides_per_byte == 0) {
-                    fh->read((char*)(&t.data), 1);
+                    //fh->read((char*)(&t.data), 1);
+                    t.data = from_file_buffer[ff];
+                    ff++;
+
                     chunk = t.get();
                 }
 
@@ -294,6 +309,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
             if(written >= buffer_size) {
                 //fh->clear();
+                delete[] from_file_buffer;
                 return written;
             }
         }
@@ -306,6 +322,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
             if(written >= buffer_size) {
                 //fh->clear();
+                delete[] from_file_buffer;
                 return written;
             }
         }
@@ -314,6 +331,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     //fh->clear();
+    delete[] from_file_buffer;
     return written;
 }
 
