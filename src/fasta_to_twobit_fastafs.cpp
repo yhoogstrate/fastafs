@@ -17,9 +17,6 @@ const static char na[2] = "A";
 const static char ng[2] = "G";
 const static char nn[2] = "N";
 
-const static char DICT_TWOBIT = 1;
-const static char DICT_FOURBIT = 2;
-
 
 
 void fasta_seq_header_twobit_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
@@ -146,11 +143,10 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
         while(s == nullptr and getline(fh_fasta, line)) {
             if(line[0] == '>') {
-                printf("fasta header detected at: %i\n", fh_fasta.tellg());
-
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
-                //s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
-                s = new fasta_seq_header_twobit_conversion_data( fh_fastafs.tellp(), line);
+
+                //s = new fasta_seq_header_twobit_conversion_data( fh_fastafs.tellp(), line);
+                s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
                 fh_fastafs << "\x00\x00\x00\x00"s;// placeholder for sequence length
                 index.push_back(s);
             }
@@ -162,120 +158,134 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                     s->finish_sequence(fh_fastafs);
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
 
-                    //s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
-                    s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
+                    //s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
+                    s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
+
                     index.push_back(s);
                 } else {
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
-                        switch(*it) {
+                        if(s->current_dict ==  DICT_TWOBIT ) {
+                            switch(*it) {
 
-                        // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
-                        case 'U':
-                        case 'T':
-                            if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                s->in_m_block = false;
+                            // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
+                            case 'U':
+                            case 'T':
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                                break;
+                            case 'u':// lower case = m block
+                            case 't':
+                                if(!s->in_m_block) {
+                                    //printf("starting M block: %d\n", s->N + s->n_actg);
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
+                                break;
+                            case 'C':
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'c':
+                                if(!s->in_m_block) {
+                                    //printf("starting M block: %d\n", s->N + s->n_actg);
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'A':
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
+                                MD5_Update(&s->ctx, na, 1);
+                                break;
+                            case 'a':
+                                if(!s->in_m_block) {
+                                    //printf("starting M block: %d\n", s->N + s->n_actg);
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
+                                MD5_Update(&s->ctx, na, 1);
+                                break;
+                            case 'G':
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'g':
+                                if(!s->in_m_block) {
+                                    //printf("starting M block: %d\n", s->N + s->n_actg);
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'N':
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_N();
+                                MD5_Update(&s->ctx, nn, 1);
+                                break;
+                            case 'n':
+                                if(!s->in_m_block) {
+                                    //printf("starting M block: %d\n", s->N + s->n_actg);
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->add_N();
+                                MD5_Update(&s->ctx, nn, 1);
+                                break;
+                            default:
+                                // set to fourbit and re-intialize
+                                // seek fasta header to beg + s->file_offset_in_fasta
+                                // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
+                                //throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
+                                fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
+                                fh_fastafs.seekp(s->file_offset_in_fastafs, std::ios::beg);
+                                s->current_dict = DICT_FOURBIT;
+                                printf("rollback back two files:)\n");
+                                break;
                             }
-
-                            s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                            MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
-                            break;
-                        case 'u':// lower case = m block
-                        case 't':
-                            if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
-                                s->m_block_starts.push_back(s->N + s->n_actg);
-                                s->in_m_block = true;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                            MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_nucleotide
-                            break;
-                        case 'C':
-                            if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                s->in_m_block = false;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
-                            MD5_Update(&s->ctx, nc, 1);
-                            break;
-                        case 'c':
-                            if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
-                                s->m_block_starts.push_back(s->N + s->n_actg);
-                                s->in_m_block = true;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_C, fh_fastafs);
-                            MD5_Update(&s->ctx, nc, 1);
-                            break;
-                        case 'A':
-                            if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                s->in_m_block = false;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
-                            MD5_Update(&s->ctx, na, 1);
-                            break;
-                        case 'a':
-                            if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
-                                s->m_block_starts.push_back(s->N + s->n_actg);
-                                s->in_m_block = true;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_A, fh_fastafs);
-                            MD5_Update(&s->ctx, na, 1);
-                            break;
-                        case 'G':
-                            if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                s->in_m_block = false;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
-                            MD5_Update(&s->ctx, ng, 1);
-                            break;
-                        case 'g':
-                            if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
-                                s->m_block_starts.push_back(s->N + s->n_actg);
-                                s->in_m_block = true;
-                            }
-
-                            s->add_ACTG(NUCLEOTIDE_G, fh_fastafs);
-                            MD5_Update(&s->ctx, ng, 1);
-                            break;
-                        case 'N':
-                            if(s->in_m_block) {
-                                //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                s->in_m_block = false;
-                            }
-
-                            s->add_N();
-                            MD5_Update(&s->ctx, nn, 1);
-                            break;
-                        case 'n':
-                            if(!s->in_m_block) {
-                                //printf("starting M block: %d\n", s->N + s->n_actg);
-                                s->m_block_starts.push_back(s->N + s->n_actg);
-                                s->in_m_block = true;
-                            }
-
-                            s->add_N();
-                            MD5_Update(&s->ctx, nn, 1);
-                            break;
-                        default:
+                        }
+                        else { // four bit decoding
+                            
                             throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
-                            break;
                         }
                     }
                 }
@@ -310,7 +320,9 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         fh_fastafs.write(s->name.c_str(), (size_t) s->name.size());// name
 
         // location of sequence data in file
+        uint_to_fourbytes(buffer, (uint32_t) s->file_offset_in_fastafs);
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
+
         delete s;
     }
     fh_fastafs << "\x00"s;// no metadata tags (YET)

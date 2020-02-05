@@ -68,4 +68,8 @@ static const std::string FASTAFS_PID_XATTR_NAME = "fastafs-pid";
 static const size_t MAX_SIZE_SEQ_NAME = 255;
 
 
+const static char DICT_TWOBIT = 1;
+const static char DICT_FOURBIT = 2;
+
+
 #endif
