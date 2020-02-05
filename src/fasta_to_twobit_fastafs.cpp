@@ -17,6 +17,9 @@ const static char na[2] = "A";
 const static char ng[2] = "G";
 const static char nn[2] = "N";
 
+const static char DICT_TWOBIT = 1;
+const static char DICT_FOURBIT = 2;
+
 
 
 void fasta_seq_header_twobit_conversion_data::add_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
@@ -146,7 +149,8 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                 printf("fasta header detected at: %i\n", fh_fasta.tellg());
 
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
-                s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
+                //s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
+                s = new fasta_seq_header_twobit_conversion_data( fh_fastafs.tellp(), line);
                 fh_fastafs << "\x00\x00\x00\x00"s;// placeholder for sequence length
                 index.push_back(s);
             }
@@ -158,6 +162,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                     s->finish_sequence(fh_fastafs);
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
 
+                    //s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
                     s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
                     index.push_back(s);
