@@ -177,7 +177,6 @@ size_t fasta_to_fourbit_fastafs(const std::string &fasta_file, const std::string
                     fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
                     index.push_back(s);
                 } else {
-                    std::cout << "{";
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         switch(*it) {
 

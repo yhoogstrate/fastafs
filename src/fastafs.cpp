@@ -687,8 +687,9 @@ void fastafs::load(std::string afilename)
                 file.read(memblock, 1);
 
                 // name
-                char name[memblock[0] + 1];
-                file.read(name, memblock[0]);
+                size_t namesize = (unsigned char) memblock[0]; // cast to something that is large enough (> 128)
+                char name[namesize + 1];
+                file.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
 

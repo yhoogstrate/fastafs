@@ -223,4 +223,18 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
 
 
+
+
+BOOST_AUTO_TEST_CASE(test_cache_2)
+{
+    size_t written = fasta_to_fourbit_fastafs("test/data/test_005.fa", "tmp/test_005.fastafs");
+
+    // check fastafs filesize
+    fastafs f = fastafs("");
+    f.load("tmp/test_005.fastafs");
+    BOOST_CHECK_EQUAL(f.data[0]->name.size(), 131);
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
