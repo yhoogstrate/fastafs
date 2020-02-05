@@ -18,7 +18,7 @@ public:
     void add_N();
     void finish_sequence(std::ofstream &);
 
-    off_t file_offset_in_fasta; // file positions where sequence data blocks start
+    off_t file_offset_in_fastafs; // file positions in FASTAFS file where sequence data blocks start
     std::string name;
 
     uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)
@@ -28,7 +28,7 @@ public:
 
 
     fasta_seq_header_twobit_conversion_data(off_t fof, const std::string &name):
-        file_offset_in_fasta(fof),
+        file_offset_in_fastafs(fof),
         name(name),
         N(0),
         n_actg(0),

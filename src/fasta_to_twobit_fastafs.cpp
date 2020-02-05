@@ -80,7 +80,7 @@ void fasta_seq_header_twobit_conversion_data::finish_sequence(std::ofstream &fh_
 
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
-    fh_fastafs.seekp(this->file_offset_in_fasta, std::ios::beg);
+    fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
     uint_to_fourbytes(buffer, this->n_actg);
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
@@ -143,6 +143,8 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         // iterate until first sequence is found, ensuring we won't write to uninitialized sequences
         while(s == nullptr and getline(fh_fasta, line)) {
             if(line[0] == '>') {
+                printf("fasta header detected at: %i\n", fh_fasta.tellg());
+
                 line.erase(0, 1);// erases first part, quicker would be pointer from first char
                 s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
                 fh_fastafs << "\x00\x00\x00\x00"s;// placeholder for sequence length
@@ -303,7 +305,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         fh_fastafs.write(s->name.c_str(), (size_t) s->name.size());// name
 
         // location of sequence data in file
-        uint_to_fourbytes(buffer, (uint32_t) s->file_offset_in_fasta);
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
         delete s;
     }
