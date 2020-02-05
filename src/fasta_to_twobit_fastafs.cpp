@@ -139,6 +139,7 @@ void fasta_seq_header_twobit_conversion_data::finish_twobit_sequence(std::ofstre
 
 void fasta_seq_header_twobit_conversion_data::add_fourbit_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
+    printf(" [%i] ", this->n_actg);
     this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
     // if fourth nucleotide, 2bit is complete; write to disk
@@ -152,6 +153,9 @@ void fasta_seq_header_twobit_conversion_data::add_fourbit_ACTG(unsigned char nuc
 
     this->previous_was_N = false;
     this->n_actg++;
+
+
+    printf(" -> [%i]    [ %i ]\n", this->n_actg, nucleotide);
 }
 
 void fasta_seq_header_twobit_conversion_data::add_fourbit_N()
@@ -198,6 +202,8 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fasta, std::ios::beg);
+    
+    printf("written encoded amino acids : %i \n", n_actg);
     uint_to_fourbytes(buffer, this->n_actg);
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
@@ -293,12 +299,22 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
                     index.push_back(s);
                 } else {
+                    std::cout << "#" << line << "\n";
                     for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                         if(s->current_dict ==  DICT_TWOBIT ) {
                             switch(*it) {
 
                             // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
                             case 'U':
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_twobit_Nucleotide
+                                break;
                             case 'T':
                                 if(s->in_m_block) {
                                     //printf("ending M block: %d\n", s->N + s->n_actg - 1);
@@ -310,6 +326,15 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_twobit_Nucleotide
                                 break;
                             case 'u':// lower case = m block
+                                if(!s->in_m_block) {
+                                    //printf("starting M block: %d\n", s->N + s->n_actg);
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_twobit_Nucleotide
+                                break;
                             case 't':
                                 if(!s->in_m_block) {
                                     //printf("starting M block: %d\n", s->N + s->n_actg);
@@ -408,12 +433,12 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
                                 fh_fastafs.seekp(s->file_offset_in_fastafs, std::ios::beg);
                                 s->current_dict = DICT_FOURBIT;
+                                //it = line.end();
                                 printf("rollback back two files:)\n");
                                 break;
                             }
                         }
                         else { // four bit decoding
-
                             switch(*it) {
 
                             case 'A':
@@ -766,7 +791,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         }
     }
     
-    printf("checkpoint aa\n");
 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
@@ -775,8 +799,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
     for(size_t i = 0; i < index.size(); i++) {
-        printf("checkpoint bb\n");
-
         s = index[i];
 
         // set and write flag
@@ -806,8 +828,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
         delete s;
     }
-    printf("checkpoint cc\n");
-
     
     fh_fastafs << "\x00"s;// no metadata tags (YET)
 
