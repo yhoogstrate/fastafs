@@ -8,15 +8,21 @@
 
 #include "fastafs.hpp"
 #include "twobit_byte.hpp"
+#include "fourbit_byte.hpp"
 
 
 
 class fasta_seq_header_twobit_conversion_data
 {
 public:
-    void add_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
-    void add_N();
-    void finish_sequence(std::ofstream &);
+    void add_twobit_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
+    void add_twobit_N();
+    void finish_twobit_sequence(std::ofstream &);
+
+    void add_fourbit_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
+    void add_fourbit_N();
+    void finish_fourbit_sequence(std::ofstream &);
+
 
     off_t file_offset_in_fasta; // file positions in FASTA file where sequence data blocks starts [ACTG]
     off_t file_offset_in_fastafs; // file positions in FASTAFS file where sequence data blocks starts [2bit/4bit]
@@ -58,6 +64,7 @@ public:
     bool in_m_block;
 
     twobit_byte twobit_data;
+    fourbit_byte fourbit_data;
 };
 
 
