@@ -139,7 +139,6 @@ void fasta_seq_header_twobit_conversion_data::finish_twobit_sequence(std::ofstre
 
 void fasta_seq_header_twobit_conversion_data::add_fourbit_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
-    printf(" [%i] ", this->n_actg);
     this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
     // if fourth nucleotide, 2bit is complete; write to disk
@@ -153,9 +152,6 @@ void fasta_seq_header_twobit_conversion_data::add_fourbit_ACTG(unsigned char nuc
 
     this->previous_was_N = false;
     this->n_actg++;
-
-
-    printf(" -> [%i]    [ %i ]\n", this->n_actg, nucleotide);
 }
 
 void fasta_seq_header_twobit_conversion_data::add_fourbit_N()
@@ -202,17 +198,13 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
-    printf("moving fastafs position to: %i\n", this->file_offset_in_fastafs);
-    printf("written encoded amino acids : %i \n", n_actg);
     uint_to_fourbytes(buffer, this->n_actg);
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
     
-    printf("moving fastafs position back to: %i\n", index_file_position);
     fh_fastafs.seekp(index_file_position, std::ios::beg);
 
     // N blocks
-    printf("n - blocks[4bit]: %i\n", this->n_block_starts.size());
     uint_to_fourbytes(buffer, (uint32_t) this->n_block_starts.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->n_block_starts.size(); j++) {
@@ -229,7 +221,6 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
     fh_fastafs.write(reinterpret_cast<char *>(&this->md5_digest), (size_t) 16);
 
     // M blocks
-    printf("m - blocks[4bit]: %i\n", this->m_block_starts.size());
     uint_to_fourbytes(buffer, (uint32_t) this->m_block_starts.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->m_block_starts.size(); j++) {
@@ -303,12 +294,8 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
                     index.push_back(s);
                 } else {
-                    std::cout << "\n\n#" << line << "\n";
                     if(s->current_dict ==  DICT_TWOBIT ) {
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
-                            std::cout << "[";
-                            std::cout << *it;
-                            std::cout << "]";
                             switch(*it) {
 
                             // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
@@ -439,6 +426,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 //throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
                                 fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
                                 fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
+
                                 s->current_dict = DICT_FOURBIT;
 
                                 s->N = 0;
@@ -452,18 +440,16 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->in_m_block = false;
                                 s->previous_was_N = false;
 
+                                MD5_Init(&s->ctx);
+
                                 // re-init this m5 checksum
                                 //it = line.end();
-                                printf("\nrollback back two files:)\n");
+                                printf("rollback back two files:)\n");
                                 break;
                             }
                         }
                     } else { // four bit decoding
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
-                            std::cout << "{";
-                            std::cout << *it;
-                            std::cout << "}";
-
                             switch(*it) {
 
                             case 'A':
@@ -793,7 +779,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 }*/
 
                                 s->add_fourbit_N();
-                                //MD5_Update(&s->ctx, nn, 1);
                                 break;
 
                             default:
@@ -820,7 +805,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
     char buffer[4 +  1];
-    printf("index size (6 expected): %i\n", index.size());
     uint_to_fourbytes(buffer, (uint32_t) index.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
@@ -869,7 +853,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
     // now calculate crc32 checksum, as all bits have been set.
     fh_fastafs.seekp(0, std::ios::end);
-/*
     fastafs f("");
     f.load(fastafs_file);
     uint32_t crc32c = f.get_crc32();
@@ -879,7 +862,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
     //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
 
-*/
     /*
     std::ifstream fh_fastafs_crc(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
