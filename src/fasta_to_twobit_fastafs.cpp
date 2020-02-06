@@ -201,15 +201,18 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
 
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
-    fh_fastafs.seekp(this->file_offset_in_fasta, std::ios::beg);
-    
+    fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
+    printf("moving fastafs position to: %i\n", this->file_offset_in_fastafs);
     printf("written encoded amino acids : %i \n", n_actg);
     uint_to_fourbytes(buffer, this->n_actg);
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
+    
+    printf("moving fastafs position back to: %i\n", index_file_position);
     fh_fastafs.seekp(index_file_position, std::ios::beg);
 
     // N blocks
+    printf("n - blocks[4bit]: %i\n", this->n_block_starts.size());
     uint_to_fourbytes(buffer, (uint32_t) this->n_block_starts.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->n_block_starts.size(); j++) {
@@ -226,6 +229,7 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
     fh_fastafs.write(reinterpret_cast<char *>(&this->md5_digest), (size_t) 16);
 
     // M blocks
+    printf("m - blocks[4bit]: %i\n", this->m_block_starts.size());
     uint_to_fourbytes(buffer, (uint32_t) this->m_block_starts.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     for(j = 0; j < this->m_block_starts.size(); j++) {
@@ -299,9 +303,12 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
                     index.push_back(s);
                 } else {
-                    std::cout << "#" << line << "\n";
-                    for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
-                        if(s->current_dict ==  DICT_TWOBIT ) {
+                    std::cout << "\n\n#" << line << "\n";
+                    if(s->current_dict ==  DICT_TWOBIT ) {
+                        for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
+                            std::cout << "[";
+                            std::cout << *it;
+                            std::cout << "]";
                             switch(*it) {
 
                             // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
@@ -431,14 +438,32 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
                                 //throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
                                 fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
-                                fh_fastafs.seekp(s->file_offset_in_fastafs, std::ios::beg);
+                                fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
                                 s->current_dict = DICT_FOURBIT;
+
+                                s->N = 0;
+                                s->n_actg = 0;
+
+                                s->n_block_starts.clear();
+                                s->n_block_ends.clear();
+
+                                s->m_block_starts.clear();
+                                s->m_block_ends.clear();
+                                s->in_m_block = false;
+                                s->previous_was_N = false;
+
+                                // re-init this m5 checksum
                                 //it = line.end();
-                                printf("rollback back two files:)\n");
+                                printf("\nrollback back two files:)\n");
                                 break;
                             }
                         }
-                        else { // four bit decoding
+                    } else { // four bit decoding
+                        for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
+                            std::cout << "{";
+                            std::cout << *it;
+                            std::cout << "}";
+
                             switch(*it) {
 
                             case 'A':
@@ -795,6 +820,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
     char buffer[4 +  1];
+    printf("index size (6 expected): %i\n", index.size());
     uint_to_fourbytes(buffer, (uint32_t) index.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
@@ -812,7 +838,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
             fsf.set_iupec_nucleotide();
         }
 
-        fsf.set_dna();
         fsf.set_complete();
         fh_fastafs << fsf.get_bits()[0];
         fh_fastafs << fsf.get_bits()[1];
