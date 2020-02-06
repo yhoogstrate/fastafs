@@ -572,6 +572,8 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
     std::streampos size;
     char * buffer;
     size = file.tellg();
+    BOOST_CHECK_EQUAL(reference.size(), 376);
+    BOOST_CHECK_EQUAL(size, 376);
     buffer = new char [size];
 
     file.seekg(0, std::ios::beg);
@@ -590,9 +592,32 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
 
 
     // check computed file size
-    //fastafs f = fastafs("");
-    //f.load("tmp/test_cache_test.fastafs");
-    //BOOST_CHECK_EQUAL(f.fastafs_filesize(), 403);
+    fastafs f = fastafs("");
+    f.load("tmp/test_cache_test_006.fastafs");
+    BOOST_CHECK_EQUAL(f.fastafs_filesize(), 376);
+
+    const size_t padding = 10;
+    ffs2f_init* cache_p10 = f.init_ffs2f(padding, true); // mixed case
+
+    {
+        // upper case test
+        const uint32_t write_size = 32;
+        char buffer2[write_size + 1] = "";
+        buffer2[32] = '\0';
+        uint32_t written = 0;
+        uint32_t w = 0;
+        std::string output = "";
+
+        while(written < f.fasta_filesize(padding)) {
+            w = f.view_fasta_chunk(cache_p10, buffer2, write_size, written);
+            output.append(buffer2, w);
+            written += w;
+        }
+
+        //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
+        std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
+        BOOST_CHECK(output.compare(uppercase) == 0);
+    }
 }
 
 
