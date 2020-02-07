@@ -300,6 +300,11 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
                             // keeping daling with upper-case and lower-case in separate cases is quicker than one if/else before the switch, simply beacuse switches are faster than if-statements.
                             case 'U':
+                                if(s->has_T) {
+                                    s->current_dict = DICT_FOURBIT;
+                                }
+                                s->has_U = true;
+
                                 if(s->in_m_block) {
                                     //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
@@ -309,17 +314,12 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
                                 MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_twobit_Nucleotide
                                 break;
-                            case 'T':
-                                if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                    s->in_m_block = false;
-                                }
-
-                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_twobit_Nucleotide
-                                break;
                             case 'u':// lower case = m block
+                                if(s->has_T) {
+                                    s->current_dict = DICT_FOURBIT;
+                                }
+                                s->has_U = true;
+
                                 if(!s->in_m_block) {
                                     //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
@@ -329,7 +329,27 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
                                 MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_twobit_Nucleotide
                                 break;
+                            case 'T':
+                                if(s->has_U) {
+                                    s->current_dict = DICT_FOURBIT;
+                                }
+                                s->has_T = true;
+
+                                if(s->in_m_block) {
+                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_twobit_Nucleotide
+                                break;
                             case 't':
+                                if(s->has_U) {
+                                    s->current_dict = DICT_FOURBIT;
+                                }
+                                s->has_T = true;
+
                                 if(!s->in_m_block) {
                                     //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
@@ -420,6 +440,12 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 MD5_Update(&s->ctx, nn, 1);
                                 break;
                             default:
+                                s->current_dict = DICT_FOURBIT;
+                                break;
+                            }
+
+                            //@todo Funct set_to_fourbit(*s, *fasta, *fastafs , ...)
+                            if(s->current_dict == DICT_FOURBIT) {
                                 // set to fourbit and re-intialize
                                 // seek fasta header to beg + s->file_offset_in_fasta
                                 // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
@@ -445,7 +471,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 // re-init this m5 checksum
                                 //it = line.end();
                                 printf("rollback back two files:)\n");
-                                break;
+
                             }
                         }
                     } else { // four bit decoding
@@ -816,7 +842,12 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         fsf.set_linear();
 
         if(s->current_dict == DICT_TWOBIT) {
-            fsf.set_dna(); // @todo fix RNA
+            if(s->has_U) {
+                fsf.set_rna();
+            }
+            else {
+                fsf.set_dna();
+            }
         }
         else {
             fsf.set_iupec_nucleotide();

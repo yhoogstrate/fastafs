@@ -542,7 +542,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         "\x0B"s "seq.1[ACTG]"s         // [345, 349] name
         "\x00\x00\x00\x0E"s     //  data position in file (14)
 
-        "\x10\x00"             // [354, 355] complete, DNA and not circular
+        "\x90\x00"             // RNA
         "\x0B"s "seq.2[ACUG]"s         // [356, 360] name
         "\x00\x00\x00\x39"s     // 57
 
@@ -554,7 +554,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         "\x0B"s "seq.4[ACTG]"s         // [345, 349] name
         "\x00\x00\x00\x82"s     // [, ] data position in file (141)
 
-        "\x10\x00"             // [354, 355] complete, DNA and not circular
+        "\x90\x00"             // RNA
         "\x0B"s "seq.5[ACUG]"s         // [356, 360] name
         "\x00\x00\x00\xAD"s     // [, ] data position in file (181)
 
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         "\x00"s                 // [399] no metadata fields [padding will come soon?]
 
         // CRC32 checksums
-        "\x9B\xC9\xE5\xE9"s // only part that is not yet checked
+        "\xD3\xBC\xFF\xFE"s // only part that is not yet checked
         ;
 
     //BOOST_CHECK_EQUAL(written, 403);
@@ -621,9 +621,10 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
             written += w;
         }
 
-        //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
-        std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
+        std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
+        //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
         BOOST_CHECK(output.compare(uppercase) == 0);
+        std::cout << "[" << output << "]\n";
     }
 }
 

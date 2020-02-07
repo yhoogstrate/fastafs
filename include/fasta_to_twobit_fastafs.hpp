@@ -43,7 +43,9 @@ public:
         n_actg(0),
         previous_was_N(false),
         in_m_block(false),
-        current_dict(DICT_TWOBIT)
+        current_dict(DICT_TWOBIT),
+        has_T(false),
+        has_U(false)
     {
         MD5_Init(&this->ctx);
     }
@@ -62,6 +64,10 @@ public:
     std::vector<uint32_t> m_block_starts;
     std::vector<uint32_t> m_block_ends;
     bool in_m_block;
+
+    bool has_T;
+    bool has_U;
+    
 
     twobit_byte twobit_data;
     fourbit_byte fourbit_data;
