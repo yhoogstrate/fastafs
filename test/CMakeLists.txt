@@ -21,7 +21,6 @@ set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 add_executable(test_twobit_byte         twobit_byte/test_twobit_byte.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
 add_executable(test_fourbit_byte        fourbit_byte/test_fourbit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
 add_executable(test_cache_twobit        cache/test_cache_twobit.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
-add_executable(test_cache_fourbit       cache/test_cache_fourbit.cpp ../src/fasta_to_fourbit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
 add_executable(test_view                view/test_view.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/fasta_to_fourbit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
 add_executable(test_flags               flags/test_flags.cpp ../src/flags.cpp ../src/utils.cpp)
 add_executable(test_fastafs             fastafs/test_fastafs.cpp ../src/fasta_to_twobit_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
@@ -37,8 +36,6 @@ add_test(test_ucsc2bit_to_fasta  "${BUILD_TEST_DIR}/test_ucsc2bit_to_fasta")
 
 
 set_target_properties(test_cache_twobit
-                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
-set_target_properties(test_cache_fourbit
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_view
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")

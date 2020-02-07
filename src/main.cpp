@@ -116,11 +116,8 @@ int main(int argc, char *argv[])
                 }
 
                 if(is_fasta_file(argv[argc - 1])) {
-                    try {
-                        fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
-                    } catch(std::runtime_error& e) {
-                        fasta_to_fourbit_fastafs(argv[argc - 1], fname_out);
-                    }
+                    // converter is now generic for 2 and 4 bit
+                    fasta_to_twobit_fastafs(argv[argc - 1], fname_out);
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 } else {

@@ -168,11 +168,11 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
     {
 
         sequence_region *sr = nullptr;
-        //if(sr == nullptr) {// compiler doesn't understand this otherwise
-        char arg[] = "/seq/chrRr1:1235-1234";
+        if(sr == nullptr) {// compiler doesn't understand this otherwise
+            char arg[] = "/seq/chrRr1:1235-1234";
 
-        BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])), std::invalid_argument);
-        //}
+            BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])), std::invalid_argument);
+        }
     }
 
 }
@@ -247,9 +247,9 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1:456-123";
 
         sequence_region *sr = nullptr;
-        //if(sr == nullptr) {// compiler doesn't understand this otherwise
-        BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])), std::invalid_argument);
-        //}
+        if(sr == nullptr) {// compiler doesn't understand this otherwise
+            BOOST_CHECK_THROW(sr = new sequence_region(&(arg[5])), std::invalid_argument);
+        }
     }
 
 }
