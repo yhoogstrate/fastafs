@@ -95,8 +95,8 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
     fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), std::ios::beg);// std::ios::beg | fh->beg
 
-    twobit_byte t = twobit_byte();
-    const char *chunk = twobit_byte::encode_hash[0];
+    twobit_byte t = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
+    const char *chunk = t.encode_hash[0];
 
     unsigned char twobit_offset = nucleotide_pos % 4;
 

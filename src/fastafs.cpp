@@ -145,7 +145,7 @@ uint32_t fastafs_seq::view_fasta_chunk(
 {
     if(this->flags.is_twobit()) {
         if(this->flags.is_dna()) {
-            return this->view_fasta_chunk_generalized<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+            return this->view_fasta_chunk_generalized<twobit_byte_dna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         } else {
             printf(" {{{ RNA !! }}}\n");
             return this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
@@ -248,8 +248,8 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     * nooit out of bound
 
     */
-    const char *chunk = T::encode_hash[0];// init
-    unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+    const char *chunk = t.encode_hash[0];// init
+    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
     if(bit_offset != 0) {
         fh->read((char*)(&t.data), 1);
         chunk = t.get();
@@ -270,12 +270,12 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
         while(pos < pos_limit) {// while next sequence-containing-line is open
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = T::n_fill_masked;
+                    buffer[written++] = t.n_fill_masked;
                 } else {
-                    buffer[written++] = T::n_fill_unmasked;
+                    buffer[written++] = t.n_fill_unmasked;
                 }
             } else {
-                if(bit_offset % T::nucleotides_per_byte == 0) {
+                if(bit_offset % t.nucleotides_per_byte == 0) {
                     fh->read((char*)(&t.data), 1);
                     chunk = t.get();
                 }
@@ -286,7 +286,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
                     buffer[written++] = chunk[bit_offset];
                 }
 
-                bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_byte;
+                bit_offset = (unsigned char)(bit_offset + 1) % t.nucleotides_per_byte;
             }
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
@@ -1140,7 +1140,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
 
             // twobit coded nucleotides (only containing 4 nucleotides each)
             uint32_t full_twobits = sequence->n / 4;
-            twobit_byte t;
+            twobit_byte_dna t;
             pos_limit += full_twobits;
 
             while(pos < pos_limit) {

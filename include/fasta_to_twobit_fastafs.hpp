@@ -35,20 +35,6 @@ public:
 
     char current_dict;
 
-    fasta_seq_header_twobit_conversion_data(off_t fof_fasta, off_t fof_fastafs, const std::string &name):
-        file_offset_in_fasta(fof_fasta),
-        file_offset_in_fastafs(fof_fastafs),
-        name(name),
-        N(0),
-        n_actg(0),
-        previous_was_N(false),
-        in_m_block(false),
-        current_dict(DICT_TWOBIT),
-        has_T(false),
-        has_U(false)
-    {
-        MD5_Init(&this->ctx);
-    }
 
 
     // all below are undefined at initialization
@@ -67,10 +53,27 @@ public:
 
     bool has_T;
     bool has_U;
-    
+
 
     twobit_byte twobit_data;
     fourbit_byte fourbit_data;
+
+
+    fasta_seq_header_twobit_conversion_data(off_t fof_fasta, off_t fof_fastafs, const std::string &name):
+        file_offset_in_fasta(fof_fasta),
+        file_offset_in_fastafs(fof_fastafs),
+        name(name),
+        N(0),
+        n_actg(0),
+        previous_was_N(false),
+        in_m_block(false),
+        current_dict(DICT_TWOBIT),
+        has_T(false),
+        has_U(false),
+        twobit_data(ENCODE_HASH_TWOBIT_DNA) // not relevant for encoding, only for decoding
+    {
+        MD5_Init(&this->ctx);
+    }
 };
 
 

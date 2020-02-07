@@ -201,7 +201,7 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
     uint_to_fourbytes(buffer, this->n_actg);
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
-    
+
     fh_fastafs.seekp(index_file_position, std::ios::beg);
 
     // N blocks
@@ -282,8 +282,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                 if(line[0] == '>') {
                     if(s->current_dict == DICT_TWOBIT) {
                         s->finish_twobit_sequence(fh_fastafs);// finish last sequence
-                    }
-                    else {
+                    } else {
                         s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
                     }
                     line.erase(0, 1);// erases first part, quicker would be pointer from first char
@@ -294,7 +293,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
                     index.push_back(s);
                 } else {
-                    if(s->current_dict ==  DICT_TWOBIT ) {
+                    if(s->current_dict ==  DICT_TWOBIT) {
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
 
@@ -821,12 +820,11 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
     if(s != nullptr) {
         if(s->current_dict == DICT_TWOBIT) {
             s->finish_twobit_sequence(fh_fastafs);// finish last sequence
-        }
-        else {
+        } else {
             s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
         }
     }
-    
+
 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
@@ -844,12 +842,10 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
         if(s->current_dict == DICT_TWOBIT) {
             if(s->has_U) {
                 fsf.set_rna();
-            }
-            else {
+            } else {
                 fsf.set_dna();
             }
-        }
-        else {
+        } else {
             fsf.set_iupec_nucleotide();
         }
 
@@ -868,7 +864,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
         delete s;
     }
-    
+
     fh_fastafs << "\x00"s;// no metadata tags (YET)
 
     // update header: set to updated

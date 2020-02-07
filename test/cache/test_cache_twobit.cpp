@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
  */
 BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 {
-    twobit_byte b = twobit_byte();
+    twobit_byte b = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
 
     char *seq1;
     char *seq2;
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 BOOST_AUTO_TEST_CASE(Test_size)
 {
     {
-        twobit_byte b = twobit_byte();
+        twobit_byte b = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
         BOOST_CHECK_EQUAL(sizeof(b.data), 1);
     }
 
@@ -498,7 +498,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         "\x00\x00\x00\x01"s//     n-blocks (0)
         "\x00\x00\x00\x1B"s//     n-block starts (27)
         "\x00\x00\x00\x1B"s//     n-block ends (27)
-        "\xF2\xD4\x96\x2C\x55\x08\x81\xCC\x3D\xEF\x86\xDE\xB2\x84\x90\x22"s//checksum 
+        "\xF2\xD4\x96\x2C\x55\x08\x81\xCC\x3D\xEF\x86\xDE\xB2\x84\x90\x22"s//checksum
         "\x00\x00\x00\x00"s//     m-blocks (0)
 
         // target - size: 30
@@ -523,7 +523,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         "\x00\x00\x00\x01"s//     n-blocks (0)
         "\x00\x00\x00\x1B"s//     n-block starts (27)
         "\x00\x00\x00\x1B"s//     n-block ends (27)
-        "\xF2\xD4\x96\x2C\x55\x08\x81\xCC\x3D\xEF\x86\xDE\xB2\x84\x90\x22"s//checksum 
+        "\xF2\xD4\x96\x2C\x55\x08\x81\xCC\x3D\xEF\x86\xDE\xB2\x84\x90\x22"s//checksum
         "\x00\x00\x00\x00"s//     m-blocks (0)
 
         // target2 - size: 41
