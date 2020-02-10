@@ -1,3 +1,8 @@
+2020-02-04  Youri Hoogstrate
+
+   * v1.7.2
+   * Reduce file read syscalls and gain performance
+
 2020-02-01  Youri Hoogstrate
 
    * v1.7.1

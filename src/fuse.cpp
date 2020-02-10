@@ -193,21 +193,23 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
-    char cur_time[100];
-    time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
-
     static int written = -2;// -1 = permission deinied, -2 = missing file or directory
 
     if(ffi->from_fastafs) {
+#if DEBUG
+        char cur_time[100];
+        time_t now = time(0);
+        strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+
         printf("\033[0;32m[%s]\033[0;33m fastafs::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+#endif
 
         std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
         std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
         std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
         std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
 
-        printf("?? [[%s]]\n", path);
+        //printf("?? [[%s]]\n", path);
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
@@ -221,7 +223,13 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         }
     } else {
         if(ffi->u2b != nullptr) {
+#if DEBUG
+            char cur_time[100];
+            time_t now = time(0);
+            strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+
             printf("\033[0;32m[%s]\033[0;33m 2bit::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
+#endif
 
             std::string virtual_fasta_filename = "/" + ffi->u2b->name + ".fa";
             std::string virtual_faidx_filename = "/" + ffi->u2b->name + ".fa.fai";
