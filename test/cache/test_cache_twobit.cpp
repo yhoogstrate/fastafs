@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 BOOST_AUTO_TEST_CASE(test_cache_hybrid)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test_006.fa", "tmp/test_cache_test_006.fastafs");
+    size_t written = fasta_to_twobit_fastafs("test/data/test_006.fa", "tmp/test_cache_test_006.fastafs");
 
 
     static std::string reference =
@@ -570,7 +570,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         "\xD3\xBC\xFF\xFE"s // only part that is not yet checked
         ;
 
-    //BOOST_CHECK_EQUAL(written, 403);
+    BOOST_CHECK_EQUAL(written, 376);
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_cache_test_006.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
@@ -624,7 +624,6 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
         //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
         BOOST_CHECK(output.compare(uppercase) == 0);
-        std::cout << "[" << output << "]\n";
     }
 }
 
