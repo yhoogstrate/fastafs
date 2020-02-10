@@ -33,7 +33,6 @@ public:
 
     bool previous_was_N;
 
-    char current_dict;
 
 
 
@@ -50,6 +49,9 @@ public:
     std::vector<uint32_t> m_block_starts;
     std::vector<uint32_t> m_block_ends;
     bool in_m_block;
+
+    char current_dict;
+
 
     bool has_T;
     bool has_U;

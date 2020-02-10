@@ -147,7 +147,6 @@ uint32_t fastafs_seq::view_fasta_chunk(
         if(this->flags.is_dna()) {
             return this->view_fasta_chunk_generalized<twobit_byte_dna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         } else {
-            printf(" {{{ RNA !! }}}\n");
             return this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         }
     } else {

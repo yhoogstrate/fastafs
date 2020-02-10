@@ -305,7 +305,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->has_U = true;
 
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -320,7 +319,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->has_U = true;
 
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -335,7 +333,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->has_T = true;
 
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -350,7 +347,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->has_T = true;
 
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -360,7 +356,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -370,7 +365,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'c':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -379,8 +373,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 MD5_Update(&s->ctx, nc, 1);
                                 break;
                             case 'A':
-                                if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
+                                if(s->in_m_block) {;
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -390,7 +383,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'a':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -400,7 +392,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'G':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -410,7 +401,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'g':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -420,7 +410,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'N':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -430,7 +419,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'n':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -469,11 +457,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                             s->previous_was_N = false;
 
                             MD5_Init(&s->ctx);
-
-                            // re-init this m5 checksum
-                            //it = line.end();
-                            printf("rollback back two files:)\n");
-
                         }
 
                     } else { // four bit decoding
@@ -500,7 +483,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -510,7 +492,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'c':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -520,7 +501,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'G':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -530,7 +510,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'g':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -540,7 +519,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'T':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -550,7 +528,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 't':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -560,7 +537,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'U':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -570,7 +546,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'u':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -581,7 +556,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
 
                             case 'R':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -591,7 +565,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'r':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -601,7 +574,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'Y':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -611,7 +583,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'y':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -621,7 +592,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'K':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -631,7 +601,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'k':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -641,7 +610,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'M':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -651,7 +619,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'm':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -661,7 +628,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'S':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -671,7 +637,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 's':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -681,7 +646,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'W':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -691,7 +655,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'w':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -701,7 +664,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'B':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -711,7 +673,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'b':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -721,7 +682,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'D':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -731,7 +691,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'd':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -741,7 +700,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'H':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -751,7 +709,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'h':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -761,7 +718,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'V':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -771,7 +727,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'v':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -781,7 +736,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'N':
                                 if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }
@@ -791,7 +745,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 break;
                             case 'n':
                                 if(!s->in_m_block) {
-                                    //printf("starting M block: %d\n", s->N + s->n_actg);
                                     s->m_block_starts.push_back(s->N + s->n_actg);
                                     s->in_m_block = true;
                                 }
@@ -800,12 +753,6 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 MD5_Update(&s->ctx, nn, 1);
                                 break;
                             case '-':
-                                /*if(s->in_m_block) {
-                                    //printf("ending M block: %d\n", s->N + s->n_actg - 1);
-                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
-                                    s->in_m_block = false;
-                                }*/
-
                                 s->add_fourbit_N();
                                 break;
 

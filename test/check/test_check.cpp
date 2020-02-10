@@ -5,7 +5,6 @@
 #include "config.hpp"
 
 #include "fasta_to_twobit_fastafs.hpp"
-#include "fasta_to_fourbit_fastafs.hpp"
 
 
 

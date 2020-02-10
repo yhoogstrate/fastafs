@@ -9,7 +9,6 @@
 #include "config.hpp"
 
 #include "fasta_to_twobit_fastafs.hpp"
-#include "fasta_to_fourbit_fastafs.hpp"
 #include "fastafs.hpp"
 
 
@@ -478,7 +477,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";
 
-    fasta_to_fourbit_fastafs(fasta_file, fastafs_file);
+    fasta_to_twobit_fastafs(fasta_file, fastafs_file);
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 

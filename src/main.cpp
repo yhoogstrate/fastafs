@@ -7,7 +7,6 @@
 
 #include "config.hpp"
 #include "fasta_to_twobit_fastafs.hpp"
-#include "fasta_to_fourbit_fastafs.hpp"
 #include "ucsc2bit_to_fastafs.hpp"
 #include "database.hpp"
 #include "fuse.hpp"
