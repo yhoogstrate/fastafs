@@ -442,37 +442,40 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                                 s->current_dict = DICT_FOURBIT;
                                 break;
                             }
-
-                            //@todo Funct set_to_fourbit(*s, *fasta, *fastafs , ...)
-                            if(s->current_dict == DICT_FOURBIT) {
-                                // set to fourbit and re-intialize
-                                // seek fasta header to beg + s->file_offset_in_fasta
-                                // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
-                                //throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
-                                fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
-                                fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
-
-                                s->current_dict = DICT_FOURBIT;
-
-                                s->N = 0;
-                                s->n_actg = 0;
-
-                                s->n_block_starts.clear();
-                                s->n_block_ends.clear();
-
-                                s->m_block_starts.clear();
-                                s->m_block_ends.clear();
-                                s->in_m_block = false;
-                                s->previous_was_N = false;
-
-                                MD5_Init(&s->ctx);
-
-                                // re-init this m5 checksum
-                                //it = line.end();
-                                printf("rollback back two files:)\n");
-
-                            }
                         }
+
+
+
+                        //@todo Funct set_to_fourbit(*s, *fasta, *fastafs , ...)
+                        if(s->current_dict == DICT_FOURBIT) {
+                            // set to fourbit and re-intialize
+                            // seek fasta header to beg + s->file_offset_in_fasta
+                            // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
+                            //throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
+                            fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
+                            fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
+
+                            s->current_dict = DICT_FOURBIT;
+
+                            s->N = 0;
+                            s->n_actg = 0;
+
+                            s->n_block_starts.clear();
+                            s->n_block_ends.clear();
+
+                            s->m_block_starts.clear();
+                            s->m_block_ends.clear();
+                            s->in_m_block = false;
+                            s->previous_was_N = false;
+
+                            MD5_Init(&s->ctx);
+
+                            // re-init this m5 checksum
+                            //it = line.end();
+                            printf("rollback back two files:)\n");
+
+                        }
+
                     } else { // four bit decoding
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
