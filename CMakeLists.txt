@@ -108,7 +108,7 @@ endif()
 
 add_executable(fastafs
 					src/main.cpp
-					src/fasta_to_twobit_fastafs.cpp
+					src/fasta_to_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/flags.cpp
 					src/fastafs.cpp
@@ -126,7 +126,7 @@ set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}"
 # mount-only binary, without all the other stuff 'mount.fastafs' [for fstab]
 add_executable(mount.fastafs
 					src/main_mount.cpp
-					src/fasta_to_twobit_fastafs.cpp
+					src/fasta_to_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/flags.cpp
 					src/fastafs.cpp
@@ -142,7 +142,7 @@ add_executable(mount.fastafs
 set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
 add_library(libfastafs SHARED
-					src/fasta_to_twobit_fastafs.cpp
+					src/fasta_to_fastafs.cpp
 					src/ucsc2bit_to_fastafs.cpp
 					src/flags.cpp
 					src/fastafs.cpp
@@ -164,7 +164,7 @@ set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
 
 ##set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
 ## great, this doesn't go automagically with an entire dir
-set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_twobit_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
 ##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
 ##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
@@ -179,7 +179,7 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as al
 
 add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N) | ACUG(N)
 add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
-add_test(test_cache_twobit        "${BUILD_TEST_DIR}/test_cache_twobit")
+add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")
 add_test(test_fastafs             "${BUILD_TEST_DIR}/test_fastafs")

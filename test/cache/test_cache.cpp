@@ -4,7 +4,7 @@
 
 #include "config.hpp"
 
-#include "fasta_to_twobit_fastafs.hpp"
+#include "fasta_to_fastafs.hpp"
 //#include "fastafs.hpp"
 
 
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(Test_size)
  */
 BOOST_AUTO_TEST_CASE(test_cache)
 {
-    size_t written = fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
+    size_t written = fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
 
     static std::string reference =
         // GENERIC-HEADER
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
 BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
+    fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
@@ -434,7 +434,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test_003.fa", "tmp/test_cache_test_003.fastafs");
+    fasta_to_fastafs("test/data/test_003.fa", "tmp/test_cache_test_003.fastafs");
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 BOOST_AUTO_TEST_CASE(test_cache_hybrid)
 {
     // generate FASTAFS file from FASTA file
-    size_t written = fasta_to_twobit_fastafs("test/data/test_006.fa", "tmp/test_cache_test_006.fastafs");
+    size_t written = fasta_to_fastafs("test/data/test_006.fa", "tmp/test_cache_test_006.fastafs");
 
 
     static std::string reference =
@@ -745,7 +745,7 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
 
 BOOST_AUTO_TEST_CASE(test_cache_004)
 {
-    size_t written = fasta_to_twobit_fastafs("test/data/test_004.fa", "tmp/test_004.fastafs");
+    size_t written = fasta_to_fastafs("test/data/test_004.fa", "tmp/test_004.fastafs");
 
     static std::string reference =
         // GENERIC-HEADER
@@ -827,7 +827,7 @@ BOOST_AUTO_TEST_CASE(test_cache_004)
 
 BOOST_AUTO_TEST_CASE(test_cache_2)
 {
-    size_t written = fasta_to_twobit_fastafs("test/data/test_005.fa", "tmp/test_005.fastafs");
+    size_t written = fasta_to_fastafs("test/data/test_005.fa", "tmp/test_005.fastafs");
 
 	BOOST_CHECK_EQUAL(written, 241);
 

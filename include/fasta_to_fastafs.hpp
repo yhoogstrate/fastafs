@@ -79,5 +79,5 @@ public:
 };
 
 
-size_t fasta_to_twobit_fastafs(const std::string &, const std::string &);
+size_t fasta_to_fastafs(const std::string &, const std::string &);
 

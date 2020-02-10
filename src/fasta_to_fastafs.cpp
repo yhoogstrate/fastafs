@@ -5,7 +5,7 @@
 #include "config.hpp"
 
 #include "fastafs.hpp"
-#include "fasta_to_twobit_fastafs.hpp"
+#include "fasta_to_fastafs.hpp"
 #include "flags.hpp"
 #include "utils.hpp"
 
@@ -242,7 +242,7 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
 
 
 
-size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string &fastafs_file)
+size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastafs_file)
 {
     std::vector<fasta_seq_header_twobit_conversion_data*> index;
     fasta_seq_header_twobit_conversion_data* s;
@@ -439,7 +439,7 @@ size_t fasta_to_twobit_fastafs(const std::string &fasta_file, const std::string 
                             // set to fourbit and re-intialize
                             // seek fasta header to beg + s->file_offset_in_fasta
                             // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
-                            //throw std::runtime_error("[fasta_to_twobit_fastafs] invalid chars in FASTA file");
+                            //throw std::runtime_error("[fasta_to_fastafs] invalid chars in FASTA file");
                             fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
                             fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
 
