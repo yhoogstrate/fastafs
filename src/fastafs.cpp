@@ -252,10 +252,19 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
     // big buffer
     char *from_file_buffer;
-    from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size / 4) + 2));  // kan zeker 4x kleiner
+    //@todo avoid dynamic allocation and fix buffer size?
+    // char *buffer[4096 + 4];
+    // watch out for off-grid requests: a 2byte buffer may 3 bytes reserved at least
+    //         X     X
+    // [ | | | | ] [ | | | | ]
+	from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
+	fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
     uint ff = 0;
 
-    fh->read(from_file_buffer, (buffer_size / 4) + 1);
+	/*
+    printf("size = (reserved = %i) (read = %i)", ((buffer_size / 4) + 2) , (buffer_size / 4) + 1);
+    printf(" (actual: %i)\n",fh->gcount() );
+    */
 
     const char *chunk = t.encode_hash[0];// init
     unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
