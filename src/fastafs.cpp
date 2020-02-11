@@ -1672,8 +1672,8 @@ uint32_t fastafs::get_crc32(void)
 
     uLong crc = crc32(0L, Z_NULL, 0);
 
-    const int buffer_size = 4;
-    char buffer[buffer_size + 1];
+    const int READ_BUFFER_SIZE = 4;
+    char buffer[READ_BUFFER_SIZE + 1];
 
     size_t bytes_to_be_read_this_iter;
     size_t bytes_actually_read_this_iter;
@@ -1683,7 +1683,7 @@ uint32_t fastafs::get_crc32(void)
     fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
 
     while(total_bytes_to_be_read > 0) {
-        bytes_to_be_read_this_iter = std::min((size_t) buffer_size, total_bytes_to_be_read) ;
+        bytes_to_be_read_this_iter = std::min((size_t) READ_BUFFER_SIZE, total_bytes_to_be_read) ;
         fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
         total_bytes_to_be_read -= bytes_to_be_read_this_iter;
 
