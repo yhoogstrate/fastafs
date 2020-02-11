@@ -185,6 +185,9 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 #endif //DEBUG
 
+		buffer_size = std::min((size_t) READ_BUFFER_SIZE, buffer_size);
+
+
     T t = T();// nice way of having this templated object on stack :)
     uint32_t written = 0;
 
@@ -250,14 +253,17 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 //    const char *chunk = t.encode_hash[0];// init
 //    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
+
     // big buffer
-    char *from_file_buffer;
     //@todo avoid dynamic allocation and fix buffer size?
     // char *buffer[4096 + 4];
     // watch out for off-grid requests: a 2byte buffer may 3 bytes reserved at least
     //         X     X
     // [ | | | | ] [ | | | | ]
-	from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
+		//char *from_file_buffer;
+    //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
+    char from_file_buffer[(READ_BUFFER_SIZE / 2) + 2];
+	
 	fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
     uint ff = 0;
 
@@ -326,7 +332,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
             if(written >= buffer_size) {
                 //fh->clear();
-                delete[] from_file_buffer;
+                //delete[] from_file_buffer;
                 return written;
             }
         }
@@ -339,7 +345,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
             if(written >= buffer_size) {
                 //fh->clear();
-                delete[] from_file_buffer;
+                //delete[] from_file_buffer;
                 return written;
             }
         }
@@ -348,7 +354,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     //fh->clear();
-    delete[] from_file_buffer;
+    //delete[] from_file_buffer;
     return written;
 }
 
