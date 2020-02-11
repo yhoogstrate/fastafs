@@ -373,7 +373,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 MD5_Update(&s->ctx, nc, 1);
                                 break;
                             case 'A':
-                                if(s->in_m_block) {;
+                                if(s->in_m_block) {
+                                    ;
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
                                 }

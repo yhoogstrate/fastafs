@@ -185,7 +185,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 #endif //DEBUG
 
-		buffer_size = std::min((size_t) READ_BUFFER_SIZE, buffer_size);
+    buffer_size = std::min((size_t) READ_BUFFER_SIZE, buffer_size);
 
 
     T t = T();// nice way of having this templated object on stack :)
@@ -260,14 +260,14 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     // watch out for off-grid requests: a 2byte buffer may 3 bytes reserved at least
     //         X     X
     // [ | | | | ] [ | | | | ]
-		//char *from_file_buffer;
+    //char *from_file_buffer;
     //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
     char from_file_buffer[(READ_BUFFER_SIZE / 2) + 2];
-	
-	fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
+
+    fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
     uint ff = 0;
 
-	/*
+    /*
     printf("size = (reserved = %i) (read = %i)", ((buffer_size / 4) + 2) , (buffer_size / 4) + 1);
     printf(" (actual: %i)\n",fh->gcount() );
     */
