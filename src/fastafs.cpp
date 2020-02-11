@@ -1672,7 +1672,7 @@ uint32_t fastafs::get_crc32(void)
 
     uLong crc = crc32(0L, Z_NULL, 0);
 
-    const int READ_BUFFER_SIZE = 4;
+    //const int READ_BUFFER_SIZE = 4;
     char buffer[READ_BUFFER_SIZE + 1];
 
     size_t bytes_to_be_read_this_iter;
