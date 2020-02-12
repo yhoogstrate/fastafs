@@ -1663,6 +1663,8 @@ int fastafs::info(bool ena_verify_checksum)
 // skips first four bytes and does not include crc32 at the end either
 uint32_t fastafs::get_crc32(void)
 {
+	//return  file_crc32(this->filename, 4, this->fastafs_filesize() - 4 - 4);
+	
     if(this->filename.size() == 0) {
         throw std::invalid_argument("No filename found");
     }

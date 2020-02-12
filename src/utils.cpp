@@ -1,10 +1,13 @@
 
+#include <fstream>
+#include <iostream>
 #include <libgen.h>
 #include <string.h>
-#include <iostream>
 
 #include <openssl/sha.h>
 #include <openssl/md5.h>
+
+#include "zlib.h"
 
 #include "config.hpp"
 
@@ -248,3 +251,42 @@ std::string realpath_cpp(std::string fn)
 
     return std::string(buf);
 }
+
+
+
+// it is important that it does not read beyond 'len'
+uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
+{
+    uLong crc = crc32(0L, Z_NULL, 0);
+
+    std::ifstream fh_fastafs_crc(fname.c_str(), std::ios::out | std::ios::binary);
+    if(fh_fastafs_crc.is_open()) {
+        fh_fastafs_crc.seekg(start, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
+
+        char buffer[READ_BUFFER_SIZE + 1];
+        size_t to_read = len - start;
+
+        for(size_t i = 0; i < to_read / READ_BUFFER_SIZE; i++) {
+            if(fh_fastafs_crc.read(buffer, READ_BUFFER_SIZE) &&  fh_fastafs_crc.gcount() == READ_BUFFER_SIZE) {
+                crc = crc32(crc, (const Bytef*)& buffer, READ_BUFFER_SIZE);
+            } else {
+                throw std::invalid_argument("[file_crc32:1] Truncated file (early EOF): " + fname);
+            }
+        }
+
+        to_read = to_read % READ_BUFFER_SIZE;
+        if(to_read > 0) {
+            if(fh_fastafs_crc.read(buffer, to_read) && (size_t) fh_fastafs_crc.gcount() == to_read) {
+                crc = crc32(crc, (const Bytef*)& buffer, (unsigned int) to_read);
+            } else {
+                throw std::invalid_argument("[file_crc32:2] Truncated file (early EOF): " + fname);
+            }
+        }
+    } else {
+        throw std::invalid_argument("[file_crc32:3] Could not open file: " + fname);
+    }
+
+    return (uint32_t) crc;
+}
+
+
