@@ -1660,44 +1660,10 @@ int fastafs::info(bool ena_verify_checksum)
 }
 
 
-// skips first four bytes and does not include crc32 at the end either
+// skips first four bytes and do not include crc32 at the end either
 uint32_t fastafs::get_crc32(void)
 {
-	//return  file_crc32(this->filename, 4, this->fastafs_filesize() - 4 - 4);
-	
-    if(this->filename.size() == 0) {
-        throw std::invalid_argument("No filename found");
-    }
-
-    // starts at 4th
-    size_t total_bytes_to_be_read = this->fastafs_filesize() - 4 - 4 ;
-
-    uLong crc = crc32(0L, Z_NULL, 0);
-
-    //const int READ_BUFFER_SIZE = 4;
-    char buffer[READ_BUFFER_SIZE + 1];
-
-    size_t bytes_to_be_read_this_iter;
-    size_t bytes_actually_read_this_iter;
-
-    // now calculate crc32 checksum, as all bits have been set.
-    std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
-    fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
-
-    while(total_bytes_to_be_read > 0) {
-        bytes_to_be_read_this_iter = std::min((size_t) READ_BUFFER_SIZE, total_bytes_to_be_read) ;
-        fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
-        total_bytes_to_be_read -= bytes_to_be_read_this_iter;
-
-        bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
-        if(bytes_actually_read_this_iter == 0) {
-            total_bytes_to_be_read  = 0; // unexpected eof?
-        } else {
-            crc = crc32(crc, (const Bytef*)& buffer, (uint32_t) bytes_actually_read_this_iter);
-        }
-    }
-
-    return (uint32_t) crc;
+    return  file_crc32(this->filename, 4, this->fastafs_filesize() - 4 ); // not sure why -4 rather than -4-4, but seems to work?
 }
 
 
