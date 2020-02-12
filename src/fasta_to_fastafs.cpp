@@ -34,43 +34,39 @@ const static char nv[2] = "V";
 
 // @todo put this in utils
 // size and len must be a priori defined
-uint32_t file_crc32(const std::string &fname, off_t start, size_t len) {
-
-	char byte_enc[5] = "\x00\x00\x00\x00";
-
-    std::ifstream fh_fastafs_crc(fname.c_str(), std::ios :: out | std::ios :: binary);
-    fh_fastafs_crc.seekg(start, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
-
-    uint32_t nnn = 0;
-    uint32_t iii;
-    char buffer[READ_BUFFER_SIZE + 1];
+// it is important that it does not read beyond 'len'
+uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
+{
     uLong crc = crc32(0L, Z_NULL, 0);
 
-    bool terminate = false;
-    bool togo = true;
-    while(togo)
-    {
-        if(!fh_fastafs_crc.read(buffer, 4)) {
-            terminate = true;
+    std::ifstream fh_fastafs_crc(fname.c_str(), std::ios :: out | std::ios :: binary);
+    if(fh_fastafs_crc.is_open()) {
+        fh_fastafs_crc.seekg(start, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
+
+        char buffer[READ_BUFFER_SIZE + 1];
+        size_t to_read = len - start;
+
+        for(size_t i = 0; i < to_read / READ_BUFFER_SIZE; i++) {
+            if(fh_fastafs_crc.read(buffer, READ_BUFFER_SIZE) &&  fh_fastafs_crc.gcount() == READ_BUFFER_SIZE) {
+                crc = crc32(crc, (const Bytef*)& buffer, READ_BUFFER_SIZE);
+            } else {
+                throw std::invalid_argument("[file_crc32:1] Truncated file (early EOF): " + fname);
+            }
         }
-        //printf("alive [%i]\n", fh_fastafs_crc.gcount());
-        iii = fh_fastafs_crc.gcount();
-        crc = crc32(crc, (const Bytef*)& buffer, iii);
-        nnn += iii;
 
-        if(terminate) {
-            togo = false;
+        to_read = to_read % READ_BUFFER_SIZE;
+        if(to_read > 0) {
+            if(fh_fastafs_crc.read(buffer, to_read) && (size_t) fh_fastafs_crc.gcount() == to_read) {
+                crc = crc32(crc, (const Bytef*)& buffer, (unsigned int) to_read);
+            } else {
+                throw std::invalid_argument("[file_crc32:2] Truncated file (early EOF): " + fname);
+            }
         }
-    };
-    // --
-    printf("nnn = %i\n",nnn);
+    } else {
+        throw std::invalid_argument("[file_crc32:3] Could not open file: " + fname);
+    }
 
-    //write crc
-    //uint_to_fourbytes(byte_enc, (uint32_t) crc);
-    printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
-    //fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
-
-	return (uint32_t) crc;
+    return (uint32_t) crc;
 }
 
 
@@ -298,7 +294,9 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
     std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
     s = nullptr;
-    if(fh_fasta.is_open() and fh_fastafs.is_open()) {
+    if(!fh_fasta.is_open() or !fh_fastafs.is_open()) {
+        throw std::invalid_argument("[fasta_to_fastafs:1] Could not open one of file: " + fasta_file + " | " + fastafs_file);
+    } else {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
 
@@ -858,39 +856,36 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
 
         delete s;
     }
+    fh_fasta.close();
 
+    // write metadata
     fh_fastafs << "\x00"s;// no metadata tags (YET)
+    size_t written = fh_fastafs.tellp();
 
-    // update header: set to updated
+    // update header and set to complete: set to updated
     fh_fastafs.seekp(8, std::ios::beg);
     ffsf.set_complete();
     fh_fastafs << ffsf.get_bits()[0];
     fh_fastafs << ffsf.get_bits()[1];
-
     uint_to_fourbytes(buffer, index_file_position);//position of header
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
-    fh_fasta.close();
-
-	size_t ffs_len = fh_fastafs.tellp();
-    // now calculate crc32 checksum, as all bits have been set.
-    fh_fastafs.seekp(0, std::ios::end);
-    //fastafs f("");
-    //f.load(fastafs_file);
-    uint32_t crc32c = file_crc32(fastafs_file, 4,  ffs_len);
-
+    // close fastafs, calc crc32, re-open and save
+    fh_fastafs.close();
+    uint32_t crc32c = file_crc32(fastafs_file, 4, written);
     char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
-    //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
-    fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
+    std::ofstream fh_fastafs2(fastafs_file.c_str(), std::ios::out | std::ios::binary | std::ios::app);
+    if(fh_fastafs2.is_open()) {
+        fh_fastafs2.seekp(written, std::ios::beg); // don't blindly because of possible race conditions?
+        fh_fastafs2.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
+        fh_fastafs2.flush();
 
-
-    // finalize file
-    size_t written = fh_fastafs.tellp();
-    fh_fastafs.close();
-
-
-
+        written = fh_fastafs2.tellp();
+        fh_fastafs2.close();
+    } else {
+        throw std::invalid_argument("[fasta_to_fastafs:2] Could not open file: " + fastafs_file);
+    }
 
     return written;
 }
