@@ -23,13 +23,15 @@ public:
     void add_fourbit_N();
     void finish_fourbit_sequence(std::ofstream &);
 
-
     off_t file_offset_in_fasta; // file positions in FASTA file where sequence data blocks starts [ACTG]
     off_t file_offset_in_fastafs; // file positions in FASTAFS file where sequence data blocks starts [2bit/4bit]
     std::string name;
 
     uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)
     uint32_t n_actg;// number of non-N nucleotides (any [ACTGU])
+
+    size_t N_bytes_used();// total number of bytes needed to store N's
+    size_t twobit_bytes_used();// total number of bytes needed to store xBits
 
     bool previous_was_N;
 
@@ -74,6 +76,7 @@ public:
         has_U(false),
         twobit_data(ENCODE_HASH_TWOBIT_DNA) // not relevant for encoding, only for decoding
     {
+        printf(" ++ invoked\n");
         if(name.size() > 255) {
             fprintf(stderr, "[fasta_to_fastafs::init] sequence name truncated to 255 charaters: %s\n", name.c_str());
             this->name = this->name.substr (0,255);

@@ -33,6 +33,25 @@ const static char nv[2] = "V";
 
 
 
+size_t fasta_seq_header_twobit_conversion_data::N_bytes_used()
+{
+    // just the number of n-blocks, not their actual size
+    return (size_t) (4 + (this->n_block_starts.size() * (4*2)));
+}
+
+size_t fasta_seq_header_twobit_conversion_data::twobit_bytes_used() {
+    
+    //printf("n_actg: %i\n", n_actg);
+    //printf("n_actg: %i + 3 = \n", n_actg, n_actg + 3);
+    //printf("n_actg: (%i + 3) / 4 = %i\n", n_actg, (n_actg + 3) / 4);
+    
+    static const int twobits_per_byte = 4;
+    return (size_t) ((this->n_actg + (twobits_per_byte - 1)) / twobits_per_byte);
+}
+
+
+
+
 void fasta_seq_header_twobit_conversion_data::add_twobit_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
     this->twobit_data.set(twobit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
@@ -93,6 +112,7 @@ void fasta_seq_header_twobit_conversion_data::finish_twobit_sequence(std::ofstre
     char buffer[4 +  1];
 
     // (over)write number nucleotides
+    printf("finish 2bit: n_actg = %i\n\n\n----\n\n", this->n_actg);
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
     uint_to_fourbytes(buffer, this->n_actg);
@@ -194,6 +214,7 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
 
     char buffer[4 +  1];
 
+    printf("finish 4bit: n_actg = %i\n\n\n----\n\n", this->n_actg);
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
@@ -243,6 +264,7 @@ void fasta_seq_header_twobit_conversion_data::finish_fourbit_sequence(std::ofstr
 
 size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastafs_file)
 {
+    std::cout << "\n\n[" << fasta_file << "]\n";
     std::vector<fasta_seq_header_twobit_conversion_data*> index;
     fasta_seq_header_twobit_conversion_data* s;
 
@@ -282,21 +304,46 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
             bool running = getline(fh_fasta, line).good();
             while(running) {
                 if(line[0] == '>') {
-                    //printf("n block size: %i  ~  compr bit size:%i\n", );
+                    printf("\nn block size: %i  ~ bit size: %i     {{ %s }} \n", s->N_bytes_used(), s->twobit_bytes_used(), line.c_str());
+                    if(s->current_dict == DICT_TWOBIT && s->N_bytes_used() > s->twobit_bytes_used()) {
+                        std::cout << " - resetting to fourbit due to inefficent n blocks\n";
+                        fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
+                        fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
 
-                    if(s->current_dict == DICT_TWOBIT) {
-                        s->finish_twobit_sequence(fh_fastafs);// finish last sequence
-                    } else {
-                        s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
+                        printf("SETTING TO FOURBIT! [%i] \n", s->current_dict);
+                        s->current_dict = DICT_FOURBIT;
+                        printf("SET:::: TO FOURBIT! [%i] \n", s->current_dict);
+                        
+                        s->N = 0;
+                        s->n_actg = 0;
+
+                        s->n_block_starts.clear();
+                        s->n_block_ends.clear();
+
+                        s->m_block_starts.clear();
+                        s->m_block_ends.clear();
+                        
+                        s->in_m_block = false;
+                        s->previous_was_N = false;
+
+                        MD5_Init(&s->ctx);
                     }
-                    line.erase(0, 1);// erases first part, quicker would be pointer from first char
+                    else {
+                        if(s->current_dict == DICT_TWOBIT) {
+                            s->finish_twobit_sequence(fh_fastafs);// finish last sequence
+                        } else {
+                            s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
+                        }
+                        line.erase(0, 1);// erases first part, quicker would be pointer from first char
 
-                    //s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
-                    s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
-                    fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
+                        //s = new fasta_seq_header_twobit_conversion_data(fh_fastafs.tellp(), line);
+                        s = new fasta_seq_header_twobit_conversion_data(fh_fasta.tellg(), fh_fastafs.tellp(), line);
+                        fh_fastafs << "\x00\x00\x00\x00"s;// number of 2bit encoded nucleotides, not yet known
 
-                    index.push_back(s);
+                        index.push_back(s);
+                    }
                 } else {
+                    printf("CHECK:: TO FOURBIT! [%i]    n_actg: %i\n", s->current_dict, s->n_actg);
                     if(s->current_dict ==  DICT_TWOBIT) {
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
@@ -465,6 +512,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         }
 
                     } else { // four bit decoding
+                        printf("{ %s }\n", line.c_str());
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
 
@@ -773,7 +821,38 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
 
                 // if not running, recheck
                 if(!running) {
-                    if(s != nullptr) {
+                    printf("n block size: %i  ~ bit size: %i        ** \n", s->N_bytes_used(), s->twobit_bytes_used());
+
+                    if(s->current_dict == DICT_TWOBIT && s->N_bytes_used() > s->twobit_bytes_used()) {
+                        fh_fasta.clear();
+
+                        std::cout << " - resetting to fourbit due to inefficent n blocks\n";
+                        fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
+                        fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
+
+                        printf("SETTING TO FOURBIT! [%i] \n", s->current_dict);
+                        s->current_dict = DICT_FOURBIT;
+                        printf("SET:::: TO FOURBIT! [%i] \n", s->current_dict);
+                        
+                        s->N = 0;
+                        s->n_actg = 0;
+
+                        s->n_block_starts.clear();
+                        s->n_block_ends.clear();
+
+                        s->m_block_starts.clear();
+                        s->m_block_ends.clear();
+                        
+                        s->in_m_block = false;
+                        s->previous_was_N = false;
+
+                        MD5_Init(&s->ctx);
+                        
+                        printf(" running = %d ** 1\n", running);
+                        running = getline(fh_fasta, line).good();
+                        printf(" running = %d ** 2\n", running);
+                    }
+                    else {
                         if(s->current_dict == DICT_TWOBIT) {
                             s->finish_twobit_sequence(fh_fastafs);// finish last sequence
                         } else {
