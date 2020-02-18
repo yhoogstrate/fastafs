@@ -279,8 +279,11 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
         }
 
         if(s != nullptr) {
-            while(getline(fh_fasta, line)) {
+            bool running = getline(fh_fasta, line).good();
+            while(running) {
                 if(line[0] == '>') {
+                    //printf("n block size: %i  ~  compr bit size:%i\n", );
+
                     if(s->current_dict == DICT_TWOBIT) {
                         s->finish_twobit_sequence(fh_fastafs);// finish last sequence
                     } else {
@@ -765,17 +768,24 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         }
                     }
                 }
+                
+                running = getline(fh_fasta, line).good();
+
+                // if not running, recheck
+                if(!running) {
+                    if(s != nullptr) {
+                        if(s->current_dict == DICT_TWOBIT) {
+                            s->finish_twobit_sequence(fh_fastafs);// finish last sequence
+                        } else {
+                            s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
+                        }
+                    }
+                }
             }
         }
         fh_fasta.close();
     }
-    if(s != nullptr) {
-        if(s->current_dict == DICT_TWOBIT) {
-            s->finish_twobit_sequence(fh_fastafs);// finish last sequence
-        } else {
-            s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
-        }
-    }
+
 
 
     // write index/footer
