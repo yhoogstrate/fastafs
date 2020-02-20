@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
 
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_md5)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1b)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test_002.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test_002.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
      */
 
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
 
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__dict_virtualization)
 BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
 {
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
 
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);

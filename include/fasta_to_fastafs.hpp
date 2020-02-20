@@ -12,15 +12,16 @@
 
 
 
-class fasta_seq_header_twobit_conversion_data
+class fasta_to_fastafs_seq
 {
 public:
+
+    void add_N();
+
     void add_twobit_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
-    void add_twobit_N();
     void finish_twobit_sequence(std::ofstream &);
 
     void add_fourbit_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
-    void add_fourbit_N();
     void finish_fourbit_sequence(std::ofstream &);
 
     off_t file_offset_in_fasta; // file positions in FASTA file where sequence data blocks starts [ACTG]
@@ -63,7 +64,7 @@ public:
     fourbit_byte fourbit_data;
 
 
-    fasta_seq_header_twobit_conversion_data(off_t fof_fasta, off_t fof_fastafs, const std::string &name):
+    fasta_to_fastafs_seq(off_t fof_fasta, off_t fof_fastafs, const std::string &name):
         file_offset_in_fasta(fof_fasta),
         file_offset_in_fastafs(fof_fastafs),
         name(name),
@@ -76,15 +77,16 @@ public:
         has_U(false),
         twobit_data(ENCODE_HASH_TWOBIT_DNA) // not relevant for encoding, only for decoding
     {
-        printf(" ++ invoked\n");
         if(name.size() > 255) {
             fprintf(stderr, "[fasta_to_fastafs::init] sequence name truncated to 255 charaters: %s\n", name.c_str());
             this->name = this->name.substr (0,255);
         }
         MD5_Init(&this->ctx);
     }
+    
+    void flush();
 };
 
 
-size_t fasta_to_fastafs(const std::string &, const std::string &);
+size_t fasta_to_fastafs(const std::string &, const std::string &, bool auto_recompress_to_fourbit);
 
