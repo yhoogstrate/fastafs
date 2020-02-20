@@ -144,24 +144,13 @@ uint32_t fastafs_seq::view_fasta_chunk(
     std::ifstream *fh)
 {
 
-	if(this->flags.is_complete()){
-		printf("complete!\n");
-	}
-	else {
-		printf("incomplete?? loaded??\n");
-	}
-
     if(this->flags.is_twobit()) {
-		printf("twobit!\n");
         if(this->flags.is_dna()) {
-			printf("twobit: DNA!\n");
             return this->view_fasta_chunk_generalized<twobit_byte_dna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         } else {
-			printf("twobit: RNA!\n");
             return this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         }
     } else {
-		printf("fourbit!\n");
         return this->view_fasta_chunk_generalized<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
 }
@@ -253,8 +242,6 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     this->get_n_offset(nucleotide_pos, &n_passed);
     fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
 	
-	printf(" file pos: %i  (should be 82?)\n", (uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte));
-	
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
      A  C  T  G  A  C  T  G
@@ -279,41 +266,17 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
     char from_file_buffer[(READ_BUFFER_SIZE / 2) + 6];
 
-	printf("n/b = %i\n",T::nucleotides_per_byte);
-	printf("buf size: %i\n", (READ_BUFFER_SIZE / 2) + 6);
-	printf("read size: %i\n",  (buffer_size /  T::nucleotides_per_byte) + 4);
-
-	printf("\n\n");
-	if(!fh->good()) {
-		printf("pre: file handle closed \n");
-	}
-	else {
-		printf("pre: file handle open \n");
-	}
     fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
 	if(!fh->good()) {
 		fh->clear();// out of bound oterhwise
-		printf("post: file handle closed \n");
 	}
-	else {
-		printf("[post: file handle open \n");
-	}
-	
 
     uint ff = 0;
-	for(uint qqq = 0 ; qqq < 5 ; qqq++) {
-		printf("%i: [%d] [%02hhX]\n", qqq, from_file_buffer[qqq], from_file_buffer[qqq]);
-	}
-	for(uint qqq = 34 ; qqq < 37 ; qqq++) {
-		printf("%i: [%d] [%02hhX]\n", qqq, from_file_buffer[qqq], from_file_buffer[qqq]);
-	}
-
+    
     /*
     printf("size = (reserved = %i) (read = %i)", ((buffer_size / 4) + 2) , (buffer_size / 4) + 1);
     printf(" (actual: %i)\n",fh->gcount() );
     */
-
-	std::cout << "[" << t.encode_hash['\x1F'] << "]\n";
 
     const char *chunk = t.encode_hash[0];// init
     unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
