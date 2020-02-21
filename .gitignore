@@ -25,3 +25,4 @@ xcheck.sh
 .ninja*
 test-mount.sh
 *.dict
+*.pyc

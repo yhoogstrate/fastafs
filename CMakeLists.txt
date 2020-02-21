@@ -189,6 +189,7 @@ add_test(test_ucsc2bit_to_fastafs "${BUILD_TEST_DIR}/test_ucsc2bit_to_fastafs")
 add_test(test_ucsc2bit_as_fasta   "${BUILD_TEST_DIR}/test_ucsc2bit_as_fasta")
 add_test(test_sequenceregion      "${BUILD_TEST_DIR}/test_sequenceregion")
 add_test(test_utils               "${BUILD_TEST_DIR}/test_utils")
+add_test(test_functional          "test/test_functional.py")
 #add_test(test_tree                "${BUILD_TEST_DIR}/test_tree")
 
 #find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'
