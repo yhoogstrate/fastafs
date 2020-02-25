@@ -5,10 +5,13 @@
 #include <array>
 #include "config.hpp"
 
+
 class twobit_byte
 {
 public:
-    static const char encode_hash[256][5];
+    const char (&encode_hash)[256][5];
+    twobit_byte(const char (&encode_hash_arg)[256][5]): encode_hash(encode_hash_arg) {};
+
     static const char n_fill_unmasked = 'N';
     static const char n_fill_masked = 'n';
 
@@ -23,5 +26,26 @@ public:
 
     static unsigned char iterator_to_offset(unsigned int);
 };
+
+
+
+class twobit_byte_dna : public twobit_byte
+{
+public:
+    twobit_byte_dna(): twobit_byte(ENCODE_HASH_TWOBIT_DNA) {    }
+};
+
+
+
+class twobit_byte_rna : public twobit_byte
+{
+public:
+    twobit_byte_rna(): twobit_byte(ENCODE_HASH_TWOBIT_RNA) {    }
+};
+
+
+
+
+
 
 #endif

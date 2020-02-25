@@ -4,7 +4,7 @@
 
 #include "config.hpp"
 
-#include "fasta_to_twobit_fastafs.hpp"
+#include "fasta_to_fastafs.hpp"
 //#include "fastafs.hpp"
 
 
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
  */
 BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 {
-    twobit_byte b = twobit_byte();
+    twobit_byte b = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
 
     char *seq1;
     char *seq2;
@@ -207,12 +207,19 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 /**
  * @brief
  *
- * @test
+ * @test tests whether 2bit/4bit data are indeed 1 byte in size
  */
 BOOST_AUTO_TEST_CASE(Test_size)
 {
-    twobit_byte b = twobit_byte();
-    BOOST_CHECK_EQUAL(sizeof(b.data), 1);
+    {
+        twobit_byte b = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
+        BOOST_CHECK_EQUAL(sizeof(b.data), 1);
+    }
+
+    {
+        fourbit_byte b = fourbit_byte();
+        BOOST_CHECK_EQUAL(sizeof(b.data), 1);
+    }
 }
 
 
@@ -224,7 +231,7 @@ BOOST_AUTO_TEST_CASE(Test_size)
  */
 BOOST_AUTO_TEST_CASE(test_cache)
 {
-    size_t written = fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
+    size_t written = fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs", false);
 
     static std::string reference =
         // GENERIC-HEADER
@@ -367,7 +374,7 @@ BOOST_AUTO_TEST_CASE(test_cache)
 BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
+    fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs", false);
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
@@ -427,7 +434,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
 BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 {
     // generate FASTAFS file from FASTA file
-    fasta_to_twobit_fastafs("test/data/test_003.fa", "tmp/test_cache_test_003.fastafs");
+    fasta_to_fastafs("test/data/test_003.fa", "tmp/test_cache_test_003.fastafs", false);
 
     // load the FASTAFS file
     fastafs f2 = fastafs("test");
@@ -456,6 +463,461 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
 }
 
 
+
+
+/**
+ * @brief
+ *
+ * @test
+ */
+BOOST_AUTO_TEST_CASE(test_cache_hybrid)
+{
+    // generate FASTAFS file from FASTA file
+    size_t written = fasta_to_fastafs("test/data/test_006.fa", "tmp/test_cache_test_006.fastafs", false);
+
+
+    static std::string reference =
+        // GENERIC-HEADER - size: 14
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x80\x00"s//             FASTAFS flag [ 10000000 | 00000000 ]
+        "\x00\x00\x01\x01"s //    [index position in file
+
+        // DATA - size: 43
+        "\x00\x00\x00\x1B"s//     27 x ACTG's
+        "\x92\xD2\x78\x7B\x1B\x98\xD0"s// sequence
+        "\x00\x00\x00\x01"s//     n-blocks (0)
+        "\x00\x00\x00\x1B"s//     n-block starts (27)
+        "\x00\x00\x00\x1B"s//     n-block ends (27)
+        "\xDE\x43\x9D\x7D\x4C\xF7\x09\xF5\x8C\x8B\x31\xFD\x0A\x98\xC4\xD6"s//checksum
+        "\x00\x00\x00\x00"s//     m-blocks (0)
+
+        // - size: 43
+        "\x00\x00\x00\x1B"s//     27 x ACTG's
+        "\x92\xD2\x78\x7B\x1B\x98\xD0"s// sequence
+        "\x00\x00\x00\x01"s//     n-blocks (0)
+        "\x00\x00\x00\x1B"s//     n-block starts (27)
+        "\x00\x00\x00\x1B"s//     n-block ends (27)
+        "\xF2\xD4\x96\x2C\x55\x08\x81\xCC\x3D\xEF\x86\xDE\xB2\x84\x90\x22"s//checksum
+        "\x00\x00\x00\x00"s//     m-blocks (0)
+
+        // target - size: 30
+        "\x00\x00\x00\x04"s//     4 x IUPEC
+        "\xFF\xCE"s//     NN=\xFF DV=\x??
+        "\x00\x00\x00\x00"s//     n-blocks (0)
+        "\xB9\xE7\xA7\x5E\xE7\x63\x95\xBE\x6C\xC3\x7C\x3C\xF2\xDB\x32\x31"s// checksum
+        "\x00\x00\x00\x00"s//     m-blocks (0)
+
+        // - size: 43
+        "\x00\x00\x00\x1B"s//     27 x ACTG's
+        "\x92\xD2\x78\x7B\x1B\x98\xD0"s// sequence
+        "\x00\x00\x00\x01"s//     n-blocks (0)
+        "\x00\x00\x00\x1B"s//     n-block starts (27)
+        "\x00\x00\x00\x1B"s//     n-block ends (27)
+        "\xDE\x43\x9D\x7D\x4C\xF7\x09\xF5\x8C\x8B\x31\xFD\x0A\x98\xC4\xD6"s//checksum
+        "\x00\x00\x00\x00"s//     m-blocks (0)
+
+        // - size: 43
+        "\x00\x00\x00\x1B"s//     27 x ACTG's
+        "\x92\xD2\x78\x7B\x1B\x98\xD0"s// sequence
+        "\x00\x00\x00\x01"s//     n-blocks (0)
+        "\x00\x00\x00\x1B"s//     n-block starts (27)
+        "\x00\x00\x00\x1B"s//     n-block ends (27)
+        "\xF2\xD4\x96\x2C\x55\x08\x81\xCC\x3D\xEF\x86\xDE\xB2\x84\x90\x22"s//checksum
+        "\x00\x00\x00\x00"s//     m-blocks (0)
+
+        // target2 - size: 41
+        "\x00\x00\x00\x0A"s//     4 x IUPEC
+        "\x6D\xE0\xBD\x46\xE7"s//  sequence
+        "\x00\x00\x00\x01"s//     n-blocks (1)
+        "\x00\x00\x00\x04"s//     n block [1]
+        "\x00\x00\x00\x07"s//     n block [1]
+        "\x18\xB4\x56\x52\x68\x67\x4F\x40\xE7\xBA\x73\x92\x53\xA5\xA6\x6C"s// checksum
+        "\x00\x00\x00\x00"s//    m-blocks (0)
+
+        // INDEX
+        "\x00\x00\x00\x06"s     // n sequences
+
+        "\x10\x00"             // [343, 344] complete, DNA and not circular
+        "\x0B"s "seq.1[ACTG]"s         // [345, 349] name
+        "\x00\x00\x00\x0E"s     //  data position in file (14)
+
+        "\x90\x00"             // RNA
+        "\x0B"s "seq.2[ACUG]"s         // [356, 360] name
+        "\x00\x00\x00\x39"s     // 57
+
+        "\x50\x00"             // [, ] complete, DNA and not circular
+        "\x0C"s "seq.3[IUPEC]"s       // [, ] name
+        "\x00\x00\x00\x64"s     // 100
+
+        "\x10\x00"             // [343, 344] complete, DNA and not circular
+        "\x0B"s "seq.4[ACTG]"s         // [345, 349] name
+        "\x00\x00\x00\x82"s     // [, ] data position in file (141)
+
+        "\x90\x00"             // RNA
+        "\x0B"s "seq.5[ACUG]"s         // [356, 360] name
+        "\x00\x00\x00\xAD"s     // [, ] data position in file (181)
+
+        "\x50\x00"             // [, ] complete, DNA and not circular
+        "\x0C"s "seq.6[IUPEC]"s         // [, ] name
+        "\x00\x00\x00\xD8"s     // [, ] data position in file (221)
+
+
+        // METADATA
+        "\x00"s                 // [399] no metadata fields [padding will come soon?]
+
+        // CRC32 checksums
+        "\xD3\xBC\xFF\xFE"s // only part that is not yet checked
+        ;
+
+    BOOST_CHECK_EQUAL(written, 376);
+
+    //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    std::ifstream file("tmp/test_cache_test_006.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    BOOST_CHECK_EQUAL(reference.size(), 376);
+    BOOST_CHECK_EQUAL(size, 376);
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    file.close();
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
+        if(reference[i] != buffer[i]) {
+            printf("comparing char %i    ** mismatch [ref] %d  %02hhX  != [buf] %d (%c x %02hhX)\n\n", i, reference[i], reference[i], buffer[i], buffer[i], buffer[i]);
+        }
+
+    }
+
+    delete[] buffer;
+
+
+    // check computed file size
+    fastafs f = fastafs("");
+    f.load("tmp/test_cache_test_006.fastafs");
+    BOOST_CHECK_EQUAL(f.fastafs_filesize(), 376);
+
+    const size_t padding = 10;
+    ffs2f_init* cache_p10 = f.init_ffs2f(padding, true); // mixed case
+
+    {
+        // upper case test
+        const uint32_t write_size = 32;
+        char buffer2[write_size + 1] = "";
+        buffer2[32] = '\0';
+        uint32_t written = 0;
+        uint32_t w = 0;
+        std::string output = "";
+
+        while(written < f.fasta_filesize(padding)) {
+            w = f.view_fasta_chunk(cache_p10, buffer2, write_size, written);
+            output.append(buffer2, w);
+            written += w;
+        }
+
+        std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACUAGCUACG\nAUCGAGUCAG\nACAUGCUN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
+        //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
+        BOOST_CHECK(output.compare(uppercase) == 0);
+    }
+}
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
+{
+    fourbit_byte b = fourbit_byte();
+
+    char *seq1;
+    char *seq2;
+
+    const char *seq;// don't dereference, pointer to static four_bit property
+
+    // test 0000 0000 -> 00000000 -> 0
+    b.set(4, 0);// A => 0
+    b.set(0, 0);
+    BOOST_CHECK_EQUAL(b.data, 0);
+
+    seq1 = b.get(1);
+    seq2 = b.get(2);
+    seq = b.get();
+
+    BOOST_CHECK_EQUAL(strcmp(seq1, "A"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "AA"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "AA"), 0);
+
+    delete[] seq1;
+    delete[] seq2;
+
+    // test 11 10  11 11 -> 00001100 -> 239
+    b.set(4, 14); // V: 14
+    b.set(0, 15); // N: 15
+    BOOST_CHECK_EQUAL(b.data, 239);
+
+    seq1 = b.get(1);
+    seq2 = b.get(2);
+    seq = b.get();
+
+    BOOST_CHECK_EQUAL(strcmp(seq1, "V"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "VN"), 0);
+
+    delete[] seq1;
+    delete[] seq2;
+
+    // GT: 0010 0011
+    b.set(4, 2); // G
+    b.set(0, 3); // T
+    BOOST_CHECK_EQUAL(b.data, 35);
+
+    seq1 = b.get(1);
+    seq2 = b.get(2);
+    seq = b.get();
+
+    BOOST_CHECK_EQUAL(strcmp(seq1, "G"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "GT"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "GT"), 0);
+
+    delete[] seq1;
+    delete[] seq2;
+
+
+    // set to UR (0100 0101)
+    b.set(4, 4);
+    b.set(0, 5);
+    BOOST_CHECK_EQUAL(b.data, 69);
+
+    seq1 = b.get(1);
+    seq2 = b.get(2);
+    seq = b.get();
+
+    BOOST_CHECK_EQUAL(strcmp(seq1, "U"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "UR"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "UR"), 0);
+
+    delete[] seq1;
+    delete[] seq2;
+
+
+    // set to AN (0000 1111)
+    b.set(4, 0);
+    b.set(0, 15);
+    BOOST_CHECK_EQUAL(b.data, 15);
+
+    seq1 = b.get(1);
+    seq2 = b.get(2);
+    seq = b.get();
+
+    BOOST_CHECK_EQUAL(strcmp(seq1, "A"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "AN"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "AN"), 0);
+
+    delete[] seq1;
+    delete[] seq2;
+
+
+    // set to NA (1111 0000)
+    b.set(4, 15);
+    b.set(0, 0);
+    BOOST_CHECK_EQUAL(b.data, 240);
+
+    seq1 = b.get(1);
+    seq2 = b.get(2);
+    seq = b.get();
+
+    BOOST_CHECK_EQUAL(strcmp(seq1, "N"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq2, "NA"), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "NA"), 0);
+
+    delete[] seq1;
+    delete[] seq2;
+}
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_004)
+{
+    size_t written = fasta_to_fastafs("test/data/test_004.fa", "tmp/test_004.fastafs", false);
+
+    static std::string reference =
+        // GENERIC-HEADER
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
+        "\x00\x00\x00\x68"s //    [10, 13] index position in file (104?)
+
+        // DATA
+        "\x00\x00\x00\x4B"s//     [14, 17] seq length (75)
+        "\xFB\x70\xD8\xC1\x4A\x29\x6E\x35\xD2\xAE"s// [18, 27]    sequence (four bit format; n chars = 76/2 = 38)
+        "\x48\x3B\x9C\xFB\x26\x0C\xFD\x98\x43\x51"s// [28, 37]
+        "\x7A\xE9\xBD\xEC\xF5\x32\x61\x87\xA4\x00"s// [38, 47]
+        "\xE3\x9C\x7F\xB4\x2A\x8D\x65\x10"s// [48, 56]
+        "\x00\x00\x00\x02"s//     [, ] n-blocks (2)
+        "\x00\x00\x00\x1B"s//     [, ] n-block[0] starts (27)
+        "\x00\x00\x00\x4D"s//     [, ] n-block[1] starts (77)
+        "\x00\x00\x00\x24"s//     [, ] n-block[0] ends (36|37)
+        "\x00\x00\x00\x4F"s//     [, ] n-block[1] ends (79)
+        "\x4A\x4D\x43\xFF\x09\x08\x29\xCD\x05\x9A\x08\x3C\x48\x3F\xEB\x3C"s// [76, ] checksum
+        "\x00\x00\x00\x01"s//     [92, ] m-blocks (1)
+        "\x00\x00\x00\x35"s//     [96, ] m-block starts (53)
+        "\x00\x00\x00\x44"s//     [100, ] m-block starts (68)
+
+        // INDEX
+        "\x00\x00\x00\x01"s     // [104, ] 1 sequences
+        "\x50\x00"              // [, ] complete, IUPEC [01010000]
+        "\x05"s "IUPAC"s        // [, ] name
+        "\x00\x00\x00\x0E"s     // [, ] data position in file (14)
+
+        // METADATA
+        "\x00"s                  // [120] no metadata fields [padding will come soon?]
+
+        // CRC32
+        "\x3d\xbf\x6e\xbf"s
+        ;
+
+    BOOST_CHECK_EQUAL(written, 125);
+
+    //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    std::ifstream file("tmp/test_004.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    BOOST_CHECK_EQUAL(file.gcount(), size);
+    file.close();
+
+    //BOOST_CHECK_UNEQUAL(ret, -1);
+
+
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
+        if(reference[i] != buffer[i]) {
+            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] %d (%c x %02hhX)\n", i, reference[i], reference[i], buffer[i], buffer[i], buffer[i]);
+        }
+
+    }
+
+    delete[] buffer;
+
+
+
+    // check fastafs filesize
+    fastafs f = fastafs("");
+    f.load("tmp/test_004.fastafs");
+    BOOST_CHECK_EQUAL(f.fastafs_filesize(), 125);
+}
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_2)
+{
+    size_t written = fasta_to_fastafs("test/data/test_005.fa", "tmp/test_005.fastafs", false);
+
+    BOOST_CHECK_EQUAL(written, 241);
+
+    // check fastafs filesize
+    fastafs f = fastafs("");
+    f.load("tmp/test_005.fastafs");
+    BOOST_CHECK_EQUAL(f.data[0]->name.size(), 131);
+
+
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
+{
+    std::cout << " --------------------------------------------- \n\n";
+
+    size_t written = fasta_to_fastafs("test/data/test_009.fa", "tmp/test_009.fastafs", true);
+
+    static std::string reference =
+        // GENERIC-HEADER
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 00000000 | 00000001 ]
+        "\x00\x00\x00\x8E"s //    [10, 13] index position in file = 142 = 8E
+
+        // DATA
+        "\x00\x00\x00\x48"s//     [14, 17] seq length (72)
+        "\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F"s// ANANANANANANANANANAN..
+        "\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F"s
+        "\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F\x0F"s
+        "\x00\x00\x00\x00"s//     [, ] n-blocks (0)
+        "\x98\x4C\x6D\xAF\xF2\xA0\xF4\x5C\x61\xB2\x53\xAD\xF2\xEB\xA8\x69"s// [76, ] checksum
+        "\x00\x00\x00\x00"s//     [, ] m-blocks (2)
+
+        "\x00\x00\x00\x47"s//     [14, 17] seq length (71)
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s// 
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s// 
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\xF0"s// 
+        "\x00\x00\x00\x00"s//     [, ] n-blocks (0)
+        "\xA7\xBA\xB4\x6A\x83\xB0\xE3\x29\x3F\x26\xE9\xD7\x0D\x97\x01\x3C"s// checksum
+        "\x00\x00\x00\x00"s//     [, ] m-blocks (0)
+
+        // INDEX
+        "\x00\x00\x00\x02"s     // [104, ] 2 sequences
+        "\x50\x00"              // [, ] complete, IUPEC [01010000]
+        "\x09"s "len-limit"s        // [, ] name
+        "\x00\x00\x00\x0E"s     // [, ] data position in file (14)
+
+        "\x50\x00"              // [, ] complete, IUPEC [01010000]
+        "\x0A"s "len-limit2"s        // [, ] name
+        "\x00\x00\x00\x4E"s     // 4E means 78 ~ klopt
+
+        // METADATA
+        "\x00"s                  // [120] no metadata fields [padding will come soon?]
+
+        // CRC32
+        "\x0E\xB8\xC0\x8A"s
+        ;
+
+    //BOOST_CHECK_EQUAL(written, 125);
+
+    //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    std::ifstream file("tmp/test_009.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    BOOST_CHECK_EQUAL(file.gcount(), size);
+    file.close();
+
+    //BOOST_CHECK_UNEQUAL(ret, -1);
+
+
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
+        if(reference[i] != buffer[i]) {
+            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] %d (%c x %02hhX)\n", i, reference[i], reference[i], buffer[i], buffer[i], buffer[i]);
+        }
+
+    }
+
+    delete[] buffer;
+
+}
 
 
 

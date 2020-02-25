@@ -143,8 +143,13 @@ uint32_t fastafs_seq::view_fasta_chunk(
 
     std::ifstream *fh)
 {
+
     if(this->flags.is_twobit()) {
-        return this->view_fasta_chunk_generalized<twobit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+        if(this->flags.is_dna()) {
+            return this->view_fasta_chunk_generalized<twobit_byte_dna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+        } else {
+            return this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+        }
     } else {
         return this->view_fasta_chunk_generalized<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
@@ -180,6 +185,9 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
         throw std::runtime_error("Empty cache was provided\n");
     }
 #endif //DEBUG
+
+    buffer_size = std::min((size_t) READ_BUFFER_SIZE, buffer_size);
+
 
     T t = T();// nice way of having this templated object on stack :)
     uint32_t written = 0;
@@ -233,6 +241,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
     fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
+	
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
      A  C  T  G  A  C  T  G
@@ -243,10 +252,40 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     * nooit out of bound
 
     */
-    const char *chunk = T::encode_hash[0];// init
+//    const char *chunk = t.encode_hash[0];// init
+//    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+
+
+    // big buffer
+    //@todo avoid dynamic allocation and fix buffer size?
+    // char *buffer[4096 + 4];
+    // watch out for off-grid requests: a 2byte buffer may 3 bytes reserved at least
+    //         X     X
+    // [ | | | | ] [ | | | | ]
+    //char *from_file_buffer;
+    //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
+    char from_file_buffer[(READ_BUFFER_SIZE / 2) + 6];
+
+    fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
+	if(!fh->good()) {
+		fh->clear();// out of bound oterhwise
+	}
+
+    uint ff = 0;
+    
+    /*
+    printf("size = (reserved = %i) (read = %i)", ((buffer_size / 4) + 2) , (buffer_size / 4) + 1);
+    printf(" (actual: %i)\n",fh->gcount() );
+    */
+
+    const char *chunk = t.encode_hash[0];// init
     unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+
     if(bit_offset != 0) {
-        fh->read((char*)(&t.data), 1);
+        //fh->read((char*)(&t.data), 1);
+        t.data = from_file_buffer[ff];
+        ff++;
+
         chunk = t.get();
     }
     while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
@@ -255,6 +294,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
         m_block--;
     }
+
 
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
@@ -265,13 +305,17 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
         while(pos < pos_limit) {// while next sequence-containing-line is open
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = T::n_fill_masked;
+                    buffer[written++] = t.n_fill_masked;
                 } else {
-                    buffer[written++] = T::n_fill_unmasked;
+                    buffer[written++] = t.n_fill_unmasked;
                 }
             } else {
+
                 if(bit_offset % T::nucleotides_per_byte == 0) {
-                    fh->read((char*)(&t.data), 1);
+                    //fh->read((char*)(&t.data), 1);
+                    t.data = from_file_buffer[ff];
+                    ff++;
+
                     chunk = t.get();
                 }
 
@@ -281,7 +325,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
                     buffer[written++] = chunk[bit_offset];
                 }
 
-                bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_byte;
+                bit_offset = (unsigned char)(bit_offset + 1) % t.nucleotides_per_byte;
             }
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
@@ -294,6 +338,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
             if(written >= buffer_size) {
                 //fh->clear();
+                //delete[] from_file_buffer;
                 return written;
             }
         }
@@ -306,6 +351,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
             if(written >= buffer_size) {
                 //fh->clear();
+                //delete[] from_file_buffer;
                 return written;
             }
         }
@@ -314,6 +360,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     //fh->clear();
+    //delete[] from_file_buffer;
     return written;
 }
 
@@ -1135,7 +1182,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
 
             // twobit coded nucleotides (only containing 4 nucleotides each)
             uint32_t full_twobits = sequence->n / 4;
-            twobit_byte t;
+            twobit_byte_dna t;
             pos_limit += full_twobits;
 
             while(pos < pos_limit) {
@@ -1619,42 +1666,10 @@ int fastafs::info(bool ena_verify_checksum)
 }
 
 
-// skips first four bytes and does not include crc32 at the end either
+// skips first four bytes and do not include crc32 at the end either
 uint32_t fastafs::get_crc32(void)
 {
-    if(this->filename.size() == 0) {
-        throw std::invalid_argument("No filename found");
-    }
-
-    // starts at 4th
-    size_t total_bytes_to_be_read = this->fastafs_filesize() - 4 - 4 ;
-
-    uLong crc = crc32(0L, Z_NULL, 0);
-
-    const int buffer_size = 4;
-    char buffer[buffer_size + 1];
-
-    size_t bytes_to_be_read_this_iter;
-    size_t bytes_actually_read_this_iter;
-
-    // now calculate crc32 checksum, as all bits have been set.
-    std::ifstream fh_fastafs_crc(this->filename.c_str(), std::ios :: out | std::ios :: binary);
-    fh_fastafs_crc.seekg(4, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
-
-    while(total_bytes_to_be_read > 0) {
-        bytes_to_be_read_this_iter = std::min((size_t) buffer_size, total_bytes_to_be_read) ;
-        fh_fastafs_crc.read(buffer, bytes_to_be_read_this_iter);
-        total_bytes_to_be_read -= bytes_to_be_read_this_iter;
-
-        bytes_actually_read_this_iter = fh_fastafs_crc.gcount();
-        if(bytes_actually_read_this_iter == 0) {
-            total_bytes_to_be_read  = 0; // unexpected eof?
-        } else {
-            crc = crc32(crc, (const Bytef*)& buffer, (uint32_t) bytes_actually_read_this_iter);
-        }
-    }
-
-    return (uint32_t) crc;
+    return  file_crc32(this->filename, 4, this->fastafs_filesize() - 4 ); // not sure why -4 rather than -4-4, but seems to work?
 }
 
 

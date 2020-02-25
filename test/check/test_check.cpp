@@ -4,8 +4,7 @@
 
 #include "config.hpp"
 
-#include "fasta_to_twobit_fastafs.hpp"
-#include "fasta_to_fourbit_fastafs.hpp"
+#include "fasta_to_fastafs.hpp"
 
 
 
@@ -18,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
  */
 BOOST_AUTO_TEST_CASE(test_file_integrity)
 {
-    fasta_to_twobit_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs");
+    fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs", false);
 
     // check computed file size
     fastafs f = fastafs("");

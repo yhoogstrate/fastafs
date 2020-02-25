@@ -5,7 +5,7 @@
 #include "config.hpp"
 
 #include "utils.hpp"
-#include "fasta_to_twobit_fastafs.hpp"
+#include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
 #include "ucsc2bit_to_fastafs.hpp"
 
@@ -21,8 +21,8 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     std::string fastafs_file2 = "tmp/test.regenerated.fastafs";
     std::string ucsc2bit_file = "tmp/test.2bit";
 
-    // 01 fasta_to_twobit_fastafs()
-    fasta_to_twobit_fastafs("test/data/test.fa", fastafs_file);
+    // 01 fasta_to_fastafs()
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
 
     // 02 load fastafs
     fastafs fs = fastafs("test");
