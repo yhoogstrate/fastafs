@@ -2,7 +2,7 @@
 
    * v1.7.2
    * Reduce file read syscalls and gain performance
-   * Function testing in python, for both view to stdout as mounting
+   * Functional testing in python, for both view to stdout as mounting
    * Added templating for cleaner code
    * Auto conversion to fourbit if that is more efficient compression
 
