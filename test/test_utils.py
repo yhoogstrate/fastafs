@@ -94,9 +94,8 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_name, padding, fastafs_binar
     return_dict = manager.dict()
     parallel_thread = Process(target=run_mount_bg, args=(fastafs_binary, ['-p', str(padding), fastafs_tmp_name, 'tmp/mnt'], return_dict))
     parallel_thread.start()
-    # see how long this runs
-    
-    time.sleep(0.1)
+
+    time.sleep(0.1) # there always is some time before invoking the mount and having the mount point up and running
     with open("tmp/mnt/" + fastafs_tmp_name + ".fa") as fh_mnt, open(fasta_file) as fh_orig:
         for line1, line2 in zip(fh_mnt, fh_orig):
             if line1.strip() != line2.strip():
