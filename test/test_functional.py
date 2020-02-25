@@ -28,7 +28,13 @@ if not os.path.exists(T_TEST_DIR):
 class FunctionalTest(unittest.TestCase):
     def test_01(self):
         difference = diff_fasta_with_mounted(TEST_DIR + 'test.fa', "test_func_01", 100, './bin/fastafs', 'tmp/mnt')
+        
         self.assertEqual(difference['diff'] , False)
+        self.assertEqual(difference['stdout']['cache'] , '')
+
+        for prog in difference['stderr']:
+                self.assertEqual(difference['stderr']['cache'] , '')
+
 
         difference = diff_fasta_with_view(TEST_DIR + 'test.fa', "test_func_01", 100, './bin/fastafs', 'tmp/mnt')
         self.assertEqual(difference['diff'] , False)

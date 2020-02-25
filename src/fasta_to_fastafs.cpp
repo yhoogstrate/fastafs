@@ -205,7 +205,6 @@ void fasta_to_fastafs_seq::finish_fourbit_sequence(std::ofstream &fh_fastafs)
 
     char buffer[4 +  1];
 
-    printf("finish 4bit: n_actg = %i\n\n\n----\n\n", this->n_actg);
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
     fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
@@ -271,7 +270,6 @@ void fasta_to_fastafs_seq::flush() {
 
 size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastafs_file, bool auto_recompress_to_fourbit)
 {
-    std::cout << "\n\n[" << fasta_file << "]\n";
     std::vector<fasta_to_fastafs_seq*> index;
     fasta_to_fastafs_seq* s;
 
@@ -311,9 +309,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
             bool running = getline(fh_fasta, line).good();
             while(running) {
                 if(line[0] == '>') {
-                    printf("\nn block size: %i  ~ bit size: %i     {{ %s }} \n", s->N_bytes_used(), s->twobit_bytes_used(), line.c_str());
                     if(auto_recompress_to_fourbit && s->current_dict == DICT_TWOBIT && s->N_bytes_used() > s->twobit_bytes_used()) {
-                        std::cout << " - resetting to fourbit due to inefficent n blocks\n";
                         fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
                         fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
 
