@@ -26,3 +26,4 @@ xcheck.sh
 test-mount.sh
 *.dict
 *.pyc
+.venv
