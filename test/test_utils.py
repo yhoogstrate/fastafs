@@ -4,10 +4,10 @@ import subprocess
 import time
 import multiprocessing
 from multiprocessing import Process
+import os
 
 
-
-
+"""
 def get_ins_per_reading_mounted_suffix(size):
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
@@ -35,7 +35,7 @@ def get_ins_per_reading_mounted_suffix(size):
 
     parallel_thread.join()
     return return_dict['instructions']
-
+"""
 
 
 def run_mount_bg(fastafs_binary, args, return_dict):
@@ -110,3 +110,66 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_name, padding, fastafs_binar
     stdout, stderr = p.communicate()
 
     return output
+
+
+
+
+def diff_fasta_with_view(fasta_file, fastafs_tmp_name, padding, fastafs_binary, mountpoint):
+    """
+    Do a diff with an original fasta with 'fastafs view' command
+    """
+    output = {
+        'cmd':{},
+        'stdout': {},
+        'stderr': {},
+        'retcode': {},
+        'diff': False
+    }
+    
+    # 1. fasta to FASTAFS:
+    prog = 'cache'
+    #cmd = [fastafs_binary, prog, '-o', fastafs_tmp_file , fasta_file]
+    cmd = [fastafs_binary, prog, fastafs_tmp_name , fasta_file]
+    p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)
+    stdout, stderr = p.communicate()
+    output['cmd'][prog] = cmd
+    output['stdout'][prog] = stdout.decode("utf-8")
+    output['stderr'][prog] = stderr.decode("utf-8")
+    output['retcode'][prog] = p.returncode
+    p.terminate()
+    
+    # 2. check integrity:
+    prog = 'check'
+    cmd = [fastafs_binary, 'check', fastafs_tmp_name, fastafs_tmp_name]
+    p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)
+    stdout, stderr = p.communicate()
+    output['cmd'][prog] = cmd
+    output['stdout'][prog] = stdout.decode("utf-8")
+    output['stderr'][prog] = stderr.decode("utf-8")
+    output['retcode'][prog] = p.returncode
+    p.terminate()
+
+    # 3. run view
+    prog = 'view'
+    cmd = [fastafs_binary, prog, '-p', str(padding), fastafs_tmp_name]
+    
+    os.environ['PYTHONUNBUFFERED'] = "1"
+    p = subprocess.Popen(cmd,  stdout=subprocess.PIPE, bufsize=10) # bufsize=1, universal_newlines=True
+
+    with open(fasta_file) as fh_orig:
+        while p.poll() is None:
+            line1 = fh_orig.readline().strip()
+            line2 = p.stdout.readline().decode("utf-8").strip()
+            
+            if line1 != "" or line2 != "":
+                if line1 != line2:
+                    output['diff'] = True
+                    print("[" + line1 + "] == [" + line2 + "]")
+                    break
+
+    p.stdout.close()
+    
+
+    return output
+
+
