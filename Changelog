@@ -1,3 +1,8 @@
+2020-20-26  Youri Hoogstrate
+
+   * v1.7.3
+   * Small decoy function added for basic snakemake compatiblity
+
 2020-02-04  Youri Hoogstrate
 
    * v1.7.2

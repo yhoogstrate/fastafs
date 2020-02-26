@@ -36,6 +36,7 @@ struct fuse_instance {
     ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
+    
 
     // ucsc2bit
     ucsc2bit *u2b;
@@ -44,6 +45,8 @@ struct fuse_instance {
     uint32_t padding;
     bool allow_masking;
     int argc_fuse;
+    
+    timespec ts[2]; // access and modify time
 };
 
 
@@ -286,6 +289,22 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
 }
 
 
+// decoy function to not throw an error if snakemake access this
+// as it doesn't have access to fi it is practically not possible to do a generic update 
+static int do_utimens(const char *path, const struct timespec ts[2]) // seems it doesn't understand 'fuse_file_info ?' , struct fuse_file_info *fi)
+{
+    //(void) fi;
+    //int res;
+
+    /* don't use utime/utimes since they follow symlinks */
+    //res = utimensat(0, path, ts, AT_SYMLINK_NOFOLLOW);
+    // set fi data  to ts
+    //if (res == -1)
+        //return -errno;
+
+    return 0;
+}
+
 
 void do_destroy(void *pd)
 {
@@ -357,7 +376,7 @@ fuse_operations operations  = {
     nullptr,    // int (*ftruncate) (const char *, off_t, struct fuse_file_info *);
     nullptr,    // int (*fgetattr) (const char *, struct stat *, struct fuse_file_info *);
     nullptr,    // int (*lock) (const char *, struct fuse_file_info *, int cmd, struct flock *);
-    nullptr,    // int (*utimens) (const char *, const struct timespec tv[2]);
+    do_utimens, // int (*utimens) (const char *, const struct timespec tv[2]); // sets / updates access and modify time values
     nullptr,    // int (*bmap) (const char *, size_t blocksize, uint64_t *idx);
 //	nullptr,    // int (*ioctl) (const char *, int cmd, void *arg, struct fuse_file_info *, uint32_t flags, void *data);
 //	nullptr,    // int (*poll) (const char *, struct fuse_file_info *, struct fuse_pollhandle *ph, unsigned *reventsp);
