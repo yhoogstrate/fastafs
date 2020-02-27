@@ -71,6 +71,7 @@ void usage_cache(void)
     std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file | ucsc TwoBit file>\n";
     std::cout << "                         cache -o <fastafs-file-path> <fasta file | ucsc TwoBit file>\n\n";
     std::cout << "  -o, --output-file    Explicitly define fastafs output file and do not write to database (cache)\n";
+    std::cout << "  -2, --2bit           Force 2bit when files become larger than 4bit due to huge N-blocks\n";
 }
 
 int main(int argc, char *argv[])
@@ -95,6 +96,7 @@ int main(int argc, char *argv[])
         } else if(strcmp(argv[1], "cache") == 0) {
             if(argc > 3) {
                 bool to_cache = true;
+                bool auto_recompress_to_fourbit = true;
                 if(argc > 4 && strlen(argv[argc - 3]) >= 2) {
                     if(
                         (strcmp(argv[argc - 3], "-o") == 0)
@@ -103,6 +105,14 @@ int main(int argc, char *argv[])
 
                     ) {
                         to_cache = false;
+                    }
+                    else if(
+                        (strcmp(argv[argc - 3], "-2") == 0)
+                        or
+                        (strcmp(argv[argc - 3], "--2bit") == 0)
+
+                    ) {
+                        auto_recompress_to_fourbit = false;
                     }
                 }
 
@@ -116,7 +126,7 @@ int main(int argc, char *argv[])
 
                 if(is_fasta_file(argv[argc - 1])) {
                     // converter is now generic for 2 and 4 bit
-                    fasta_to_fastafs(argv[argc - 1], fname_out, true);
+                    fasta_to_fastafs(argv[argc - 1], fname_out, auto_recompress_to_fourbit);
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 } else {
