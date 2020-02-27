@@ -97,24 +97,31 @@ int main(int argc, char *argv[])
             if(argc > 3) {
                 bool to_cache = true;
                 bool auto_recompress_to_fourbit = true;
-                if(argc > 4 && strlen(argv[argc - 3]) >= 2) {
+
+                for(int i = 0 ; i < argc ; i++) {
                     if(
-                        (strcmp(argv[argc - 3], "-o") == 0)
+                        (strcmp(argv[i], "-2") == 0)
                         or
-                        (strcmp(argv[argc - 3], "--output-file") == 0)
+                        (strcmp(argv[i], "--2bit") == 0)
+                    ) {
+                        auto_recompress_to_fourbit = false;
+                    }
+                    
+                    
+                    if( i < argc - 1 and
+                        (
+                            (strcmp(argv[argc - 3], "-o") == 0)
+                            or
+                            (strcmp(argv[argc - 3], "--output-file") == 0)
+                        )
 
                     ) {
                         to_cache = false;
                     }
-                    else if(
-                        (strcmp(argv[argc - 3], "-2") == 0)
-                        or
-                        (strcmp(argv[argc - 3], "--2bit") == 0)
-
-                    ) {
-                        auto_recompress_to_fourbit = false;
-                    }
                 }
+
+
+
 
                 std::string fname_out;
                 if(to_cache) {
