@@ -151,6 +151,7 @@ add_library(libfastafs SHARED
 					src/fourbit_byte.cpp
 					src/database.cpp
 					src/utils.cpp
+					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
 )
