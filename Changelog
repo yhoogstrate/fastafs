@@ -1,9 +1,15 @@
-2020-20-27  Youri Hoogstrate
+2020-03-03  Youri Hoogstrate
+
+   * v1.7.5
+   * Added argument `check -5/--md5sum` to do file verification using md5sums as well
+   * Fixed error code returned after `fastafs check --help`
+
+2020-02-27  Youri Hoogstrate
 
    * v1.7.4
    * Added argument `cache --2bit` for statistical analysis
 
-2020-20-26  Youri Hoogstrate
+2020-02-26  Youri Hoogstrate
 
    * v1.7.3
    * Small decoy function added for basic snakemake compatiblity

@@ -61,6 +61,7 @@ void usage_check(void)
 {
     std::cout << "usage: " << PACKAGE << " check [<options>] <fastafs-id>\n\n";
     std::cout << "  -f, --file           Provide fastafs by file path, not from database (cache)" << std::endl;
+    std::cout << "  -5, --md5            Check file integrity using whole-file-CRC32 plus per-sequence MD5" << std::endl;
     std::cout << std::endl;
     std::cout << "  -h, --help           Display this help and exit";
     std::cout << std::endl;
@@ -272,11 +273,20 @@ int main(int argc, char *argv[])
             }
         } else if(strcmp(argv[1], "check") == 0) {
             if(argc > 2) {
+                if(strcmp(argv[2], "--help") == 0 or strcmp(argv[2], "-h") == 0) {
+                    usage_check();
+                    exit(0);
+                }
+                
                 bool from_file = false;
+                bool check_md5 = false;
 
                 for(int i = 2; i < argc - 1; i++) {
                     if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
+                    }
+                    else if (strcmp(argv[i], "-5") == 0 or strcmp(argv[i], "--md5") == 0) {
+                        check_md5 = true;
                     }
                 }
 
@@ -297,7 +307,12 @@ int main(int argc, char *argv[])
                 f.load(fname);
 
                 bool check1 = f.check_file_integrity(true);
-                bool check2 = f.check_sequence_integrity(true);
+                bool check2 = true;
+                
+                if(check_md5) {
+                    check2 = f.check_sequence_integrity(true);
+                }
+                
                 if(check1 and check2) {
                     return 0;
                 } else {
