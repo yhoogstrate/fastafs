@@ -61,7 +61,7 @@ static size_t fclose_orDie(FILE* file)
     exit(6);
 }
 
-static void compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize)
+static void ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize)
 {
     FILE* const fin  = fopen_orDie(fname, "rb");
     FILE* const fout = fopen_orDie(outName, "wb");
@@ -105,15 +105,6 @@ static void compressFile_orDie(const char* fname, const char* outName, int cLeve
 static char* createOutFilename_orDie(const char* filename)
 {
     std::string newname = std::string(filename) + ".zst";
-    /*
-    size_t const inL = strlen(filename);
-    size_t const outL = inL + 5;
-    void* outSpace = malloc_orDie(outL);
-    memset(outSpace, 0, outL);
-    strcat(outSpace, filename);
-    strcat(outSpace, ".zst");
-    return (char*)outSpace;
-    */
     return (char*) newname.c_str();
 }
 
@@ -130,7 +121,7 @@ int main(int argc, const char** argv) {
         unsigned const frameSize = (unsigned)atoi(argv[2]);
 
         char* const outFileName = createOutFilename_orDie(inFileName);
-        compressFile_orDie(inFileName, outFileName, 5, frameSize);
+        ZSTD_seekable_compressFile_orDie(inFileName, outFileName, 5, frameSize);
         free(outFileName);
     }
 
