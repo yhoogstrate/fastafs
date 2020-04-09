@@ -77,10 +77,17 @@ add_custom_target(tidy DEPENDS make_tidy )
 # ----------------------------------------------------------------------
 # ---------------------------- Compilation -----------------------------
 
+
 add_subdirectory(src)
+add_subdirectory(dependencies/zstd-seekable-adapted)
 include_directories(include)
 #include_directories(${BUILD_DIR})
 include_directories("${BUILD_DIR}/include")
+include_directories("dependencies/zstd-seekable-adapted")
+include_directories("dependencies/zstd/lib/common")
+include_directories("dependencies/zstd/lib")
+
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
 add_definitions(-std=c++14)
 
 # Boost
@@ -120,7 +127,11 @@ add_executable(fastafs
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					
+					dependencies/zstd-seekable-adapted/seekable_compression.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_compress.c
 				)
+target_link_libraries(fastafs ${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/libzstd.a)
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
 # mount-only binary, without all the other stuff 'mount.fastafs' [for fstab]

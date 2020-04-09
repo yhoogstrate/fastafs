@@ -12,6 +12,7 @@
 #include "fuse.hpp"
 #include "lsfastafs.hpp"
 
+#include "seekable_compression.hpp"
 
 // https://github.com/facebook/zstd/issues/521
 // https://github.com/samtools/samtools/blob/develop/faidx.c
@@ -135,6 +136,15 @@ int main(int argc, char *argv[])
                 if(is_fasta_file(argv[argc - 1])) {
                     // converter is now generic for 2 and 4 bit
                     fasta_to_fastafs(argv[argc - 1], fname_out, auto_recompress_to_fourbit);
+					
+					std::string fname_out_zstd = fname_out + ".zst";
+					//ZSTD_seekable_compressFile_orDie();
+					ZSTD_seekable_compressFile_orDie( (const char*) fname_out.c_str(),
+													  (const char*) fname_out_zstd.c_str(),
+													  (int) 5,
+													  (unsigned) 10*1024*1024);
+
+					linkCheck();
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 } else {

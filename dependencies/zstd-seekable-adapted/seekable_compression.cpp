@@ -7,14 +7,18 @@
  * in the COPYING file in the root directory of this source tree).
  */
 
+#include <string>    // strlen, memset, strcat
+
+/*
 #include <stdlib.h>    // malloc, free, exit, atoi
 #include <stdio.h>     // fprintf, perror, feof, fopen, etc.
 #include <string.h>    // strlen, memset, strcat
-#include <string>    // strlen, memset, strcat
-#define ZSTD_STATIC_LINKING_ONLY
+
+//#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>      // presumes zstd library is installed
 
-#include "zstd_seekable.h"
+#include "zstd_seekable.h"*/
+#include "seekable_compression.hpp"
 
 static void* malloc_orDie(size_t size)
 {
@@ -61,7 +65,10 @@ static size_t fclose_orDie(FILE* file)
     exit(6);
 }
 
-static void ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize)
+void ZSTD_seekable_compressFile_orDie(const char* fname,
+										const char* outName,
+										int cLevel,
+										unsigned frameSize)
 {
     FILE* const fin  = fopen_orDie(fname, "rb");
     FILE* const fout = fopen_orDie(outName, "wb");
@@ -102,13 +109,18 @@ static void ZSTD_seekable_compressFile_orDie(const char* fname, const char* outN
     free(buffOut);
 }
 
+
+void linkCheck() {
+	printf("hw\n");
+};
+
 static char* createOutFilename_orDie(const char* filename)
 {
     std::string newname = std::string(filename) + ".zst";
     return (char*) newname.c_str();
 }
 
-int main(int argc, const char** argv) {
+int main_old(int argc, const char** argv) {
     const char* const exeName = argv[0];
     if (argc!=3) {
         printf("wrong arguments\n");
