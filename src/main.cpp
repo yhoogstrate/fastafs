@@ -74,6 +74,7 @@ void usage_cache(void)
     std::cout << "                         cache -o <fastafs-file-path> <fasta file | ucsc TwoBit file>\n\n";
     std::cout << "  -o, --output-file    Explicitly define fastafs output file and do not write to database (cache)\n";
     std::cout << "  -2, --2bit           Force 2bit when files become larger than 4bit due to huge N-blocks\n";
+    std::cout << "  -f, --fastafs-only   Convert to FASTAFS only; skip ZSTD-seekable\n";
 }
 
 int main(int argc, char *argv[])
@@ -99,32 +100,26 @@ int main(int argc, char *argv[])
             if(argc > 3) {
                 bool to_cache = true;
                 bool auto_recompress_to_fourbit = true;
+                bool compress_to_zstd_seekable = true;
 
                 for(int i = 0 ; i < argc ; i++) {
-                    if(
-                        (strcmp(argv[i], "-2") == 0)
-                        or
-                        (strcmp(argv[i], "--2bit") == 0)
-                    ) {
+                    if((strcmp(argv[i], "-2") == 0) or (strcmp(argv[i], "--2bit") == 0)) {
                         auto_recompress_to_fourbit = false;
                     }
                     
+                    if((strcmp(argv[i], "-f") == 0) or (strcmp(argv[i], "--fastafs-only") == 0)) {
+                        compress_to_zstd_seekable = false;
+                    }
                     
                     if( i < argc - 1 and
-                        (
-                            (strcmp(argv[argc - 3], "-o") == 0)
-                            or
-                            (strcmp(argv[argc - 3], "--output-file") == 0)
-                        )
-
+                        ((strcmp(argv[argc - 3], "-o") == 0) or (strcmp(argv[argc - 3], "--output-file") == 0))
                     ) {
                         to_cache = false;
                     }
                 }
 
 
-
-
+                // reserve place in database
                 std::string fname_out;
                 if(to_cache) {
                     database d = database();
@@ -133,22 +128,30 @@ int main(int argc, char *argv[])
                     fname_out = std::string(argv[argc - 2]);
                 }
 
+
+                // convert to plain fastafs
                 if(is_fasta_file(argv[argc - 1])) {
                     // converter is now generic for 2 and 4 bit
                     fasta_to_fastafs(argv[argc - 1], fname_out, auto_recompress_to_fourbit);
-
-                    // convert to seekable zstd afterwareds
-                    std::string fname_out_zstd = fname_out + ".zst";
-                    ZSTD_seekable_compressFile_orDie( (const char*) fname_out.c_str(),
-                                                      (const char*) fname_out_zstd.c_str(),
-                                                      (int) ZSTD_COMPRESSION_QUALIITY,
-                                                      (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
-
                 } else if(is_ucsc2bit_file(argv[argc - 1])) {
                     ucsc2bit_to_fastafs(argv[argc - 1], fname_out);
                 } else {
                     throw std::runtime_error("[main::cache] Invalid file format");
                     return 1;
+                }
+
+
+                // convert to zstd seekable
+                if(compress_to_zstd_seekable) {
+                    std::string fname_out_zstd = fname_out + ".zst";
+                    size_t zst_written = ZSTD_seekable_compressFile_orDie( (const char*) fname_out.c_str(),
+                                                      (const char*) fname_out_zstd.c_str(),
+                                                      (int) ZSTD_COMPRESSION_QUALIITY,
+                                                      (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
+
+                    if(zst_written > 0) {
+                        remove(fname_out.c_str());
+                    }
                 }
             } else {
                 usage_cache();
