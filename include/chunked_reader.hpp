@@ -38,10 +38,12 @@ public:
     compression_type filetype;
     char buffer[READ_BUFFER_SIZE + 1];
     size_t buffer_i;
+    size_t buffer_n;
+
     off_t file_i;
 
     void set_filetype();
-    void read();
+    size_t read(char *, size_t);
     size_t size();
 };
 
