@@ -26,8 +26,7 @@ static size_t fwrite_orDie(const void* buffer, size_t sizeToWrite, FILE* file);
 
 static size_t fclose_orDie(FILE* file);
 
-void ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize);
-void linkCheck();
+size_t ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize);
 
 static char* createOutFilename_orDie(const char* filename);
 

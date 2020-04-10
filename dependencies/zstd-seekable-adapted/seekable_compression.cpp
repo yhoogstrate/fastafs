@@ -65,11 +65,13 @@ static size_t fclose_orDie(FILE* file)
     exit(6);
 }
 
-void ZSTD_seekable_compressFile_orDie(const char* fname,
+size_t ZSTD_seekable_compressFile_orDie(const char* fname,
 										const char* outName,
 										int cLevel,
 										unsigned frameSize)
 {
+    size_t written = 0;
+    
     FILE* const fin  = fopen_orDie(fname, "rb");
     FILE* const fout = fopen_orDie(outName, "wb");
     size_t const buffInSize = ZSTD_CStreamInSize();    /* can always read one full block */
@@ -98,7 +100,7 @@ void ZSTD_seekable_compressFile_orDie(const char* fname,
         ZSTD_outBuffer output = { buffOut, buffOutSize, 0 };
         size_t const remainingToFlush = ZSTD_seekable_endStream(cstream, &output);   /* close stream */
         if (ZSTD_isError(remainingToFlush)) { fprintf(stderr, "ZSTD_seekable_endStream() error : %s \n", ZSTD_getErrorName(remainingToFlush)); exit(13); }
-        fwrite_orDie(buffOut, output.pos, fout);
+        written += fwrite_orDie(buffOut, output.pos, fout);
         if (!remainingToFlush) break;
     }
 
@@ -107,12 +109,10 @@ void ZSTD_seekable_compressFile_orDie(const char* fname,
     fclose_orDie(fin);
     free(buffIn);
     free(buffOut);
+    
+    return written;
 }
 
-
-void linkCheck() {
-	printf("hw\n");
-};
 
 static char* createOutFilename_orDie(const char* filename)
 {
@@ -120,22 +120,3 @@ static char* createOutFilename_orDie(const char* filename)
     return (char*) newname.c_str();
 }
 
-int main_old(int argc, const char** argv) {
-    const char* const exeName = argv[0];
-    if (argc!=3) {
-        printf("wrong arguments\n");
-        printf("usage:\n");
-        printf("%s FILE FRAME_SIZE\n", exeName);
-        return 1;
-    }
-
-    {   const char* const inFileName = argv[1];
-        unsigned const frameSize = (unsigned)atoi(argv[2]);
-
-        char* const outFileName = createOutFilename_orDie(inFileName);
-        ZSTD_seekable_compressFile_orDie(inFileName, outFileName, 5, frameSize);
-        free(outFileName);
-    }
-
-    return 0;
-}
