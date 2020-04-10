@@ -17,7 +17,6 @@
 #include "seekable_utils.hpp"
 #include "zstd_seekable.h"
 
-size_t ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize);
 
 //static char* createOutFilename_orDie(const char* filename);
 

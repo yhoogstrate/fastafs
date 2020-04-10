@@ -36,3 +36,7 @@ void* realloc_orDie(void* ptr, size_t size);
 
 void fseek_orDie(FILE* file, long int offset, int origin);
 
+
+
+size_t ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize);
+
