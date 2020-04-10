@@ -241,7 +241,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
     fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
-	
+
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
      A  C  T  G  A  C  T  G
@@ -267,12 +267,12 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     char from_file_buffer[(READ_BUFFER_SIZE / 2) + 6];
 
     fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
-	if(!fh->good()) {
-		fh->clear();// out of bound oterhwise
-	}
+    if(!fh->good()) {
+        fh->clear();// out of bound oterhwise
+    }
 
     uint ff = 0;
-    
+
     /*
     printf("size = (reserved = %i) (read = %i)", ((buffer_size / 4) + 2) , (buffer_size / 4) + 1);
     printf(" (actual: %i)\n",fh->gcount() );
@@ -1669,7 +1669,7 @@ int fastafs::info(bool ena_verify_checksum)
 // skips first four bytes and do not include crc32 at the end either
 uint32_t fastafs::get_crc32(void)
 {
-    return  file_crc32(this->filename, 4, this->fastafs_filesize() - 4 ); // not sure why -4 rather than -4-4, but seems to work?
+    return  file_crc32(this->filename, 4, this->fastafs_filesize() - 4);  // not sure why -4 rather than -4-4, but seems to work?
 }
 
 

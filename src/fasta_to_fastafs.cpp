@@ -36,17 +36,18 @@ const static char nv[2] = "V";
 size_t fasta_to_fastafs_seq::N_bytes_used()
 {
     // just the number of n-blocks, not their actual size
-    return (size_t) (4 + (this->n_block_starts.size() * (4*2)));
+    return (size_t)(4 + (this->n_block_starts.size() * (4 * 2)));
 }
 
-size_t fasta_to_fastafs_seq::twobit_bytes_used() {
-    
+size_t fasta_to_fastafs_seq::twobit_bytes_used()
+{
+
     //printf("n_actg: %i\n", n_actg);
     //printf("n_actg: %i + 3 = \n", n_actg, n_actg + 3);
     //printf("n_actg: (%i + 3) / 4 = %i\n", n_actg, (n_actg + 3) / 4);
-    
+
     static const int twobits_per_byte = 4;
-    return (size_t) ((this->n_actg + (twobits_per_byte - 1)) / twobits_per_byte);
+    return (size_t)((this->n_actg + (twobits_per_byte - 1)) / twobits_per_byte);
 }
 
 
@@ -244,7 +245,8 @@ void fasta_to_fastafs_seq::finish_fourbit_sequence(std::ofstream &fh_fastafs)
 }
 
 
-void fasta_to_fastafs_seq::flush() {
+void fasta_to_fastafs_seq::flush()
+{
     this->N = 0;
     this->n_actg = 0;
 
@@ -255,7 +257,7 @@ void fasta_to_fastafs_seq::flush() {
     this->m_block_ends.clear();
     this->in_m_block = false;
     this->previous_was_N = false;
-    
+
     this->has_T = false;
     this->has_U = false;
 
@@ -315,8 +317,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
 
                         s->flush();
                         s->current_dict = DICT_FOURBIT;
-                    }
-                    else {
+                    } else {
                         if(s->current_dict == DICT_TWOBIT) {
                             s->finish_twobit_sequence(fh_fastafs);// finish last sequence
                         } else {
@@ -790,7 +791,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         }
                     }
                 }
-                
+
                 running = getline(fh_fasta, line).good();
 
                 // if not running, recheck
@@ -803,11 +804,10 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
 
                         s->flush();
                         s->current_dict = DICT_FOURBIT;
-                        
+
                         //after re-opening file and setting the file pointer, read line again
                         running = getline(fh_fasta, line).good();
-                    }
-                    else {
+                    } else {
                         if(s->current_dict == DICT_TWOBIT) {
                             s->finish_twobit_sequence(fh_fastafs);// finish last sequence
                         } else {

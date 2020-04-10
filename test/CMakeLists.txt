@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
-include_directories(../include)
+include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/common")
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib")
+
+link_libraries("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/libzstd.a")
 
 find_package(Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
 if(NOT Boost_FOUND)
@@ -21,7 +26,7 @@ set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 add_executable(test_twobit_byte         twobit_byte/test_twobit_byte.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
 add_executable(test_fourbit_byte        fourbit_byte/test_fourbit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
 add_executable(test_cache               cache/test_cache.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
-add_executable(test_view                view/test_view.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
+add_executable(test_view                view/test_view.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp ../dependencies/zstd-seekable-adapted/seekable_compression.cpp ../dependencies/zstd-seekable-adapted/zstdseek_compress.cpp)
 add_executable(test_flags               flags/test_flags.cpp ../src/flags.cpp ../src/utils.cpp)
 add_executable(test_fastafs             fastafs/test_fastafs.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
 add_executable(test_check               check/test_check.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)

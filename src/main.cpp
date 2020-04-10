@@ -106,14 +106,14 @@ int main(int argc, char *argv[])
                     if((strcmp(argv[i], "-2") == 0) or (strcmp(argv[i], "--2bit") == 0)) {
                         auto_recompress_to_fourbit = false;
                     }
-                    
+
                     if((strcmp(argv[i], "-f") == 0) or (strcmp(argv[i], "--fastafs-only") == 0)) {
                         compress_to_zstd_seekable = false;
                     }
-                    
-                    if( i < argc - 1 and
-                        ((strcmp(argv[argc - 3], "-o") == 0) or (strcmp(argv[argc - 3], "--output-file") == 0))
-                    ) {
+
+                    if(i < argc - 1 and
+                       ((strcmp(argv[argc - 3], "-o") == 0) or (strcmp(argv[argc - 3], "--output-file") == 0))
+                      ) {
                         to_cache = false;
                     }
                 }
@@ -144,10 +144,10 @@ int main(int argc, char *argv[])
                 // convert to zstd seekable
                 if(compress_to_zstd_seekable) {
                     std::string fname_out_zstd = fname_out + ".zst";
-                    size_t zst_written = ZSTD_seekable_compressFile_orDie( (const char*) fname_out.c_str(),
-                                                      (const char*) fname_out_zstd.c_str(),
-                                                      (int) ZSTD_COMPRESSION_QUALIITY,
-                                                      (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
+                    size_t zst_written = ZSTD_seekable_compressFile_orDie((const char*) fname_out.c_str(),
+                                         (const char*) fname_out_zstd.c_str(),
+                                         (int) ZSTD_COMPRESSION_QUALIITY,
+                                         (unsigned int) ZSTD_SEEKABLE_FRAME_SIZE);
 
                     if(zst_written > 0) {
                         remove(fname_out.c_str());
@@ -289,15 +289,14 @@ int main(int argc, char *argv[])
                     usage_check();
                     exit(0);
                 }
-                
+
                 bool from_file = false;
                 bool check_md5 = false;
 
                 for(int i = 2; i < argc - 1; i++) {
                     if(strcmp(argv[i], "-f") == 0 or strcmp(argv[i], "--file") == 0) {
                         from_file = true;
-                    }
-                    else if (strcmp(argv[i], "-5") == 0 or strcmp(argv[i], "--md5") == 0) {
+                    } else if(strcmp(argv[i], "-5") == 0 or strcmp(argv[i], "--md5") == 0) {
                         check_md5 = true;
                     }
                 }
@@ -320,11 +319,11 @@ int main(int argc, char *argv[])
 
                 bool check1 = f.check_file_integrity(true);
                 bool check2 = true;
-                
+
                 if(check_md5) {
                     check2 = f.check_sequence_integrity(true);
                 }
-                
+
                 if(check1 and check2) {
                     return 0;
                 } else {

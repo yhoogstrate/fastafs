@@ -23,5 +23,5 @@ bool is_ucsc2bit_file(char *);
 std::string basename_cpp(std::string);
 std::string realpath_cpp(std::string);
 
-uint32_t file_crc32(const std::string &, off_t, size_t );
+uint32_t file_crc32(const std::string &, off_t, size_t);
 

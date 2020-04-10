@@ -66,12 +66,12 @@ static size_t fclose_orDie(FILE* file)
 }
 
 size_t ZSTD_seekable_compressFile_orDie(const char* fname,
-										const char* outName,
-										int cLevel,
-										unsigned frameSize)
+                                        const char* outName,
+                                        int cLevel,
+                                        unsigned int frameSize)
 {
     size_t written = 0;
-    
+
     FILE* const fin  = fopen_orDie(fname, "rb");
     FILE* const fout = fopen_orDie(outName, "wb");
     size_t const buffInSize = ZSTD_CStreamInSize();    /* can always read one full block */
