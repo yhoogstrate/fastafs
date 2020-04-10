@@ -21,7 +21,7 @@ enum compression_type : signed char
 {
     undefined = -1,
     uncompressed = 0,
-    zstdseekable = 1
+    zstd = 1
 };
 
 

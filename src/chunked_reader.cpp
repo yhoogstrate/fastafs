@@ -22,9 +22,9 @@ chunked_reader::chunked_reader(const char * afilename) :
 
 void chunked_reader::set_filetype() {
     if(is_zstd_file((const char*) this->filename.c_str()) ) {
-        printf("zstd\n");
+        this->filetype = zstd;
     }
     else {
-        printf("plain?\n");
+        this->filetype = uncompressed;
     }
 }
