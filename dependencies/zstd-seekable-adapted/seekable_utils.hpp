@@ -40,3 +40,4 @@ void fseek_orDie(FILE* file, long int offset, int origin);
 
 size_t ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize);
 
+void decompressFile_orDie(const char* fname, off_t startOffset, off_t endOffset);

@@ -133,7 +133,6 @@ add_executable(fastafs
 					src/lsfastafs.cpp
 					
 					dependencies/zstd-seekable-adapted/seekable_utils.cpp
-					dependencies/zstd-seekable-adapted/seekable_compression.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 				)
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
