@@ -132,6 +132,7 @@ add_executable(fastafs
 					src/fuse.cpp
 					src/lsfastafs.cpp
 					
+					dependencies/zstd-seekable-adapted/seekable_utils.cpp
 					dependencies/zstd-seekable-adapted/seekable_compression.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 				)

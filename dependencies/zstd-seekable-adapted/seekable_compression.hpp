@@ -14,19 +14,10 @@
 //#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>      // presumes zstd library is installed
 
+#include "seekable_utils.hpp"
 #include "zstd_seekable.h"
-
-static void* malloc_orDie(size_t size);
-
-static FILE* fopen_orDie(const char *filename, const char *instruction);
-
-static size_t fread_orDie(void* buffer, size_t sizeToRead, FILE* file);
-
-static size_t fwrite_orDie(const void* buffer, size_t sizeToWrite, FILE* file);
-
-static size_t fclose_orDie(FILE* file);
 
 size_t ZSTD_seekable_compressFile_orDie(const char* fname, const char* outName, int cLevel, unsigned frameSize);
 
-static char* createOutFilename_orDie(const char* filename);
+//static char* createOutFilename_orDie(const char* filename);
 
