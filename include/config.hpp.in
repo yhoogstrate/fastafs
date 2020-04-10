@@ -58,6 +58,9 @@ static const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
 static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46\x53"s;
 static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
 
+static const std::string ZSTD_MAGIC = "\x28\xB5\x2F\xFD"s;
+
+
 static const std::string DICT_HEADER = "@HD\tVN:1.0\tSO:unsorted\n";
 
 

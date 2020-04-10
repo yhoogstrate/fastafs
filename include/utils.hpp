@@ -19,6 +19,7 @@ std::string std_string_nullbyte_safe(char *, size_t);
 
 bool is_fasta_file(char *);
 bool is_ucsc2bit_file(char *);
+bool is_zstd_file(const char *);
 
 std::string basename_cpp(std::string);
 std::string realpath_cpp(std::string);

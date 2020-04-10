@@ -33,13 +33,14 @@ public:
     chunked_reader(char *); // filename
     chunked_reader(const char *); // filename
 
-    std::string full_path; // try doing this with inode 
+    std::string filename; // try doing this with inode
     
     compression_type filetype;
     char buffer[READ_BUFFER_SIZE + 1];
     size_t buffer_i;
     off_t file_i;
 
+    void set_filetype();
     void read();
     size_t size();
 };
