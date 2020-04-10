@@ -171,7 +171,7 @@ struct ZSTD_seekable_s {
 
 ZSTD_seekable* ZSTD_seekable_create(void)
 {
-    ZSTD_seekable* zs = malloc(sizeof(ZSTD_seekable));
+    ZSTD_seekable* zs = (ZSTD_seekable*) malloc(sizeof(ZSTD_seekable));
 
     if (zs == NULL) return NULL;
 

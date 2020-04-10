@@ -35,9 +35,10 @@ add_executable(test_view                "view/test_view.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fourbit_byte.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/utils.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/sequence_region.cpp"
+
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/seekable_utils.cpp"
-                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/seekable_compression.cpp"
-                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp")
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
 add_executable(test_flags               flags/test_flags.cpp ../src/flags.cpp ../src/utils.cpp)
 add_executable(test_fastafs             fastafs/test_fastafs.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
