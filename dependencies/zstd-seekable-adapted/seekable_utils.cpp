@@ -7,19 +7,22 @@
  * in the COPYING file in the root directory of this source tree).
  */
 
-#include <string>    // strlen, memset, strcat
 
-/*
-#include <stdlib.h>    // malloc, free, exit, atoi
-#include <stdio.h>     // fprintf, perror, feof, fopen, etc.
-#include <string.h>    // strlen, memset, strcat
 
-//#define ZSTD_STATIC_LINKING_ONLY
+#include <stdlib.h>    // malloc, exit
+#include <stdio.h>     // fprintf, perror, feof
+#include <string.h>    // strerror
+#include <errno.h>     // errno
+#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>      // presumes zstd library is installed
+#include <zstd_errors.h>
 
-#include "zstd_seekable.h"*/
+#include "zstd_seekable.h"
 #include "seekable_utils.hpp"
-//#include "seekable_compression.hpp"
+
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 
 void* malloc_orDie(size_t size)
 {
@@ -77,27 +80,6 @@ char* createOutFilename_orDie(const char* filename)
     return (char*) newname.c_str();
 }
 
-/*
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under both the BSD-style license (found in the
- * LICENSE file in the root directory of this source tree) and the GPLv2 (found
- * in the COPYING file in the root directory of this source tree).
- */
-
-
-#include <stdlib.h>    // malloc, exit
-#include <stdio.h>     // fprintf, perror, feof
-#include <string.h>    // strerror
-#include <errno.h>     // errno
-#define ZSTD_STATIC_LINKING_ONLY
-#include <zstd.h>      // presumes zstd library is installed
-#include <zstd_errors.h>
-
-#include "zstd_seekable.h"
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 
 void* realloc_orDie(void* ptr, size_t size)
