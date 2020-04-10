@@ -11,8 +11,7 @@
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
 
-#include "seekable_compression.hpp"
-
+#include "seekable_utils.hpp"
 
 
 void flush_buffer(char *buffer, size_t n, char fill)

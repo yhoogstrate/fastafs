@@ -13,7 +13,6 @@
 #include "lsfastafs.hpp"
 
 #include "seekable_utils.hpp"
-#include "seekable_compression.hpp"
 
 // https://github.com/facebook/zstd/issues/521
 // https://github.com/samtools/samtools/blob/develop/faidx.c
