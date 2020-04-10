@@ -36,7 +36,7 @@ add_executable(test_view                "view/test_view.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/utils.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/sequence_region.cpp"
 
-                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/seekable_utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_utils.cpp"
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
@@ -48,6 +48,22 @@ add_executable(test_ucsc2bit_to_fastafs ucsc2bit_to_fastafs/test_ucsc2bit_to_fas
 add_executable(test_ucsc2bit_as_fasta   ucsc2bit/test_ucsc2bit_as_fasta.cpp ../src/fasta_to_fastafs.cpp ../src/flags.cpp  ../src/fastafs.cpp ../src/ucsc2bit.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp ../src/utils.cpp ../src/sequence_region.cpp)
 add_executable(test_sequenceregion      sequenceregion/test_sequenceregion.cpp ../src/sequence_region.cpp)
 add_executable(test_utils               utils/test_utils.cpp ../src/utils.cpp)
+add_executable(test_chunked_reader      "chunked_reader/test_chunked_reader.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fasta_to_fastafs.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/flags.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/src/fastafs.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/twobit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fourbit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/sequence_region.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp"
+                                        
+                                        "${CMAKE_SOURCE_DIR}/src/chunked_reader.cpp"
+                                        )
 #add_executable(test_tree                tree/test_tree.cpp)
 
 
@@ -76,6 +92,8 @@ set_target_properties(test_ucsc2bit_as_fasta
 set_target_properties(test_sequenceregion
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_utils
+                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
+set_target_properties(test_chunked_reader
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 #set_target_properties(test_tree
 #                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")

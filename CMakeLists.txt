@@ -131,8 +131,9 @@ add_executable(fastafs
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					src/chunked_reader.cpp
 					
-					dependencies/zstd-seekable-adapted/seekable_utils.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
 				)

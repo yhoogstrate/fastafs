@@ -11,7 +11,7 @@
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
 
-#include "seekable_utils.hpp"
+#include "zstd_seekable_utils.hpp"
 
 
 void flush_buffer(char *buffer, size_t n, char fill)
@@ -695,10 +695,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
                          (int) ZSTD_COMPRESSION_QUALIITY,
                          (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
     remove(fastafs_file.c_str());
-
+    fastafs fs = fastafs(test_name);
     
-
-//    fastafs fs = fastafs(test_name);
+    //chunked_reader r = chunked_reader(fastafs_file_zstd.c_str());
 //    fs.load(fastafs_file);
 
 

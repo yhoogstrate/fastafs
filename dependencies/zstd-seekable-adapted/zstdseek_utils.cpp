@@ -13,15 +13,15 @@
 #include <stdio.h>     // fprintf, perror, feof
 #include <string.h>    // strerror
 #include <errno.h>     // errno
-#define ZSTD_STATIC_LINKING_ONLY
+//#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>      // presumes zstd library is installed
 #include <zstd_errors.h>
-
+ 
 #include "zstd_seekable.h"
-#include "seekable_utils.hpp"
+#include "zstd_seekable_utils.hpp"
 
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+//#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 
 void* malloc_orDie(size_t size)
@@ -164,7 +164,7 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
     if (ZSTD_isError(initResult)) { fprintf(stderr, "ZSTD_seekable_init() error : %s \n", ZSTD_getErrorName(initResult)); exit(11); }
 
     while (startOffset < endOffset) {
-        size_t const result = ZSTD_seekable_decompress(seekable, buffOut, MIN(endOffset - startOffset, buffOutSize), startOffset);
+        size_t const result = ZSTD_seekable_decompress(seekable, buffOut, std::min((size_t) endOffset - startOffset, buffOutSize), (size_t) startOffset);
 
         if (ZSTD_isError(result)) {
             fprintf(stderr, "ZSTD_seekable_decompress() error : %s \n",

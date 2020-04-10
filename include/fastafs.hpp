@@ -14,6 +14,7 @@
 
 #include "sequence_region.hpp"
 #include "flags.hpp"
+#include "chunked_reader.hpp"
 
 
 struct ffs2f_init_seq {
