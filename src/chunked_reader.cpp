@@ -23,20 +23,27 @@ void chunked_reader::init() {
     
     switch(this->filetype) {
         case uncompressed:
-            //printf("set file handle for flat file\n");
-            fh_flat->open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            fh_flat->read(this->buffer, (size_t) READ_BUFFER_SIZE);
-
-            this->buffer_i = 0;
-            this->buffer_n = (size_t) fh_flat->gcount();
-            
+            printf("set file handle for flat file: %s\n",this->filename.c_str());
+            fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);            
             //size = fh_flat.tellg();
+            fh_flat.seekg(0, std::ios::beg);
+            
+            printf("checkpoint A\n");
+            if(fh_flat.is_open()) {
+                printf("OPEN\n");
+
+                this->update_flat_buffer();
+            }
+            else {
+                printf("NOT OPEN??\n");
+            }
         break;
         case zstd:
             // make zstd handle - to be implemented later on
         break;
     }
 
+    printf("checkpoint D\n");
 }
 
 void chunked_reader::set_filetype() {
@@ -49,9 +56,8 @@ void chunked_reader::set_filetype() {
 }
 
 
-
 size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
-    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
+    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE) - 1;
     size_t written = 0;
 
     // first read
@@ -67,9 +73,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         // overwrite buffer
         switch(this->filetype) {
             case uncompressed:
-                printf("reading another 1024 characters from a flat file");
-                // set this->buffer_i = 0;
-                // set this->buffer_n = ???;
+                this->update_flat_buffer();
             break;
             case zstd:
                 printf("reading another 1024 characters from a zstd file");
@@ -89,6 +93,23 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         }
     }
     
+    arg_buffer[written] = '\0';
+    
     return written;
+}
+
+
+void chunked_reader::update_flat_buffer() {
+    printf("reading another 1024 characters from a flat file");
+
+    printf("[[%s]]1\n",this->buffer);
+    fh_flat.read(this->buffer, 100);
+
+    printf("[[%s]]2\n",this->buffer);
+
+    this->buffer_i = 0;
+    this->buffer_n = (size_t) fh_flat.gcount();
+    printf("gcount: %i\n", buffer_n);
+    this->file_i += this->buffer_n;
 }
 

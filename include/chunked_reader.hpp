@@ -36,7 +36,9 @@ public:
     void init(); // generic tasks needed for init
 
     std::string filename; // try doing this with inode
-    std::ifstream *fh_flat;
+
+    std::ifstream fh_flat;
+    void update_flat_buffer();
     
     compression_type filetype;
     char buffer[READ_BUFFER_SIZE + 1];
