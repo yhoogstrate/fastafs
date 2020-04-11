@@ -57,7 +57,7 @@ void chunked_reader::set_filetype() {
 
 
 size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
-    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE) - 1;
+    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
     // first read
@@ -97,7 +97,8 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         }
     }
     
-    arg_buffer[written] = '\0';
+    // does not happen in regular read either
+    //arg_buffer[written] = '\0';
     
     return written;
 }
@@ -106,8 +107,25 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
 void chunked_reader::update_flat_buffer() {
     printf("reading another 1024 characters from a flat file");
 
+    for(int i = 0; i < 110; i++) {
+        this->buffer[i] = '\0';
+    }
+
     printf("[[%s]]1\n",this->buffer);
+    fh_flat.read(this->buffer, 0);
+    printf("read 0, strlen=%i\n", strlen(buffer));
+
+
+    fh_flat.read(this->buffer, 1);
+    printf("read 1, strlen=%i\n", strlen(buffer));
+
+
+    fh_flat.read(this->buffer, 10);
+    printf("read 10, strlen=%i\n", strlen(buffer));
+
+
     fh_flat.read(this->buffer, 100);
+    printf("read 100, strlen=%i\n", strlen(buffer));
 
     printf("[[%s]]2\n",this->buffer);
 
