@@ -31,13 +31,44 @@ void chunked_reader::set_filetype() {
 
 
 
-size_t chunked_reader::read(char *buffer, size_t buffer_size) {
-    buffer_size = std::min(buffer_size, READ_BUFFER_SIZE);
+size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
+    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
     // first read
     // chunked buf : [  . . . . . i . .. . . . .n  - -- - - -  ]
+    while(this->buffer_i < this->buffer_n and written < buffer_size) {
+        arg_buffer[written] = this->buffer[this->buffer_i];
+        
+        this->buffer_i++;
+        written++;
+    }
     
+    if(written < buffer_size) {
+        // overwrite buffer
+        switch(this->filetype) {
+            case uncompressed:
+                printf("reading another 1024 characters from a flat file");
+                // set this->buffer_i = 0;
+                // set this->buffer_n = ???;
+            break;
+            case zstd:
+                printf("reading another 1024 characters from a zstd file");
+            break;
+            default:
+                throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
+                exit(1);
+            break;
+        }
+
+        // same loop again
+        while(this->buffer_i < this->buffer_n and written < buffer_size) {
+            arg_buffer[written] = this->buffer[this->buffer_i];
+            
+            this->buffer_i++;
+            written++;
+        }
+    }
     
     return written;
 }
