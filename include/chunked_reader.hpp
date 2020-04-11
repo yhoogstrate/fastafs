@@ -32,8 +32,11 @@ class chunked_reader
 public:
     chunked_reader(char *); // filename
     chunked_reader(const char *); // filename
+    
+    void init(); // generic tasks needed for init
 
     std::string filename; // try doing this with inode
+    std::ifstream *fh_flat;
     
     compression_type filetype;
     char buffer[READ_BUFFER_SIZE + 1];

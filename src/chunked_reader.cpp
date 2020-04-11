@@ -8,17 +8,36 @@ chunked_reader::chunked_reader(char * afilename) :
 {
 
     this->filename = realpath_cpp(afilename);
-    this->set_filetype();
+    this->init();
 }
 
 chunked_reader::chunked_reader(const char * afilename) :
     buffer_i(0), buffer_n(0), file_i(0)
 {
     this->filename = realpath_cpp(afilename);
-    this->set_filetype();
+    this->init();
 }
 
+void chunked_reader::init() {
+    this->set_filetype();
+    
+    switch(this->filetype) {
+        case uncompressed:
+            //printf("set file handle for flat file\n");
+            fh_flat->open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+            fh_flat->read(this->buffer, (size_t) READ_BUFFER_SIZE);
 
+            this->buffer_i = 0;
+            this->buffer_n = (size_t) fh_flat->gcount();
+            
+            //size = fh_flat.tellg();
+        break;
+        case zstd:
+            // make zstd handle - to be implemented later on
+        break;
+    }
+
+}
 
 void chunked_reader::set_filetype() {
     if(is_zstd_file((const char*) this->filename.c_str()) ) {
