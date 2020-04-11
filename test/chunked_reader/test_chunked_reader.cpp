@@ -48,7 +48,14 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading)
     char buffer[17];
     //chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
     chunked_reader r_flat = chunked_reader("tmp/test.txt");
-    r_flat.read(buffer, 2);
+
+    r_flat.read(buffer, 4);
+    printf("[%s]\n", buffer);
+
+    r_flat.read(buffer, 4);
+    printf("[%s]\n", buffer);
+
+    r_flat.read(buffer, 4);
     printf("[%s]\n", buffer);
     //chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
 

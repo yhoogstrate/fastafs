@@ -64,10 +64,12 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
     // chunked buf : [  . . . . . i . .. . . . .n  - -- - - -  ]
     while(this->buffer_i < this->buffer_n and written < buffer_size) {
         arg_buffer[written] = this->buffer[this->buffer_i];
-        
+        printf("|%c|", this->buffer[this->buffer_i]);
+
         this->buffer_i++;
         written++;
     }
+    printf("\n");
     
     if(written < buffer_size) {
         // overwrite buffer
@@ -83,10 +85,12 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
                 exit(1);
             break;
         }
+        printf("------------\n");
 
         // same loop again
         while(this->buffer_i < this->buffer_n and written < buffer_size) {
             arg_buffer[written] = this->buffer[this->buffer_i];
+            printf("{%c}", this->buffer[this->buffer_i]);
             
             this->buffer_i++;
             written++;
