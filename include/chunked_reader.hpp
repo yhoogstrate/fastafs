@@ -32,6 +32,7 @@ class chunked_reader
 public:
     chunked_reader(char *); // filename
     chunked_reader(const char *); // filename
+    //~chunked_reader(); seems to do nasty with the ifstream in this class?
     
     void init(); // generic tasks needed for init
 

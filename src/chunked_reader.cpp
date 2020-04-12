@@ -18,6 +18,14 @@ chunked_reader::chunked_reader(const char * afilename) :
     this->init();
 }
 
+/*
+chunked_reader::~chunked_reader() {
+    if(this->fh_flat.is_open()) {
+        this->fh_flat.close();
+    }
+}
+*/
+
 void chunked_reader::init() {
     this->set_filetype();
     
@@ -88,15 +96,16 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         }
     }
     
-    // does not happen in regular read either
-    //arg_buffer[written] = '\0';
-    
+    if(written == 0 and this->fh_flat.is_open()) {
+        this->fh_flat.close();
+    }
+
     return written;
 }
 
 
 void chunked_reader::update_flat_buffer() {
-    fh_flat.read(this->buffer, READ_BUFFER_SIZE);
+    this->fh_flat.read(this->buffer, READ_BUFFER_SIZE);
 
     this->buffer_i = 0;
     this->buffer_n = (size_t) fh_flat.gcount();
