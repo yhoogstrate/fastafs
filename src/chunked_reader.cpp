@@ -43,6 +43,7 @@ void chunked_reader::init() {
         break;
         case zstd:
             // make zstd handle - to be implemented later on
+            printf("fake init zstd\n");
         break;
         default:
             throw std::runtime_error("[chunked_reader::init] Should never happen - but avoids compiler warning.\n");
@@ -80,7 +81,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
                 this->update_flat_buffer();
             break;
             case zstd:
-                printf("reading another 1024 characters from a zstd file - to be implementedf\n");
+                this->update_zstd_buffer();
             break;
             default:
                 throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
@@ -111,4 +112,12 @@ void chunked_reader::update_flat_buffer() {
     this->buffer_n = (size_t) fh_flat.gcount();
     this->file_i += this->buffer_n;
 }
+
+
+void chunked_reader::update_zstd_buffer() {
+    printf("should set 1st 1024 byts from th zstd file\n");
+    
+    ZSTD_seekable_decompressFile_orDie(this->filename.c_str(), this->file_i, this->file_i + READ_BUFFER_SIZE);
+}
+
 

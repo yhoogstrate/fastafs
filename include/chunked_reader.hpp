@@ -16,6 +16,8 @@
 
 #include "utils.hpp"
 
+#include "zstd_seekable_utils.hpp"
+
 
 enum compression_type : signed char
 {
@@ -40,7 +42,11 @@ public:
 
     std::ifstream fh_flat;
     void update_flat_buffer();
-    
+
+
+    void update_zstd_buffer();
+
+
     compression_type filetype;
     char buffer[READ_BUFFER_SIZE + 1];
     size_t buffer_i;

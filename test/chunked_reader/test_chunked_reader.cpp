@@ -1,3 +1,4 @@
+
 #define BOOST_TEST_MODULE fastfs_test_chunked_reader
 
 
@@ -64,9 +65,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
     written = r_flat.read(buffer, 1024);
     BOOST_CHECK_EQUAL(written, 0);
 
-    //chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
 
-    
+    printf("asd\n");
+    chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
+    written = r_zstd.read(buffer, 1024);
 }
 
 

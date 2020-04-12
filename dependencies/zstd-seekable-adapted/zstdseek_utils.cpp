@@ -171,6 +171,7 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
                     ZSTD_getErrorName(result));
             exit(12);
         }
+
         fwrite_orDie(buffOut, result, fout);
         startOffset += result;
         written += result;
