@@ -160,11 +160,26 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
     ZSTD_seekable* const seekable = ZSTD_seekable_create();
     if (seekable==NULL) { fprintf(stderr, "ZSTD_seekable_create() error \n"); exit(10); }
 
+    size_t maxFileSize = ZSTD_seekable_getFileDecompressedSize(seekable);
+    //printf("maxFileSize: %i\n", (int) maxFileSize);
+
     size_t const initResult = ZSTD_seekable_initFile(seekable, fin);
     if (ZSTD_isError(initResult)) { fprintf(stderr, "ZSTD_seekable_init() error : %s \n", ZSTD_getErrorName(initResult)); exit(11); }
 
+    maxFileSize = ZSTD_seekable_getFileDecompressedSize(seekable);
+    //printf("maxFileSize: %i\n", (int) maxFileSize);
+
+    endOffset = std::min( (size_t) endOffset, maxFileSize); // avoid out of boundary requests
+
+    maxFileSize = ZSTD_seekable_getFileDecompressedSize(seekable);
+    //printf("maxFileSize: %i\n", (int) maxFileSize);
+
     while (startOffset < endOffset) {
         size_t const result = ZSTD_seekable_decompress(seekable, buffOut, std::min((size_t) endOffset - startOffset, buffOutSize), (size_t) startOffset);
+
+        maxFileSize = ZSTD_seekable_getFileDecompressedSize(seekable);
+        //printf("maxFileSize: %i\n", (int) maxFileSize);
+
 
         if (ZSTD_isError(result)) {
             fprintf(stderr, "ZSTD_seekable_decompress() error : %s \n",

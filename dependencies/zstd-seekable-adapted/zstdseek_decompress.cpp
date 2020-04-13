@@ -377,6 +377,25 @@ size_t ZSTD_seekable_initAdvanced(ZSTD_seekable* zs, ZSTD_seekable_customFile sr
     return 0;
 }
 
+
+
+size_t ZSTD_seekable_getFileDecompressedSize(ZSTD_seekable* zs)
+{
+    printf("\n");
+    printf("n entries: %i\n", zs->seekTable.tableLen );
+    for(int i = 0 ; i < zs->seekTable.tableLen ; i++) {
+        printf("entry [%i]: \n",i);
+        printf(" cOffset: %i \n", zs->seekTable.entries[i].cOffset);
+        printf(" dOffset: %i \n", zs->seekTable.entries[i].dOffset);
+        printf("ZSTD_seekable_getFrameDecompressedSize(zs, %i) -> %i \n",i, ZSTD_seekable_getFrameDecompressedSize(zs, i));
+    }
+    printf("zs->decompressedOffset %i\n",zs->decompressedOffset);
+    printf("\n");
+    return zs->decompressedOffset;
+}
+
+
+
 size_t ZSTD_seekable_decompress(ZSTD_seekable* zs, void* dst, size_t len, unsigned long long offset)
 {
     U32 targetFrame = ZSTD_seekable_offsetToFrameIndex(zs, offset);

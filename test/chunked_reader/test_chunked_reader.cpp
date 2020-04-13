@@ -69,6 +69,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
     printf("asd\n");
     chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
     written = r_zstd.read(buffer, 1024);
+    
+    printf("written: %i\n", (int) written);
 }
 
 

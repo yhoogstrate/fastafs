@@ -159,6 +159,7 @@ ZSTDLIB_API size_t ZSTD_seekable_initBuff(ZSTD_seekable* zs, const void* src, si
 ZSTDLIB_API size_t ZSTD_seekable_initFile(ZSTD_seekable* zs, FILE* src);
 ZSTDLIB_API size_t ZSTD_seekable_decompress(ZSTD_seekable* zs, void* dst, size_t dstSize, unsigned long long offset);
 ZSTDLIB_API size_t ZSTD_seekable_decompressFrame(ZSTD_seekable* zs, void* dst, size_t dstSize, unsigned frameIndex);
+ZSTDLIB_API size_t ZSTD_seekable_getFileDecompressedSize(ZSTD_seekable* zs);
 
 #define ZSTD_SEEKABLE_FRAMEINDEX_TOOLARGE (0ULL-2)
 /*===== Seek Table access functions =====*/
