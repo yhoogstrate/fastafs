@@ -153,7 +153,7 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
     size_t written = 0;
 
     FILE* const fin  = fopen_orDie(fname, "rb");
-    FILE* const fout = stdout;
+    //FILE* const fout = stdout;
     size_t const buffOutSize = ZSTD_DStreamOutSize();  // Guarantee to successfully flush at least one complete compressed block in all circumstances.
     char* const buffOut = (char*) malloc_orDie(buffOutSize);
 
@@ -188,7 +188,7 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
 
     ZSTD_seekable_free(seekable);
     fclose_orDie(fin);
-    fclose_orDie(fout);
+    //fclose_orDie(fout);
     free(buffOut);
 
     return written;

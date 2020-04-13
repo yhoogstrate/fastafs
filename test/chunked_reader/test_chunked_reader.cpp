@@ -49,28 +49,60 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
     std::string reference;
     buffer[1024] = '\0';
     size_t written;
-    
-    chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
+
     reference = "\x0f\x0a\x46\x53\x00\x00\x00\x00\x80\x00\x00\x00\x01\x37\x00\x00\x00\x10\x00\x55\xaa\xff\x00\x00\x00\x00\x75\x25\x5c\x6d\x90\x77\x89\x99\xad\x36\x43\xa2\xe6\x9d\x43\x44\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x0f\x00\x00\x00\x0c\x93\x93\x93\x00\x00\x00\x01\x00\x00\x00\x08\x00\x00\x00\x0b\x8b\x56\x73\x72\x4a\x99\x65\xc2\x9a\x1d\x76\xfe\x70\x31\xac\x8a\x00\x00\x00\x01\x00\x00\x00\x08\x00\x00\x00\x0b\x00\x00\x00\x0d\x93\x93\xaa\x40\x00\x00\x00\x00\x61\xde\xba\x32\xec\x4c\x35\x76\xe3\x99\x8f\xa2\xd4\xb8\x72\x88\x00\x00\x00\x01\x00\x00\x00\x08\x00\x00\x00\x0c\x00\x00\x00\x0e\x93\x93\xaa\x50\x00\x00\x00\x00\x99\xb9\x05\x60\xf2\x3c\x1b\xda\x28\x71\xa6\xc9\x3f\xd6\xa2\x40\x00\x00\x00\x01\x00\x00\x00\x08\x00\x00\x00\x0d\x00\x00\x00\x0f\x93\x93\xaa\x54\x00\x00\x00\x00\x36\x25\xaf\xdf\xbe\xb4\x37\x65\xb8\x5f\x61\x2e\x0a\xcb\x47\x39\x00\x00\x00\x01\x00\x00\x00\x08\x00\x00\x00\x0e\x00\x00\x00\x04\x93\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x07\xbd\x8c\x08\x0e\xd2\x5b\xa8\xa4\x54\xd9\x43\x4c\xb8\xd1\x4a\x68\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x07\x00\x00\x00\x04\x93\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x98\x0e\xf3\xa1\xcd\x80\xaf\xec\x95\x9d\xcf\x85\x2d\x02\x62\x46\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x07\x10\x00\x04\x63\x68\x72\x31\x00\x00\x00\x0e\x10\x00\x04\x63\x68\x72\x32\x00\x00\x00\x36\x10\x00\x06\x63\x68\x72\x33\x2e\x31\x00\x00\x00\x65\x10\x00\x06\x63\x68\x72\x33\x2e\x32\x00\x00\x00\x8d\x10\x00\x06\x63\x68\x72\x33\x2e\x33\x00\x00\x00\xb5\x10\x00\x04\x63\x68\x72\x34\x00\x00\x00\xdd\x10\x00\x04\x63\x68\x72\x35\x00\x00\x01\x0a\x00\x1e\x77\x77\x22"s;// xxd -p
 
-    written = r_flat.read(buffer, 1024);
-    BOOST_CHECK_EQUAL(written, 403);
-    std_buffer = std::string(buffer, written);
-    BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference), 0, "Difference in content");
-  
-    written = r_flat.read(buffer, 1024);
-    BOOST_CHECK_EQUAL(written, 0);
+    {
+        chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
 
-    // test what happens when file is closed
-    written = r_flat.read(buffer, 1024);
-    BOOST_CHECK_EQUAL(written, 0);
+        printf("checkpoint A\n");
 
+        written = r_flat.read(buffer, 1024);
+        BOOST_CHECK_EQUAL(written, 403);
+        std_buffer = std::string(buffer, written);
+        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference), 0, "Difference in content");
 
-    printf("asd\n");
-    chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
-    written = r_zstd.read(buffer, 1024);
-    
-    printf("written: %i\n", (int) written);
+        printf("checkpoint B\n");
+      
+        written = r_flat.read(buffer, 1024);
+        BOOST_CHECK_EQUAL(written, 0);
+
+        printf("checkpoint C\n");
+
+        // test what happens when file is closed
+        written = r_flat.read(buffer, 1024);
+        BOOST_CHECK_EQUAL(written, 0);
+        
+        printf("checkpoint D\n");
+    }
+
+    {
+        printf("checkpoint E\n");
+        
+        chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
+
+        printf("checkpoint F\n");
+
+        written = r_zstd.read(buffer, 1024);
+        printf("checkpoint G\n");
+        BOOST_CHECK_EQUAL(written, 403);
+        std_buffer = std::string(buffer, written);
+        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference), 0, "Difference in content");
+      
+        printf("checkpoint H\n");
+        written = r_zstd.read(buffer, 1024);
+        printf("checkpoint I\n");
+        BOOST_CHECK_EQUAL(written, 0);
+
+        // test what happens when file is closed
+        printf("checkpoint J\n");
+        written = r_zstd.read(buffer, 1024);
+        printf("checkpoint K\n");
+        BOOST_CHECK_EQUAL(written, 0);
+    }
+
+    printf("checkpoint L\n");
+
 }
 
 
