@@ -117,7 +117,9 @@ void chunked_reader::update_flat_buffer() {
 void chunked_reader::update_zstd_buffer() {
     printf("should set 1st 1024 byts from th zstd file\n");
     
-    size_t written = ZSTD_seekable_decompressFile_orDie(this->filename.c_str(), this->file_i, this->file_i + READ_BUFFER_SIZE);
+    size_t written = ZSTD_seekable_decompressFile_orDie(this->filename.c_str(), this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
+    this->file_i += written;
+
     printf("written: %i\n",written);
 }
 

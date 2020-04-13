@@ -148,14 +148,14 @@ size_t ZSTD_seekable_compressFile_orDie(const char* fname,
 
 
 
-size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, off_t endOffset)
+size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, char* buffer, off_t endOffset)
 {
     size_t written = 0;
 
     FILE* const fin  = fopen_orDie(fname, "rb");
     FILE* const fout = stdout;
     size_t const buffOutSize = ZSTD_DStreamOutSize();  // Guarantee to successfully flush at least one complete compressed block in all circumstances.
-    void*  const buffOut = malloc_orDie(buffOutSize);
+    char* const buffOut = (char*) malloc_orDie(buffOutSize);
 
     ZSTD_seekable* const seekable = ZSTD_seekable_create();
     if (seekable==NULL) { fprintf(stderr, "ZSTD_seekable_create() error \n"); exit(10); }
@@ -166,6 +166,7 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
     size_t maxFileSize = ZSTD_seekable_getFileDecompressedSize(seekable);
     endOffset = std::min( (size_t) endOffset, maxFileSize); // avoid out of boundary requests
 
+    size_t buffer_out_i = 0;
     while (startOffset < endOffset) {
         size_t const result = ZSTD_seekable_decompress(seekable, buffOut, std::min((size_t) endOffset - startOffset, buffOutSize), (size_t) startOffset);
 
@@ -175,7 +176,12 @@ size_t ZSTD_seekable_decompressFile_orDie(const char* fname, off_t startOffset, 
             exit(12);
         }
 
-        fwrite_orDie(buffOut, result, fout);
+        for(size_t i = 0; i < result; i++) {
+            buffer[buffer_out_i] = buffOut[i];
+            buffer_out_i++;
+        }
+
+        //fwrite_orDie(buffOut, result, fout);
         startOffset += result;
         written += result;
     }
