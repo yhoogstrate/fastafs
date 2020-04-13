@@ -664,29 +664,25 @@ void fastafs::load(std::string afilename)
     std::streampos size;
     char *memblock;
 
-    //chunked_reader fh_in = chunked_reader();
-    //chunked_reader.read()
-    //.seek()
-
-    std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
+    chunked_reader fh_in = chunked_reader(afilename.c_str());
+    {
+        memblock = new char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
         //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
         this->filename = realpath_cpp(afilename);
 
-        size = file.tellg();
+        size = (size_t) fh_in.read(memblock, 16);
 
         if(size < 16) {
-            file.close();
+            //file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
-            memblock = new char [20 + 1]; //sha1 is 20b
-            file.seekg(0, std::ios::beg);
+            fh_in.seek(0);
             uint32_t i;
 
             // HEADER
-            file.read(memblock, 14);
+            fh_in.read(memblock, 14);
             memblock[16] = '\0';
 
             // check magic
@@ -721,8 +717,8 @@ void fastafs::load(std::string afilename)
             std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
 
             // INDEX
-            file.seekg(file_cursor, std::ios::beg);
-            file.read(memblock, 4);
+            fh_in.seek(file_cursor);
+            fh_in.read(memblock, 4);
             this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
 
             size_t j;
@@ -731,97 +727,93 @@ void fastafs::load(std::string afilename)
                 s = new fastafs_seq;
 
                 // flag
-                file.read(memblock, 2);
+                fh_in.read(memblock, 2);
                 s->flags.set(memblock);// should be initialized during construction of this class
 
                 // name length
-                file.read(memblock, 1);
+                fh_in.read(memblock, 1);
 
                 // name
                 size_t namesize = (unsigned char) memblock[0]; // cast to something that is large enough (> 128)
                 char name[namesize + 1];
-                file.read(name, namesize);
+                fh_in.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
 
                 // set cursor and save sequence data position
-                file.read(memblock, 4);
-                file_cursor = file.tellg();
+                fh_in.read(memblock, 4);
+                file_cursor = fh_in.tell();
 
                 s->data_position = fourbytes_to_uint(memblock, 0);
-                file.seekg((uint32_t) s->data_position, file.beg);
+                fh_in.seek((uint32_t) s->data_position);
                 {
                     // sequence stuff
                     // n compressed nucleotides
-                    file.read(memblock, 4);
+                    fh_in.read(memblock, 4);
                     s->n = fourbytes_to_uint(memblock, 0);
 
                     // skip nucleotides
                     if(s->flags.is_twobit()) { // there fit 4 twobits in a byte, thus divide by 4,
-                        file.seekg((uint32_t) s->data_position + 4 + ((s->n + 3) / 4), file.beg);
+                        fh_in.seek((uint32_t) s->data_position + 4 + ((s->n + 3) / 4));
                     } else if(s->flags.is_fourbit()) { // there fit 2 fourbits in a byte, thus divide by 2,
-                        file.seekg((uint32_t) s->data_position + 4 + ((s->n + 1) / 2), file.beg);
+                        fh_in.seek((uint32_t) s->data_position + 4 + ((s->n + 1) / 2));
                     }
 
                     // N-blocks (and update this->n instantly)
-                    file.read(memblock, 4);
+                    fh_in.read(memblock, 4);
                     uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
 
                     s->n_starts.resize(N_blocks);
                     s->n_ends.resize(N_blocks);
                     for(j = 0; j < s->n_starts.size(); j++) {
-                        file.read(memblock, 4);
+                        fh_in.read(memblock, 4);
                         s->n_starts[j] = fourbytes_to_uint(memblock, 0);
                     }
                     for(j = 0; j < s->n_ends.size(); j++) {
-                        file.read(memblock, 4);
+                        fh_in.read(memblock, 4);
                         s->n_ends[j] = fourbytes_to_uint(memblock, 0);
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
                     }
 
                     // MD5-checksum - only if sequence is complete
                     if(s->flags.is_complete()) {
-                        file.read(memblock, 16);
-                        for(int j = 0; j < 16 ; j ++) {
+                        fh_in.read(memblock, 16);
+                        for(int j = 0; j < 16 ; j++) {
                             s->md5_digest[j] = memblock[j];
                         }
                     }
 
                     // M-blocks
-                    file.read(memblock, 4);
+                    fh_in.read(memblock, 4);
                     uint32_t M_blocks = fourbytes_to_uint(memblock, 0);
                     s->m_starts.resize(M_blocks);
                     s->m_ends.resize(M_blocks);
                     for(j = 0; j < s->m_starts.size(); j++) {
-                        file.read(memblock, 4);
+                        fh_in.read(memblock, 4);
                         s->m_starts[j] = fourbytes_to_uint(memblock, 0);
                     }
                     for(j = 0; j < s->m_ends.size(); j++) {
-                        file.read(memblock, 4);
+                        fh_in.read(memblock, 4);
                         s->m_ends[j] = fourbytes_to_uint(memblock, 0);
                     }
                 }
 
-                file.seekg(file_cursor, file.beg);
+                fh_in.seek(file_cursor);
                 this->data[i] = s;
             }
 
             // metadata section - empty for now
-            file.read(memblock, 1);
+            fh_in.read(memblock, 1);
 
             // crc32 checksum - may be missing because fastafs::load is also used before fastafs::get_crc32 is ran to obtain the checksum
-            file.read(memblock, 4);
-            if(file.gcount() == 4) {
+            if(fh_in.read(memblock, 4) == 4) {
                 this->crc32f = fourbytes_to_uint(memblock, 0);
             } else {
                 //printf("crc32 checksum missing\n");
             }
 
-            file.close();
             delete[] memblock;
         }
-    } else {
-        throw std::invalid_argument("Unable to open file '" + afilename + "'");
     }
 }
 

@@ -154,6 +154,11 @@ add_executable(mount.fastafs
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					src/chunked_reader.cpp
+					
+					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
 				)
 set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
@@ -170,6 +175,11 @@ add_library(libfastafs SHARED
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					src/chunked_reader.cpp
+					
+					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
 )
 target_include_directories(libfastafs PUBLIC include)
 target_sources(libfastafs PUBLIC include/fastafs.hpp)
