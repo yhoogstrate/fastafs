@@ -67,16 +67,25 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
         // test what happens when file is closed
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
-        
+
+
+        // test seek stuff
         r_flat.seek(0); // reset to first pos in file
+        BOOST_CHECK_EQUAL(r_flat.tell(), 0);
+
         written = r_flat.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 4);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
-        
+
+
         r_flat.seek(1); // reset to first pos in file
+        BOOST_CHECK_EQUAL(r_flat.tell(), 1);
+
         written = r_flat.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 5);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
     }
@@ -95,6 +104,26 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
         // test what happens when file is closed
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
+
+        // test seek stuff
+        r_zstd.seek(0); // reset to first pos in file
+        BOOST_CHECK_EQUAL(r_zstd.tell(), 0);
+
+        written = r_zstd.read(buffer, 4);
+        BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(r_zstd.tell(), 4);
+        std_buffer = std::string(buffer, written);
+        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
+
+
+        r_zstd.seek(1); // reset to first pos in file
+        BOOST_CHECK_EQUAL(r_zstd.tell(), 1);
+
+        written = r_zstd.read(buffer, 4);
+        BOOST_CHECK_EQUAL(written, 4);
+        BOOST_CHECK_EQUAL(r_zstd.tell(), 5);
+        std_buffer = std::string(buffer, written);
+        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
     }
 }
 /*

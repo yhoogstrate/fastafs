@@ -106,7 +106,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
 
 void chunked_reader::update_flat_buffer() {
     this->fh_flat.read(this->buffer, READ_BUFFER_SIZE);
-    
+
     this->buffer_i = 0;
     this->buffer_n = (size_t) this->fh_flat.gcount();
     this->file_i += this->buffer_n;
@@ -141,5 +141,11 @@ void chunked_reader::seek(off_t offset) {
             this->update_zstd_buffer();
         break;
     }
+}
+
+
+size_t chunked_reader::tell() {
+    return this->file_i - this->buffer_n + this->buffer_i;
+    
 }
 
