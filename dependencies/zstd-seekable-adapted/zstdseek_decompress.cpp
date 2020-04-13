@@ -379,19 +379,17 @@ size_t ZSTD_seekable_initAdvanced(ZSTD_seekable* zs, ZSTD_seekable_customFile sr
 
 
 
+// this functions returns the over-all decompressed size
+// this data might be accessible pre-compiled through the zstd library too?
 size_t ZSTD_seekable_getFileDecompressedSize(ZSTD_seekable* zs)
 {
-    printf("\n");
-    printf("n entries: %i\n", zs->seekTable.tableLen );
-    for(int i = 0 ; i < zs->seekTable.tableLen ; i++) {
-        printf("entry [%i]: \n",i);
-        printf(" cOffset: %i \n", zs->seekTable.entries[i].cOffset);
-        printf(" dOffset: %i \n", zs->seekTable.entries[i].dOffset);
-        printf("ZSTD_seekable_getFrameDecompressedSize(zs, %i) -> %i \n",i, ZSTD_seekable_getFrameDecompressedSize(zs, i));
+    size_t written = 0;
+
+    for(size_t i = 0 ; i < zs->seekTable.tableLen ; i++) {
+        written += ZSTD_seekable_getFrameDecompressedSize(zs, i);
     }
-    printf("zs->decompressedOffset %i\n",zs->decompressedOffset);
-    printf("\n");
-    return zs->decompressedOffset;
+
+    return written;
 }
 
 
