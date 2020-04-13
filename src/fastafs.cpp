@@ -664,6 +664,10 @@ void fastafs::load(std::string afilename)
     std::streampos size;
     char *memblock;
 
+    //chunked_reader fh_in = chunked_reader();
+    //chunked_reader.read()
+    //.seek()
+
     std::ifstream file(afilename, std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         // if a user can't compile this line, please replace it with C's
