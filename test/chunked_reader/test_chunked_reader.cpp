@@ -45,6 +45,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
     
     
     char buffer[READ_BUFFER_SIZE + 1];
+    flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     std::string std_buffer;
     buffer[1024] = '\0';
     size_t written;
@@ -55,18 +56,20 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
 
     {
         chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
-        //chunked_reader r_flat = chunked_reader("tmp/asd.txt");
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 403);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
         // test what happens when file is closed
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
 
         // test seek stuff
@@ -78,16 +81,19 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
         BOOST_CHECK_EQUAL(r_flat.tell(), 4);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
 
         r_flat.seek(1); // reset to first pos in file
         BOOST_CHECK_EQUAL(r_flat.tell(), 1);
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
         written = r_flat.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_flat.tell(), 5);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     }
 
     {
