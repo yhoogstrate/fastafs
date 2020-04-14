@@ -65,7 +65,7 @@ uint32_t fastafs_seq::fasta_filesize(uint32_t padding)
 
 
 
-void fastafs_seq::view_fasta(ffs2f_init_seq* cache, std::ifstream *fh)
+void fastafs_seq::view_fasta(ffs2f_init_seq* cache, chunked_reader &fh)
 {
     char buffer[READ_BUFFER_SIZE];// = new char [READ_BUFFER_SIZE];
     uint32_t offset = 0;
@@ -141,7 +141,7 @@ uint32_t fastafs_seq::view_fasta_chunk(
     size_t buffer_size,
     off_t start_pos_in_fasta,
 
-    std::ifstream *fh)
+    chunked_reader &fh)
 {
 
     if(this->flags.is_twobit()) {
@@ -178,7 +178,7 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     size_t buffer_size,
     off_t start_pos_in_fasta,
 
-    std::ifstream *fh)
+    chunked_reader &fh)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -240,7 +240,8 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
+    //fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
+    fh.seek((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte)) ;
 
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
@@ -266,10 +267,10 @@ template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
     char from_file_buffer[(READ_BUFFER_SIZE / 2) + 6];
 
-    fh->read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
-    if(!fh->good()) {
-        fh->clear();// out of bound oterhwise
-    }
+    fh.read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
+    //if(!fh->good()) {
+    //    fh->clear();// out of bound oterhwise
+    //}
 
     uint ff = 0;
 
@@ -392,7 +393,9 @@ size_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_re
     return total_requested_size;
 }
 
-uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache, sequence_region* sr, char *buffer, size_t size, off_t offset, std::ifstream *fh)
+uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache,
+                                           sequence_region* sr, char *buffer, size_t size, off_t offset, 
+                                           chunked_reader &fh)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -457,7 +460,7 @@ fastafs check short  1.53s user 2.73s system 99% cpu 4.269 total
 chunk size 1024:
 ??
 */
-std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
+std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -475,7 +478,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
     SHA_CTX ctx;
     SHA1_Init(&ctx);
 
-    fh->clear();
+    //fh->clear();
 
     // "(a/b)*b + a%b shall equal a"
     // full iterations = this->n / chunk_size; do this number of iterations looped
@@ -500,7 +503,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
     unsigned char cur_sha1_digest[SHA_DIGEST_LENGTH];
     SHA1_Final(cur_sha1_digest, &ctx);
-    fh->clear(); // because gseek was done before
+    //fh->clear(); // because gseek was done before
 
     char sha1_hash[41];
     sha1_digest_to_hash(cur_sha1_digest, sha1_hash);
@@ -510,7 +513,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, std::ifstream *fh)
 
 
 
-std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
+std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -528,7 +531,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     MD5_CTX ctx;
     MD5_Init(&ctx);
 
-    fh->clear();
+    //fh->clear();
 
     // "(a/b)*b + a%b shall equal a"
     // full iterations = this->n / chunk_size; do this number of iterations looped
@@ -564,7 +567,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, std::ifstream *fh)
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
     unsigned char cur_md5_digest[MD5_DIGEST_LENGTH];
     MD5_Final(cur_md5_digest, &ctx);
-    fh->clear(); // because gseek was done before
+    //fh->clear(); // because gseek was done before
 
     char md5_hash[32 + 1];
     md5_digest_to_hash(cur_md5_digest, md5_hash);
@@ -824,14 +827,16 @@ void fastafs::view_fasta(ffs2f_init* cache)
         throw std::invalid_argument("No filename found");
     }
 
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
-        for(uint32_t i = 0; i < this->data.size(); i++) {
-            this->data[i]->view_fasta(cache->sequences[i], &file);
-        }
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
+    chunked_reader fh = chunked_reader(this->filename.c_str());
 
-        file.close();
+    for(uint32_t i = 0; i < this->data.size(); i++) {
+        this->data[i]->view_fasta(cache->sequences[i], fh);
     }
+
+     //   file.close();
+    //}
 }
 
 
@@ -902,18 +907,19 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
     }
 #endif
 
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
+    chunked_reader fh = chunked_reader(this->filename.c_str());
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
         // parse "chr..:..-.." string
         sequence_region sr = sequence_region(seq_region_arg);
 
         // 02 : check if 'chr' is equals this->data[i].name
         for(size_t i = 0; i < this->data.size(); i++) {
             if(sr.seq_name.compare(this->data[i]->name) == 0) {
-                return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, &file);
+                return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, fh);
             }
         }
-    }
+    //}
 
     return 0;
 }
@@ -934,6 +940,9 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
 uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
 {
     uint32_t written = 0;
+
+    chunked_reader fh_in = chunked_reader(this->filename.c_str());
+
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         size_t i = 0;// sequence iterator
@@ -950,7 +959,7 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
                                                  &buffer[written],
                                                  std::min((uint32_t) buffer_size - written, sequence_file_size),
                                                  pos,
-                                                 &file);
+                                                 fh_in);
 
                 written += written_seq;
                 pos -= (sequence_file_size - written_seq);
@@ -980,8 +989,9 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     uint32_t pos = (uint32_t) file_offset; // iterator (position, in bytes) in file
     uint32_t pos_limit = 0; // counter to keep track of when writing needs to stop for given loop
 
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
+    chunked_reader file = chunked_reader(this->filename.c_str());
         char n_seq[4];
         pos_limit += 4;// skip this loop after writing first four bytes
         while(pos < pos_limit) {
@@ -1184,7 +1194,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             while(pos < pos_limit) {
                 //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
                 //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
-                sequence->view_fasta_chunk(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), &file);
+                sequence->view_fasta_chunk(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
@@ -1204,7 +1214,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 if(pos < pos_limit) {
                     //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, sequence->n - (full_twobits * 4),  sequence->n - j);
                     //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
-                    sequence->view_fasta_chunk(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, &file);
+                    sequence->view_fasta_chunk(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, file);
                     t.set(n_seq);
                     buffer[written++] = t.data;
                     pos++;
@@ -1216,10 +1226,10 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             }
         }
         delete cache;
-        file.close();
-    } else {
-        throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
-    }
+        //file.close();
+    //} else {
+     //   throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
+   // }
     return written;
 }
 
@@ -1725,13 +1735,14 @@ bool fastafs::check_sequence_integrity(bool verbose)
 
     ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
 
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
+    chunked_reader file = chunked_reader(this->filename.c_str());
+    //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //if(file.is_open()) {
         for(uint32_t i = 0; i < this->data.size(); i++) {
             md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
             old_hash = std::string(md5_hash);
 
-            std::string new_hash = this->data[i]->md5(cache->sequences[i], &file);
+            std::string new_hash = this->data[i]->md5(cache->sequences[i], file);
             if(old_hash.compare(new_hash) == 0) {
                 if(verbose) {
                     printf("OK\t%s\n", this->data[i]->name.c_str());
@@ -1744,10 +1755,10 @@ bool fastafs::check_sequence_integrity(bool verbose)
                 retcode = false;
             }
         }
-        file.close();
-    } else {
-        throw std::runtime_error("[fastafs::check_sequence_integrity] could not load fastafs: " + this->filename);
-    }
+        //file.close();
+    //} else {
+    //    throw std::runtime_error("[fastafs::check_sequence_integrity] could not load fastafs: " + this->filename);
+    //}
 
     delete cache;
 

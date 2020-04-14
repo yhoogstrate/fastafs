@@ -74,15 +74,15 @@ public:
     fastafs_seq();
 
     uint32_t fasta_filesize(uint32_t padding);
-    void view_fasta(ffs2f_init_seq*, std::ifstream *);
+    void view_fasta(ffs2f_init_seq*, chunked_reader &fh);
 
     size_t view_sequence_region_size(ffs2f_init_seq*, sequence_region*, std::ifstream *);
-    uint32_t view_sequence_region(ffs2f_init_seq*, sequence_region*, char *, size_t, off_t, std::ifstream *);
-    uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
-    template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, std::ifstream *);
+    uint32_t view_sequence_region(ffs2f_init_seq*, sequence_region*, char *, size_t, off_t, chunked_reader &);
+    uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
+    template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
 
-    std::string sha1(ffs2f_init_seq*, std::ifstream*);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
-    std::string md5(ffs2f_init_seq*, std::ifstream*);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
+    std::string sha1(ffs2f_init_seq*, chunked_reader &);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
+    std::string md5(ffs2f_init_seq*, chunked_reader &);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
 
     uint32_t n_bits();
 

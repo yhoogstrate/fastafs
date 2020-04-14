@@ -369,21 +369,22 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 
     //std::string std_buffer;
     // test fastafs_seq functions
-    std::ifstream fh(fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    BOOST_REQUIRE(fh.is_open());
+    //std::ifstream fh(fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    chunked_reader fh = chunked_reader(fastafs_file.c_str());
+    //BOOST_REQUIRE(fh.is_open());
 
     // 1   2   3   4   5   6   7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22
     //[>] [c] [h] [r] [3] [.] [1] [\n] [A] [C] [T] [G] [A] [C] [T] [G] [A] [A] [A] [A] [C] [\n]
     BOOST_CHECK_EQUAL(fs.data[2]->fasta_filesize(100), 22);
 
-    written = fs.data[2]->view_fasta_chunk(cache_p100->sequences[2], buffer, 100, 0, &fh);
+    written = fs.data[2]->view_fasta_chunk(cache_p100->sequences[2], buffer, 100, 0, fh);
     BOOST_CHECK_EQUAL(written, 22);
 
     std::string std_buffer = std::string(buffer, written);
     BOOST_CHECK_EQUAL(std_buffer.compare(">chr3.1\nACTGACTGAAAAC\n"), 0);
 
     flush_buffer(buffer, 100, '?');
-    fh.close();
+    //fh.close();
 
     delete[] buffer;
 
@@ -682,8 +683,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 {
-    uint32_t written;
-
     std::string test_name = "test";
     std::string fasta_file = "test/data/" + test_name + ".fa";
     std::string fastafs_file = "tmp/" + test_name + ".fastafs";

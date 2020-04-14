@@ -887,7 +887,7 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
         "\x0E\xB8\xC0\x8A"s
         ;
 
-    //BOOST_CHECK_EQUAL(written, 125);
+    BOOST_CHECK_EQUAL(written, reference.size());
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_009.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
