@@ -171,7 +171,7 @@ uint32_t fastafs_seq::view_fasta_chunk(
  *
  * @todo see if this can be a std::ifstream or some kind of stream type of object?
 */
-inline template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
+template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     ffs2f_init_seq* cache,
     char *buffer,
 
@@ -266,11 +266,7 @@ inline template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     //char *from_file_buffer;
     //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
     char from_file_buffer[(READ_BUFFER_SIZE / 2) + 6];
-
     fh.read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
-    //if(!fh->good()) {
-    //    fh->clear();// out of bound oterhwise
-    //}
 
     uint ff = 0;
 
@@ -283,7 +279,6 @@ inline template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
     if(bit_offset != 0) {
-        //fh->read((char*)(&t.data), 1);
         t.data = from_file_buffer[ff];
         ff++;
 

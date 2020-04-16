@@ -67,10 +67,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
     // first read
     // chunked buf : [  . . . . . i . .. . . . .n  - -- - - -  ]
     while(this->buffer_i < this->buffer_n and written < buffer_size) {
-        arg_buffer[written] = this->buffer[this->buffer_i];
-
-        this->buffer_i++;
-        written++;
+        arg_buffer[written++] = this->buffer[this->buffer_i++];
     }
     
     if(written < buffer_size) {
@@ -89,10 +86,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
 
         // same loop again
         while(this->buffer_i < this->buffer_n and written < buffer_size) {
-            arg_buffer[written] = this->buffer[this->buffer_i];
-
-            this->buffer_i++;
-            written++;
+            arg_buffer[written++] = this->buffer[this->buffer_i++];
         }
     }
 
