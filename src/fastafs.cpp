@@ -171,7 +171,7 @@ uint32_t fastafs_seq::view_fasta_chunk(
  *
  * @todo see if this can be a std::ifstream or some kind of stream type of object?
 */
-template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
+inline template <class T> uint32_t fastafs_seq::view_fasta_chunk_generalized(
     ffs2f_init_seq* cache,
     char *buffer,
 
