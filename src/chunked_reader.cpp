@@ -31,7 +31,7 @@ void chunked_reader::init() {
     
     switch(this->filetype) {
         case uncompressed:
-            fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);            
+            fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
             
             if(fh_flat.is_open()) {
                 this->fh_flat.seekg(0, std::ios::beg);
@@ -64,20 +64,17 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
     buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
-    // first read
-    // chunked buf : [  . . . . . i . .. . . . .n  - -- - - -  ]
     while(this->buffer_i < this->buffer_n and written < buffer_size) {
         arg_buffer[written++] = this->buffer[this->buffer_i++];
     }
-    
+
     /*
     size_t n = std::min(this->buffer_n - this->buffer_i, buffer_size - written);
     memcpy(&arg_buffer[written], &this->buffer[this->buffer_i] , n);
     written += n;
     this->buffer_i += n;
     */
-    
-    
+
     if(written < buffer_size) {
         // overwrite buffer
         switch(this->filetype) {
@@ -96,7 +93,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         while(this->buffer_i < this->buffer_n and written < buffer_size) {
             arg_buffer[written++] = this->buffer[this->buffer_i++];
         }
-        /* - somehow memcpy is slightly slower
+        /* - somehow memcpy is slightly slower - test again @ mom laptop
         size_t n = std::min(this->buffer_n - this->buffer_i, buffer_size - written);
         memcpy(&arg_buffer[written], &this->buffer[this->buffer_i] , n);
         written += n;
@@ -150,6 +147,5 @@ void chunked_reader::seek(off_t offset) {
 
 size_t chunked_reader::tell() {
     return this->file_i - this->buffer_n + this->buffer_i;
-    
 }
 
