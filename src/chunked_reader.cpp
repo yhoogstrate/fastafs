@@ -70,6 +70,14 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         arg_buffer[written++] = this->buffer[this->buffer_i++];
     }
     
+    /*
+    size_t n = std::min(this->buffer_n - this->buffer_i, buffer_size - written);
+    memcpy(&arg_buffer[written], &this->buffer[this->buffer_i] , n);
+    written += n;
+    this->buffer_i += n;
+    */
+    
+    
     if(written < buffer_size) {
         // overwrite buffer
         switch(this->filetype) {
@@ -88,6 +96,12 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         while(this->buffer_i < this->buffer_n and written < buffer_size) {
             arg_buffer[written++] = this->buffer[this->buffer_i++];
         }
+        /* - somehow memcpy is slightly slower
+        size_t n = std::min(this->buffer_n - this->buffer_i, buffer_size - written);
+        memcpy(&arg_buffer[written], &this->buffer[this->buffer_i] , n);
+        written += n;
+        this->buffer_i += n;
+        */
     }
 
     return written;
