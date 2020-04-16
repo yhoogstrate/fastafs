@@ -96,9 +96,9 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
         }
     }
     
-    if(written == 0 and this->fh_flat.is_open()) {
-        this->fh_flat.close();
-    }
+    //if(written == 0 and this->fh_flat.is_open()) {
+    //    this->fh_flat.close();
+    //}
 
     return written;
 }
