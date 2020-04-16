@@ -321,3 +321,8 @@ uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
 }
 
 
+bool file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}

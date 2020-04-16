@@ -26,3 +26,4 @@ std::string realpath_cpp(std::string);
 
 uint32_t file_crc32(const std::string &, off_t, size_t);
 
+bool file_exist(const char *);
