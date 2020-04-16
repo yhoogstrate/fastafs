@@ -329,10 +329,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
     std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
     //std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
+    chunked_reader fhc = chunked_reader(fs.filename.c_str());
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 100);
 
-        written = fs.view_fasta_chunk(cache_p4, buffer, 100, offset);
+        written = fs.view_fasta_chunk(cache_p4, buffer, 100, offset, fhc);
         std_buffer = std::string(buffer, substr_file.size());
 
         BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset);
@@ -430,6 +431,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     flush_buffer(buffer, 2110, '?');
     ffs2f_init* cache = fs.init_ffs2f(60, true);
 
+    chunked_reader fhc = chunked_reader(fs.filename.c_str());
 
     /* maak alle substrings:
       [....]
@@ -447,7 +449,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
         for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 
-            written = fs.view_fasta_chunk(cache, buffer, buffer_len, start_pos);
+            written = fs.view_fasta_chunk(cache, buffer, buffer_len, start_pos, fhc);
             std_buffer = std::string(buffer, substr_file.size());
             BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
@@ -588,10 +590,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 
 
     std::string full_file = ">IUPAC\nNBKA\nHMDC\nUWGS\nYVTR\nHGWV\nUMTB\nSDN-\n----\n----\n-BGY\nADNH\nSMUT\nRCKW\nVsbh\nvdnr\ntgyc\nmkwu\naAVT\nSDKN\nB---\nUGWM\nHYRC\n";// length = 117
+    chunked_reader fhc = chunked_reader(fs.filename.c_str());
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 200);
 
-        written = fs.view_fasta_chunk(cache_p4, buffer, 200, offset);
+        written = fs.view_fasta_chunk(cache_p4, buffer, 200, offset, fhc);
         std_buffer = std::string(buffer, substr_file.size());
 
         BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset);

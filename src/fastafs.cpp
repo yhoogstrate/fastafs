@@ -939,47 +939,56 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
  */
 uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
 {
+    
+    chunked_reader fh = chunked_reader(this->filename.c_str());
+
+    return this->view_fasta_chunk(cache, buffer, buffer_size, file_offset, fh);
+}
+
+
+
+inline uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset, chunked_reader &fh)
+{
     uint32_t written = 0;
 
-    chunked_reader fh_in = chunked_reader(this->filename.c_str());
+    size_t i = 0;// sequence iterator
+    uint32_t pos = (uint32_t) file_offset;
+    fastafs_seq *seq;
 
-    std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(file.is_open()) {
-        size_t i = 0;// sequence iterator
-        uint32_t pos = (uint32_t) file_offset;
-        fastafs_seq *seq;
+    while(i < data.size()) {
+        seq = this->data[i];
+        const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
 
-        while(i < data.size()) {
-            seq = this->data[i];
-            const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
+        if(pos < sequence_file_size) {
+            const uint32_t written_seq = seq->view_fasta_chunk(
+                                             cache->sequences[i],
+                                             &buffer[written],
+                                             std::min((uint32_t) buffer_size - written, sequence_file_size),
+                                             pos,
+                                             fh);
 
-            if(pos < sequence_file_size) {
-                const uint32_t written_seq = seq->view_fasta_chunk(
-                                                 cache->sequences[i],
-                                                 &buffer[written],
-                                                 std::min((uint32_t) buffer_size - written, sequence_file_size),
-                                                 pos,
-                                                 fh_in);
+            written += written_seq;
+            pos -= (sequence_file_size - written_seq);
 
-                written += written_seq;
-                pos -= (sequence_file_size - written_seq);
-
-                if(written == buffer_size) {
-                    file.close();
-                    return written;
-                }
-            } else {
-                pos -= sequence_file_size;
+            if(written == buffer_size) {
+                return written;
             }
-
-            i++;
+        } else {
+            pos -= sequence_file_size;
         }
-        file.close();
-    } else {
-        throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
+
+        i++;
     }
+
     return written;
 }
+
+
+
+
+
+
+
 
 //http://genome.ucsc.edu/FAQ/FAQformat.html#format7
 //https://www.mathsisfun.com/binary-decimal-hexadecimal-converter.html
