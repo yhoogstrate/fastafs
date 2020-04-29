@@ -279,8 +279,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
     if(bit_offset != 0) {
-        t.data = from_file_buffer[ff];
-        ff++;
+        t.data = from_file_buffer[ff++];
 
         chunk = t.get();
     }
@@ -309,9 +308,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
                 if(bit_offset % T::nucleotides_per_byte == 0) {
                     //fh->read((char*)(&t.data), 1);
-                    t.data = from_file_buffer[ff];
-                    ff++;
-
+                    t.data = from_file_buffer[ff++];
+                    
                     chunk = t.get();
                 }
 
