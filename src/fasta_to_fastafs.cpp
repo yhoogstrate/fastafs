@@ -10,6 +10,7 @@
 
 
 
+
 const static char nt[2] = "T";
 const static char nc[2] = "C";
 const static char na[2] = "A";
@@ -233,21 +234,17 @@ void fasta_to_fastafs_seq::fourbit_finish_sequence(std::ofstream &fh_fastafs)
 
 
 
-void fasta_to_fastafs_seq::fivebit_add(unsigned char nucleotide, std::ofstream &fh_fastafs)
+void fasta_to_fastafs_seq::fivebit_add(unsigned char amino_acid, std::ofstream &fh_fastafs)
 {
+    unsigned char off = fivebit_fivebytes::iterator_to_offset(this->n_actg);
+    this->fivebit_data.set(off, amino_acid);
     /*
-    this->fivebit_data.set(fivebit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
     // if fourth nucleotide, 2bit is complete; write to disk
-    if(this->n_actg % 2 == 1) {
+    if(this->n_actg % 8 == 7) {
         fh_fastafs << this->fivebit_data.data;
     }
 
-    if(this->previous_was_N) {
-        this->n_block_ends.push_back(this->n_actg + this->N - 1);
-    }
-
-    this->previous_was_N = false;
     this->n_actg++;
     */
 }

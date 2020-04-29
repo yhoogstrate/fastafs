@@ -8,14 +8,14 @@
 class fivebit_fivebytes
 {
 public:
-    static const char fivebit_alhpabet[28 + 1];
+    static const char fivebit_alphabet[28 + 1];
     static const char encode_hash[28 + 1][2];
     
     static const char n_fill_unmasked = '?';
     static const char n_fill_masked = '?';
     
-    unsigned char data_compressed[8];
-    unsigned char data_decompressed[5];
+    unsigned char data_compressed[8]; // 5
+    unsigned char data_decompressed[8];
     
     void unpack(); // unpacks this->data into this->data_decompressed
 
