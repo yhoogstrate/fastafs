@@ -31,9 +31,9 @@ add_executable(test_fourbit_byte        "fourbit_byte/test_fourbit_byte.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fourbit_byte.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/utils.cpp")
 
-add_executable(test_fivebit_fivebytes   "fivebit_fivebytes/test_fivebit_fivebytes.cpp")
-#                                        "${CMAKE_SOURCE_DIR}/src/fivebit_fivebytes.cpp"
-#                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+add_executable(test_fivebit_fivebytes   "fivebit_fivebytes/test_fivebit_fivebytes.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fivebit_fivebytes.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
 
 add_executable(test_cache               "cache/test_cache.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fasta_to_fastafs.cpp"

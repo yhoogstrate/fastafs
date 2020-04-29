@@ -31,12 +31,12 @@ X = 11001 (25)
 */
 
 
-const char fivebit_byte::fivebit_alhpabet[28] = "ABCDEFGHIJKLMNOPQRSTUVWYZX*-";
-//const char fourbit_byte::encode_hash[256][3] = {"AA", "AC", "AG", "AT", "AU", "AR", "AY", "AK", "AM", "AS", "AW", "AB", "AD", "AH", "AV", "AN", "CA", "CC", "CG", "CT", "CU", "CR", "CY", "CK", "CM", "CS", "CW", "CB", "CD", "CH", "CV", "CN", "GA", "GC", "GG", "GT", "GU", "GR", "GY", "GK", "GM", "GS", "GW", "GB", "GD", "GH", "GV", "GN", "TA", "TC", "TG", "TT", "TU", "TR", "TY", "TK", "TM", "TS", "TW", "TB", "TD", "TH", "TV", "TN", "UA", "UC", "UG", "UT", "UU", "UR", "UY", "UK", "UM", "US", "UW", "UB", "UD", "UH", "UV", "UN", "RA", "RC", "RG", "RT", "RU", "RR", "RY", "RK", "RM", "RS", "RW", "RB", "RD", "RH", "RV", "RN", "YA", "YC", "YG", "YT", "YU", "YR", "YY", "YK", "YM", "YS", "YW", "YB", "YD", "YH", "YV", "YN", "KA", "KC", "KG", "KT", "KU", "KR", "KY", "KK", "KM", "KS", "KW", "KB", "KD", "KH", "KV", "KN", "MA", "MC", "MG", "MT", "MU", "MR", "MY", "MK", "MM", "MS", "MW", "MB", "MD", "MH", "MV", "MN", "SA", "SC", "SG", "ST", "SU", "SR", "SY", "SK", "SM", "SS", "SW", "SB", "SD", "SH", "SV", "SN", "WA", "WC", "WG", "WT", "WU", "WR", "WY", "WK", "WM", "WS", "WW", "WB", "WD", "WH", "WV", "WN", "BA", "BC", "BG", "BT", "BU", "BR", "BY", "BK", "BM", "BS", "BW", "BB", "BD", "BH", "BV", "BN", "DA", "DC", "DG", "DT", "DU", "DR", "DY", "DK", "DM", "DS", "DW", "DB", "DD", "DH", "DV", "DN", "HA", "HC", "HG", "HT", "HU", "HR", "HY", "HK", "HM", "HS", "HW", "HB", "HD", "HH", "HV", "HN", "VA", "VC", "VG", "VT", "VU", "VR", "VY", "VK", "VM", "VS", "VW", "VB", "VD", "VH", "VV", "VN", "NA", "NC", "NG", "NT", "NU", "NR", "NY", "NK", "NM", "NS", "NW", "NB", "ND", "NH", "NV", "NN"};
+const char fivebit_fivebytes::fivebit_alhpabet[28 + 1] = "ABCDEFGHIJKLMNOPQRSTUVWYZX*-";
+const char fivebit_fivebytes::encode_hash[28 + 1][2] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "Y", "Z", "X", "*", "-" };
 
 
 // @todo, offset needs to be second parameter
-void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
+void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char nucleotide)
 {
     // bit_offset must be: {0, or 4}; -> location in bits
     // nucleotides must be:
@@ -44,7 +44,7 @@ void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
     // => T - 00, C -  1, A -  2, G -  3
 #if DEBUG
     if(bit_offset != 0 and bit_offset != 4) {
-        throw std::invalid_argument("fourbit_byte(bit_offset, ..) must be 0 or 4\n");
+        throw std::invalid_argument("fivebit_fivebytes(bit_offset, ..) must be 0 or 4\n");
     }
 #endif //DEBUG
     //set   bit(s): INPUT |= 1 << N;
@@ -116,7 +116,7 @@ void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 
 #if DEBUG
     default:
-        throw std::invalid_argument("fourbit_byte::set(pos, nucleotide) invalid value\n");
+        throw std::invalid_argument("fivebit_fivebytes::set(pos, nucleotide) invalid value\n");
         break;
 #endif //DEBUG
     }

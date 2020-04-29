@@ -41,13 +41,11 @@ size_t fasta_to_fastafs_seq::N_bytes_used()
 
 size_t fasta_to_fastafs_seq::twobit_bytes_used()
 {
-
     //printf("n_actg: %i\n", n_actg);
     //printf("n_actg: %i + 3 = \n", n_actg, n_actg + 3);
     //printf("n_actg: (%i + 3) / 4 = %i\n", n_actg, (n_actg + 3) / 4);
 
-    static const int twobits_per_byte = 4;
-    return (size_t)((this->n_actg + (twobits_per_byte - 1)) / twobits_per_byte);
+    return (size_t)((this->n_actg + (twobit_byte::nucleotides_per_byte - 1)) / twobit_byte::nucleotides_per_byte);
 }
 
 

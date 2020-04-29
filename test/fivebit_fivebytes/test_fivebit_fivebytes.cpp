@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 {
     unsigned char seq_comp[5];
     unsigned char seq_decomp[8];
-    static const char fivebit_alhpabet[28 + 1] = "ABCDEFGHIJKLMNOPQRSTUVWYZX*-";
+    //static const char fivebit_fivebytes::fivebit_alhpabet[28 + 1] = "ABCDEFGHIJKLMNOPQRSTUVWYZX*-";
 
     // set to:
     // ABCDEFGHIJKLMNOPQRSTUVWYZX*-
@@ -115,14 +115,14 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 
 
 
-    printf("0: [%i][%u]\t[%c]\n", seq_decomp[0], seq_decomp[0], fivebit_alhpabet[seq_decomp[0]]);
-    printf("1: [%i][%u]\t[%c]\n", seq_decomp[1], seq_decomp[1], fivebit_alhpabet[seq_decomp[1]]);
-    printf("2: [%i][%u]\t[%c]\n", seq_decomp[2], seq_decomp[2], fivebit_alhpabet[seq_decomp[2]]);
-    printf("3: [%i][%u]\t[%c]\n", seq_decomp[3], seq_decomp[3], fivebit_alhpabet[seq_decomp[3]]);
-    printf("4: [%i][%u]\t[%c]\n", seq_decomp[4], seq_decomp[4], fivebit_alhpabet[seq_decomp[4]]);
-    printf("5: [%i][%u]\t[%c]\n", seq_decomp[5], seq_decomp[5], fivebit_alhpabet[seq_decomp[5]]);
-    printf("6: [%i][%u]\t[%c]\n", seq_decomp[6], seq_decomp[6], fivebit_alhpabet[seq_decomp[6]]);
-    printf("7: [%i][%u]\t[%c]\n", seq_decomp[6], seq_decomp[7], fivebit_alhpabet[seq_decomp[7]]);
+    printf("0: [%i][%u]\t[%c]\n", seq_decomp[0], seq_decomp[0], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[0]]);
+    printf("1: [%i][%u]\t[%c]\n", seq_decomp[1], seq_decomp[1], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[1]]);
+    printf("2: [%i][%u]\t[%c]\n", seq_decomp[2], seq_decomp[2], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[2]]);
+    printf("3: [%i][%u]\t[%c]\n", seq_decomp[3], seq_decomp[3], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[3]]);
+    printf("4: [%i][%u]\t[%c]\n", seq_decomp[4], seq_decomp[4], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[4]]);
+    printf("5: [%i][%u]\t[%c]\n", seq_decomp[5], seq_decomp[5], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[5]]);
+    printf("6: [%i][%u]\t[%c]\n", seq_decomp[6], seq_decomp[6], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[6]]);
+    printf("7: [%i][%u]\t[%c]\n", seq_decomp[6], seq_decomp[7], fivebit_fivebytes::fivebit_alhpabet[seq_decomp[7]]);
 
     BOOST_CHECK_EQUAL(seq_decomp[0], 05);
     BOOST_CHECK_EQUAL(seq_decomp[1], 00);
@@ -133,14 +133,14 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     BOOST_CHECK_EQUAL(seq_decomp[6], 05);
     BOOST_CHECK_EQUAL(seq_decomp[7], 18);
     
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[0]], 'F');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[1]], 'A');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[2]], 'S');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[3]], 'T');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[4]], 'A');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[5]], '-');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[6]], 'F');
-    BOOST_CHECK_EQUAL(fivebit_alhpabet[seq_decomp[7]], 'S');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[0]], 'F');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[1]], 'A');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[2]], 'S');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[3]], 'T');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[4]], 'A');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[5]], '-');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[6]], 'F');
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alhpabet[seq_decomp[7]], 'S');
 }
 
 
