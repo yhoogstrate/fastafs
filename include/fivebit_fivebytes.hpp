@@ -14,17 +14,21 @@ public:
     static const char n_fill_unmasked = '?';
     static const char n_fill_masked = '?';
     
-    unsigned char buffer[5];
-    unsigned char buffer_out[8];
+    unsigned char data_compressed[8];
+    unsigned char data_decompressed[5];
+    
+    void unpack(); // unpacks this->data into this->data_decompressed
 
-    unsigned char data; // single char - not useful
+    //unsigned char data; // single char - not useful
 
     static const char bits_per_nucleotide = 5;
     static const char nucleotides_per_byte = 1 ; //8 / bits_per_nucleotide ;
 
     void set(unsigned char, unsigned char);
-    void set(char*);// string met 4 bytes set
-    const char *get(void);
+    void set(char *);// string with 8 amino acids
+    void set_compressed(unsigned char (&compressed_data)[5]);// string with 5 character - requires unpacking
+
+    unsigned char *get(void);
     char *get(unsigned char);
 
     static unsigned char iterator_to_offset(unsigned int);

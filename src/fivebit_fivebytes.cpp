@@ -38,88 +38,84 @@ const char fivebit_fivebytes::encode_hash[28 + 1][2] = { "A", "B", "C", "D", "E"
 // @todo, offset needs to be second parameter
 void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char nucleotide)
 {
-    // bit_offset must be: {0, or 4}; -> location in bits
-    // nucleotides must be:
-    // => T - 00, C - 01, A - 10, G - 11
-    // => T - 00, C -  1, A -  2, G -  3
-#if DEBUG
-    if(bit_offset != 0 and bit_offset != 4) {
-        throw std::invalid_argument("fivebit_fivebytes(bit_offset, ..) must be 0 or 4\n");
-    }
-#endif //DEBUG
-    //set   bit(s): INPUT |= 1 << N;
-    //unset bit(s): INPUT &= ~(1 << N);
-
-    switch(nucleotide) {
-    case 0:// A (0000)
-        this->data = (unsigned char)(this->data & ~((8 + 4 + 2 + 1) << bit_offset)); // set zero's
-        break;
-    case 1:// C (0001)
-        this->data = (unsigned char)(this->data & ~((8 + 4 + 2) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data | ((1) << bit_offset));         // set one's
-        break;
-    case 2:// G (0010)
-        this->data = (unsigned char)(this->data & ~((8 + 4  + 1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data | ((2) << bit_offset));         // set one's
-        break;
-    case 3:// T (0011)
-        this->data = (unsigned char)(this->data & ~((8 + 4) << bit_offset));    // set zero's
-        this->data = (unsigned char)(this->data | ((2 + 1) << bit_offset));     // set one's
-        break;
-    case 4:// U (0100)
-        this->data = (unsigned char)(this->data & ~((8  + 2 + 1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data | ((4) << bit_offset));         // set one's
-        break;
-    case 5:// R (0101)
-        this->data = (unsigned char)(this->data & ~((8  + 2) << bit_offset));   // set zero's
-        this->data = (unsigned char)(this->data | ((4  + 1) << bit_offset));    // set one's
-        break;
-    case 6:// Y (0110)
-        this->data = (unsigned char)(this->data & ~((8    + 1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data | ((4 + 2) << bit_offset));     // set one's
-        break;
-    case 7:// K (0111)
-        this->data = (unsigned char)(this->data & ~((8) << bit_offset));        // set zero's
-        this->data = (unsigned char)(this->data | ((4 + 2 + 1) << bit_offset)); // set one's
-        break;
-    case 8:// M (1000)
-        this->data = (unsigned char)(this->data & ~((4 + 2 + 1) << bit_offset)); // set zero's
-        this->data = (unsigned char)(this->data | ((8) << bit_offset));         // set one's
-        break;
-    case 9:// S (1001)
-        this->data = (unsigned char)(this->data & ~((4 + 2) << bit_offset));    // set zero's
-        this->data = (unsigned char)(this->data | ((8    + 1) << bit_offset));  // set one's
-        break;
-    case 10:// W (1010)
-        this->data = (unsigned char)(this->data & ~((4  + 1) << bit_offset));   // set zero's
-        this->data = (unsigned char)(this->data | ((8  + 2) << bit_offset));    // set one's
-        break;
-    case 11:// B (1011)
-        this->data = (unsigned char)(this->data & ~((4) << bit_offset));        // set zero's
-        this->data = (unsigned char)(this->data | ((8  + 2 + 1) << bit_offset)); // set one's
-        break;
-    case 12:// D (1100)
-        this->data = (unsigned char)(this->data & ~((2 + 1) << bit_offset));    // set zero's
-        this->data = (unsigned char)(this->data | ((8 + 4) << bit_offset));     // set one's
-        break;
-    case 13:// H (1101)
-        this->data = (unsigned char)(this->data & ~((2) << bit_offset));        // set zero's
-        this->data = (unsigned char)(this->data | ((8 + 4  + 1) << bit_offset)); // set one's
-        break;
-    case 14:// V (1110)
-        this->data = (unsigned char)(this->data & ~((+1) << bit_offset));       // set zero's
-        this->data = (unsigned char)(this->data | ((8 + 4 + 2) << bit_offset)); // set one's
-        break;
-    case 15:// N (1111)
-        this->data = (unsigned char)(this->data | ((8 + 4 + 2 + 1) << bit_offset)); // set one's
-        break;
-
-#if DEBUG
-    default:
-        throw std::invalid_argument("fivebit_fivebytes::set(pos, nucleotide) invalid value\n");
-        break;
-#endif //DEBUG
-    }
+    // set
 };
 
 
+unsigned char *fivebit_fivebytes::get(void) {
+    return this->data_decompressed;
+}
+
+
+
+
+// @todo, offset needs to be second parameter
+void fivebit_fivebytes::set_compressed(unsigned char (&compressed_data)[5]) {
+    this->data_compressed[0] = compressed_data[0];
+    this->data_compressed[1] = compressed_data[1];
+    this->data_compressed[2] = compressed_data[2];
+    this->data_compressed[3] = compressed_data[3];
+    this->data_compressed[4] = compressed_data[4];
+
+    this->unpack();
+}
+
+
+void fivebit_fivebytes::unpack() {
+    //  00000111 11222223 33334444 45555566 66677777
+    //                                      66677777
+    //                                      ---77777
+    this->data_decompressed[7] = (unsigned char)(this->data_compressed[4] & ~((4 + 2 + 1) << 5));
+
+    //  00000111 11222223 33334444 45555566 66677777
+    //                             45555566 66677777
+    //                             -----455 55566666
+    //                             -----455 ---66666
+    //                                      ---66666
+    this->data_decompressed[6] = (unsigned char)(((this->data_compressed[3] << 8) | (this->data_compressed[4])) >> 5);
+    this->data_decompressed[6] = (unsigned char)(this->data_decompressed[6] & ~((4 + 2 + 1) << 5));
+
+    //  00000111 11222223 33334444 45555566 66677777
+    //                             45555566
+    //                             --455555
+    //                             ---55555
+    this->data_decompressed[5] = (unsigned char)(this->data_compressed[3] >> 2);
+    this->data_decompressed[5] = (unsigned char)(this->data_decompressed[5] & ~((4 + 2 + 1) << 5));// only bit 6 should be set to 0
+
+    //  00000111 11222223 33334444 45555566 66677777
+    //                    33334444 45555566
+    //                    -------3 33344444
+    //                             33344444
+    //                             ---44444
+    this->data_decompressed[4] = (unsigned char)(((this->data_compressed[2] << 8) | (this->data_compressed[3])) >> 7);
+    this->data_decompressed[4] = (unsigned char)(this->data_decompressed[4] & ~((4 + 2 + 1) << 5));
+    
+    //  00000111 11222223 33334444 45555566 66677777
+    //  11222223 33334444       bit shift << 8 + normal
+    //  ----1122 22233333       bit shift >> 4
+    //           22233333       convert to u-char
+    //           ---33333       set zero's
+    this->data_decompressed[3] = (unsigned char)(((this->data_compressed[1] << 8) | (this->data_compressed[2])) >> 4);
+    this->data_decompressed[3] = (unsigned char)(this->data_decompressed[3] & ~((4 + 2 + 1) << 5));
+
+    //  00101000 00100101 00110000 01101100 10110010
+    //  00000111 11222223 33334444 45555566 66677777
+    //           11222223
+    //           -1122222
+    //           ---22222
+    this->data_decompressed[2] = (unsigned char)(this->data_compressed[1] >> 1);   // shifts of unsigned types always zero-fill :)
+    this->data_decompressed[2] = (unsigned char)(this->data_decompressed[2] & ~((4 + 2 + 1) << 5)); // i think only bit 6 and 7 need to be set because of the shift above
+
+    //  00000111 11222223 33334444 45555566 66677777
+    //  00000111 11222223
+    //  ------00 00011111
+    //           00011111
+    //           ---11111
+    this->data_decompressed[1] = (unsigned char)(((this->data_compressed[0] << 8) | (this->data_compressed[1])) >> 6);
+    this->data_decompressed[1] = (unsigned char)(this->data_decompressed[1] & ~((4 + 2 + 1) << 5));
+
+    //  00000111 11222223 33334444 45555566 66677777
+    //  00000111
+    //  ---00000
+    this->data_decompressed[0] = (unsigned char)(this->data_compressed[0] >> 3);   // shifts of unsigned types always zero-fill :)
+}
