@@ -80,7 +80,7 @@ static const char ENCODE_HASH_TWOBIT_RNA[256][5] = {"UUUU", "UUUC", "UUUA", "UUU
 
 
 static const int ZSTD_COMPRESSION_QUALIITY = 5;
-static const unsigned ZSTD_SEEKABLE_FRAME_SIZE = 10*1024*1024; // size in bytes
+static const unsigned ZSTD_SEEKABLE_FRAME_SIZE = 1024 * 1024; // size in bytes [1mb]
 
 
 #endif
