@@ -863,9 +863,9 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
         "\x00\x00\x00\x00"s//     [, ] m-blocks (2)
 
         "\x00\x00\x00\x47"s//     [14, 17] seq length (71)
-        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s// 
-        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s// 
-        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\xF0"s// 
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s//
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s//
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\xF0"s//
         "\x00\x00\x00\x00"s//     [, ] n-blocks (0)
         "\xA7\xBA\xB4\x6A\x83\xB0\xE3\x29\x3F\x26\xE9\xD7\x0D\x97\x01\x3C"s// checksum
         "\x00\x00\x00\x00"s//     [, ] m-blocks (0)
@@ -887,7 +887,7 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
         "\x0E\xB8\xC0\x8A"s
         ;
 
-    //BOOST_CHECK_EQUAL(written, 125);
+    BOOST_CHECK_EQUAL(written, reference.size());
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_009.fastafs", std::ios::in | std::ios::binary | std::ios::ate);

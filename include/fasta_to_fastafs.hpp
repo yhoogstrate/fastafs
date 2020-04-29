@@ -79,11 +79,11 @@ public:
     {
         if(name.size() > 255) {
             fprintf(stderr, "[fasta_to_fastafs::init] sequence name truncated to 255 charaters: %s\n", name.c_str());
-            this->name = this->name.substr (0,255);
+            this->name = this->name.substr(0, 255);
         }
         MD5_Init(&this->ctx);
     }
-    
+
     void flush();
 };
 
