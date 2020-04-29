@@ -206,7 +206,7 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as al
 
 add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N) | ACUG(N)
 add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
-add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fivebit_fivebytes")
+add_test(test_fivebit_fivebytes   "${BUILD_TEST_DIR}/test_fivebit_fivebytes")
 add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")
