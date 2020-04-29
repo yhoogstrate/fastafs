@@ -51,7 +51,7 @@ size_t fasta_to_fastafs_seq::twobit_bytes_used()
 
 
 
-void fasta_to_fastafs_seq::add_twobit_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
+void fasta_to_fastafs_seq::twobit_add(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
     this->twobit_data.set(twobit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
@@ -71,7 +71,7 @@ void fasta_to_fastafs_seq::add_twobit_ACTG(unsigned char nucleotide, std::ofstre
 
 
 
-void fasta_to_fastafs_seq::finish_twobit_sequence(std::ofstream &fh_fastafs)
+void fasta_to_fastafs_seq::twobit_finish_sequence(std::ofstream &fh_fastafs)
 {
     uint32_t j;
 
@@ -145,7 +145,7 @@ void fasta_to_fastafs_seq::finish_twobit_sequence(std::ofstream &fh_fastafs)
 
 
 
-void fasta_to_fastafs_seq::add_fourbit_ACTG(unsigned char nucleotide, std::ofstream &fh_fastafs)
+void fasta_to_fastafs_seq::fourbit_add(unsigned char nucleotide, std::ofstream &fh_fastafs)
 {
     this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
 
@@ -162,20 +162,9 @@ void fasta_to_fastafs_seq::add_fourbit_ACTG(unsigned char nucleotide, std::ofstr
     this->n_actg++;
 }
 
-void fasta_to_fastafs_seq::add_N()
-{
-    if(!this->previous_was_N) {
-        this->n_block_starts.push_back(this->n_actg + this->N);
-    }
-
-    this->previous_was_N = true;
-    this->N++;
-}
 
 
-
-
-void fasta_to_fastafs_seq::finish_fourbit_sequence(std::ofstream &fh_fastafs)
+void fasta_to_fastafs_seq::fourbit_finish_sequence(std::ofstream &fh_fastafs)
 {
     uint32_t j;
 
@@ -241,6 +230,44 @@ void fasta_to_fastafs_seq::finish_fourbit_sequence(std::ofstream &fh_fastafs)
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
 }
+
+
+
+void fasta_to_fastafs_seq::fivebit_add(unsigned char nucleotide, std::ofstream &fh_fastafs)
+{
+    /*
+    this->fivebit_data.set(fivebit_byte::iterator_to_offset(this->n_actg), nucleotide);//0 = TU, 1 =
+
+    // if fourth nucleotide, 2bit is complete; write to disk
+    if(this->n_actg % 2 == 1) {
+        fh_fastafs << this->fivebit_data.data;
+    }
+
+    if(this->previous_was_N) {
+        this->n_block_ends.push_back(this->n_actg + this->N - 1);
+    }
+
+    this->previous_was_N = false;
+    this->n_actg++;
+    */
+}
+
+
+
+
+
+void fasta_to_fastafs_seq::add_unknown()
+{
+    if(!this->previous_was_N) {
+        this->n_block_starts.push_back(this->n_actg + this->N);
+    }
+
+    this->previous_was_N = true;
+    this->N++;
+}
+
+
+
 
 
 void fasta_to_fastafs_seq::flush()
@@ -309,6 +336,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
             bool running = getline(fh_fasta, line).good();
             while(running) {
                 if(line[0] == '>') {
+                    // more N-bytes than 2-bit bytes - 4bit is more efficient
                     if(auto_recompress_to_fourbit && s->current_dict == DICT_TWOBIT && s->N_bytes_used() > s->twobit_bytes_used()) {
                         fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
                         fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
@@ -317,9 +345,9 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         s->current_dict = DICT_FOURBIT;
                     } else {
                         if(s->current_dict == DICT_TWOBIT) {
-                            s->finish_twobit_sequence(fh_fastafs);// finish last sequence
+                            s->twobit_finish_sequence(fh_fastafs);// finish last sequence
                         } else {
-                            s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
+                            s->fourbit_finish_sequence(fh_fastafs);// finish last sequence
                         }
                         line.erase(0, 1);// erases first part, quicker would be pointer from first char
 
@@ -330,7 +358,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         index.push_back(s);
                     }
                 } else {
-                    if(s->current_dict ==  DICT_TWOBIT) {
+                    if(s->current_dict == DICT_TWOBIT) {
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
 
@@ -346,8 +374,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                                MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_Nucleotide
+                                s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_unknownucleotide
                                 break;
                             case 'u':// lower case = m block
                                 if(s->has_T) {
@@ -360,8 +388,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                                MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_Nucleotide
+                                s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nu, 1);// this needs to be pu in add_unknownucleotide
                                 break;
                             case 'T':
                                 if(s->has_U) {
@@ -374,8 +402,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_Nucleotide
+                                s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_unknownucleotide
                                 break;
                             case 't':
                                 if(s->has_U) {
@@ -388,8 +416,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_T, fh_fastafs);
-                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_Nucleotide
+                                s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
+                                MD5_Update(&s->ctx, nt, 1);// this needs to be pu in add_unknownucleotide
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
@@ -397,7 +425,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_C, fh_fastafs);
+                                s->twobit_add(NUCLEOTIDE_C, fh_fastafs);
                                 MD5_Update(&s->ctx, nc, 1);
                                 break;
                             case 'c':
@@ -406,7 +434,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_C, fh_fastafs);
+                                s->twobit_add(NUCLEOTIDE_C, fh_fastafs);
                                 MD5_Update(&s->ctx, nc, 1);
                                 break;
                             case 'A':
@@ -416,7 +444,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_A, fh_fastafs);
+                                s->twobit_add(NUCLEOTIDE_A, fh_fastafs);
                                 MD5_Update(&s->ctx, na, 1);
                                 break;
                             case 'a':
@@ -425,7 +453,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_A, fh_fastafs);
+                                s->twobit_add(NUCLEOTIDE_A, fh_fastafs);
                                 MD5_Update(&s->ctx, na, 1);
                                 break;
                             case 'G':
@@ -434,7 +462,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                                s->twobit_add(NUCLEOTIDE_G, fh_fastafs);
                                 MD5_Update(&s->ctx, ng, 1);
                                 break;
                             case 'g':
@@ -443,7 +471,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_twobit_ACTG(NUCLEOTIDE_G, fh_fastafs);
+                                s->twobit_add(NUCLEOTIDE_G, fh_fastafs);
                                 MD5_Update(&s->ctx, ng, 1);
                                 break;
                             case 'N':
@@ -452,7 +480,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_N();
+                                s->add_unknown();
                                 MD5_Update(&s->ctx, nn, 1);
                                 break;
                             case 'n':
@@ -461,19 +489,42 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_N();
+                                s->add_unknown();
                                 MD5_Update(&s->ctx, nn, 1);
                                 break;
-                            default:
+                            case 'r':
+                            case 'R':
+                            case 'y':
+                            case 'Y':
+                            case 'k':
+                            case 'K':
+                            case 'm':
+                            case 'M':
+                            case 's':
+                            case 'S':
+                            case 'w':
+                            case 'W':
+                            case 'b':
+                            case 'B':
+                            case 'd':
+                            case 'D':
+                            case 'h':
+                            case 'H':
+                            case 'v':
+                            case 'V':
+                            case '-':
                                 s->current_dict = DICT_FOURBIT;
+                                break;
+                            default:
+                                s->current_dict = DICT_FIVEBIT;
                                 break;
                             }
                         }
 
 
+                        if(s->current_dict != DICT_TWOBIT) {
+                            char dict = s->current_dict; // DICT_FOURBIT | DICT_FIVEBIT
 
-                        //@todo Funct set_to_fourbit(*s, *fasta, *fastafs , ...)
-                        if(s->current_dict == DICT_FOURBIT) {
                             // set to fourbit and re-intialize
                             // seek fasta header to beg + s->file_offset_in_fasta
                             // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
@@ -482,10 +533,10 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                             fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
 
                             s->flush();
-                            s->current_dict = DICT_FOURBIT;
+                            s->current_dict = dict; // set back to dict
                         }
 
-                    } else { // four bit decoding
+                    } else if (s->current_dict == DICT_FOURBIT) { // four bit decoding
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
 
@@ -495,7 +546,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(0, fh_fastafs);
+                                s->fourbit_add(0, fh_fastafs);
                                 MD5_Update(&s->ctx, na, 1);
                                 break;
                             case 'a':
@@ -504,7 +555,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(0, fh_fastafs);
+                                s->fourbit_add(0, fh_fastafs);
                                 MD5_Update(&s->ctx, na, 1);
                                 break;
                             case 'C':
@@ -513,7 +564,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(1, fh_fastafs);
+                                s->fourbit_add(1, fh_fastafs);
                                 MD5_Update(&s->ctx, nc, 1);
                                 break;
                             case 'c':
@@ -522,7 +573,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(1, fh_fastafs);
+                                s->fourbit_add(1, fh_fastafs);
                                 MD5_Update(&s->ctx, nc, 1);
                                 break;
                             case 'G':
@@ -531,7 +582,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(2, fh_fastafs);
+                                s->fourbit_add(2, fh_fastafs);
                                 MD5_Update(&s->ctx, ng, 1);
                                 break;
                             case 'g':
@@ -540,7 +591,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(2, fh_fastafs);
+                                s->fourbit_add(2, fh_fastafs);
                                 MD5_Update(&s->ctx, ng, 1);
                                 break;
                             case 'T':
@@ -549,7 +600,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(3, fh_fastafs);
+                                s->fourbit_add(3, fh_fastafs);
                                 MD5_Update(&s->ctx, nt, 1);
                                 break;
                             case 't':
@@ -558,7 +609,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(3, fh_fastafs);
+                                s->fourbit_add(3, fh_fastafs);
                                 MD5_Update(&s->ctx, nt, 1);
                                 break;
                             case 'U':
@@ -567,7 +618,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(4, fh_fastafs);
+                                s->fourbit_add(4, fh_fastafs);
                                 MD5_Update(&s->ctx, nu, 1);
                                 break;
                             case 'u':
@@ -576,7 +627,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(4, fh_fastafs);
+                                s->fourbit_add(4, fh_fastafs);
                                 MD5_Update(&s->ctx, nu, 1);
                                 break;
 
@@ -586,7 +637,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(5, fh_fastafs);
+                                s->fourbit_add(5, fh_fastafs);
                                 MD5_Update(&s->ctx, nr, 1);
                                 break;
                             case 'r':
@@ -595,7 +646,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(5, fh_fastafs);
+                                s->fourbit_add(5, fh_fastafs);
                                 MD5_Update(&s->ctx, nr, 1);
                                 break;
                             case 'Y':
@@ -604,7 +655,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(6, fh_fastafs);
+                                s->fourbit_add(6, fh_fastafs);
                                 MD5_Update(&s->ctx, ny, 1);
                                 break;
                             case 'y':
@@ -613,7 +664,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(6, fh_fastafs);
+                                s->fourbit_add(6, fh_fastafs);
                                 MD5_Update(&s->ctx, ny, 1);
                                 break;
                             case 'K':
@@ -622,7 +673,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(7, fh_fastafs);
+                                s->fourbit_add(7, fh_fastafs);
                                 MD5_Update(&s->ctx, nk, 1);
                                 break;
                             case 'k':
@@ -631,7 +682,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(7, fh_fastafs);
+                                s->fourbit_add(7, fh_fastafs);
                                 MD5_Update(&s->ctx, nk, 1);
                                 break;
                             case 'M':
@@ -640,7 +691,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(8, fh_fastafs);
+                                s->fourbit_add(8, fh_fastafs);
                                 MD5_Update(&s->ctx, nm, 1);
                                 break;
                             case 'm':
@@ -649,7 +700,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(8, fh_fastafs);
+                                s->fourbit_add(8, fh_fastafs);
                                 MD5_Update(&s->ctx, nm, 1);
                                 break;
                             case 'S':
@@ -658,7 +709,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(9, fh_fastafs);
+                                s->fourbit_add(9, fh_fastafs);
                                 MD5_Update(&s->ctx, ns, 1);
                                 break;
                             case 's':
@@ -667,7 +718,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(9, fh_fastafs);
+                                s->fourbit_add(9, fh_fastafs);
                                 MD5_Update(&s->ctx, ns, 1);
                                 break;
                             case 'W':
@@ -676,7 +727,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(10, fh_fastafs);
+                                s->fourbit_add(10, fh_fastafs);
                                 MD5_Update(&s->ctx, nw, 1);
                                 break;
                             case 'w':
@@ -685,7 +736,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(10, fh_fastafs);
+                                s->fourbit_add(10, fh_fastafs);
                                 MD5_Update(&s->ctx, nw, 1);
                                 break;
                             case 'B':
@@ -694,7 +745,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(11, fh_fastafs);
+                                s->fourbit_add(11, fh_fastafs);
                                 MD5_Update(&s->ctx, nb, 1);
                                 break;
                             case 'b':
@@ -703,7 +754,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(11, fh_fastafs);
+                                s->fourbit_add(11, fh_fastafs);
                                 MD5_Update(&s->ctx, nb, 1);
                                 break;
                             case 'D':
@@ -712,7 +763,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(12, fh_fastafs);
+                                s->fourbit_add(12, fh_fastafs);
                                 MD5_Update(&s->ctx, nd, 1);
                                 break;
                             case 'd':
@@ -721,7 +772,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(12, fh_fastafs);
+                                s->fourbit_add(12, fh_fastafs);
                                 MD5_Update(&s->ctx, nd, 1);
                                 break;
                             case 'H':
@@ -730,7 +781,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(13, fh_fastafs);
+                                s->fourbit_add(13, fh_fastafs);
                                 MD5_Update(&s->ctx, nh, 1);
                                 break;
                             case 'h':
@@ -739,7 +790,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(13, fh_fastafs);
+                                s->fourbit_add(13, fh_fastafs);
                                 MD5_Update(&s->ctx, nh, 1);
                                 break;
                             case 'V':
@@ -748,7 +799,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(14, fh_fastafs);
+                                s->fourbit_add(14, fh_fastafs);
                                 MD5_Update(&s->ctx, nv, 1);
                                 break;
                             case 'v':
@@ -757,7 +808,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(14, fh_fastafs);
+                                s->fourbit_add(14, fh_fastafs);
                                 MD5_Update(&s->ctx, nv, 1);
                                 break;
                             case 'N':
@@ -766,7 +817,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = false;
                                 }
 
-                                s->add_fourbit_ACTG(15, fh_fastafs);
+                                s->fourbit_add(15, fh_fastafs);
                                 MD5_Update(&s->ctx, nn, 1);
                                 break;
                             case 'n':
@@ -775,17 +826,521 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                     s->in_m_block = true;
                                 }
 
-                                s->add_fourbit_ACTG(15, fh_fastafs);
+                                s->fourbit_add(15, fh_fastafs);
                                 MD5_Update(&s->ctx, nn, 1);
                                 break;
                             case '-':
-                                s->add_N();
+                                s->add_unknown();
                                 break;
+
+                            // @todo case for those only in protein seq
 
                             default:
                                 throw std::runtime_error("[fasta_to_x_fastafs] invalid chars in FASTA file");
                                 break;
                             }
+                        }
+                    } else { // s->current_dict == DICT_FIVEBIT
+
+
+
+                        for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
+                            switch(*it) {
+
+                            //ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                            case 'A':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(0, fh_fastafs);
+                                MD5_Update(&s->ctx, na, 1);
+                                break;
+                            case 'a':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(0, fh_fastafs);
+                                MD5_Update(&s->ctx, na, 1);
+                                break;
+                            case 'B':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(1, fh_fastafs);
+                                MD5_Update(&s->ctx, na, 1);
+                                break;
+                            case 'b':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(1, fh_fastafs);
+                                MD5_Update(&s->ctx, na, 1);
+                                break;
+                            case 'C':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(2, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'c':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(2, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'D':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(3, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'd':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(3, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'E':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(4, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'e':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(4, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'F':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(5, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'f':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(5, fh_fastafs);
+                                MD5_Update(&s->ctx, nc, 1);
+                                break;
+                            case 'G'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(6, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'g':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(6, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'H'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(7, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'h':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(7, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'I'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(8, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'i':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(8, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'J'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(9, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'j':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(9, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'K'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(10, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'k':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(10, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'L'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(11, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'l':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(11, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'M'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(12, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'm':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(12, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'N'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(13, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'n':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(13, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'O'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(14, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'o':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(14, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'P'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(15, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'p':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(15, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'Q'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(16, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'q':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(16, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'R'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(17, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'r':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(17, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'S'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(18, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 's':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(18, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'T'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(19, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 't':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(19, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+
+
+
+                            case 'U':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(20, fh_fastafs);
+                                MD5_Update(&s->ctx, nu, 1);
+                                break;
+                            case 'u':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(20, fh_fastafs);
+                                MD5_Update(&s->ctx, nu, 1);
+                                break;
+
+                            case 'V':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(21, fh_fastafs);
+                                MD5_Update(&s->ctx, nr, 1);
+                                break;
+                            case 'v':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(21, fh_fastafs);
+                                MD5_Update(&s->ctx, nr, 1);
+                                break;
+
+                            case 'W'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(22, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+                            case 'w':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(22, fh_fastafs);
+                                MD5_Update(&s->ctx, ng, 1);
+                                break;
+
+
+
+                            case 'Y':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(23, fh_fastafs);
+                                MD5_Update(&s->ctx, ny, 1);
+                                break;
+                            case 'y':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(23, fh_fastafs);
+                                MD5_Update(&s->ctx, ny, 1);
+                                break;
+                            case 'Z':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(24, fh_fastafs);
+                                MD5_Update(&s->ctx, nk, 1);
+                                break;
+                            case 'z':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(24, fh_fastafs);
+                                MD5_Update(&s->ctx, nk, 1);
+                                break;
+                            case 'X':
+                                if(s->in_m_block) {
+                                    s->m_block_ends.push_back(s->N + s->n_actg - 1);
+                                    s->in_m_block = false;
+                                }
+
+                                s->fivebit_add(25, fh_fastafs);
+                                MD5_Update(&s->ctx, nm, 1);
+                                break;
+                            case 'x':
+                                if(!s->in_m_block) {
+                                    s->m_block_starts.push_back(s->N + s->n_actg);
+                                    s->in_m_block = true;
+                                }
+
+                                s->fivebit_add(25, fh_fastafs);
+                                MD5_Update(&s->ctx, nm, 1);
+                                break;
+
+                            case '*':
+                                s->fivebit_add(26, fh_fastafs);
+                                break;
+                            case '-':
+                                s->fivebit_add(27, fh_fastafs);
+                                break;
+
+
+                            // @todo case for those only in protein seq
+
+                            default:
+                                throw std::runtime_error("[fasta_to_x_fastafs] invalid chars in FASTA file");
+                                break;
+                            }
+
+
                         }
                     }
                 }
@@ -807,9 +1362,9 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         running = getline(fh_fasta, line).good();
                     } else {
                         if(s->current_dict == DICT_TWOBIT) {
-                            s->finish_twobit_sequence(fh_fastafs);// finish last sequence
+                            s->twobit_finish_sequence(fh_fastafs);// finish last sequence
                         } else {
-                            s->finish_fourbit_sequence(fh_fastafs);// finish last sequence
+                            s->fourbit_finish_sequence(fh_fastafs);// finish last sequence
                         }
                     }
                 }

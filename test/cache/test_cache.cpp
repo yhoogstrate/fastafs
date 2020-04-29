@@ -842,8 +842,6 @@ BOOST_AUTO_TEST_CASE(test_cache_2)
 
 BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
 {
-    std::cout << " --------------------------------------------- \n\n";
-
     size_t written = fasta_to_fastafs("test/data/test_009.fa", "tmp/test_009.fastafs", true);
 
     static std::string reference =
@@ -916,6 +914,26 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
     }
 
     delete[] buffer;
+
+}
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_protein)
+{
+
+    printf("alive\n");
+    size_t written = fasta_to_fastafs("test/data/test_010.fa", "tmp/test_010.fastafs", true);
+
+    //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
+    //std::ifstream file("tmp/test_010.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    //BOOST_REQUIRE(file.is_open());
+
+
+    //delete[] buffer;
 
 }
 

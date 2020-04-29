@@ -126,6 +126,7 @@ add_executable(fastafs
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
+					src/fivebit_fivebytes.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
@@ -149,6 +150,7 @@ add_executable(mount.fastafs
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
+					src/fivebit_fivebytes.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
@@ -170,6 +172,7 @@ add_library(libfastafs SHARED
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
+					src/fivebit_fivebytes.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp

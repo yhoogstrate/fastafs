@@ -9,6 +9,8 @@
 #include "fastafs.hpp"
 #include "twobit_byte.hpp"
 #include "fourbit_byte.hpp"
+#include "fivebit_fivebytes.hpp"
+
 
 
 
@@ -16,13 +18,16 @@ class fasta_to_fastafs_seq
 {
 public:
 
-    void add_N();
+    void add_unknown();
 
-    void add_twobit_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
-    void finish_twobit_sequence(std::ofstream &);
+    void twobit_add(unsigned char, std::ofstream &);
+    void twobit_finish_sequence(std::ofstream &);
 
-    void add_fourbit_ACTG(unsigned char, std::ofstream &);//Adds a T or a U
-    void finish_fourbit_sequence(std::ofstream &);
+    void fourbit_add(unsigned char, std::ofstream &);
+    void fourbit_finish_sequence(std::ofstream &);
+    
+    void fivebit_add(unsigned char, std::ofstream &);
+    void fivebit_finish_sequence(std::ofstream &);
 
     off_t file_offset_in_fasta; // file positions in FASTA file where sequence data blocks starts [ACTG]
     off_t file_offset_in_fastafs; // file positions in FASTAFS file where sequence data blocks starts [2bit/4bit]
@@ -62,6 +67,7 @@ public:
 
     twobit_byte twobit_data;
     fourbit_byte fourbit_data;
+    fivebit_fivebytes fivebit_data;
 
 
     fasta_to_fastafs_seq(off_t fof_fasta, off_t fof_fastafs, const std::string &name):
