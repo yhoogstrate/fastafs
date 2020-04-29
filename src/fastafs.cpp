@@ -389,8 +389,8 @@ size_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_re
 }
 
 uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache,
-                                           sequence_region* sr, char *buffer, size_t size, off_t offset, 
-                                           chunked_reader &fh)
+        sequence_region* sr, char *buffer, size_t size, off_t offset,
+        chunked_reader &fh)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -830,7 +830,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
         this->data[i]->view_fasta(cache->sequences[i], fh);
     }
 
-     //   file.close();
+    //   file.close();
     //}
 }
 
@@ -905,15 +905,15 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
     chunked_reader fh = chunked_reader(this->filename.c_str());
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
-        // parse "chr..:..-.." string
-        sequence_region sr = sequence_region(seq_region_arg);
+    // parse "chr..:..-.." string
+    sequence_region sr = sequence_region(seq_region_arg);
 
-        // 02 : check if 'chr' is equals this->data[i].name
-        for(size_t i = 0; i < this->data.size(); i++) {
-            if(sr.seq_name.compare(this->data[i]->name) == 0) {
-                return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, fh);
-            }
+    // 02 : check if 'chr' is equals this->data[i].name
+    for(size_t i = 0; i < this->data.size(); i++) {
+        if(sr.seq_name.compare(this->data[i]->name) == 0) {
+            return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, fh);
         }
+    }
     //}
 
     return 0;
@@ -934,7 +934,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
  */
 uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
 {
-    
+
     chunked_reader fh = chunked_reader(this->filename.c_str());
 
     return this->view_fasta_chunk(cache, buffer, buffer_size, file_offset, fh);
@@ -996,209 +996,229 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     chunked_reader file = chunked_reader(this->filename.c_str());
-        char n_seq[4];
-        pos_limit += 4;// skip this loop after writing first four bytes
-        while(pos < pos_limit) {
-            buffer[written++] = UCSC2BIT_MAGIC[pos];
+    char n_seq[4];
+    pos_limit += 4;// skip this loop after writing first four bytes
+    while(pos < pos_limit) {
+        buffer[written++] = UCSC2BIT_MAGIC[pos];
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+    pos_limit += 4;
+    while(pos < pos_limit) {
+        buffer[written++] = UCSC2BIT_VERSION[pos - 4];
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+    // number sequences
+    uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) this->data.size());
+    pos_limit += 4;
+    while(pos < pos_limit) {
+        buffer[written++] = n_seq[pos - 8];
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+    // 4 x nullbyte
+    pos_limit += 4;
+    while(pos < pos_limit) {
+        buffer[written++] = '\0';
+        pos++;
+        if(written >= buffer_size) {
+            return written;
+        }
+    }
+    uint32_t header_block_len = 4 + 4 + 4 + 4 + ((uint32_t) this->data.size() * (1 + 4));
+    uint32_t header_offset_previous = 0;
+    for(uint32_t i = 0; i < this->data.size(); i++) {
+        header_block_len += (uint32_t) this->data[i]->name.size();
+    }
+
+    fastafs_seq *sequence;
+    size_t i;
+    for(i = 0; i < this->data.size(); i++) {
+        sequence = this->data[i];
+
+        // single byte can be written, as the while loop has returned true
+        pos_limit += 1;
+        if(pos < pos_limit) {
+            buffer[written++] = (unsigned char) sequence->name.size();
             pos++;
             if(written >= buffer_size) {
                 return written;
             }
         }
+
+        // sequence name
+        pos_limit += (uint32_t) sequence->name.size();
+        while(pos < pos_limit) {
+            buffer[written++] = sequence->name[sequence->name.size() - (pos_limit - pos)];
+            pos++;
+            if(written >= buffer_size) {
+                return written;
+            }
+        }
+
+        // file offset
+        uint32_t offset = header_block_len + header_offset_previous;
+        uint_to_fourbytes_ucsc2bit(n_seq, offset);
         pos_limit += 4;
         while(pos < pos_limit) {
-            buffer[written++] = UCSC2BIT_VERSION[pos - 4];
+            buffer[written++] = n_seq[4 - (pos_limit - pos)];
             pos++;
             if(written >= buffer_size) {
                 return written;
             }
         }
-        // number sequences
-        uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) this->data.size());
+
+        header_offset_previous += 4 + 4 + 4 + 4;
+        header_offset_previous += 8 * (uint32_t) sequence->n_starts.size();
+        header_offset_previous += 8 * (uint32_t) sequence->m_starts.size();
+        header_offset_previous += sequence->n / 4;
+
+        if(sequence->n % 4 != 0) {
+            header_offset_previous++;
+        }
+    }
+
+    ffs2f_init* cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
+    for(i = 0; i < this->data.size(); i++) {
+        sequence = this->data[i];
+
+        // number nucleotides
+        uint_to_fourbytes_ucsc2bit(n_seq, sequence->n);
         pos_limit += 4;
         while(pos < pos_limit) {
-            buffer[written++] = n_seq[pos - 8];
+            buffer[written++] = n_seq[4 - (pos_limit - pos)];
             pos++;
             if(written >= buffer_size) {
+                delete cache;
                 return written;
             }
         }
-        // 4 x nullbyte
+
+        // number N blocks
+        uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->n_starts.size());
+        pos_limit += 4;
+        while(pos < pos_limit) {
+            buffer[written++] = n_seq[4 - (pos_limit - pos)];
+            pos++;
+            if(written >= buffer_size) {
+                delete cache;
+                return written;
+            }
+        }
+
+        // write n-blocks effectively down!
+        for(uint32_t k = 0; k < sequence->n_starts.size(); k++) {
+            uint_to_fourbytes_ucsc2bit(n_seq, sequence->n_starts[k]);
+            pos_limit += 4;
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    delete cache;
+                    return written;
+                }
+            }
+
+            uint_to_fourbytes_ucsc2bit(n_seq, sequence->n_ends[k] - sequence->n_starts[k] + 1);
+            pos_limit += 4;
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                pos++;
+                if(written >= buffer_size) {
+                    delete cache;
+                    return written;
+                }
+            }
+        }
+
+        // number M blocks (masked regions; lower case regions)
+        uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->m_starts.size());
+        pos_limit += 4;
+        while(pos < pos_limit) {
+            buffer[written++] = n_seq[4 - (pos_limit - pos)];
+            pos++;
+
+            if(written >= buffer_size) {
+                delete cache;
+                return written;
+            }
+        }
+
+        // write m-blocks effectively down!
+        for(uint32_t k = 0; k < sequence->m_starts.size(); k++) {
+            uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_starts[k]);
+            pos_limit += 4;
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                pos++;
+
+                if(written >= buffer_size) {
+                    delete cache;
+                    return written;
+                }
+            }
+
+            uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_ends[k] - sequence->m_starts[k] + 1);
+            pos_limit += 4;
+            while(pos < pos_limit) {
+                buffer[written++] = n_seq[4 - (pos_limit - pos)];
+                pos++;
+
+                if(written >= buffer_size) {
+                    delete cache;
+                    return written;
+                }
+            }
+        }
+
+        // reserved block
         pos_limit += 4;
         while(pos < pos_limit) {
             buffer[written++] = '\0';
             pos++;
+
             if(written >= buffer_size) {
+                delete cache;
                 return written;
             }
         }
-        uint32_t header_block_len = 4 + 4 + 4 + 4 + ((uint32_t) this->data.size() * (1 + 4));
-        uint32_t header_offset_previous = 0;
-        for(uint32_t i = 0; i < this->data.size(); i++) {
-            header_block_len += (uint32_t) this->data[i]->name.size();
+
+        // twobit coded nucleotides (only containing 4 nucleotides each)
+        uint32_t full_twobits = sequence->n / 4;
+        twobit_byte_dna t;
+        pos_limit += full_twobits;
+
+        while(pos < pos_limit) {
+            //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
+            //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
+            sequence->view_fasta_chunk(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), file);
+            t.set(n_seq);
+            buffer[written++] = t.data;
+            pos++;
+            if(written >= buffer_size) {
+                delete cache;
+                return written;
+            }
         }
 
-        fastafs_seq *sequence;
-        size_t i;
-        for(i = 0; i < this->data.size(); i++) {
-            sequence = this->data[i];
-
-            // single byte can be written, as the while loop has returned true
+        // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
+        if(full_twobits * 4 < sequence->n) {
+            n_seq[0] = 'N';
+            n_seq[1] = 'N';
+            n_seq[2] = 'N';
+            n_seq[3] = 'N';
             pos_limit += 1;
             if(pos < pos_limit) {
-                buffer[written++] = (unsigned char) sequence->name.size();
-                pos++;
-                if(written >= buffer_size) {
-                    return written;
-                }
-            }
-
-            // sequence name
-            pos_limit += (uint32_t) sequence->name.size();
-            while(pos < pos_limit) {
-                buffer[written++] = sequence->name[sequence->name.size() - (pos_limit - pos)];
-                pos++;
-                if(written >= buffer_size) {
-                    return written;
-                }
-            }
-
-            // file offset
-            uint32_t offset = header_block_len + header_offset_previous;
-            uint_to_fourbytes_ucsc2bit(n_seq, offset);
-            pos_limit += 4;
-            while(pos < pos_limit) {
-                buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                pos++;
-                if(written >= buffer_size) {
-                    return written;
-                }
-            }
-
-            header_offset_previous += 4 + 4 + 4 + 4;
-            header_offset_previous += 8 * (uint32_t) sequence->n_starts.size();
-            header_offset_previous += 8 * (uint32_t) sequence->m_starts.size();
-            header_offset_previous += sequence->n / 4;
-
-            if(sequence->n % 4 != 0) {
-                header_offset_previous++;
-            }
-        }
-
-        ffs2f_init* cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
-        for(i = 0; i < this->data.size(); i++) {
-            sequence = this->data[i];
-
-            // number nucleotides
-            uint_to_fourbytes_ucsc2bit(n_seq, sequence->n);
-            pos_limit += 4;
-            while(pos < pos_limit) {
-                buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                pos++;
-                if(written >= buffer_size) {
-                    delete cache;
-                    return written;
-                }
-            }
-
-            // number N blocks
-            uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->n_starts.size());
-            pos_limit += 4;
-            while(pos < pos_limit) {
-                buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                pos++;
-                if(written >= buffer_size) {
-                    delete cache;
-                    return written;
-                }
-            }
-
-            // write n-blocks effectively down!
-            for(uint32_t k = 0; k < sequence->n_starts.size(); k++) {
-                uint_to_fourbytes_ucsc2bit(n_seq, sequence->n_starts[k]);
-                pos_limit += 4;
-                while(pos < pos_limit) {
-                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                    pos++;
-                    if(written >= buffer_size) {
-                        delete cache;
-                        return written;
-                    }
-                }
-
-                uint_to_fourbytes_ucsc2bit(n_seq, sequence->n_ends[k] - sequence->n_starts[k] + 1);
-                pos_limit += 4;
-                while(pos < pos_limit) {
-                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                    pos++;
-                    if(written >= buffer_size) {
-                        delete cache;
-                        return written;
-                    }
-                }
-            }
-
-            // number M blocks (masked regions; lower case regions)
-            uint_to_fourbytes_ucsc2bit(n_seq, (uint32_t) sequence->m_starts.size());
-            pos_limit += 4;
-            while(pos < pos_limit) {
-                buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                pos++;
-
-                if(written >= buffer_size) {
-                    delete cache;
-                    return written;
-                }
-            }
-
-            // write m-blocks effectively down!
-            for(uint32_t k = 0; k < sequence->m_starts.size(); k++) {
-                uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_starts[k]);
-                pos_limit += 4;
-                while(pos < pos_limit) {
-                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                    pos++;
-
-                    if(written >= buffer_size) {
-                        delete cache;
-                        return written;
-                    }
-                }
-
-                uint_to_fourbytes_ucsc2bit(n_seq, sequence->m_ends[k] - sequence->m_starts[k] + 1);
-                pos_limit += 4;
-                while(pos < pos_limit) {
-                    buffer[written++] = n_seq[4 - (pos_limit - pos)];
-                    pos++;
-
-                    if(written >= buffer_size) {
-                        delete cache;
-                        return written;
-                    }
-                }
-            }
-
-            // reserved block
-            pos_limit += 4;
-            while(pos < pos_limit) {
-                buffer[written++] = '\0';
-                pos++;
-
-                if(written >= buffer_size) {
-                    delete cache;
-                    return written;
-                }
-            }
-
-            // twobit coded nucleotides (only containing 4 nucleotides each)
-            uint32_t full_twobits = sequence->n / 4;
-            twobit_byte_dna t;
-            pos_limit += full_twobits;
-
-            while(pos < pos_limit) {
-                //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
-                //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
-                sequence->view_fasta_chunk(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), file);
+                //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, sequence->n - (full_twobits * 4),  sequence->n - j);
+                //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
+                sequence->view_fasta_chunk(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
@@ -1207,33 +1227,13 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                     return written;
                 }
             }
-
-            // last byte, may also rely on 1,2 or 3 nucleotides and reqiures setting 0's
-            if(full_twobits * 4 < sequence->n) {
-                n_seq[0] = 'N';
-                n_seq[1] = 'N';
-                n_seq[2] = 'N';
-                n_seq[3] = 'N';
-                pos_limit += 1;
-                if(pos < pos_limit) {
-                    //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, sequence->n - (full_twobits * 4),  sequence->n - j);
-                    //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
-                    sequence->view_fasta_chunk(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, file);
-                    t.set(n_seq);
-                    buffer[written++] = t.data;
-                    pos++;
-                    if(written >= buffer_size) {
-                        delete cache;
-                        return written;
-                    }
-                }
-            }
         }
-        delete cache;
-        //file.close();
+    }
+    delete cache;
+    //file.close();
     //} else {
-     //   throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
-   // }
+    //   throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
+    // }
     return written;
 }
 
@@ -1742,24 +1742,24 @@ bool fastafs::check_sequence_integrity(bool verbose)
     chunked_reader file = chunked_reader(this->filename.c_str());
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
-        for(uint32_t i = 0; i < this->data.size(); i++) {
-            md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
-            old_hash = std::string(md5_hash);
+    for(uint32_t i = 0; i < this->data.size(); i++) {
+        md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
+        old_hash = std::string(md5_hash);
 
-            std::string new_hash = this->data[i]->md5(cache->sequences[i], file);
-            if(old_hash.compare(new_hash) == 0) {
-                if(verbose) {
-                    printf("OK\t%s\n", this->data[i]->name.c_str());
-                }
-            } else {
-                if(verbose) {
-                    printf("ERROR\t%s\t%s (encoded in fastafs)  !=  %s (on disk)\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
-                }
-
-                retcode = false;
+        std::string new_hash = this->data[i]->md5(cache->sequences[i], file);
+        if(old_hash.compare(new_hash) == 0) {
+            if(verbose) {
+                printf("OK\t%s\n", this->data[i]->name.c_str());
             }
+        } else {
+            if(verbose) {
+                printf("ERROR\t%s\t%s (encoded in fastafs)  !=  %s (on disk)\n", this->data[i]->name.c_str(), md5_hash, new_hash.c_str());
+            }
+
+            retcode = false;
         }
-        //file.close();
+    }
+    //file.close();
     //} else {
     //    throw std::runtime_error("[fastafs::check_sequence_integrity] could not load fastafs: " + this->filename);
     //}

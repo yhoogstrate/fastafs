@@ -26,41 +26,42 @@ chunked_reader::~chunked_reader() {
 }
 */
 
-void chunked_reader::init() {
+void chunked_reader::init()
+{
     this->set_filetype();
-    
+
     switch(this->filetype) {
-        case uncompressed:
-            fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            
-            if(fh_flat.is_open()) {
-                this->fh_flat.seekg(0, std::ios::beg);
-                this->update_flat_buffer();
-            }
-            else {
-                throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
-            }
+    case uncompressed:
+        fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+        if(fh_flat.is_open()) {
+            this->fh_flat.seekg(0, std::ios::beg);
+            this->update_flat_buffer();
+        } else {
+            throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
+        }
         break;
-        case zstd:
-            // make zstd handle - to be implemented later on
+    case zstd:
+        // make zstd handle - to be implemented later on
         break;
-        default:
-            throw std::runtime_error("[chunked_reader::init] Should never happen - but avoids compiler warning.\n");
+    default:
+        throw std::runtime_error("[chunked_reader::init] Should never happen - but avoids compiler warning.\n");
         break;
     }
 }
 
-void chunked_reader::set_filetype() {
-    if(is_zstd_file((const char*) this->filename.c_str()) ) {
+void chunked_reader::set_filetype()
+{
+    if(is_zstd_file((const char*) this->filename.c_str())) {
         this->filetype = zstd;
-    }
-    else {
+    } else {
         this->filetype = uncompressed;
     }
 }
 
 
-size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
+size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
+{
     buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
@@ -78,14 +79,14 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
     if(written < buffer_size) {
         // overwrite buffer
         switch(this->filetype) {
-            case uncompressed:
-                this->update_flat_buffer();
+        case uncompressed:
+            this->update_flat_buffer();
             break;
-            case zstd:
-                this->update_zstd_buffer();
+        case zstd:
+            this->update_zstd_buffer();
             break;
-            default:
-                throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
+        default:
+            throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
             break;
         }
 
@@ -105,7 +106,8 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size) {
 }
 
 
-void chunked_reader::update_flat_buffer() {
+void chunked_reader::update_flat_buffer()
+{
     this->fh_flat.read(this->buffer, READ_BUFFER_SIZE);
 
     this->buffer_i = 0;
@@ -114,7 +116,8 @@ void chunked_reader::update_flat_buffer() {
 }
 
 
-void chunked_reader::update_zstd_buffer() {
+void chunked_reader::update_zstd_buffer()
+{
     size_t written = ZSTD_seekable_decompressFile_orDie(this->filename.c_str(), this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
 
     this->buffer_i = 0;
@@ -124,28 +127,30 @@ void chunked_reader::update_zstd_buffer() {
 
 
 
-void chunked_reader::seek(off_t offset) {
+void chunked_reader::seek(off_t offset)
+{
     this->file_i = offset;
-    
+
     switch(this->filetype) {
-        case uncompressed:
-            this->fh_flat.clear(); // reset error state
+    case uncompressed:
+        this->fh_flat.clear(); // reset error state
 
-            if(!this->fh_flat.is_open()) {
-                this->fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            }
+        if(!this->fh_flat.is_open()) {
+            this->fh_flat.open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+        }
 
-            this->fh_flat.seekg(offset, std::ios::beg);
-            this->update_flat_buffer();
+        this->fh_flat.seekg(offset, std::ios::beg);
+        this->update_flat_buffer();
         break;
-        default:
-            this->update_zstd_buffer();
+    default:
+        this->update_zstd_buffer();
         break;
     }
 }
 
 
-size_t chunked_reader::tell() {
+size_t chunked_reader::tell()
+{
     return this->file_i - this->buffer_n + this->buffer_i;
 }
 

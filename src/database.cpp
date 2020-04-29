@@ -92,8 +92,7 @@ void database::list()
 
             if(zstd_seek) {
                 version = "v0-x32-2bit+Z";
-            }
-            else {
+            } else {
                 version = "v0-x32-2bit";
             }
 
@@ -106,8 +105,7 @@ void database::list()
                    (float) 100.0 * (float) size / (float) f.fasta_filesize(50), // @todo fastafs file size!
                    mountpoints.c_str()
                   );
-        }
-        else {
+        } else {
             // print error invalid file?
         }
     }

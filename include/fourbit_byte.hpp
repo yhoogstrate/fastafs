@@ -1,6 +1,6 @@
 
-#ifndef fourbit_BYTE_HPP
-#define fourbit_BYTE_HPP
+#ifndef FOURBIT_BYTE_HPP
+#define FOURBIT_BYTE_HPP
 
 #include <array>
 #include "config.hpp"

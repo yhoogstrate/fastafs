@@ -39,11 +39,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_small_file)
 
     fasta_to_fastafs(fasta_file, fastafs_file, false);
     ZSTD_seekable_compressFile_orDie((const char*) fastafs_file.c_str(),
-                         (const char*) fastafs_file_zstd.c_str(),
-                         (int) ZSTD_COMPRESSION_QUALIITY,
-                         (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
-    
-    
+                                     (const char*) fastafs_file_zstd.c_str(),
+                                     (int) ZSTD_COMPRESSION_QUALIITY,
+                                     (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
+
+
     char buffer[READ_BUFFER_SIZE + 1];
     flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     std::string std_buffer;
@@ -151,11 +151,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_large_file)
 
     fasta_to_fastafs(fasta_file, fastafs_file, false);
     ZSTD_seekable_compressFile_orDie((const char*) fastafs_file.c_str(),
-                         (const char*) fastafs_file_zstd.c_str(),
-                         (int) ZSTD_COMPRESSION_QUALIITY,
-                         (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
-    
-    
+                                     (const char*) fastafs_file_zstd.c_str(),
+                                     (int) ZSTD_COMPRESSION_QUALIITY,
+                                     (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
+
+
     char buffer[READ_BUFFER_SIZE + 1];
     flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     std::string std_buffer;
@@ -191,11 +191,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_large_file)
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        
-        
+
+
         // set back
         r_flat.seek(1024);
-        
+
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 569);
         std_buffer = std::string(buffer, written);
@@ -256,11 +256,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_reading_large_file)
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        
-        
+
+
         // set back
         r_zstd.seek(1024);
-        
+
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 569);
         std_buffer = std::string(buffer, written);

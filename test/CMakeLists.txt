@@ -23,8 +23,18 @@ set(BUILD_DIR      "../bin")
 set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 
 
-add_executable(test_twobit_byte         twobit_byte/test_twobit_byte.cpp ../src/twobit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
-add_executable(test_fourbit_byte        fourbit_byte/test_fourbit_byte.cpp ../src/fourbit_byte.cpp  ../src/utils.cpp)
+add_executable(test_twobit_byte         "twobit_byte/test_twobit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/twobit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+
+add_executable(test_fourbit_byte        "fourbit_byte/test_fourbit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fourbit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+
+add_executable(test_fivebit_fivebytes   "fivebit_fivebytes/test_fivebit_fivebytes.cpp")
+#                                        "${CMAKE_SOURCE_DIR}/src/fivebit_fivebytes.cpp"
+#                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+
 add_executable(test_cache               "cache/test_cache.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fasta_to_fastafs.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/flags.cpp"
@@ -54,7 +64,10 @@ add_executable(test_view                "view/test_view.cpp"
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
-add_executable(test_flags               flags/test_flags.cpp ../src/flags.cpp ../src/utils.cpp)
+add_executable(test_flags               "flags/test_flags.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/flags.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+
 add_executable(test_fastafs             "fastafs/test_fastafs.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fasta_to_fastafs.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/flags.cpp"
@@ -164,6 +177,8 @@ set_target_properties(test_fastafs_as_ucsc2bit
 set_target_properties(test_twobit_byte
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_fourbit_byte
+                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
+set_target_properties(test_fivebit_fivebytes
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_ucsc2bit_to_fastafs
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")

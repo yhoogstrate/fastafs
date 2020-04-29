@@ -693,21 +693,21 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 
     fasta_to_fastafs(fasta_file, fastafs_file, false);
     ZSTD_seekable_compressFile_orDie((const char*) fastafs_file.c_str(),
-                         (const char*) fastafs_file_zstd.c_str(),
-                         (int) ZSTD_COMPRESSION_QUALIITY,
-                         (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
+                                     (const char*) fastafs_file_zstd.c_str(),
+                                     (int) ZSTD_COMPRESSION_QUALIITY,
+                                     (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
     remove(fastafs_file.c_str());
 
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file_zstd);
-    BOOST_CHECK_EQUAL(fs.data.size() , 7);
-    BOOST_CHECK_EQUAL(fs.data[0]->name.compare("chr1") , 0);
-    BOOST_CHECK_EQUAL(fs.data[1]->name.compare("chr2") , 0);
-    BOOST_CHECK_EQUAL(fs.data[2]->name.compare("chr3.1") , 0);
-    BOOST_CHECK_EQUAL(fs.data[3]->name.compare("chr3.2") , 0);
-    BOOST_CHECK_EQUAL(fs.data[4]->name.compare("chr3.3") , 0);
-    BOOST_CHECK_EQUAL(fs.data[5]->name.compare("chr4") , 0);
-    BOOST_CHECK_EQUAL(fs.data[6]->name.compare("chr5") , 0);
+    BOOST_CHECK_EQUAL(fs.data.size(), 7);
+    BOOST_CHECK_EQUAL(fs.data[0]->name.compare("chr1"), 0);
+    BOOST_CHECK_EQUAL(fs.data[1]->name.compare("chr2"), 0);
+    BOOST_CHECK_EQUAL(fs.data[2]->name.compare("chr3.1"), 0);
+    BOOST_CHECK_EQUAL(fs.data[3]->name.compare("chr3.2"), 0);
+    BOOST_CHECK_EQUAL(fs.data[4]->name.compare("chr3.3"), 0);
+    BOOST_CHECK_EQUAL(fs.data[5]->name.compare("chr4"), 0);
+    BOOST_CHECK_EQUAL(fs.data[6]->name.compare("chr5"), 0);
 
 
     char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer

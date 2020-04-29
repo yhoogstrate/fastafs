@@ -19,8 +19,7 @@
 #include "zstd_seekable_utils.hpp"
 
 
-enum compression_type : signed char
-{
+enum compression_type : signed char {
     undefined = -1,
     uncompressed = 0,
     zstd = 1
@@ -35,7 +34,7 @@ public:
     chunked_reader(char *); // filename
     chunked_reader(const char *); // filename
     //~chunked_reader(); seems to do nasty with the ifstream in this class?
-    
+
     void init(); // generic tasks needed for init
 
     std::string filename; // try doing this with inode

@@ -222,7 +222,8 @@ bool is_ucsc2bit_file(char *filename)
 
 
 
-bool is_zstd_file(const char *filename) {
+bool is_zstd_file(const char *filename)
+{
     char buf[4 + 1];
     FILE *fp;
 
