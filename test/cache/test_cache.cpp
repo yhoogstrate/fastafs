@@ -930,14 +930,18 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
         // GENERIC-HEADER - size: 14
         "\x0F\x0A\x46\x53"s//     [0, 3]
         "\x00\x00\x00\x00"s//     [4, 7] version
-        "\x80\x00"s//             FASTAFS flag [ 10000000 | 00000000 ]
-        "\x00\x00\x01\x01"s //    [index position in file
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
+        "\x00\x00\x01\x01"s //    [10, 13] index position in file
 
         // DATA - size: 43
-        "\x00\x00\x00\x2D"s//     45 x ACTG's
-        "\x01\x03\xAD\x68\xA0"s
-        "\x94\xC0\x59\x6B\x5A"s
+        "\x00\x00\x00\x2D"s// [14, 17]    45 x ACTG's
+        "\x01\x03\xAD\x68\xA0"s // [18, 22]
+        "\x94\xC0\x59\x6B\x5A"s // 33 
         "\x16\x04\x84\x64\x8B"s
+        "\x0B\x60\xF1\xB2\x65"s // B2 should be 32?
+        "\xCB\x67\x93\x5A\x02"s
+        "\xA4\x77\x73\x00"s // last bytes contains no info thus  must be skipped
+        
         "\x13\x12\x13\x12\x13"s
         "\x13\x12\x13\x12\x13"s
         "\x13\x12\x13\x12\x13"s
