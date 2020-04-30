@@ -52,22 +52,14 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
         case 0:
             // 00000000
             // 00000---
-            amino_acid = (unsigned char) (amino_acid  << 3);
+            //amino_acid = (unsigned char) ;
 
             // 00000111 11222223 33334444 45555566 66677777
             // -----111
-            this->data_compressed[0] = 255;
-            printf(" - data_compressed[0]: [%u]    (setting amino acid to %u)\n", this->data_compressed[0], amino_acid);
-            
             this->data_compressed[0] = (unsigned char) (this->data_decompressed[0] & ~((16 + 8 + 4 + 2 + 1) << 3));
-            printf(" - data_compressed[0]: [%u]    (setting amino acid to %u)\n", this->data_compressed[0], amino_acid);
-            
-            this->data_compressed[0] = this->data_compressed[0] | amino_acid;
-            printf(" - data_compressed[0]: [%u]    (setting amino acid to %u)\n", this->data_compressed[0], amino_acid);
+            this->data_compressed[0] = this->data_compressed[0] | (amino_acid  << 3);
         break;
         case 1:
-            printf(" - data_compressed[0]: [%u]    (setting amino acid to %u)\n", this->data_compressed[0], amino_acid);
-
             // 00000000
             // -----000
             amino_acid_tmp = (unsigned char) amino_acid >> 5;
@@ -75,12 +67,9 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             // 00000111 11222223 33334444 45555566 66677777
             // 00000---
             this->data_compressed[0] = (unsigned char) (this->data_compressed[0] & ~((4 + 2 + 1) << 0 ));
-            printf(" - data_compressed[0]: [%u]    (setting amino acid to %u)\n", this->data_compressed[0], amino_acid);
-
             this->data_compressed[0] = this->data_compressed[0] | amino_acid_tmp ;
-            printf(" - data_compressed[0]: [%u]    (setting amino acid to %u)\n---\n", this->data_compressed[0], amino_acid);
 
-            
+
             // 00000000
             // 00------
             amino_acid_tmp = (unsigned char) amino_acid << 6;
@@ -88,10 +77,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             // 00000111 11222223 33334444 45555566 66677777
             //          --222223
             this->data_compressed[1] = (unsigned char) (this->data_compressed[1] & ~((2 + 1) << 6));
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n", this->data_compressed[1], amino_acid);
-
             this->data_compressed[1] = this->data_compressed[1] | amino_acid_tmp;
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n", this->data_compressed[1], amino_acid);
         break;
         case 2:
             // 00000000
@@ -100,12 +86,8 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             
             amino_acid = amino_acid << 1;
             amino_acid = (unsigned char) (amino_acid & ~((128 + 64 ) ));
-            
             this->data_compressed[1] = (unsigned char) (this->data_compressed[1] & ~((16 + 8 + 4 + 2 + 1) << 1));
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n", this->data_compressed[1], amino_acid);
-            
             this->data_compressed[1] = this->data_compressed[1] | amino_acid;
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n", this->data_compressed[1], amino_acid);
         break;
         case 3:
             // 00000111 11222223 33334444 45555566 66677777
@@ -113,26 +95,15 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             // 000xxxxx
             // -------x
             amino_acid_tmp = (unsigned char) amino_acid >> 4;
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n", this->data_compressed[1], amino_acid);
-            
             this->data_compressed[1] = (unsigned char) (this->data_compressed[1] & ~((1) << 0 ));
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n", this->data_compressed[1], amino_acid_tmp);
-            
             this->data_compressed[1] = this->data_compressed[1] | amino_acid_tmp;
-            printf(" - data_compressed[1]: [%u]    (setting amino acid to %u)\n---\n", this->data_compressed[1], amino_acid_tmp);
 
 
-            printf(" - data_compressed[2]: [%u]    (setting amino acid to %u)\n", this->data_compressed[2], amino_acid);
             // 000xxxxx
             // xxxx----
             amino_acid_tmp = (unsigned char) amino_acid << 4;
-            printf(" - data_compressed[2]: [%u]    (setting amino acid to %u)\n", this->data_compressed[2], amino_acid_tmp);
-
             this->data_compressed[2] = (unsigned char) (this->data_compressed[2] & ~((8 + 4 + 2 + 1) << 4 ));
-            printf(" - data_compressed[2]: [%u]    (setting amino acid to %u)\n", this->data_compressed[2], amino_acid_tmp);
-
             this->data_compressed[2] = this->data_compressed[2] | amino_acid_tmp;
-            printf(" - data_compressed[2]: [%u]    (setting amino acid to %u)\n", this->data_compressed[2], amino_acid_tmp);
 
         break;
         case 4:
@@ -142,21 +113,14 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             // -000xxxx
             amino_acid_tmp = amino_acid >> 1;
 
-            this->data_compressed[2] = (unsigned char) (this->data_compressed[2] & ~((8 + 4 + 2 + 1)  ));
-            printf(" - data_compressed[2]: [%u]    (setting amino acid to %u)\n", this->data_compressed[2], amino_acid_tmp);
-            
+            this->data_compressed[2] = (unsigned char) (this->data_compressed[2] & ~((8 + 4 + 2 + 1)  ));            
             this->data_compressed[2] = this->data_compressed[2] | amino_acid_tmp;
-            printf(" - data_compressed[2]: [%u]    (setting amino acid to %u)\n---\n", this->data_compressed[2], amino_acid_tmp);
-            
-            
             
             
             amino_acid_tmp = amino_acid << 7;
             this->data_compressed[3] = (unsigned char) (this->data_compressed[3] & ~((1) << 7 ));
-            printf(" - data_compressed[3]: [%u]    (setting amino acid to %u)\n", this->data_compressed[3], amino_acid_tmp);
             
             this->data_compressed[3] = this->data_compressed[3] | amino_acid_tmp;
-            printf(" - data_compressed[3]: [%u]    (setting amino acid to %u)\n", this->data_compressed[3], amino_acid_tmp);
         break;
         case 5:
             // 00000111 11222223 33334444 45555566 66677777
@@ -166,10 +130,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             amino_acid_tmp = amino_acid << 2;
 
             this->data_compressed[3] = (unsigned char) (this->data_compressed[3] & ~((16 + 8 + 4 + 2 + 1) << 1 ));
-            printf(" - data_compressed[3]: [%u]    (setting amino acid to %u)\n", this->data_compressed[3], amino_acid_tmp);
-
             this->data_compressed[3] = this->data_compressed[3] | amino_acid_tmp;
-            printf(" - data_compressed[3]: [%u]    (setting amino acid to %u)\n", this->data_compressed[3], amino_acid_tmp);
         break;
         case 6:
             // 00000111 11222223 33334444 45555566 66677777
@@ -179,10 +140,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             amino_acid_tmp = amino_acid >> 3;
 
             this->data_compressed[3] = (unsigned char) (this->data_compressed[3] & ~(( 2 + 1)  ));
-            printf(" - data_compressed[3]: [%u]    (setting amino acid to %u)\n", this->data_compressed[3], amino_acid_tmp);
-
             this->data_compressed[3] = this->data_compressed[3] | amino_acid_tmp;
-            printf(" - data_compressed[3]: [%u]    (setting amino acid to %u)\n---\n", this->data_compressed[3], amino_acid_tmp);
 
 
             // 000xxxxx
@@ -190,11 +148,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             amino_acid_tmp = amino_acid << 5;
 
             this->data_compressed[4] = (unsigned char) (this->data_compressed[4] & ~(( 4 + 2 + 1) << 5 ));
-            printf(" - data_compressed[4]: [%u]    (setting amino acid to %u)\n", this->data_compressed[4], amino_acid_tmp);
-
             this->data_compressed[4] = this->data_compressed[4] | amino_acid_tmp;
-            printf(" - data_compressed[4]: [%u]    (setting amino acid to %u)\n", this->data_compressed[4], amino_acid_tmp);
-
 
         break;
         case 7:
@@ -205,12 +159,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             amino_acid_tmp =  (unsigned char) (amino_acid & ~(( 4 + 2 + 1) << 5 ));
             
             this->data_compressed[4] = (unsigned char) (this->data_compressed[4] & ~(( 16 + 8 + 4 + 2 + 1) ));
-            printf(" - data_compressed[4]: [%u]    (setting amino acid to %u)\n", this->data_compressed[4], amino_acid_tmp);
-
             this->data_compressed[4] = this->data_compressed[4] | amino_acid_tmp;
-            printf(" - data_compressed[4]: [%u]    (setting amino acid to %u)\n", this->data_compressed[4], amino_acid_tmp);
-
-
         break;
     }
 }

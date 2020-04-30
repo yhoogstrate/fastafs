@@ -59,6 +59,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     f2.data_compressed[1] = 3;
     f2.data_compressed[2] = 3;
     f2.data_compressed[3] = 7;
+    f2.data_compressed[4] = 255;
 
     f2.set(0, 05);// F
     f2.set(1, 00);// A
@@ -77,22 +78,13 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     //  40       37       48       108      178
 
 
-    printf("[%c][%u]\n", f2.data_compressed[0], f2.data_compressed[0]);
-    printf("[%c][%u]\n", f2.data_compressed[1], f2.data_compressed[1]);
-    printf("[%c][%u]\n", f2.data_compressed[2], f2.data_compressed[2]);
-    printf("[%c][%u]\n", f2.data_compressed[3], f2.data_compressed[3]);
-    printf("[%c][%u]\n", f2.data_compressed[4], f2.data_compressed[4]);
-    printf("[%c][%u]\n---\n", f2.data_compressed[5], f2.data_compressed[5]);
-
-
     BOOST_CHECK_EQUAL(f2.data_compressed[0], 40);
     BOOST_CHECK_EQUAL(f2.data_compressed[1], 37);
     BOOST_CHECK_EQUAL(f2.data_compressed[2], 48);
     BOOST_CHECK_EQUAL(f2.data_compressed[3], 108);
     BOOST_CHECK_EQUAL(f2.data_compressed[4], 178);
 
-
-
+    // reset to make sure it needs to be unpacked properly
     f2.data_decompressed[0] = '?';
     f2.data_decompressed[1] = '?';
     f2.data_decompressed[2] = '?';
@@ -101,19 +93,27 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     f2.data_decompressed[5] = '?';
     f2.data_decompressed[6] = '?';
     f2.data_decompressed[7] = '?';
-    
-    
-f2.unpack();
-    
-    
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[0]], f2.data_decompressed[0]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[1]], f2.data_decompressed[1]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[2]], f2.data_decompressed[2]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[3]], f2.data_decompressed[3]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[4]], f2.data_decompressed[4]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[5]], f2.data_decompressed[5]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[6]], f2.data_decompressed[6]);
-    printf("[%c][%u]\n", fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[7]], f2.data_decompressed[7]);
+
+
+    f2.unpack();
+
+    BOOST_CHECK_EQUAL(f2.data_decompressed[0], 05);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[1], 00);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[2], 18);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[3], 19);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[4], 00);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[5], 27);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[6], 05);
+    BOOST_CHECK_EQUAL(f2.data_decompressed[7], 18);
+
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[0]], 'F');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[1]], 'A');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[2]], 'S');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[3]], 'T');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[4]], 'A');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[5]], '-');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[6]], 'F');
+    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[7]], 'S');
 }
 
 
