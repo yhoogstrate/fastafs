@@ -118,6 +118,66 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 
 
 
+BOOST_AUTO_TEST_CASE(test_dict_conv)
+{
+    unsigned char hash[255];
+    hash['A'] = 0;
+    hash['B'] = 1;
+    hash['C'] = 2;
+    hash['D'] = 3;
+    hash['E'] = 4;
+    hash['F'] = 5;
+    hash['G'] = 6;
+    hash['H'] = 7;
+    hash['I'] = 8;
+    hash['J'] = 9;
+    hash['K'] = 10;
+    hash['L'] = 11;
+    hash['M'] = 12;
+    hash['N'] = 13;
+    hash['O'] = 14;
+    hash['P'] = 15;
+    hash['Q'] = 16;
+    hash['R'] = 17;
+    hash['S'] = 18;
+    hash['T'] = 19;
+    hash['U'] = 20;
+    hash['V'] = 21;
+    hash['W'] = 22;
+    hash['Y'] = 23;
+    hash['Z'] = 24;
+    hash['X'] = 25;
+    hash['*'] = 26;
+    hash['-'] = 27;
+
+
+    fivebit_fivebytes f = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
+
+    std::vector<std::string> dict = {
+        "FASTA-FS", "FRATSAST", "UCTFXJN", "HCGLWQN", "SI*OLS*", "DENLAGD", "*PYEHFF", "XWSVZAB", "BECXVWY", "MGTTOX*", "I-XVFAQ", "XKEYVHN", "ERIUISR", "-ZHJHCV", "XJMKNNF", "KGPOWWV", "GTUHYBS", "YGCM-UQ", "-KLOGKU", "CW*SWGL", "IJ*ZKJT", "HTVUWRT", "THUMXLJ", "THJEQLR", "FPJHARZ", "JAVVMHP", "MDOADYF", "UNCK*CY", "NZYMQZX", "EURFBHA", "EAZSERB", "IE-NQGI", "JRSMBZS", "EAZ*PO-", "PKB*XTL", "DGDFWBY", "MARDGF-", "TN-P-LU", "KTWO-PX", "BTMBLOO", "JVYSJ*N", "DMCNXNQ", "OVNK-DV", "UFPIHDX", "EKL*AKZ", "MMGAYQI", "QQXFCEW", "TCTDRYQ", "PUSSPIZ", "IRY*WWR", "MJWQAOW", "OOCYFLK", "-VGQOEO", "ZFZ*SFX", "OJX*PK-", "BHBLJQP", "S*KSVVI", "HDZCVM-", "-GWREDJ", "BPEKCDA", "BZULBUM", "PNGICYA", "NTRPCYQ", "GQHR*ZD", "ISLFU-D", "IUBILAR", "VSWWTJA", "PPXYJYB", "IHNA-LN", "TOSFQIU", "FQRXKAC", "QOLYWTW", "XUYV*FY", "MANTHBD", "KLZGRNC", "OBSKQ*G", "DMPFELJ", "UIZQ-WO", "CMLEAXJ", "NEKCQWO", "LPA*FZD", "MHVYSFS", "RIFXSLY", "C-CQFIY", "ZER*EZX", "K-VWVPJ", "*HGJHUD", "GTUV*PU", "C-GHYTM", "-*ZOJVB", "VD*LXUA", "UOLVEK-", "ZXWIVVT", "QRE-MAP", "USWYIJH", "TQSGLOH", "IKEZEEG", "-ICTNTZ", "GMRS-DP", "-ARZEWZ", "FSRGTFG", "QFRJKD-", "ELBYA-X", "DUGGMMF", "LWDXAND", "GOFAMAI", "O**O-ST", "Q-VNKGB", "JCRPMZH", "JJYXDBB", "UKQKCUF", "ICTTWAU", "GSBPPE*", "PYTZKEF", "AHYSKAL", "DKQMB*B", "NN*HWNM", "GYVIRWY", "*WBULJN", "NZNLOPH", "VFRNWRC", "CCIHRHD", "JBORIXI", "XJT*SZH", "KPZXURD", "OQDCPSB", "C-VDIHM", "EOQLBKX", "NMOVEXS", "JPQUBM*" };
+
+    for(size_t i = 0; i < dict.size() ; i++ ) {
+        printf("[%s]  ",dict[i].c_str());
+
+        for(size_t j = 0 ; j < 8; j ++ ) {
+            f.set( (unsigned char) j, hash[ dict[i][j] ] ) ;
+            
+            printf("[%u]", hash[ dict[i][j] ]);
+        }
+        f.unpack();
+        
+        printf("   ->  ");
+        
+        for(size_t j = 0 ; j < 8; j ++ ) {
+            std::cout << "[" <<  fivebit_fivebytes::fivebit_alphabet[ f.data_decompressed[j] ] << "]";
+        }
+        
+        
+        printf("\n");
+    }
+}
+
+
 
 
 BOOST_AUTO_TEST_SUITE_END()
