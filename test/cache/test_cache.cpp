@@ -935,9 +935,12 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
 
         // DATA - size: 43
         "\x00\x00\x00\x2D"s//     45 x ACTG's
-        "\x01\x03\x12\x13\x12\x13\x12\x13\x12\x13"s// sequence 1-10
-        "\x01\x03\x12\x13\x12\x13\x12\x13\x12\x13"s// sequence 11-20
-        "\x01\x03\x12\x13\x12\x13\x12\x13\x12\x13"s// sequence 21-30
+        "\x01\x03\xAD\x68\xA0"s
+        "\x94\xC0\x59\x6B\x5A"s
+        "\x13\x12\x13\x12\x13"s
+        "\x13\x12\x13\x12\x13"s
+        "\x13\x12\x13\x12\x13"s
+        "\x13\x12\x13\x12\x13"s
         "\x00\x00\x00\x00"s//     n-blocks (0)
         "\xDE\x43\x9D\x7D\x4C\xF7\x09\xF5\x8C\x8B\x31\xFD\x0A\x98\xC4\xD6"s//checksum
         "\x00\x00\x00\x00"s//     m-blocks (0)
@@ -999,7 +1002,7 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
         if(reference[i] != buffer[i]) {
-            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] %d (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
+            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
         }
 
     }
