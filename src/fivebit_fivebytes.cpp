@@ -60,7 +60,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             // 00000000
             // 0000000-  << 1
             // --00000-  ~(2 + 1) << 6
-            this->data_compressed[1] = (unsigned char) ((this->data_compressed[1] & ~((16 + 8 + 4 + 2 + 1) << 1)) | (amino_acid << 1 & ~((128 + 64 ) )));
+            this->data_compressed[1] = (unsigned char) ((this->data_compressed[1] & ~(32 + 16 + 8 + 4 + 2)) | (amino_acid << 1 & ~(128 + 64)));
         break;
         case 3:
             // 00000111 11222223 33334444 45555566 66677777
@@ -88,7 +88,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             
             // 000xxxxx
             // 0xxxxx--
-            this->data_compressed[3] = (unsigned char) ((this->data_compressed[3] & ~((32 + 16 + 8 + 4 + 2)  )) | amino_acid << 2);
+            this->data_compressed[3] = (unsigned char) ((this->data_compressed[3] & ~(32 + 16 + 8 + 4 + 2)) | amino_acid << 2);
         break;
         case 6:
             // 00000111 11222223 33334444 45555566 66677777
