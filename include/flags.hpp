@@ -80,6 +80,7 @@ public:
     bool is_dna(); // alphabet: 'ACTG' + 'N'
     bool is_rna(); // alphabet: 'ACUG' + 'N'
     bool is_iupec_nucleotide(); // alphabet: 'ACGTURYKMSWBDHVN' + '-'
+    bool is_protein(); // alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWYZX*-'
 
     bool is_complete();
     bool is_incomplete()
@@ -107,6 +108,7 @@ public:
     void set_dna();
     void set_rna();
     void set_iupec_nucleotide();
+    void set_protein();
 
     void set_complete();
     void set_incomplete();

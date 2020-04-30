@@ -20,12 +20,14 @@ public:
 
     void add_unknown();
 
+    void finish_sequence(std::ofstream &);
+
     void twobit_add(unsigned char, std::ofstream &);
     void twobit_finish_sequence(std::ofstream &);
 
     void fourbit_add(unsigned char, std::ofstream &);
     void fourbit_finish_sequence(std::ofstream &);
-    
+
     void fivebit_add(unsigned char, std::ofstream &);
     void fivebit_finish_sequence(std::ofstream &);
 

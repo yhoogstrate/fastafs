@@ -29,9 +29,9 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 
     fivebit_fivebytes f = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
     f.set_compressed(seq_comp);
-    
+
     unsigned char *seq_decomp = f.get();
-    
+
 
     BOOST_CHECK_EQUAL(seq_decomp[0], 'F');
     BOOST_CHECK_EQUAL(seq_decomp[1], 'A');
@@ -136,19 +136,19 @@ BOOST_AUTO_TEST_CASE(test_dict_conv)
 
     std::vector<std::string> dict = {"FASTA-FS", "FRATSAST", "UCTFXJNH", "CGLWQNSI", "*OLS*DEN", "LAGD*PYE", "HFFXWSVZ", "ABBECXVW", "YMGTTOX*", "I-XVFAQX", "KEYVHNER", "IUISR-ZH", "JHCVXJMK", "NNFKGPOW", "WVGTUHYB", "SYGCM-UQ", "-KLOGKUC", "W*SWGLIJ", "*ZKJTHTV", "UWRTTHUM", "XLJTHJEQ", "LRFPJHAR", "ZJAVVMHP", "MDOADYFU", "NCK*CYNZ", "YMQZXEUR", "FBHAEAZS", "ERBIE-NQ", "GIJRSMBZ", "SEAZ*PO-", "PKB*XTLD", "GDFWBYMA", "RDGF-TN-", "P-LUKTWO", "-PXBTMBL", "OOJVYSJ*", "NDMCNXNQ", "OVNK-DVU", "FPIHDXEK", "L*AKZMMG", "AYQIQQXF", "CEWTCTDR", "YQPUSSPI", "ZIRY*WWR", "MJWQAOWO", "OCYFLK-V", "GQOEOZFZ", "*SFXOJX*", "PK-BHBLJ", "QPS*KSVV", "IHDZCVM-", "-GWREDJB", "PEKCDABZ", "ULBUMPNG", "ICYANTRP", "CYQGQHR*", "ZDISLFU-", "DIUBILAR", "VSWWTJAP", "PXYJYBIH", "NA-LNTOS", "FQIUFQRX", "KACQOLYW", "TWXUYV*F", "YMANTHBD", "KLZGRNCO", "BSKQ*GDM", "PFELJUIZ", "Q-WOCMLE", "AXJNEKCQ", "WOLPA*FZ", "DMHVYSFS", "RIFXSLYC", "-CQFIYZE", "R*EZXK-V", "WVPJ*HGJ", "HUDGTUV*", "PUC-GHYT", "M-*ZOJVB", "VD*LXUAU", "OLVEK-ZX", "WIVVTQRE", "-MAPUSWY", "IJHTQSGL", "OHIKEZEE", "G-ICTNTZ", "GMRS-DP-", "ARZEWZFS", "RGTFGQFR", "JKD-ELBY", "A-XDUGGM", "MFLWDXAN", "DGOFAMAI", "O**O-STQ", "-VNKGBJC", "RPMZHJJY", "XDBBUKQK", "CUFICTTW", "AUGSBPPE", "*PYTZKEF", "AHYSKALD", "KQMB*BNN", "*HWNMGYV", "IRWY*WBU", "LJNNZNLO", "PHVFRNWR", "CCCIHRHD", "JBORIXIX", "JT*SZHKP", "ZXURDOQD", "CPSBC-VD", "IHMEOQLB", "KXNMOVEX", "SJPQUBM*", "ZCLXJSIA", "YBHNUNHH", "AYTGKWSO", "IHXJ*TD-", "MVAJKHUH", "QUXLEYWW", "TSROZJIQ", "LIAPGNHF", "RCMXSNLM", "GF*-VRJK", "IKDCTKFY", "VAPADEGP", "GKHLIWHU", "-OH-F-EZ", "*GPJZCNY", "RVUGFGVA", "JLLYKRWZ", "WSOWVDKV", "QPJZLBPH", "BYTSODIJ", "-MCJFBFU", "D*NIFL*L", "IG*CW*ZM", "GZTGQWHC", "CTCTBRDU", "IBNLOPPM", "DTP-HLXN", "YQRZ*GWS", "YFVBQEMM", "MYARXKOF", "SQDKDEQZ", "RKKVOEOL", "XA*YVU-W", "CQZQXTRV", "VP*YCJQM", "JWEF*O-J", "LFUTAQSF", "-EEILVRG", "DKNSYQZ-", "EQLM*BT-", "TGNJDBDS", "AJ-IGQLP", "PPDRKUKA", "WDDKVXXX", "HCHASUOB", "-RCUHJOJ", "BVANOTRB", "TYGLLX*H", "SYBOLOOM", "IIBETFMT", "PDFGC-CE", "*PTPEDLR", "ZZQQESJB", "HMNGEPEK", "UPFIPVQN", "XBWOFKFY", "XDOPNZUI", "JEMVIXKL", "EXQWSNKQ", "FAAIORTR", "BWXEMW-D", "ZVT-NUKK", "YRCACBAE", "ASDZZFXM", "XHHSBSRN", "UYSVOSIT", "DVNEHROM", "*PUCVJIC", "NYUWPZ-I", "Y*-GH-AV", "CBB-FGNQ", "CUCEAWMU", "FZO*WW-S", "G*WJ*SNY", "X*BRUXZM", "AGUMJR*Q", "MYTN*XIZ"};
 
-    for(size_t i = 0; i < dict.size() ; i++ ) {
+    for(size_t i = 0; i < dict.size() ; i++) {
         // set and compress amino acid string
-        for(size_t j = 0 ; j < 8; j ++ ) {
-            f.set( (unsigned char) j, hash[ dict[i][j] ] ) ;
+        for(size_t j = 0 ; j < 8; j ++) {
+            f.set((unsigned char) j, hash[ dict[i][j] ]) ;
         }
 
         // decompress
         f.unpack();
 
         // verify
-        for(size_t j = 0 ; j < 8; j ++ ) {
-            BOOST_CHECK_EQUAL_MESSAGE(dict[i][j] , f.data_decompressed[j], dict[i] + " => " + std::string(1, f.data_decompressed[0]) + std::string(1, f.data_decompressed[1]) + std::string(1, f.data_decompressed[2]) + std::string(1, f.data_decompressed[3]) + std::string(1, f.data_decompressed[4]) + std::string(1, f.data_decompressed[5]) + std::string(1, f.data_decompressed[6]) + std::string(1, f.data_decompressed[7]) + "   ("+ std::to_string(j)+ ": "+std::string(1, dict[i][j]) +" => " +  std::string(1, f.data_decompressed[j]) + ")"
-             );
+        for(size_t j = 0 ; j < 8; j ++) {
+            BOOST_CHECK_EQUAL_MESSAGE(dict[i][j], f.data_decompressed[j], dict[i] + " => " + std::string(1, f.data_decompressed[0]) + std::string(1, f.data_decompressed[1]) + std::string(1, f.data_decompressed[2]) + std::string(1, f.data_decompressed[3]) + std::string(1, f.data_decompressed[4]) + std::string(1, f.data_decompressed[5]) + std::string(1, f.data_decompressed[6]) + std::string(1, f.data_decompressed[7]) + "   (" + std::to_string(j) + ": " + std::string(1, dict[i][j]) + " => " +  std::string(1, f.data_decompressed[j]) + ")"
+                                     );
         }
     }
 }

@@ -42,81 +42,82 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
     this->data_decompressed[bit_offset] = fivebit_fivebytes::fivebit_alphabet[amino_acid];
 
     switch(bit_offset) {
-        case 0:
-            // 00000111 11222223 33334444 45555566 66677777
-            // -----111
-            this->data_compressed[0] = (unsigned char) ((this->data_decompressed[0] & ~(128 + 64 + 32 + 16 + 8)) | (amino_acid  << 3));
+    case 0:
+        // 00000111 11222223 33334444 45555566 66677777
+        // -----111
+        this->data_compressed[0] = (unsigned char)((this->data_decompressed[0] & ~(128 + 64 + 32 + 16 + 8)) | (amino_acid  << 3));
         break;
-        case 1:
-            // 00000111 11222223 33334444 45555566 66677777
-            
-            // xxx00000
-            // --xxx000
-            this->data_compressed[0] = (unsigned char) ((this->data_compressed[0] & ~(4 + 2 + 1)) | amino_acid >> 2);
+    case 1:
+        // 00000111 11222223 33334444 45555566 66677777
 
-            // 00000111 11222223 33334444 45555566 66677777
-            //          --222223
-            this->data_compressed[1] = (unsigned char) ((this->data_compressed[1] & ~(128 + 64)) | amino_acid << 6);
-        break;
-        case 2:
-            // 00000000
-            // 0000000-  << 1
-            // --00000-  ~(2 + 1) << 6
-            this->data_compressed[1] = (unsigned char) ((this->data_compressed[1] & ~(32 + 16 + 8 + 4 + 2)) | (amino_acid << 1 & ~(128 + 64)));
-        break;
-        case 3:
-            // 00000111 11222223 33334444 45555566 66677777
-            
-            // 000xxxxx
-            // -------x
-            this->data_compressed[1] = (unsigned char) ((this->data_compressed[1] & ~(1)) | amino_acid >> 4);
+        // xxx00000
+        // --xxx000
+        this->data_compressed[0] = (unsigned char)((this->data_compressed[0] & ~(4 + 2 + 1)) | amino_acid >> 2);
 
-            // 000xxxxx
-            // xxxx----
-            this->data_compressed[2] = (unsigned char) ((this->data_compressed[2] & ~((8 + 4 + 2 + 1) << 4)) | amino_acid << 4);
+        // 00000111 11222223 33334444 45555566 66677777
+        //          --222223
+        this->data_compressed[1] = (unsigned char)((this->data_compressed[1] & ~(128 + 64)) | amino_acid << 6);
         break;
-        case 4:
-            // 00000111 11222223 33334444 45555566 66677777
-            
-            // 000xxxxx
-            // -000xxxx
-            this->data_compressed[2] = (unsigned char) ((this->data_compressed[2] & ~(8 + 4 + 2 + 1)) | amino_acid >> 1);
-
-            // 
-            this->data_compressed[3] = (unsigned char) ((this->data_compressed[3] & ~(128)) | amino_acid << 7);
+    case 2:
+        // 00000000
+        // 0000000-  << 1
+        // --00000-  ~(2 + 1) << 6
+        this->data_compressed[1] = (unsigned char)((this->data_compressed[1] & ~(32 + 16 + 8 + 4 + 2)) | (amino_acid << 1 & ~(128 + 64)));
         break;
-        case 5:
-            // 00000111 11222223 33334444 45555566 66677777
-            
-            // 000xxxxx
-            // 0xxxxx--
-            this->data_compressed[3] = (unsigned char) ((this->data_compressed[3] & ~(64 + 32 + 16 + 8 + 4)) | amino_acid << 2);
+    case 3:
+        // 00000111 11222223 33334444 45555566 66677777
+
+        // 000xxxxx
+        // -------x
+        this->data_compressed[1] = (unsigned char)((this->data_compressed[1] & ~(1)) | amino_acid >> 4);
+
+        // 000xxxxx
+        // xxxx----
+        this->data_compressed[2] = (unsigned char)((this->data_compressed[2] & ~((8 + 4 + 2 + 1) << 4)) | amino_acid << 4);
         break;
-        case 6:
-            // 00000111 11222223 33334444 45555566 66677777
-            
-            // 000xxxxx
-            // ---000xx
-            this->data_compressed[3] = (unsigned char) ((this->data_compressed[3] & ~(2 + 1)) | amino_acid >> 3);
+    case 4:
+        // 00000111 11222223 33334444 45555566 66677777
+
+        // 000xxxxx
+        // -000xxxx
+        this->data_compressed[2] = (unsigned char)((this->data_compressed[2] & ~(8 + 4 + 2 + 1)) | amino_acid >> 1);
+
+        //
+        this->data_compressed[3] = (unsigned char)((this->data_compressed[3] & ~(128)) | amino_acid << 7);
+        break;
+    case 5:
+        // 00000111 11222223 33334444 45555566 66677777
+
+        // 000xxxxx
+        // 0xxxxx--
+        this->data_compressed[3] = (unsigned char)((this->data_compressed[3] & ~(64 + 32 + 16 + 8 + 4)) | amino_acid << 2);
+        break;
+    case 6:
+        // 00000111 11222223 33334444 45555566 66677777
+
+        // 000xxxxx
+        // ---000xx
+        this->data_compressed[3] = (unsigned char)((this->data_compressed[3] & ~(2 + 1)) | amino_acid >> 3);
 
 
-            // 000xxxxx
-            // xxx-----
-            this->data_compressed[4] = (unsigned char) ((this->data_compressed[4] & ~(128 + 64 + 32)) | amino_acid << 5);
+        // 000xxxxx
+        // xxx-----
+        this->data_compressed[4] = (unsigned char)((this->data_compressed[4] & ~(128 + 64 + 32)) | amino_acid << 5);
 
         break;
-        case 7:
-            // 00000111 11222223 33334444 45555566 66677777
-            
-            // 000xxxxx
-            // ---xxxxx
-            this->data_compressed[4] = (unsigned char) ((this->data_compressed[4] & ~(16 + 8 + 4 + 2 + 1)) | (amino_acid & ~(128 + 64 + 32)));
+    case 7:
+        // 00000111 11222223 33334444 45555566 66677777
+
+        // 000xxxxx
+        // ---xxxxx
+        this->data_compressed[4] = (unsigned char)((this->data_compressed[4] & ~(16 + 8 + 4 + 2 + 1)) | (amino_acid & ~(128 + 64 + 32)));
         break;
     }
 }
 
 
-unsigned char *fivebit_fivebytes::get(void) {
+unsigned char *fivebit_fivebytes::get(void)
+{
     return this->data_decompressed;
 }
 
@@ -124,7 +125,8 @@ unsigned char *fivebit_fivebytes::get(void) {
 
 
 // @todo, offset needs to be second parameter
-void fivebit_fivebytes::set_compressed(unsigned char (&compressed_data)[5]) {
+void fivebit_fivebytes::set_compressed(unsigned char (&compressed_data)[5])
+{
     this->data_compressed[0] = compressed_data[0];
     this->data_compressed[1] = compressed_data[1];
     this->data_compressed[2] = compressed_data[2];
@@ -135,7 +137,8 @@ void fivebit_fivebytes::set_compressed(unsigned char (&compressed_data)[5]) {
 }
 
 
-void fivebit_fivebytes::unpack() {
+void fivebit_fivebytes::unpack()
+{
     //  00000111 11222223 33334444 45555566 66677777
     //                                      66677777
     //                                      ---77777
@@ -163,7 +166,7 @@ void fivebit_fivebytes::unpack() {
     //                             ---44444
     this->data_decompressed[4] = (unsigned char)(((this->data_compressed[2] << 8) | (this->data_compressed[3])) >> 7);
     this->data_decompressed[4] = (unsigned char)(this->data_decompressed[4] & ~(128 + 64 + 32));
-    
+
     //  00000111 11222223 33334444 45555566 66677777
     //  11222223 33334444       bit shift << 8 + normal
     //  ----1122 22233333       bit shift >> 4
@@ -203,6 +206,7 @@ void fivebit_fivebytes::unpack() {
 
 
 // static functions - not bound to class instance
-unsigned char fivebit_fivebytes::iterator_to_offset(unsigned int iterator) {
-    return (unsigned char) (iterator % 8);
+unsigned char fivebit_fivebytes::iterator_to_offset(unsigned int iterator)
+{
+    return (unsigned char)(iterator % 8);
 }

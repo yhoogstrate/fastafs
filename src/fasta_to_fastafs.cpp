@@ -11,15 +11,14 @@
 
 
 
-const static char nt[2] = "T";
-const static char nc[2] = "C";
 const static char na[2] = "A";
+const static char nc[2] = "C";
 const static char ng[2] = "G";
+const static char nt[2] = "T";
+const static char nu[2] = "U";
 
 const static char nn[2] = "N";
 
-
-const static char nu[2] = "U";
 const static char nr[2] = "R";
 const static char ny[2] = "Y";
 const static char nk[2] = "K";
@@ -31,6 +30,16 @@ const static char nd[2] = "D";
 const static char nh[2] = "H";
 const static char nv[2] = "V";
 
+const static char ne[2] = "E";
+const static char nf[2] = "F";
+const static char ni[2] = "I";
+const static char nj[2] = "J";
+const static char nl[2] = "L";
+const static char no[2] = "O";
+const static char np[2] = "P";
+const static char nq[2] = "Q";
+const static char nz[2] = "Z";
+const static char nx[2] = "X";
 
 
 
@@ -72,17 +81,17 @@ void fasta_to_fastafs_seq::twobit_add(unsigned char nucleotide, std::ofstream &f
 
 
 
-void fasta_to_fastafs_seq::twobit_finish_sequence(std::ofstream &fh_fastafs)
+void fasta_to_fastafs_seq::finish_sequence(std::ofstream &fh_fastafs)
 {
-    uint32_t j;
-
-    // flush last nucleotide
-    if(this->n_actg % 4 != 0) {
-        for(j = this->n_actg % 4; j < 4; j++) {
-            this->twobit_data.set(twobit_byte::iterator_to_offset(j), 0);
-        }
-        fh_fastafs << this->twobit_data.data;
+    if(this->current_dict == DICT_TWOBIT) {
+        this->twobit_finish_sequence(fh_fastafs);
+    } else if(this->current_dict == DICT_FOURBIT) {
+        this->fourbit_finish_sequence(fh_fastafs);
+    } else {
+        this->fivebit_finish_sequence(fh_fastafs);
     }
+
+    uint32_t j;
 
     if(this->previous_was_N) {
         this->n_block_ends.push_back(this->n_actg + this->N - 1);
@@ -137,6 +146,24 @@ void fasta_to_fastafs_seq::twobit_finish_sequence(std::ofstream &fh_fastafs)
         uint_to_fourbytes(buffer, this->m_block_ends[j]);
         fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
     }
+}
+
+
+
+
+
+
+
+void fasta_to_fastafs_seq::twobit_finish_sequence(std::ofstream &fh_fastafs)
+{
+    // flush last nucleotide
+    if(this->n_actg % 4 != 0) {
+        for(uint32_t j = this->n_actg % 4; j < 4; j++) {
+            this->twobit_data.set(twobit_byte::iterator_to_offset(j), 0);
+        }
+        fh_fastafs << this->twobit_data.data;
+    }
+
 }
 
 
@@ -167,8 +194,6 @@ void fasta_to_fastafs_seq::fourbit_add(unsigned char nucleotide, std::ofstream &
 
 void fasta_to_fastafs_seq::fourbit_finish_sequence(std::ofstream &fh_fastafs)
 {
-    uint32_t j;
-
     // flush last nucleotide
     if(this->n_actg % 2 != 0) {
         this->fourbit_data.set(fourbit_byte::iterator_to_offset(this->n_actg), 0);
@@ -176,79 +201,44 @@ void fasta_to_fastafs_seq::fourbit_finish_sequence(std::ofstream &fh_fastafs)
         fh_fastafs << this->fourbit_data.data;
     }
 
-    if(this->previous_was_N) {
-        this->n_block_ends.push_back(this->n_actg + this->N - 1);
-    }
-
-    // do M block
-    if(this->in_m_block) {
-        this->m_block_ends.push_back(this->n_actg + this->N - 1);
-        //printf("closing m-block: %u\n",this->n_actg + this->N - 1);
-    }
-
-#if DEBUG
-    if(this->m_block_starts.size() != this->m_block_ends.size()) {
-        throw std::runtime_error("M blocks not correctly parsed\n");
-    }
-#endif //DEBUG
-
-    char buffer[4 +  1];
-
-    // (over)write number nucleotides
-    std::streamoff index_file_position = fh_fastafs.tellp();
-    fh_fastafs.seekp(this->file_offset_in_fastafs, std::ios::beg);
-    uint_to_fourbytes(buffer, this->n_actg);
-    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-
-
-    fh_fastafs.seekp(index_file_position, std::ios::beg);
-
-    // N blocks
-    uint_to_fourbytes(buffer, (uint32_t) this->n_block_starts.size());
-    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-    for(j = 0; j < this->n_block_starts.size(); j++) {
-        uint_to_fourbytes(buffer, this->n_block_starts[j]);
-        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-    }
-    for(j = 0; j < this->n_block_ends.size(); j++) {
-        uint_to_fourbytes(buffer, this->n_block_ends[j]);
-        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-    }
-
-    // write checksum
-    MD5_Final(this->md5_digest, &this->ctx);
-    fh_fastafs.write(reinterpret_cast<char *>(&this->md5_digest), (size_t) 16);
-
-    // M blocks
-    uint_to_fourbytes(buffer, (uint32_t) this->m_block_starts.size());
-    fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-    for(j = 0; j < this->m_block_starts.size(); j++) {
-        uint_to_fourbytes(buffer, this->m_block_starts[j]);
-        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-    }
-    for(j = 0; j < this->m_block_ends.size(); j++) {
-        uint_to_fourbytes(buffer, this->m_block_ends[j]);
-        fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
-    }
 }
-
 
 
 void fasta_to_fastafs_seq::fivebit_add(unsigned char amino_acid, std::ofstream &fh_fastafs)
 {
     unsigned char off = fivebit_fivebytes::iterator_to_offset(this->n_actg);
     this->fivebit_data.set(off, amino_acid);
-    /*
 
-    // if fourth nucleotide, 2bit is complete; write to disk
     if(this->n_actg % 8 == 7) {
-        fh_fastafs << this->fivebit_data.data;
+        //fh_fastafs << this->fivebit_data.data_compressed;
+        fh_fastafs.write((const char*) this->fivebit_data.data_compressed, 5);
+        printf("exporting 5bit\n");
     }
 
     this->n_actg++;
-    */
 }
 
+
+
+void fasta_to_fastafs_seq::fivebit_finish_sequence(std::ofstream &fh_fastafs)
+{
+    printf("checkpoint A\n");
+
+    // flush last nucleotide
+    if(this->n_actg % 7 != 0) {
+        printf("checkpoint C\n");
+
+        for(unsigned char i = (unsigned char)(this->n_actg % 7); i < 8 ; i++) {
+            this->fivebit_data.set(i, 0);
+            printf("rounding [%i] 5/5 bitbyte\n", i);
+        }
+
+        fh_fastafs.write((const char*) this->fivebit_data.data_compressed, 5);
+    }
+
+    printf("checkpoint D\n");
+
+}
 
 
 
@@ -341,11 +331,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         s->flush();
                         s->current_dict = DICT_FOURBIT;
                     } else {
-                        if(s->current_dict == DICT_TWOBIT) {
-                            s->twobit_finish_sequence(fh_fastafs);// finish last sequence
-                        } else {
-                            s->fourbit_finish_sequence(fh_fastafs);// finish last sequence
-                        }
+                        s->finish_sequence(fh_fastafs);
+
                         line.erase(0, 1);// erases first part, quicker would be pointer from first char
 
                         //s = new fasta_to_fastafs_seq(fh_fastafs.tellp(), line);
@@ -533,7 +520,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                             s->current_dict = dict; // set back to dict
                         }
 
-                    } else if (s->current_dict == DICT_FOURBIT) { // four bit decoding
+                    } else if(s->current_dict == DICT_FOURBIT) {  // four bit decoding
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
 
@@ -838,9 +825,6 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                             }
                         }
                     } else { // s->current_dict == DICT_FIVEBIT
-
-
-
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
 
@@ -870,7 +854,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(1, fh_fastafs);
-                                MD5_Update(&s->ctx, na, 1);
+                                MD5_Update(&s->ctx, nb, 1);
                                 break;
                             case 'b':
                                 if(!s->in_m_block) {
@@ -879,7 +863,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(1, fh_fastafs);
-                                MD5_Update(&s->ctx, na, 1);
+                                MD5_Update(&s->ctx, nb, 1);
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
@@ -906,7 +890,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(3, fh_fastafs);
-                                MD5_Update(&s->ctx, nc, 1);
+                                MD5_Update(&s->ctx, nd, 1);
                                 break;
                             case 'd':
                                 if(!s->in_m_block) {
@@ -915,7 +899,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(3, fh_fastafs);
-                                MD5_Update(&s->ctx, nc, 1);
+                                MD5_Update(&s->ctx, nd, 1);
                                 break;
                             case 'E':
                                 if(s->in_m_block) {
@@ -924,7 +908,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(4, fh_fastafs);
-                                MD5_Update(&s->ctx, nc, 1);
+                                MD5_Update(&s->ctx, ne, 1);
                                 break;
                             case 'e':
                                 if(!s->in_m_block) {
@@ -933,7 +917,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(4, fh_fastafs);
-                                MD5_Update(&s->ctx, nc, 1);
+                                MD5_Update(&s->ctx, ne, 1);
                                 break;
                             case 'F':
                                 if(s->in_m_block) {
@@ -942,7 +926,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(5, fh_fastafs);
-                                MD5_Update(&s->ctx, nc, 1);
+                                MD5_Update(&s->ctx, nf, 1);
                                 break;
                             case 'f':
                                 if(!s->in_m_block) {
@@ -951,7 +935,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(5, fh_fastafs);
-                                MD5_Update(&s->ctx, nc, 1);
+                                MD5_Update(&s->ctx, nf, 1);
                                 break;
                             case 'G'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -978,7 +962,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(7, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nh, 1);
                                 break;
                             case 'h':
                                 if(!s->in_m_block) {
@@ -987,7 +971,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(7, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nh, 1);
                                 break;
                             case 'I'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -996,7 +980,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(8, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, ni, 1);
                                 break;
                             case 'i':
                                 if(!s->in_m_block) {
@@ -1005,7 +989,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(8, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, ni, 1);
                                 break;
                             case 'J'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1014,7 +998,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(9, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nj, 1);
                                 break;
                             case 'j':
                                 if(!s->in_m_block) {
@@ -1023,7 +1007,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(9, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nj, 1);
                                 break;
                             case 'K'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1032,7 +1016,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(10, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nk, 1);
                                 break;
                             case 'k':
                                 if(!s->in_m_block) {
@@ -1041,7 +1025,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(10, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nk, 1);
                                 break;
                             case 'L'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1050,7 +1034,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(11, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nl, 1);
                                 break;
                             case 'l':
                                 if(!s->in_m_block) {
@@ -1059,7 +1043,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(11, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nl, 1);
                                 break;
                             case 'M'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1068,7 +1052,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(12, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nm, 1);
                                 break;
                             case 'm':
                                 if(!s->in_m_block) {
@@ -1077,7 +1061,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(12, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nm, 1);
                                 break;
                             case 'N'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1086,7 +1070,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(13, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nn, 1);
                                 break;
                             case 'n':
                                 if(!s->in_m_block) {
@@ -1095,7 +1079,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(13, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nn, 1);
                                 break;
                             case 'O'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1104,7 +1088,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(14, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, no, 1);
                                 break;
                             case 'o':
                                 if(!s->in_m_block) {
@@ -1113,7 +1097,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(14, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, no, 1);
                                 break;
                             case 'P'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1122,7 +1106,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(15, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, np, 1);
                                 break;
                             case 'p':
                                 if(!s->in_m_block) {
@@ -1131,7 +1115,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(15, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, np, 1);
                                 break;
                             case 'Q'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1140,7 +1124,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(16, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nq, 1);
                                 break;
                             case 'q':
                                 if(!s->in_m_block) {
@@ -1149,7 +1133,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(16, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nq, 1);
                                 break;
                             case 'R'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1158,7 +1142,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(17, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nr, 1);
                                 break;
                             case 'r':
                                 if(!s->in_m_block) {
@@ -1167,7 +1151,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(17, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nr, 1);
                                 break;
                             case 'S'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1176,7 +1160,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(18, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, ns, 1);
                                 break;
                             case 's':
                                 if(!s->in_m_block) {
@@ -1185,7 +1169,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(18, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, ns, 1);
                                 break;
                             case 'T'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1194,7 +1178,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(19, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nt, 1);
                                 break;
                             case 't':
                                 if(!s->in_m_block) {
@@ -1203,11 +1187,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(19, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nt, 1);
                                 break;
-
-
-
                             case 'U':
                                 if(s->in_m_block) {
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
@@ -1226,7 +1207,6 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 s->fivebit_add(20, fh_fastafs);
                                 MD5_Update(&s->ctx, nu, 1);
                                 break;
-
                             case 'V':
                                 if(s->in_m_block) {
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
@@ -1234,7 +1214,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(21, fh_fastafs);
-                                MD5_Update(&s->ctx, nr, 1);
+                                MD5_Update(&s->ctx, nv, 1);
                                 break;
                             case 'v':
                                 if(!s->in_m_block) {
@@ -1243,7 +1223,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(21, fh_fastafs);
-                                MD5_Update(&s->ctx, nr, 1);
+                                MD5_Update(&s->ctx, nv, 1);
                                 break;
 
                             case 'W'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
@@ -1253,7 +1233,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(22, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nw, 1);
                                 break;
                             case 'w':
                                 if(!s->in_m_block) {
@@ -1262,10 +1242,8 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(22, fh_fastafs);
-                                MD5_Update(&s->ctx, ng, 1);
+                                MD5_Update(&s->ctx, nw, 1);
                                 break;
-
-
 
                             case 'Y':
                                 if(s->in_m_block) {
@@ -1292,7 +1270,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(24, fh_fastafs);
-                                MD5_Update(&s->ctx, nk, 1);
+                                MD5_Update(&s->ctx, nz, 1);
                                 break;
                             case 'z':
                                 if(!s->in_m_block) {
@@ -1301,7 +1279,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(24, fh_fastafs);
-                                MD5_Update(&s->ctx, nk, 1);
+                                MD5_Update(&s->ctx, nz, 1);
                                 break;
                             case 'X':
                                 if(s->in_m_block) {
@@ -1310,7 +1288,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(25, fh_fastafs);
-                                MD5_Update(&s->ctx, nm, 1);
+                                MD5_Update(&s->ctx, nx, 1);
                                 break;
                             case 'x':
                                 if(!s->in_m_block) {
@@ -1319,7 +1297,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(25, fh_fastafs);
-                                MD5_Update(&s->ctx, nm, 1);
+                                MD5_Update(&s->ctx, nx, 1);
                                 break;
 
                             case '*':
@@ -1358,11 +1336,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         //after re-opening file and setting the file pointer, read line again
                         running = getline(fh_fasta, line).good();
                     } else {
-                        if(s->current_dict == DICT_TWOBIT) {
-                            s->twobit_finish_sequence(fh_fastafs);// finish last sequence
-                        } else {
-                            s->fourbit_finish_sequence(fh_fastafs);// finish last sequence
-                        }
+                        s->finish_sequence(fh_fastafs);
                     }
                 }
             }
@@ -1371,10 +1345,9 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
     }
 
 
-
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
-    char buffer[4 +  1];
+    char buffer[4 + 1];
     uint_to_fourbytes(buffer, (uint32_t) index.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
@@ -1391,8 +1364,10 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
             } else {
                 fsf.set_dna();
             }
-        } else {
+        } else if(s->current_dict == DICT_FOURBIT) {
             fsf.set_iupec_nucleotide();
+        } else {
+            fsf.set_protein(); // set protein
         }
 
         fsf.set_complete();
