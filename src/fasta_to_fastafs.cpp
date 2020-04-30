@@ -150,10 +150,6 @@ void fasta_to_fastafs_seq::finish_sequence(std::ofstream &fh_fastafs)
 
 
 
-
-
-
-
 void fasta_to_fastafs_seq::twobit_finish_sequence(std::ofstream &fh_fastafs)
 {
     // flush last nucleotide
@@ -163,13 +159,7 @@ void fasta_to_fastafs_seq::twobit_finish_sequence(std::ofstream &fh_fastafs)
         }
         fh_fastafs << this->twobit_data.data;
     }
-
 }
-
-
-
-
-
 
 
 
@@ -189,7 +179,6 @@ void fasta_to_fastafs_seq::fourbit_add(unsigned char nucleotide, std::ofstream &
     this->previous_was_N = false;
     this->n_actg++;
 }
-
 
 
 void fasta_to_fastafs_seq::fourbit_finish_sequence(std::ofstream &fh_fastafs)
@@ -212,7 +201,6 @@ void fasta_to_fastafs_seq::fivebit_add(unsigned char amino_acid, std::ofstream &
     if(this->n_actg % 8 == 7) {
         //fh_fastafs << this->fivebit_data.data_compressed;
         fh_fastafs.write((const char*) this->fivebit_data.data_compressed, 5);
-        printf("exporting 5bit\n");
     }
 
     this->n_actg++;
@@ -222,22 +210,14 @@ void fasta_to_fastafs_seq::fivebit_add(unsigned char amino_acid, std::ofstream &
 
 void fasta_to_fastafs_seq::fivebit_finish_sequence(std::ofstream &fh_fastafs)
 {
-    printf("checkpoint A\n");
-
     // flush last nucleotide
     if(this->n_actg % 7 != 0) {
-        printf("checkpoint C\n");
-
         for(unsigned char i = (unsigned char)(this->n_actg % 7); i < 8 ; i++) {
             this->fivebit_data.set(i, 0);
-            printf("rounding [%i] 5/5 bitbyte\n", i);
         }
 
         fh_fastafs.write((const char*) this->fivebit_data.data_compressed, 5);
     }
-
-    printf("checkpoint D\n");
-
 }
 
 
