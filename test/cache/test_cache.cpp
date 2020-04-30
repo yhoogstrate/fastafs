@@ -936,11 +936,11 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
         // DATA - size: 43
         "\x00\x00\x00\x2D"s// [14, 17]    45 x ACTG's
         "\x01\x03\xAD\x68\xA0"s // [18, 22]
-        "\x94\xC0\x59\x6B\x5A"s // 33 
-        "\x16\x04\x84\x64\x8B"s
-        "\x0B\x60\xF1\xB2\x65"s // B2 should be 32?
-        "\xCB\x67\x93\x5A\x02"s
-        "\xA4\x77\x73\x00"s // last bytes contains no info thus  must be skipped
+        "\x94\xC0\x59\x6B\x5A"s // [23, 27]
+        "\x16\x04\x84\x64\x8B"s // [28, 32]
+        "\x0B\x60\xF1\xB2\x65"s // [33, 37] B2 <36> should be 32?
+        "\xCB\x67\x93\x5A\x02"s // [38, 42]
+        "\x4A\x77\x73\x00"s // [43, 46] last bytes contains no info thus  must be skipped
         
         "\x13\x12\x13\x12\x13"s
         "\x13\x12\x13\x12\x13"s
