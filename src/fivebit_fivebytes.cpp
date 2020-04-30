@@ -139,7 +139,7 @@ void fivebit_fivebytes::unpack() {
     //  00000111 11222223 33334444 45555566 66677777
     //                                      66677777
     //                                      ---77777
-    this->data_decompressed[7] = (unsigned char)(this->data_compressed[4] & ~((4 + 2 + 1) << 5));
+    this->data_decompressed[7] = (unsigned char)(this->data_compressed[4] & ~(128 + 64 + 32));
 
     //  00000111 11222223 33334444 45555566 66677777
     //                             45555566 66677777
@@ -147,14 +147,14 @@ void fivebit_fivebytes::unpack() {
     //                             -----455 ---66666
     //                                      ---66666
     this->data_decompressed[6] = (unsigned char)(((this->data_compressed[3] << 8) | (this->data_compressed[4])) >> 5);
-    this->data_decompressed[6] = (unsigned char)(this->data_decompressed[6] & ~((4 + 2 + 1) << 5));
+    this->data_decompressed[6] = (unsigned char)(this->data_decompressed[6] & ~(128 + 64 + 32));
 
     //  00000111 11222223 33334444 45555566 66677777
     //                             45555566
     //                             --455555
     //                             ---55555
     this->data_decompressed[5] = (unsigned char)(this->data_compressed[3] >> 2);
-    this->data_decompressed[5] = (unsigned char)(this->data_decompressed[5] & ~((4 + 2 + 1) << 5));// only bit 6 should be set to 0
+    this->data_decompressed[5] = (unsigned char)(this->data_decompressed[5] & ~(128 + 64 + 32));// only bit 6 should be set to 0
 
     //  00000111 11222223 33334444 45555566 66677777
     //                    33334444 45555566
@@ -162,7 +162,7 @@ void fivebit_fivebytes::unpack() {
     //                             33344444
     //                             ---44444
     this->data_decompressed[4] = (unsigned char)(((this->data_compressed[2] << 8) | (this->data_compressed[3])) >> 7);
-    this->data_decompressed[4] = (unsigned char)(this->data_decompressed[4] & ~((4 + 2 + 1) << 5));
+    this->data_decompressed[4] = (unsigned char)(this->data_decompressed[4] & ~(128 + 64 + 32));
     
     //  00000111 11222223 33334444 45555566 66677777
     //  11222223 33334444       bit shift << 8 + normal
@@ -170,7 +170,7 @@ void fivebit_fivebytes::unpack() {
     //           22233333       convert to u-char
     //           ---33333       set zero's
     this->data_decompressed[3] = (unsigned char)(((this->data_compressed[1] << 8) | (this->data_compressed[2])) >> 4);
-    this->data_decompressed[3] = (unsigned char)(this->data_decompressed[3] & ~((4 + 2 + 1) << 5));
+    this->data_decompressed[3] = (unsigned char)(this->data_decompressed[3] & ~(128 + 64 + 32));
 
     //  00101000 00100101 00110000 01101100 10110010
     //  00000111 11222223 33334444 45555566 66677777
@@ -178,7 +178,7 @@ void fivebit_fivebytes::unpack() {
     //           -1122222
     //           ---22222
     this->data_decompressed[2] = (unsigned char)(this->data_compressed[1] >> 1);   // shifts of unsigned types always zero-fill :)
-    this->data_decompressed[2] = (unsigned char)(this->data_decompressed[2] & ~((4 + 2 + 1) << 5)); // i think only bit 6 and 7 need to be set because of the shift above
+    this->data_decompressed[2] = (unsigned char)(this->data_decompressed[2] & ~(128 + 64 + 32)); // i think only bit 6 and 7 need to be set because of the shift above
 
     //  00000111 11222223 33334444 45555566 66677777
     //  00000111 11222223
@@ -186,7 +186,7 @@ void fivebit_fivebytes::unpack() {
     //           00011111
     //           ---11111
     this->data_decompressed[1] = (unsigned char)(((this->data_compressed[0] << 8) | (this->data_compressed[1])) >> 6);
-    this->data_decompressed[1] = (unsigned char)(this->data_decompressed[1] & ~((4 + 2 + 1) << 5));
+    this->data_decompressed[1] = (unsigned char)(this->data_decompressed[1] & ~(128 + 64 + 32));
 
     //  00000111 11222223 33334444 45555566 66677777
     //  00000111
