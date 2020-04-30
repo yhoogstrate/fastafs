@@ -137,23 +137,23 @@ BOOST_AUTO_TEST_CASE(test_dict_conv)
     std::vector<std::string> dict = {"FASTA-FS", "FRATSAST", "UCTFXJNH", "CGLWQNSI", "*OLS*DEN", "LAGD*PYE", "HFFXWSVZ", "ABBECXVW", "YMGTTOX*", "I-XVFAQX", "KEYVHNER", "IUISR-ZH", "JHCVXJMK", "NNFKGPOW", "WVGTUHYB", "SYGCM-UQ", "-KLOGKUC", "W*SWGLIJ", "*ZKJTHTV", "UWRTTHUM", "XLJTHJEQ", "LRFPJHAR", "ZJAVVMHP", "MDOADYFU", "NCK*CYNZ", "YMQZXEUR", "FBHAEAZS", "ERBIE-NQ", "GIJRSMBZ", "SEAZ*PO-", "PKB*XTLD", "GDFWBYMA", "RDGF-TN-", "P-LUKTWO", "-PXBTMBL", "OOJVYSJ*", "NDMCNXNQ", "OVNK-DVU", "FPIHDXEK", "L*AKZMMG", "AYQIQQXF", "CEWTCTDR", "YQPUSSPI", "ZIRY*WWR", "MJWQAOWO", "OCYFLK-V", "GQOEOZFZ", "*SFXOJX*", "PK-BHBLJ", "QPS*KSVV", "IHDZCVM-", "-GWREDJB", "PEKCDABZ", "ULBUMPNG", "ICYANTRP", "CYQGQHR*", "ZDISLFU-", "DIUBILAR", "VSWWTJAP", "PXYJYBIH", "NA-LNTOS", "FQIUFQRX", "KACQOLYW", "TWXUYV*F", "YMANTHBD", "KLZGRNCO", "BSKQ*GDM", "PFELJUIZ", "Q-WOCMLE", "AXJNEKCQ", "WOLPA*FZ", "DMHVYSFS", "RIFXSLYC", "-CQFIYZE", "R*EZXK-V", "WVPJ*HGJ", "HUDGTUV*", "PUC-GHYT", "M-*ZOJVB", "VD*LXUAU", "OLVEK-ZX", "WIVVTQRE", "-MAPUSWY", "IJHTQSGL", "OHIKEZEE", "G-ICTNTZ", "GMRS-DP-", "ARZEWZFS", "RGTFGQFR", "JKD-ELBY", "A-XDUGGM", "MFLWDXAN", "DGOFAMAI", "O**O-STQ", "-VNKGBJC", "RPMZHJJY", "XDBBUKQK", "CUFICTTW", "AUGSBPPE", "*PYTZKEF", "AHYSKALD", "KQMB*BNN", "*HWNMGYV", "IRWY*WBU", "LJNNZNLO", "PHVFRNWR", "CCCIHRHD", "JBORIXIX", "JT*SZHKP", "ZXURDOQD", "CPSBC-VD", "IHMEOQLB", "KXNMOVEX", "SJPQUBM*" };
 
     for(size_t i = 0; i < dict.size() ; i++ ) {
-        printf("[%s]  ",dict[i].c_str());
+        //printf("[%s]  ",dict[i].c_str());
 
         for(size_t j = 0 ; j < 8; j ++ ) {
             f.set( (unsigned char) j, hash[ dict[i][j] ] ) ;
             
-            printf("[%u]", hash[ dict[i][j] ]);
+            //printf("[%u]", hash[ dict[i][j] ]);
         }
         f.unpack();
         
-        printf("   ->  ");
+        //printf("   ->  ");
         
         for(size_t j = 0 ; j < 8; j ++ ) {
-            std::cout << "[" <<   f.data_decompressed[j] << "]";
+            std::cout << "[" <<   f.data_decompressed[j] << "]"; BOOST_CHECK_EQUAL_MESSAGE(dict[i][j] , f.data_decompressed[j], dict[i] + " => " + std::string(1, f.data_decompressed[0]) + std::string(1, f.data_decompressed[1]) + std::string(1, f.data_decompressed[2]) + std::string(1, f.data_decompressed[3]) + std::string(1, f.data_decompressed[4]) + std::string(1, f.data_decompressed[5]) + std::string(1, f.data_decompressed[6]) + std::string(1, f.data_decompressed[7]) + "   ("+ std::to_string(j)+ ": "+std::string(1, dict[i][j]) +" => " +  std::string(1, f.data_decompressed[j]) + ")"
+             );
         }
         
-        
-        printf("\n");
+        //printf("\n");
     }
 }
 
