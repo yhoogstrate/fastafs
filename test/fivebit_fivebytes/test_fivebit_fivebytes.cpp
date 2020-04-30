@@ -33,24 +33,14 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     unsigned char *seq_decomp = f.get();
     
 
-    BOOST_CHECK_EQUAL(seq_decomp[0], 05);
-    BOOST_CHECK_EQUAL(seq_decomp[1], 00);
-    BOOST_CHECK_EQUAL(seq_decomp[2], 18);
-    BOOST_CHECK_EQUAL(seq_decomp[3], 19);
-    BOOST_CHECK_EQUAL(seq_decomp[4], 00);
-    BOOST_CHECK_EQUAL(seq_decomp[5], 27);
-    BOOST_CHECK_EQUAL(seq_decomp[6], 05);
-    BOOST_CHECK_EQUAL(seq_decomp[7], 18);
-    
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[0]], 'F');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[1]], 'A');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[2]], 'S');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[3]], 'T');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[4]], 'A');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[5]], '-');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[6]], 'F');
-    BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[7]], 'S');
-
+    BOOST_CHECK_EQUAL(seq_decomp[0], 'F');
+    BOOST_CHECK_EQUAL(seq_decomp[1], 'A');
+    BOOST_CHECK_EQUAL(seq_decomp[2], 'S');
+    BOOST_CHECK_EQUAL(seq_decomp[3], 'T');
+    BOOST_CHECK_EQUAL(seq_decomp[4], 'A');
+    BOOST_CHECK_EQUAL(seq_decomp[5], '-');
+    BOOST_CHECK_EQUAL(seq_decomp[6], 'F');
+    BOOST_CHECK_EQUAL(seq_decomp[7], 'S');
 
 
     fivebit_fivebytes f2 = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
@@ -97,23 +87,14 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 
     f2.unpack();
 
-    BOOST_CHECK_EQUAL(f2.data_decompressed[0], 05);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[1], 00);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[2], 18);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[3], 19);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[4], 00);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[5], 27);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[6], 05);
-    BOOST_CHECK_EQUAL(f2.data_decompressed[7], 18);
-
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[0]], 'F');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[1]], 'A');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[2]], 'S');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[3]], 'T');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[4]], 'A');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[5]], '-');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[6]], 'F');
-    BOOST_CHECK_EQUAL( fivebit_fivebytes::fivebit_alphabet[f2.data_decompressed[7]], 'S');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[0], 'F');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[1], 'A');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[2], 'S');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[3], 'T');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[4], 'A');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[5], '-');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[6], 'F');
+    BOOST_CHECK_EQUAL(f2.data_decompressed[7], 'S');
 }
 
 
@@ -153,8 +134,7 @@ BOOST_AUTO_TEST_CASE(test_dict_conv)
 
     fivebit_fivebytes f = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
 
-    std::vector<std::string> dict = {
-        "FASTA-FS", "FRATSAST", "UCTFXJN", "HCGLWQN", "SI*OLS*", "DENLAGD", "*PYEHFF", "XWSVZAB", "BECXVWY", "MGTTOX*", "I-XVFAQ", "XKEYVHN", "ERIUISR", "-ZHJHCV", "XJMKNNF", "KGPOWWV", "GTUHYBS", "YGCM-UQ", "-KLOGKU", "CW*SWGL", "IJ*ZKJT", "HTVUWRT", "THUMXLJ", "THJEQLR", "FPJHARZ", "JAVVMHP", "MDOADYF", "UNCK*CY", "NZYMQZX", "EURFBHA", "EAZSERB", "IE-NQGI", "JRSMBZS", "EAZ*PO-", "PKB*XTL", "DGDFWBY", "MARDGF-", "TN-P-LU", "KTWO-PX", "BTMBLOO", "JVYSJ*N", "DMCNXNQ", "OVNK-DV", "UFPIHDX", "EKL*AKZ", "MMGAYQI", "QQXFCEW", "TCTDRYQ", "PUSSPIZ", "IRY*WWR", "MJWQAOW", "OOCYFLK", "-VGQOEO", "ZFZ*SFX", "OJX*PK-", "BHBLJQP", "S*KSVVI", "HDZCVM-", "-GWREDJ", "BPEKCDA", "BZULBUM", "PNGICYA", "NTRPCYQ", "GQHR*ZD", "ISLFU-D", "IUBILAR", "VSWWTJA", "PPXYJYB", "IHNA-LN", "TOSFQIU", "FQRXKAC", "QOLYWTW", "XUYV*FY", "MANTHBD", "KLZGRNC", "OBSKQ*G", "DMPFELJ", "UIZQ-WO", "CMLEAXJ", "NEKCQWO", "LPA*FZD", "MHVYSFS", "RIFXSLY", "C-CQFIY", "ZER*EZX", "K-VWVPJ", "*HGJHUD", "GTUV*PU", "C-GHYTM", "-*ZOJVB", "VD*LXUA", "UOLVEK-", "ZXWIVVT", "QRE-MAP", "USWYIJH", "TQSGLOH", "IKEZEEG", "-ICTNTZ", "GMRS-DP", "-ARZEWZ", "FSRGTFG", "QFRJKD-", "ELBYA-X", "DUGGMMF", "LWDXAND", "GOFAMAI", "O**O-ST", "Q-VNKGB", "JCRPMZH", "JJYXDBB", "UKQKCUF", "ICTTWAU", "GSBPPE*", "PYTZKEF", "AHYSKAL", "DKQMB*B", "NN*HWNM", "GYVIRWY", "*WBULJN", "NZNLOPH", "VFRNWRC", "CCIHRHD", "JBORIXI", "XJT*SZH", "KPZXURD", "OQDCPSB", "C-VDIHM", "EOQLBKX", "NMOVEXS", "JPQUBM*" };
+    std::vector<std::string> dict = {"FASTA-FS", "FRATSAST", "UCTFXJNH", "CGLWQNSI", "*OLS*DEN", "LAGD*PYE", "HFFXWSVZ", "ABBECXVW", "YMGTTOX*", "I-XVFAQX", "KEYVHNER", "IUISR-ZH", "JHCVXJMK", "NNFKGPOW", "WVGTUHYB", "SYGCM-UQ", "-KLOGKUC", "W*SWGLIJ", "*ZKJTHTV", "UWRTTHUM", "XLJTHJEQ", "LRFPJHAR", "ZJAVVMHP", "MDOADYFU", "NCK*CYNZ", "YMQZXEUR", "FBHAEAZS", "ERBIE-NQ", "GIJRSMBZ", "SEAZ*PO-", "PKB*XTLD", "GDFWBYMA", "RDGF-TN-", "P-LUKTWO", "-PXBTMBL", "OOJVYSJ*", "NDMCNXNQ", "OVNK-DVU", "FPIHDXEK", "L*AKZMMG", "AYQIQQXF", "CEWTCTDR", "YQPUSSPI", "ZIRY*WWR", "MJWQAOWO", "OCYFLK-V", "GQOEOZFZ", "*SFXOJX*", "PK-BHBLJ", "QPS*KSVV", "IHDZCVM-", "-GWREDJB", "PEKCDABZ", "ULBUMPNG", "ICYANTRP", "CYQGQHR*", "ZDISLFU-", "DIUBILAR", "VSWWTJAP", "PXYJYBIH", "NA-LNTOS", "FQIUFQRX", "KACQOLYW", "TWXUYV*F", "YMANTHBD", "KLZGRNCO", "BSKQ*GDM", "PFELJUIZ", "Q-WOCMLE", "AXJNEKCQ", "WOLPA*FZ", "DMHVYSFS", "RIFXSLYC", "-CQFIYZE", "R*EZXK-V", "WVPJ*HGJ", "HUDGTUV*", "PUC-GHYT", "M-*ZOJVB", "VD*LXUAU", "OLVEK-ZX", "WIVVTQRE", "-MAPUSWY", "IJHTQSGL", "OHIKEZEE", "G-ICTNTZ", "GMRS-DP-", "ARZEWZFS", "RGTFGQFR", "JKD-ELBY", "A-XDUGGM", "MFLWDXAN", "DGOFAMAI", "O**O-STQ", "-VNKGBJC", "RPMZHJJY", "XDBBUKQK", "CUFICTTW", "AUGSBPPE", "*PYTZKEF", "AHYSKALD", "KQMB*BNN", "*HWNMGYV", "IRWY*WBU", "LJNNZNLO", "PHVFRNWR", "CCCIHRHD", "JBORIXIX", "JT*SZHKP", "ZXURDOQD", "CPSBC-VD", "IHMEOQLB", "KXNMOVEX", "SJPQUBM*" };
 
     for(size_t i = 0; i < dict.size() ; i++ ) {
         printf("[%s]  ",dict[i].c_str());
@@ -169,7 +149,7 @@ BOOST_AUTO_TEST_CASE(test_dict_conv)
         printf("   ->  ");
         
         for(size_t j = 0 ; j < 8; j ++ ) {
-            std::cout << "[" <<  fivebit_fivebytes::fivebit_alphabet[ f.data_decompressed[j] ] << "]";
+            std::cout << "[" <<   f.data_decompressed[j] << "]";
         }
         
         

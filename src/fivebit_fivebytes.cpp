@@ -39,7 +39,7 @@ const char fivebit_fivebytes::encode_hash[28 + 1][2] = { "A", "B", "C", "D", "E"
 void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
 {
     // bit_offset: 0, 1, 2, 3, 4, 5, 6, 7
-    this->data_decompressed[bit_offset] = amino_acid;
+    this->data_decompressed[bit_offset] = fivebit_fivebytes::fivebit_alphabet[amino_acid];
 
     switch(bit_offset) {
         case 0:
@@ -190,6 +190,12 @@ void fivebit_fivebytes::unpack() {
     //  00000111
     //  ---00000
     this->data_decompressed[0] = (unsigned char)(this->data_compressed[0] >> 3);   // shifts of unsigned types always zero-fill :)
+
+
+    // decode
+    for(char i = 0; i < 8; i++) {
+        this->data_decompressed[i] = fivebit_fivebytes::fivebit_alphabet[this->data_decompressed[i]];
+    }
 }
 
 
