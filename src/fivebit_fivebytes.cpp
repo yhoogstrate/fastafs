@@ -40,13 +40,9 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
 {
     // bit_offset: 0, 1, 2, 3, 4, 5, 6, 7
     this->data_decompressed[bit_offset] = amino_acid;
-    
-    unsigned char amino_acid_tmp;//@todo remove
-    
-    
+
     switch(bit_offset) {
         case 0:
-
             // 00000111 11222223 33334444 45555566 66677777
             // -----111
             this->data_compressed[0] = (unsigned char) (this->data_decompressed[0] & ~((16 + 8 + 4 + 2 + 1) << 3));
@@ -56,7 +52,7 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             // 00000111 11222223 33334444 45555566 66677777
             // 00000---
             this->data_compressed[0] = (unsigned char) (this->data_compressed[0] & ~((4 + 2 + 1) << 0 ));
-            this->data_compressed[0] = this->data_compressed[0] | amino_acid >> 5 ;
+            this->data_compressed[0] = this->data_compressed[0] | amino_acid >> 5;
 
             // 00000111 11222223 33334444 45555566 66677777
             //          --222223
@@ -75,16 +71,14 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             
             // 000xxxxx
             // -------x
-            amino_acid_tmp = (unsigned char) amino_acid >> 4;
             this->data_compressed[1] = (unsigned char) (this->data_compressed[1] & ~((1) << 0 ));
-            this->data_compressed[1] = this->data_compressed[1] | amino_acid_tmp;
+            this->data_compressed[1] = this->data_compressed[1] | amino_acid >> 4;
 
 
             // 000xxxxx
             // xxxx----
-            amino_acid_tmp = (unsigned char) amino_acid << 4;
             this->data_compressed[2] = (unsigned char) (this->data_compressed[2] & ~((8 + 4 + 2 + 1) << 4 ));
-            this->data_compressed[2] = this->data_compressed[2] | amino_acid_tmp;
+            this->data_compressed[2] = this->data_compressed[2] | amino_acid << 4;
 
         break;
         case 4:
@@ -92,44 +86,34 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             
             // 000xxxxx
             // -000xxxx
-            amino_acid_tmp = amino_acid >> 1;
-
             this->data_compressed[2] = (unsigned char) (this->data_compressed[2] & ~((8 + 4 + 2 + 1)  ));            
-            this->data_compressed[2] = this->data_compressed[2] | amino_acid_tmp;
+            this->data_compressed[2] = this->data_compressed[2] | amino_acid >> 1;
             
             
-            amino_acid_tmp = amino_acid << 7;
             this->data_compressed[3] = (unsigned char) (this->data_compressed[3] & ~((1) << 7 ));
-            
-            this->data_compressed[3] = this->data_compressed[3] | amino_acid_tmp;
+            this->data_compressed[3] = this->data_compressed[3] | amino_acid << 7;
         break;
         case 5:
             // 00000111 11222223 33334444 45555566 66677777
             
             // 000xxxxx
             // 0xxxxx--
-            amino_acid_tmp = amino_acid << 2;
-
             this->data_compressed[3] = (unsigned char) (this->data_compressed[3] & ~((16 + 8 + 4 + 2 + 1) << 1 ));
-            this->data_compressed[3] = this->data_compressed[3] | amino_acid_tmp;
+            this->data_compressed[3] = this->data_compressed[3] | amino_acid << 2;
         break;
         case 6:
             // 00000111 11222223 33334444 45555566 66677777
             
             // 000xxxxx
             // ---000xx
-            amino_acid_tmp = amino_acid >> 3;
-
             this->data_compressed[3] = (unsigned char) (this->data_compressed[3] & ~(( 2 + 1)  ));
-            this->data_compressed[3] = this->data_compressed[3] | amino_acid_tmp;
+            this->data_compressed[3] = this->data_compressed[3] | amino_acid >> 3;
 
 
             // 000xxxxx
             // xxx-----
-            amino_acid_tmp = amino_acid << 5;
-
             this->data_compressed[4] = (unsigned char) (this->data_compressed[4] & ~(( 4 + 2 + 1) << 5 ));
-            this->data_compressed[4] = this->data_compressed[4] | amino_acid_tmp;
+            this->data_compressed[4] = this->data_compressed[4] | amino_acid << 5;
 
         break;
         case 7:
@@ -137,10 +121,8 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
             
             // 000xxxxx
             // ---xxxxx
-            amino_acid_tmp =  (unsigned char) (amino_acid & ~(( 4 + 2 + 1) << 5 ));
-            
             this->data_compressed[4] = (unsigned char) (this->data_compressed[4] & ~(( 16 + 8 + 4 + 2 + 1) ));
-            this->data_compressed[4] = this->data_compressed[4] | amino_acid_tmp;
+            this->data_compressed[4] = this->data_compressed[4] | (amino_acid & ~(( 4 + 2 + 1) << 5 )) ;
         break;
     }
 }
@@ -167,14 +149,6 @@ void fivebit_fivebytes::set_compressed(unsigned char (&compressed_data)[5]) {
 
 
 void fivebit_fivebytes::unpack() {
-    printf("unpacking [%u] [%u] [%u] [%u] [%u] \n",
-        this->data_compressed[0] ,
-        this->data_compressed[1] ,
-        this->data_compressed[2] ,
-        this->data_compressed[3] ,
-        this->data_compressed[4] 
-        );
-
     //  00000111 11222223 33334444 45555566 66677777
     //                                      66677777
     //                                      ---77777
