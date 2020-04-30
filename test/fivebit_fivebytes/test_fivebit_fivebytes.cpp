@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
 BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 {
     unsigned char seq_comp[5];
-/*
+
     //  F      A      S      T      A      -      F      S
     // [05   ][00   ][18   ][19   ][00   ][27   ][05   ][18   ]
     //  00101  00000  10010  10011  00000  11011  00101  10010
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[5]], '-');
     BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[6]], 'F');
     BOOST_CHECK_EQUAL(fivebit_fivebytes::fivebit_alphabet[seq_decomp[7]], 'S');
-*/
+
 
 
     fivebit_fivebytes f2 = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
