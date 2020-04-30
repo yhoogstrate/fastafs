@@ -123,7 +123,6 @@ unsigned char *fivebit_fivebytes::get(void) {
 
 // @todo, offset needs to be second parameter
 void fivebit_fivebytes::set_compressed(unsigned char (&compressed_data)[5]) {
-    printf("overwriting compressed data\n");
     this->data_compressed[0] = compressed_data[0];
     this->data_compressed[1] = compressed_data[1];
     this->data_compressed[2] = compressed_data[2];
