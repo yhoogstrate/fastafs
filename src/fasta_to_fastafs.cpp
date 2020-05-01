@@ -210,13 +210,17 @@ void fasta_to_fastafs_seq::fivebit_add(unsigned char amino_acid, std::ofstream &
 
 void fasta_to_fastafs_seq::fivebit_finish_sequence(std::ofstream &fh_fastafs)
 {
+    unsigned char n_sticky = (unsigned char)(this->n_actg % 8);  // sticky end
+    unsigned char n_sticky_compressed = fivebit_fivebytes::decompressed_to_compressed_bytes(n_sticky);
+
     // flush last nucleotide
-    if(this->n_actg % 7 != 0) {
-        for(unsigned char i = (unsigned char)(this->n_actg % 7); i < 8 ; i++) {
+    if(n_sticky_compressed > 0) {
+        for(unsigned char i = n_sticky; i < 8 ; i++) {
             this->fivebit_data.set(i, 0);
         }
 
-        fh_fastafs.write((const char*) this->fivebit_data.data_compressed, 5);
+        printf(" writing only %i bytes at the end\n", n_sticky_compressed);
+        fh_fastafs.write((const char*) this->fivebit_data.data_compressed, n_sticky_compressed);
     }
 }
 

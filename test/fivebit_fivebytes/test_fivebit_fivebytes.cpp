@@ -135,8 +135,8 @@ BOOST_AUTO_TEST_CASE(test_dict_conv)
     fivebit_fivebytes f = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
 
     std::vector<std::string> dict = {"FASTA-FS", "FRATSAST", "UCTFXJNH", "CGLWQNSI", "*OLS*DEN", "LAGD*PYE", "HFFXWSVZ", "ABBECXVW", "YMGTTOX*", "I-XVFAQX", "KEYVHNER", "IUISR-ZH", "JHCVXJMK", "NNFKGPOW", "WVGTUHYB", "SYGCM-UQ", "-KLOGKUC", "W*SWGLIJ", "*ZKJTHTV", "UWRTTHUM", "XLJTHJEQ", "LRFPJHAR", "ZJAVVMHP", "MDOADYFU", "NCK*CYNZ", "YMQZXEUR", "FBHAEAZS", "ERBIE-NQ", "GIJRSMBZ", "SEAZ*PO-", "PKB*XTLD", "GDFWBYMA", "RDGF-TN-", "P-LUKTWO", "-PXBTMBL", "OOJVYSJ*", "NDMCNXNQ", "OVNK-DVU", "FPIHDXEK", "L*AKZMMG", "AYQIQQXF", "CEWTCTDR", "YQPUSSPI", "ZIRY*WWR", "MJWQAOWO", "OCYFLK-V", "GQOEOZFZ", "*SFXOJX*", "PK-BHBLJ", "QPS*KSVV", "IHDZCVM-", "-GWREDJB", "PEKCDABZ", "ULBUMPNG", "ICYANTRP", "CYQGQHR*", "ZDISLFU-", "DIUBILAR", "VSWWTJAP", "PXYJYBIH", "NA-LNTOS", "FQIUFQRX", "KACQOLYW", "TWXUYV*F", "YMANTHBD", "KLZGRNCO", "BSKQ*GDM", "PFELJUIZ", "Q-WOCMLE", "AXJNEKCQ", "WOLPA*FZ", "DMHVYSFS", "RIFXSLYC", "-CQFIYZE", "R*EZXK-V", "WVPJ*HGJ", "HUDGTUV*", "PUC-GHYT", "M-*ZOJVB", "VD*LXUAU", "OLVEK-ZX", "WIVVTQRE", "-MAPUSWY", "IJHTQSGL", "OHIKEZEE", "G-ICTNTZ", "GMRS-DP-", "ARZEWZFS", "RGTFGQFR", "JKD-ELBY", "A-XDUGGM", "MFLWDXAN", "DGOFAMAI", "O**O-STQ", "-VNKGBJC", "RPMZHJJY", "XDBBUKQK", "CUFICTTW", "AUGSBPPE", "*PYTZKEF", "AHYSKALD", "KQMB*BNN", "*HWNMGYV", "IRWY*WBU", "LJNNZNLO", "PHVFRNWR", "CCCIHRHD", "JBORIXIX", "JT*SZHKP", "ZXURDOQD", "CPSBC-VD", "IHMEOQLB", "KXNMOVEX", "SJPQUBM*", "ZCLXJSIA", "YBHNUNHH", "AYTGKWSO", "IHXJ*TD-", "MVAJKHUH", "QUXLEYWW", "TSROZJIQ", "LIAPGNHF", "RCMXSNLM", "GF*-VRJK", "IKDCTKFY", "VAPADEGP", "GKHLIWHU", "-OH-F-EZ", "*GPJZCNY", "RVUGFGVA", "JLLYKRWZ", "WSOWVDKV", "QPJZLBPH", "BYTSODIJ", "-MCJFBFU", "D*NIFL*L", "IG*CW*ZM", "GZTGQWHC", "CTCTBRDU", "IBNLOPPM", "DTP-HLXN", "YQRZ*GWS", "YFVBQEMM", "MYARXKOF", "SQDKDEQZ", "RKKVOEOL", "XA*YVU-W", "CQZQXTRV", "VP*YCJQM", "JWEF*O-J", "LFUTAQSF", "-EEILVRG", "DKNSYQZ-", "EQLM*BT-", "TGNJDBDS", "AJ-IGQLP", "PPDRKUKA", "WDDKVXXX", "HCHASUOB", "-RCUHJOJ", "BVANOTRB", "TYGLLX*H", "SYBOLOOM", "IIBETFMT", "PDFGC-CE", "*PTPEDLR", "ZZQQESJB", "HMNGEPEK", "UPFIPVQN", "XBWOFKFY", "XDOPNZUI", "JEMVIXKL", "EXQWSNKQ", "FAAIORTR", "BWXEMW-D", "ZVT-NUKK", "YRCACBAE", "ASDZZFXM", "XHHSBSRN", "UYSVOSIT", "DVNEHROM", "*PUCVJIC", "NYUWPZ-I", "Y*-GH-AV", "CBB-FGNQ", "CUCEAWMU", "FZO*WW-S", "G*WJ*SNY", "X*BRUXZM", "AGUMJR*Q", "MYTN*XIZ",
-        "CZCIIXEL", "BNQPCMTF" // failed in a test?
-        };
+                                     "CZCIIXEL", "BNQPCMTF"// failed in a test?
+                                    };
 
     for(size_t i = 0; i < dict.size() ; i++) {
         // set and compress amino acid string
@@ -149,10 +149,34 @@ BOOST_AUTO_TEST_CASE(test_dict_conv)
 
         // verify
         for(size_t j = 0 ; j < 8; j ++) {
-            BOOST_CHECK_EQUAL_MESSAGE(dict[i][j], f.data_decompressed[j], dict[i] + " => " + std::string(1, f.data_decompressed[0]) + std::string(1, f.data_decompressed[1]) + std::string(1, f.data_decompressed[2]) + std::string(1, f.data_decompressed[3]) + std::string(1, f.data_decompressed[4]) + std::string(1, f.data_decompressed[5]) + std::string(1, f.data_decompressed[6]) + std::string(1, f.data_decompressed[7]) + "   (" + std::to_string(j) + ": " + std::string(1, dict[i][j]) + " => " +  std::string(1, f.data_decompressed[j]) + ")"
-                                     );
+            BOOST_CHECK_EQUAL_MESSAGE(dict[i][j], f.data_decompressed[j], dict[i] + " => " + std::string(1, f.data_decompressed[0]) + std::string(1, f.data_decompressed[1]) + std::string(1, f.data_decompressed[2]) + std::string(1, f.data_decompressed[3]) + std::string(1, f.data_decompressed[4]) + std::string(1, f.data_decompressed[5]) + std::string(1, f.data_decompressed[6]) + std::string(1, f.data_decompressed[7]) + "   (" + std::to_string(j) + ": " + std::string(1, dict[i][j]) + " => " +  std::string(1, f.data_decompressed[j]) + ")");
         }
+
+        /* printing for debugging purpose
+        printf(" => [%u %u %u %u %u] => [%02hhX %02hhX %02hhX %02hhX %02hhX] => %c%c%c%c%c%c%c%c\n",
+
+        f.data_compressed[0],f.data_compressed[1],f.data_compressed[2],f.data_compressed[3],f.data_compressed[4],
+        f.data_compressed[0],f.data_compressed[1],f.data_compressed[2],f.data_compressed[3],f.data_compressed[4],
+
+        f.data_decompressed[0],f.data_decompressed[1],f.data_decompressed[2],f.data_decompressed[3],f.data_decompressed[4],f.data_decompressed[5],f.data_decompressed[6],f.data_decompressed[7]
+        );
+        */
     }
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_bytes_rounding)
+{
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(0), 0); // 8 % 8 = 0
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(1), 1);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(2), 2);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(3), 2);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(4), 3);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(5), 4);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(6), 4);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(7), 5);
 }
 
 

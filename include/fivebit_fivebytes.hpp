@@ -32,6 +32,7 @@ public:
     char *get(unsigned char);
 
     static unsigned char iterator_to_offset(unsigned int);
+    static unsigned char decompressed_to_compressed_bytes(unsigned char); // when only 5/8 bytes are filled, only 4/5 bytes need to be written
 };
 
 #endif

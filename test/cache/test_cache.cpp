@@ -931,57 +931,33 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
         "\x0F\x0A\x46\x53"s//     [0, 3]
         "\x00\x00\x00\x00"s//     [4, 7] version
         "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
-        "\x00\x00\x01\x01"s //    [10, 13] index position in file
+        "\x00\x00\x00\x47"s //    [10, 13] index position in file
 
         // DATA - size: 43
         "\x00\x00\x00\x2D"s// [14, 17]    45 x ACTG's
         "\x01\x03\xAD\x68\xA0"s // [18, 22]
         "\x94\xC0\x59\x6B\x5A"s // [23, 27]
         "\x16\x04\x84\x64\x8B"s // [28, 32]
-        "\x0B\x60\xF1\xB2\x65"s // [33, 37] B2 <36> should be 32?
+        "\x0B\x60\xF1\x32\x65"s // [33, 37]
         "\xCB\x67\x93\x5A\x02"s // [38, 42]
         "\x4A\x77\x73\x00"s // [43, 46] last bytes contains no info thus  must be skipped
-        
-        "\x13\x12\x13\x12\x13"s
-        "\x13\x12\x13\x12\x13"s
-        "\x13\x12\x13\x12\x13"s
-        "\x00\x00\x00\x00"s//     n-blocks (0)
-        "\xDE\x43\x9D\x7D\x4C\xF7\x09\xF5\x8C\x8B\x31\xFD\x0A\x98\xC4\xD6"s//checksum
-        "\x00\x00\x00\x00"s//     m-blocks (0)
+
+        "\x00\x00\x00\x00"s//     [47, 50] n-blocks (0)
+        "\xA1\x97\x13\xD9\xB6\xE9\xDD\x9F\x19\xC1\x79\x12\x97\xDF\x41\x3C"s// [51, 66] checksum
+        "\x00\x00\x00\x00"s//     [67, 70] m-blocks (2)
 
         // INDEX
-        "\x00\x00\x00\x06"s     // n sequences
+        "\x00\x00\x00\x01"s     // [71, 74] n sequences
 
-        "\x10\x00"             // [343, 344] complete, DNA and not circular
-        "\x0B"s "seq.1[ACTG]"s         // [345, 349] name
+        "\xD0\x00"             // [343, 344] complete, DNA and not circular
+        "\x07"s "PROTEIN"s         // [345, 349] name
         "\x00\x00\x00\x0E"s     //  data position in file (14)
-
-        "\x90\x00"             // RNA
-        "\x0B"s "seq.2[ACUG]"s         // [356, 360] name
-        "\x00\x00\x00\x39"s     // 57
-
-        "\x50\x00"             // [, ] complete, DNA and not circular
-        "\x0C"s "seq.3[IUPEC]"s       // [, ] name
-        "\x00\x00\x00\x64"s     // 100
-
-        "\x10\x00"             // [343, 344] complete, DNA and not circular
-        "\x0B"s "seq.4[ACTG]"s         // [345, 349] name
-        "\x00\x00\x00\x82"s     // [, ] data position in file (141)
-
-        "\x90\x00"             // RNA
-        "\x0B"s "seq.5[ACUG]"s         // [356, 360] name
-        "\x00\x00\x00\xAD"s     // [, ] data position in file (181)
-
-        "\x50\x00"             // [, ] complete, DNA and not circular
-        "\x0C"s "seq.6[IUPEC]"s         // [, ] name
-        "\x00\x00\x00\xD8"s     // [, ] data position in file (221)
-
 
         // METADATA
         "\x00"s                 // [399] no metadata fields [padding will come soon?]
 
         // CRC32 checksums
-        "\xD3\xBC\xFF\xFE"s // only part that is not yet checked
+        "\x77\xAE\x11\x2D"s // only part that is not yet checked
         ;
 
     //BOOST_CHECK_EQUAL(written, 376); // 220 bytes compressed data with 44 5/bit/5/bytes

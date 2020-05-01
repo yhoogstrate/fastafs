@@ -210,3 +210,15 @@ unsigned char fivebit_fivebytes::iterator_to_offset(unsigned int iterator)
 {
     return (unsigned char)(iterator % 8);
 }
+
+
+/*
+    it is not necessary to write the whole 5 byes if only 3 contain compressin information
+    00000111 11222223 33334444 45555566 66677777
+    // 00000111 11222223 33334444 45555566 66677777
+    //     1     2    3     4     5    6     7
+*/
+unsigned char fivebit_fivebytes::decompressed_to_compressed_bytes(unsigned char decompressed_bytes)
+{
+    return ((decompressed_bytes + 3) * 5 / 8) - 1;
+}
