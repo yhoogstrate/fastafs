@@ -14,7 +14,7 @@ public:
     static const char n_fill_unmasked = '?';
     static const char n_fill_masked = '?';
 
-    unsigned char data_compressed[8]; // 5
+    unsigned char data_compressed[5]; // 5
     unsigned char data_decompressed[8];
 
     void unpack(); // unpacks this->data into this->data_decompressed
