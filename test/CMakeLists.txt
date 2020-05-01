@@ -25,17 +25,34 @@ set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 
 add_executable(test_twobit_byte         "twobit_byte/test_twobit_byte.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/twobit_byte.cpp"
-                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/chunked_reader.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
 
 add_executable(test_fourbit_byte        "fourbit_byte/test_fourbit_byte.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fourbit_byte.cpp"
-                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/src/chunked_reader.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
 
 add_executable(test_fivebit_fivebytes   "fivebit_fivebytes/test_fivebit_fivebytes.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fivebit_fivebytes.cpp"
-                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp")
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/src/chunked_reader.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
 
 add_executable(test_cache               "cache/test_cache.cpp"

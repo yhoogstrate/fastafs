@@ -106,6 +106,67 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
 }
 
 
+
+
+
+size_t chunked_reader::read(unsigned char *arg_buffer, size_t buffer_size)
+{
+    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
+    size_t written = 0;
+
+    while(this->buffer_i < this->buffer_n and written < buffer_size) {
+        arg_buffer[written++] = this->buffer[this->buffer_i++];
+    }
+
+
+    if(written < buffer_size) {
+        // overwrite buffer
+        switch(this->filetype) {
+        case uncompressed:
+            this->update_flat_buffer();
+            break;
+        case zstd:
+            this->update_zstd_buffer();
+            break;
+        default:
+            throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
+            break;
+        }
+
+        // same loop again
+        while(this->buffer_i < this->buffer_n and written < buffer_size) {
+            arg_buffer[written++] = this->buffer[this->buffer_i++];
+        }
+    }
+
+    return written;
+}
+
+
+
+// reads single byte from the buffer
+unsigned char chunked_reader::read()
+{
+    if(this->buffer_i >= this->buffer_n) {
+        switch(this->filetype) {
+        case uncompressed:
+            this->update_flat_buffer();
+            break;
+        case zstd:
+            this->update_zstd_buffer();
+            break;
+        default:
+            throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
+            break;
+        }
+    }
+
+    return this->buffer[this->buffer_i++];
+}
+
+
+
+
 void chunked_reader::update_flat_buffer()
 {
     this->fh_flat.read(this->buffer, READ_BUFFER_SIZE);

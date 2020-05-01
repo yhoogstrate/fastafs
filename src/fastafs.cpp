@@ -32,6 +32,7 @@
 
 #include "twobit_byte.hpp"
 #include "fourbit_byte.hpp"
+#include "fivebit_fivebytes.hpp"
 #include "fastafs.hpp"
 #include "utils.hpp"
 
@@ -150,8 +151,10 @@ uint32_t fastafs_seq::view_fasta_chunk(
         } else {
             return this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
         }
-    } else {
+    } else if(this->flags.is_fourbit()) {
         return this->view_fasta_chunk_generalized<fourbit_byte>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
+    } else {
+        return this->view_fasta_chunk_generalized<fivebit_fivebytes>(cache, buffer, buffer_size, start_pos_in_fasta, fh);
     }
 }
 
@@ -234,14 +237,15 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     size_t n_block = cache->n_starts.size();
     size_t m_block = cache->m_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
-    uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+    const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
     // calculate file position for next twobit
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
     uint32_t n_passed = 0;
     this->get_n_offset(nucleotide_pos, &n_passed);
-    //fh->seekg((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte), fh->beg);
-    fh.seek((uint32_t) this->data_position + 4 + ((nucleotide_pos - n_passed) / T::nucleotides_per_byte)) ;
+    uint32_t compressed_nucleotide_offset = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
+    fh.seek((uint32_t) this->data_position + 4 + T::nucleotides_to_compressed_fileoffset(compressed_nucleotide_offset));
+    unsigned char bit_offset = compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
 
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
@@ -256,31 +260,10 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 //    const char *chunk = t.encode_hash[0];// init
 //    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
-
-    // big buffer
-    //@todo avoid dynamic allocation and fix buffer size?
-    // char *buffer[4096 + 4];
-    // watch out for off-grid requests: a 2byte buffer may 3 bytes reserved at least
-    //         X     X
-    // [ | | | | ] [ | | | | ]
-    //char *from_file_buffer;
-    //from_file_buffer = (char *) malloc(sizeof(char) * ((buffer_size /  T::nucleotides_per_byte) + 5));  // kan zeker 4x kleiner
-    char from_file_buffer[(READ_BUFFER_SIZE / 2) + 6];
-    fh.read(from_file_buffer, (buffer_size /  T::nucleotides_per_byte) + 4);
-
-    uint ff = 0;
-
-    /*
-    printf("size = (reserved = %i) (read = %i)", ((buffer_size / 4) + 2) , (buffer_size / 4) + 1);
-    printf(" (actual: %i)\n",fh->gcount() );
-    */
-
-    const char *chunk = t.encode_hash[0];// init
-    unsigned char bit_offset = (nucleotide_pos - n_passed) % T::nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+    char *chunk = (char *) t.encode_hash[1];// init
 
     if(bit_offset != 0) {
-        t.data = from_file_buffer[ff++];
-
+        t.next(fh);
         chunk = t.get();
     }
     while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
@@ -300,16 +283,14 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         while(pos < pos_limit) {// while next sequence-containing-line is open
             if(pos >= cache->n_starts[n_block]) {
                 if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = t.n_fill_masked;
+                    buffer[written++] = T::n_fill_masked;
                 } else {
-                    buffer[written++] = t.n_fill_unmasked;
+                    buffer[written++] = T::n_fill_unmasked;
                 }
             } else {
 
-                if(bit_offset % T::nucleotides_per_byte == 0) {
-                    //fh->read((char*)(&t.data), 1);
-                    t.data = from_file_buffer[ff++];
-
+                if(bit_offset % T::nucleotides_per_chunk == 0) {
+                    t.next(fh);
                     chunk = t.get();
                 }
 
@@ -319,7 +300,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                     buffer[written++] = chunk[bit_offset];
                 }
 
-                bit_offset = (unsigned char)(bit_offset + 1) % t.nucleotides_per_byte;
+                bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_chunk;
             }
             if(pos == cache->n_ends[n_block]) {
                 n_block++;
@@ -667,7 +648,6 @@ void fastafs::load(std::string afilename)
         // 'realpath' function and delete/free afterwards and send a PR
         //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
         this->filename = realpath_cpp(afilename);
-
         size = (size_t) fh_in.read(memblock, 16);
 
         if(size < 16) {
@@ -698,17 +678,6 @@ void fastafs::load(std::string afilename)
                 throw std::invalid_argument("Incomplete FASTAFS file (probably terminated during conversion): " + filename);
             }
 
-            /*
-            unsigned char bits;
-            unsigned char bits_per_byte;
-            if(this->flags.is_twobit()) {
-            	bits = 2;
-            	bits_per_byte = 4;
-            }
-            else {
-            	bits = 4;
-            	bits_per_byte = 2;
-            }*/
 
             std::streampos file_cursor = (std::streampos) fourbytes_to_uint(&memblock[10], 0);
 
@@ -753,6 +722,8 @@ void fastafs::load(std::string afilename)
                         fh_in.seek((uint32_t) s->data_position + 4 + ((s->n + 3) / 4));
                     } else if(s->flags.is_fourbit()) { // there fit 2 fourbits in a byte, thus divide by 2,
                         fh_in.seek((uint32_t) s->data_position + 4 + ((s->n + 1) / 2));
+                    } else {
+                        fh_in.seek((uint32_t) s->data_position + 4 + fivebit_fivebytes::nucleotides_to_compressed_offset(s->n));
                     }
 
                     // N-blocks (and update this->n instantly)

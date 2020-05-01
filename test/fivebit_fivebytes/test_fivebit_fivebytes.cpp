@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
     fivebit_fivebytes f = fivebit_fivebytes();// set_compressed(char *);// string with 5 character - requires unpacking
     f.set_compressed(seq_comp);
 
-    unsigned char *seq_decomp = f.get();
+    char *seq_decomp = f.get();
 
 
     BOOST_CHECK_EQUAL(seq_decomp[0], 'F');

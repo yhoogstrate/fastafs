@@ -54,7 +54,11 @@ public:
     off_t file_i;
 
     void set_filetype();
-    size_t read(char *, size_t);
+
+    size_t read(char *, size_t);// @deprecate
+    size_t read(unsigned char *, size_t);
+    unsigned char read();
+
     void seek(off_t);
     size_t tell();
     //size_t size();

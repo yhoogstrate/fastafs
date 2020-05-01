@@ -116,9 +116,9 @@ void fivebit_fivebytes::set(unsigned char bit_offset, unsigned char amino_acid)
 }
 
 
-unsigned char *fivebit_fivebytes::get(void)
+char *fivebit_fivebytes::get(void)
 {
-    return this->data_decompressed;
+    return (char *) this->data_decompressed;
 }
 
 
@@ -221,4 +221,58 @@ unsigned char fivebit_fivebytes::iterator_to_offset(unsigned int iterator)
 unsigned char fivebit_fivebytes::decompressed_to_compressed_bytes(unsigned char decompressed_bytes)
 {
     return ((decompressed_bytes + 3) * 5 / 8) - 1;
+}
+
+
+
+
+
+
+/*
+ * To calculate file offset
+ *
+ * example:
+ *
+ * >Seq
+ * [ABCDEFGH][ABCDEFGH] has offset of 2
+ *
+ * >Seq
+ * [ABCDEFGH][ABCDEFGH][A] has offset of 2?
+  *
+ * >Seq
+ * [ABCDEFGH][ABCDEFGH][ACCCAAC] has offset of 2?
+ * */
+const off_t fivebit_fivebytes::nucleotides_to_compressed_fileoffset(size_t n_amino_acids)
+{
+    return (off_t) n_amino_acids / fivebit_fivebytes::bytes_per_chunk * fivebit_fivebytes::bytes_per_chunk;
+}
+
+/*
+ * To calculate file offset
+ *
+ * example:
+ *
+ * >Seq
+ * [ABCDEFGH][ABCDEFGH] has offset of 10
+ *
+ * >Seq
+ * [ABCDEFGH][ABCDEFGH][A] has offset of 11?
+ *
+ */
+const off_t fivebit_fivebytes::nucleotides_to_compressed_offset(size_t n_amino_acids)
+{
+    return  fivebit_fivebytes::nucleotides_to_compressed_fileoffset(n_amino_acids)
+            + fivebit_fivebytes::decompressed_to_compressed_bytes(n_amino_acids % 8);
+}
+
+
+
+
+
+
+
+void fivebit_fivebytes::next(chunked_reader &r)
+{
+    r.read(this->data_compressed, fivebit_fivebytes::bytes_per_chunk);
+    this->unpack();
 }
