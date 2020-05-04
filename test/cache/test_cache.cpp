@@ -981,6 +981,72 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
     for(unsigned int i = 0; i < size; i++) {
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
+        //if(reference[i] != buffer[i]) {
+        //    printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
+        //}
+    }
+
+    delete[] buffer;
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_protein2)
+{
+    size_t written = fasta_to_fastafs("test/data/test_011.fa", "tmp/test_011.fastafs", true);
+
+    static std::string reference =
+        // GENERIC-HEADER - size: 14
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
+        "\x00\x00\x00\x38"s //    [10, 13] index position in file
+
+        // DATA - size: 43
+        "\x00\x00\x00\x15"s// [14, 17]    21 x ACTG's
+        "\x60\x0B\x20\x10\x75" // [18, 22]
+        "\x5A\x89\x71\xC6\x31" // [23, 27]
+        "\x8B\x08\x05\x80" // [28, 31]
+        "\x00\x00\x00\x00"s//     [32, 35] n-blocks (0)
+        "\x83\x1a\x10\x3b\xf8\x03\x3e\x69\x54\xba\xe3\x86\x98\x9f\x60\xf3"s// [36, 51] checksum
+        "\x00\x00\x00\x00"s//     [52, 55] m-blocks (2)
+
+        // INDEX
+        "\x00\x00\x00\x01"s     // [56, 59] n sequences
+
+        "\xD0\x00"             // [60, 61] complete, DNA and not circular
+        "\x1C"s "twobit-fourbit-fivebit-error"s         // [62, 90] name
+        "\x00\x00\x00\x0E"s     // [91, 94]
+
+        // METADATA
+        "\x00"s                 // [95]
+
+        // CRC32 checksums
+        "\x67\x1B\xC6\xB5"s // [96, 99]
+        ;
+
+    //BOOST_CHECK_EQUAL(written, 376); // 220 bytes compressed data with 44 5/bit/5/bytes
+
+    std::ifstream file("tmp/test_011.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    BOOST_CHECK_EQUAL(file.gcount(), size);
+    file.close();
+
+    //BOOST_CHECK_UNEQUAL(ret, -1);
+
+
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
         if(reference[i] != buffer[i]) {
             printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
         }

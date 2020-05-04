@@ -221,7 +221,6 @@ void fasta_to_fastafs_seq::fivebit_finish_sequence(std::ofstream &fh_fastafs)
             this->fivebit_data.set(i, 0);
         }
 
-        printf(" writing only %i bytes at the end\n", n_sticky_compressed);
         fh_fastafs.write((const char*) this->fivebit_data.data_compressed, n_sticky_compressed);
     }
 }
@@ -806,10 +805,25 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                             // @todo case for those only in protein seq
 
                             default:
-                                throw std::runtime_error("[fasta_to_x_fastafs] invalid chars in FASTA file");
+                                s->current_dict = DICT_FIVEBIT;
                                 break;
                             }
                         }
+
+                        if(s->current_dict != DICT_FOURBIT) {
+                            char dict = s->current_dict; // DICT_FOURBIT | DICT_FIVEBIT
+
+                            // set to fourbit and re-intialize
+                            // seek fasta header to beg + s->file_offset_in_fasta
+                            // seek fastafs back to beg + s->file_offset_in_fastafs and overwrite
+                            //throw std::runtime_error("[fasta_to_fastafs] invalid chars in FASTA file");
+                            fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);
+                            fh_fastafs.seekp(s->file_offset_in_fastafs + 4, std::ios::beg);// plus four, skipping the size
+
+                            s->flush();
+                            s->current_dict = dict; // set back to dict
+                        }
+
                     } else { // s->current_dict == DICT_FIVEBIT
                         for(std::string::iterator it = line.begin(); it != line.end(); ++it) {
                             switch(*it) {
