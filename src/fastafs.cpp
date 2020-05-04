@@ -911,7 +911,7 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
 
 
 
-inline uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset, chunked_reader &fh)
+uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset, chunked_reader &fh)
 {
     uint32_t written = 0;
 
