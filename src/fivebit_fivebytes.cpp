@@ -244,7 +244,11 @@ unsigned char fivebit_fivebytes::decompressed_to_compressed_bytes(unsigned char 
  * */
 const off_t fivebit_fivebytes::nucleotides_to_compressed_fileoffset(size_t n_amino_acids)
 {
-    return (off_t) n_amino_acids / fivebit_fivebytes::bytes_per_chunk * fivebit_fivebytes::bytes_per_chunk;
+    off_t out = n_amino_acids / (off_t) fivebit_fivebytes::nucleotides_per_chunk;
+
+    out = out * fivebit_fivebytes::bytes_per_chunk;
+
+    return out;
 }
 
 /*

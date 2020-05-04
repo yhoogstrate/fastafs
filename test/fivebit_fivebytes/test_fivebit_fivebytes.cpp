@@ -177,6 +177,24 @@ BOOST_AUTO_TEST_CASE(test_bytes_rounding)
     BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(5), 4);
     BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(6), 4);
     BOOST_CHECK_EQUAL(fivebit_fivebytes::decompressed_to_compressed_bytes(7), 5);
+
+    // 12345678 12345678 12345
+    // 11111 22222 3333
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(8), 5);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(16), 10);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24), 15);
+
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(21), 14);
+    
+
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 1), 15 + 1);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 2), 15 + 2);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 3), 15 + 2);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 4), 15 + 3);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 5), 15 + 4);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 6), 15 + 4);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 7), 15 + 5);
+    BOOST_CHECK_EQUAL(fivebit_fivebytes::nucleotides_to_compressed_offset(24 + 8), 15 + 5); // full reset, back to /8
 }
 
 

@@ -1555,11 +1555,13 @@ int fastafs::info(bool ena_verify_checksum)
 
             std::string compression_type;
             if(this->data[i]->flags.is_twobit()) {
-                compression_type = "2bit";
+                compression_type = "2bit  ";
             } else if(this->data[i]->flags.is_fourbit()) {
-                compression_type = "4bit";
+                compression_type = "4bit  ";
+            } else if(this->data[i]->flags.is_protein()) {
+                compression_type = "5/8bit";
             } else {
-                compression_type = "????";
+                compression_type = "????  ";
             }
 
 
