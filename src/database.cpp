@@ -91,9 +91,9 @@ void database::list()
             }
 
             if(zstd_seek) {
-                version = "v0-x32-2bit+Z";
+                version = "v0-x32+Z";
             } else {
-                version = "v0-x32-2bit";
+                version = "v0-x32";
             }
 
             printf("%-16s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
