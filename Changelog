@@ -1,3 +1,10 @@
+2020-04-29  Youri Hoogstrate
+
+   * v1.8.0
+   * Support for zstd-seekable
+   * Support for protein sequences using 8-to-5 byte compression
+   * Object type for chunked/buffered file reading
+
 2020-03-03  Youri Hoogstrate
 
    * v1.7.5

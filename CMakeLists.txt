@@ -5,10 +5,10 @@ cmake_minimum_required(VERSION 2.8)
 
 project(fastafs)
 
-# Do this once in a while - find different bugs
+# Do this once in a while - find different compiler warnings
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.7.5")
+set(PROJECT_VERSION "1.8.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -77,10 +77,21 @@ add_custom_target(tidy DEPENDS make_tidy )
 # ----------------------------------------------------------------------
 # ---------------------------- Compilation -----------------------------
 
+
 add_subdirectory(src)
-include_directories(include)
 #include_directories(${BUILD_DIR})
 include_directories("${BUILD_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/include")
+
+# ZSTD
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/common")
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib")
+link_libraries("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/libzstd.a")
+
+# ZSTD-SEEKABLE
+add_subdirectory("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
+
 add_definitions(-std=c++14)
 
 # Boost
@@ -115,11 +126,17 @@ add_executable(fastafs
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
+					src/fivebit_fivebytes.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					src/chunked_reader.cpp
+					
+					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
 				)
 set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
@@ -133,11 +150,17 @@ add_executable(mount.fastafs
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
+					src/fivebit_fivebytes.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					src/chunked_reader.cpp
+					
+					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
 				)
 set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
 
@@ -149,11 +172,17 @@ add_library(libfastafs SHARED
 					src/ucsc2bit.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
+					src/fivebit_fivebytes.cpp
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
 					src/fuse.cpp
 					src/lsfastafs.cpp
+					src/chunked_reader.cpp
+					
+					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
+					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
 )
 target_include_directories(libfastafs PUBLIC include)
 target_sources(libfastafs PUBLIC include/fastafs.hpp)
@@ -180,6 +209,7 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as al
 
 add_test(test_twobit_byte         "${BUILD_TEST_DIR}/test_twobit_byte") # ACTG(N) | ACUG(N)
 add_test(test_fourbit_byte        "${BUILD_TEST_DIR}/test_fourbit_byte") # ACGTURYKMSWBDHVN(-)
+add_test(test_fivebit_fivebytes   "${BUILD_TEST_DIR}/test_fivebit_fivebytes")
 add_test(test_cache               "${BUILD_TEST_DIR}/test_cache")
 add_test(test_view                "${BUILD_TEST_DIR}/test_view")
 add_test(test_flags               "${BUILD_TEST_DIR}/test_flags")

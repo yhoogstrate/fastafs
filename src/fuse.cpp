@@ -36,7 +36,7 @@ struct fuse_instance {
     ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
-    
+
 
     // ucsc2bit
     ucsc2bit *u2b;
@@ -45,7 +45,7 @@ struct fuse_instance {
     uint32_t padding;
     bool allow_masking;
     int argc_fuse;
-    
+
     timespec ts[2]; // access and modify time
 };
 
@@ -290,7 +290,7 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
 
 
 // decoy function to not throw an error if snakemake access this
-// as it doesn't have access to fi it is practically not possible to do a generic update 
+// as it doesn't have access to fi it is practically not possible to do a generic update
 static int do_utimens(const char *path, const struct timespec ts[2]) // seems it doesn't understand 'fuse_file_info ?' , struct fuse_file_info *fi)
 {
     //(void) fi;
@@ -300,7 +300,7 @@ static int do_utimens(const char *path, const struct timespec ts[2]) // seems it
     //res = utimensat(0, path, ts, AT_SYMLINK_NOFOLLOW);
     // set fi data  to ts
     //if (res == -1)
-        //return -errno;
+    //return -errno;
 
     return 0;
 }

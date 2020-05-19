@@ -53,46 +53,61 @@ void database::list()
     std::cout << "FASTAFS NAME\tFASTAFS\t\tSEQUENCES\tBASES\t\tDISK SIZE\tCOMPR-%\tMOUNT POINT(S)" << std::endl;
     std::ifstream infile(this->idx);
     std::string line;
+    std::string version;
     while(std::getline(infile, line)) {
         //std::istringstream iss(line);
         std::string fname = this->path + "/" + line + ".fastafs";
+        bool zstd_seek = false;
 
-        fastafs f = fastafs(line);
-        f.load(fname);
+        if(!file_exist(fname.c_str())) {
+            fname = this->path + "/" + line + ".fastafs.zst";
+            zstd_seek = true;
+        }
+        if(file_exist(fname.c_str())) {
+            fastafs f = fastafs(line);
+            f.load(fname);
 
-        std::ifstream file(fname, std::ios::in | std::ios::binary | std::ios::ate);
-        uint32_t size = (uint32_t) file.tellg();
-        file.close();
+            std::ifstream file(fname, std::ios::in | std::ios::binary | std::ios::ate);
+            uint32_t size = (uint32_t) file.tellg();
+            file.close();
 
 
-        std::string mountpoints = "-";
-        size_t n_mountpoints = fastafs_fuse_mounts.count(fname);
+            std::string mountpoints = "-";
+            size_t n_mountpoints = fastafs_fuse_mounts.count(fname);
 
-        if(n_mountpoints > 0) {
-            mountpoints == "";
-            bool is_first = true;
+            if(n_mountpoints > 0) {
+                mountpoints == "";
+                bool is_first = true;
 
-            auto it = fastafs_fuse_mounts.find(fname);
-            for(; it != fastafs_fuse_mounts.end() ; it++) {
-                if(is_first) {
-                    mountpoints = it->second.second;
-                    is_first = false;
-                } else {
-                    mountpoints = mountpoints + "," + it->second.second;
+                auto it = fastafs_fuse_mounts.find(fname);
+                for(; it != fastafs_fuse_mounts.end() ; it++) {
+                    if(is_first) {
+                        mountpoints = it->second.second;
+                        is_first = false;
+                    } else {
+                        mountpoints = mountpoints + "," + it->second.second;
+                    }
                 }
             }
+
+            if(zstd_seek) {
+                version = "v0-x32+Z";
+            } else {
+                version = "v0-x32";
+            }
+
+            printf("%-16s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
+                   line.c_str(),
+                   version.c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
+                   (uint32_t) f.data.size(),
+                   f.n(),
+                   size,
+                   (float) 100.0 * (float) size / (float) f.fasta_filesize(50), // @todo fastafs file size!
+                   mountpoints.c_str()
+                  );
+        } else {
+            // print error invalid file?
         }
-
-
-        printf("%-16s%-16s%-16u%-16u%-16u%-8.1f%s\n",//double %% escapes the
-               line.c_str(),
-               std::string("v0-x32-2bit").c_str(),// version ,architechture (32 bit = max 4Gb files..., but can be elaborated to max 4gb per sequence line, then compression types, currently only 2bit)
-               (uint32_t) f.data.size(),
-               f.n(),
-               size,
-               (float) 100.0 * (float) size / (float) f.fasta_filesize(50), // @todo fastafs file size!
-               mountpoints.c_str()
-              );
     }
 }
 
