@@ -4,6 +4,7 @@
    * Support for zstd-seekable
    * Support for protein sequences using 8-to-5 byte compression
    * Object type for chunked/buffered file reading
+   * Requires libzstd (1.4.5 and above) as dependency
 
 2020-03-03  Youri Hoogstrate
 
