@@ -83,10 +83,9 @@ add_subdirectory(src)
 include_directories("${BUILD_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
+
 # ZSTD
-include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/common")
-include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib")
-link_libraries("${CMAKE_SOURCE_DIR}/dependencies/zstd/lib/libzstd.a")
+include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd-lib-common")
 
 # ZSTD-SEEKABLE
 add_subdirectory("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
@@ -109,8 +108,10 @@ link_libraries(ssl)
 link_libraries(crypto)
 link_libraries(fuse)
 link_libraries(z)# zlib; -lz; for crc32 checks on whole file integrity
+link_libraries(zstd)
 
 
+# -DXXH_NAMESPACE=ZST_
 if(DEBUG)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -g -ggdb -Wconversion -D_FILE_OFFSET_BITS=64")# -Werror makes compilation crash when warnings are given (also part of Travis)
 else()
@@ -133,7 +134,9 @@ add_executable(fastafs
 					src/fuse.cpp
 					src/lsfastafs.cpp
 					src/chunked_reader.cpp
-					
+
+
+					dependencies/zstd-lib-common/xxhash.c
 					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
@@ -157,7 +160,9 @@ add_executable(mount.fastafs
 					src/fuse.cpp
 					src/lsfastafs.cpp
 					src/chunked_reader.cpp
-					
+
+
+					dependencies/zstd-lib-common/xxhash.c
 					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
@@ -179,7 +184,9 @@ add_library(libfastafs SHARED
 					src/fuse.cpp
 					src/lsfastafs.cpp
 					src/chunked_reader.cpp
-					
+
+
+					dependencies/zstd-lib-common/xxhash.c
 					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
