@@ -203,7 +203,6 @@ static int do_open(const char *path, struct fuse_file_info * fi) {
     //(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n",
      //cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str());
      
-    printf("\033[0;35m fi:     0x%p\n", (uintptr_t) fi);
     printf("\033[0;35m fi->fh: %u\n", fi->fh);
     printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
     printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
@@ -220,7 +219,7 @@ static int do_open(const char *path, struct fuse_file_info * fi) {
 }
 
 
-
+// test file error reads at: do_read(s=4096, off=20480):
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
@@ -238,7 +237,6 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
          
         printf("\033[0;35m fi:     0x%p\n", (uintptr_t) fi);
         printf("\033[0;35m fi->fh: %u\n", fi->fh);
-        printf("\033[0;35m fi->fh: 0x%p\n", (uintptr_t) fi->fh);
         printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
         printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
         printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
@@ -262,6 +260,8 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
             written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
         }
+        
+        printf(" written: %u\n", written);
     } else {
         if(ffi->u2b != nullptr) {
 #if DEBUG
