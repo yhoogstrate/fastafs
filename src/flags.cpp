@@ -105,6 +105,14 @@ bool fastafs_sequence_flags::is_iupec_nucleotide()
                this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
 }
 
+bool fastafs_sequence_flags::is_protein()
+{
+    return (
+               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
+               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
+}
+
+
 bool fastafs_sequence_flags::is_complete()
 {
     return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE);
@@ -137,6 +145,13 @@ void fastafs_sequence_flags::set_iupec_nucleotide()
     this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, false); // 0,1
     this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, true);
 }
+
+void fastafs_sequence_flags::set_protein()
+{
+    this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, true); // 1,1
+    this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, true);
+}
+
 
 void fastafs_sequence_flags::set_complete()
 {

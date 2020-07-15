@@ -29,6 +29,9 @@
 
 
 
+uint64_t fh_i = 1;
+
+
 struct fuse_instance {
     //fastasfs
     fastafs *f;
@@ -36,7 +39,7 @@ struct fuse_instance {
     ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
-    
+
 
     // ucsc2bit
     ucsc2bit *u2b;
@@ -45,7 +48,7 @@ struct fuse_instance {
     uint32_t padding;
     bool allow_masking;
     int argc_fuse;
-    
+
     timespec ts[2]; // access and modify time
 };
 
@@ -57,7 +60,7 @@ static int do_getattr(const char *path, struct stat *st)
 
     char cur_time[100];
     time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
@@ -76,7 +79,6 @@ static int do_getattr(const char *path, struct stat *st)
 
     st->st_nlink = 1;
 
-    printf("[%s]\n", path);
     if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0444;
         //st->st_nlink = 1;
@@ -151,13 +153,13 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 
     char cur_time[100];
     time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
 
     if(ffi->from_fastafs) {
-        printf("\033[0;32m[%s]\033[0;33m fastafs::do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+        printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 
         std::string virtual_fasta_filename = ffi->f->name + ".fa";
         std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
@@ -192,6 +194,32 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 }
 
 
+static int do_open(const char *path, struct fuse_file_info * fi) {
+    char cur_time[100];
+    time_t now = time(0);
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+    printf("\033[0;32m[%s]\033[0;33m do_open\n");
+    //(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n",
+     //cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str());
+     
+    printf("\033[0;35m fi->fh: %u\n", fi->fh);
+    printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
+    printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
+    printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
+    printf("\033[0;35m fi->padding: %u\n", fi->padding);
+
+    // here the fi->fh should be set?!
+    // if possible to chunked reader?
+    //chunked_reader *cr = new chunked_reader("/tmp/wget");
+    fi->fh = fh_i++;
+    // should be set to a real fh i presume?
+
+    return 0;
+}
+
+
+// test file error reads at: do_read(s=4096, off=20480):
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
@@ -199,13 +227,21 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
     static int written = -2;// -1 = permission deinied, -2 = missing file or directory
 
     if(ffi->from_fastafs) {
-#if DEBUG
+//#if DEBUG
         char cur_time[100];
         time_t now = time(0);
-        strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+        strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-        printf("\033[0;32m[%s]\033[0;33m fastafs::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
-#endif
+        printf("\033[0;32m[%s]\033[0;33m do_read(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n",
+         cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+         
+        printf("\033[0;35m fi:     0x%p\n", (uintptr_t) fi);
+        printf("\033[0;35m fi->fh: %u\n", fi->fh);
+        printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
+        printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
+        printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
+        printf("\033[0;35m fi->padding: %u\n", fi->padding);
+//#endif
 
         std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
         std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
@@ -224,12 +260,14 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
             written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
         }
+        
+        printf(" written: %u\n", written);
     } else {
         if(ffi->u2b != nullptr) {
 #if DEBUG
             char cur_time[100];
             time_t now = time(0);
-            strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+            strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
             printf("\033[0;32m[%s]\033[0;33m 2bit::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
 #endif
@@ -290,7 +328,7 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
 
 
 // decoy function to not throw an error if snakemake access this
-// as it doesn't have access to fi it is practically not possible to do a generic update 
+// as it doesn't have access to fi it is practically not possible to do a generic update
 static int do_utimens(const char *path, const struct timespec ts[2]) // seems it doesn't understand 'fuse_file_info ?' , struct fuse_file_info *fi)
 {
     //(void) fi;
@@ -300,7 +338,7 @@ static int do_utimens(const char *path, const struct timespec ts[2]) // seems it
     //res = utimensat(0, path, ts, AT_SYMLINK_NOFOLLOW);
     // set fi data  to ts
     //if (res == -1)
-        //return -errno;
+    //return -errno;
 
     return 0;
 }
@@ -354,7 +392,7 @@ fuse_operations operations  = {
     nullptr,    // int (*chown) (const char *, uid_t, gid_t);
     nullptr,    // int (*truncate) (const char *, off_t);
     nullptr,    // int (*utime) (const char *, struct utimbuf *);
-    nullptr,    // int (*open) (const char *, struct fuse_file_info *);
+    do_open,    // int (*open) (const char *, struct fuse_file_info *);
     do_read,    // int (*read) (const char *, char *, size_t, off_t, struct fuse_file_info *);
     nullptr,    // int (*write) (const char *, const char *, size_t, off_t, struct fuse_file_info *);
     nullptr,    // int (*statfs) (const char *, struct statvfs *);
@@ -598,8 +636,6 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
-    printf("checkpoint c\n");
-
     return fi;
 }
 
@@ -608,25 +644,21 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
 void fuse(int argc, char *argv[])
 {
-    printf("wake up\n");
-
     // part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
     //  - @todo at some point define that second mount is not really important? if possible
     char *argv2[argc];
     fuse_instance *ffi = parse_args(argc, argv, argv2);
 
-    printf("checkpoint\n");
-
     // part 2 - print what the planning is
     char cur_time[100];
     time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m init (recv arguments):\033[0m [argc=%i]", cur_time, argc);
     for(int i = 0; i < argc; i++) {
         printf(" argv[%u]=\"%s\"", i, argv[i]);
     }
 
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
     printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]", cur_time, ffi->argc_fuse);
     for(int i = 0; i < ffi->argc_fuse; i++) {
         printf(" argv[%u]=\"%s\"", i, argv2[i]);
