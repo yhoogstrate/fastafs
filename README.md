@@ -10,14 +10,21 @@ Direct link to the file format specification:
 
 ![](https://bioinf-galaxian.erasmusmc.nl/public/images/fastafs/fastafs-example.gif)
 
-## in a compressed and random access manner
+## Elegant integration of sequence data archives, backwards compatible with FASTA and no API's needed
 
-RNA, DNA and protein sequences are commonly stored in the FASTA format. Although very commonly used and easy to read, FASTA files consume vast amounts of diskspace and need to be provided with additional files to achieve random access and interoperability. Classical compressors only offer back and forwards compression of the files, often requiring to decompress to a new copy of the FASTA file.
+RNA, DNA and protein sequences are commonly stored in the FASTA format. Although very commonly used and easy to read, FASTA files come with additional metadata files and consume unnecessary disk space. These additional metadata files need to be are necessary to achieve random access and have certain interoperability features, and require additional maintaince. Classical FASTA (de-)compressors only offer back and forwards compression of the files, often requiring to decompress to a new copy of the FASTA file making it inpractical solutions in particular for random access use cases. Although they typically produce very compact archives with quick algorithms, they are not widely adopted in our bioinformatics software.
 
-Here we propose a solution; a virtual layer to (random access) TwoBit/FourBit compression that provides read-only access to a FASTA file and the guarenteed in-sync FAI, DICT and 2BIT files, through a FUSE file system layer. By simply mounting the compressed archive as a FASTA and necessary metadata files, we only virtualize chunks of the FASTA corresponding to an file request. Additional advantages of FASTAFS are the toolkit and interface are sequence verification, checking file integrity and a feature rich toolskit that allows management of the mounted files.
+Here we propose a solution; a virtual layer between (random access) FASTA archives and read-only access to FASTA files and their guarenteed in-sync FAI, DICT and 2BIT files, through the File System in Userspace (FUSE) file system layer. When the archive is mounted, fastafs virtualizes a folder containing the FASTA and necessary metadata files, only accessing the chunks of the archive needed to deliver to the file request. This elegant software solution offers several advantages:
+ - virtual files and their system calls are identical to flat files and preserve backwards compatibility with tools only compatible with FASTA, also for random access use-cases,
+ - there is no need to use additional disk space for temporary decompression or to put entire FASTA files into memory,
+ - for random access requests, computational resources are only spent on decompressing the region of interest,
+ - it does not need multiple implementations of software libraries for each distinct tool and for each programming language,
+ - it does not require to maintain multiple files that all together make up one data entity as it is guaranteed to provide dict- and fai-files that are in sync with their FASTA of origin.
 
-FASTAFS is deliberately made backwards compatible with both TwoBit and Fasta. The package even allows to mount TwoBit files instead of FASTAFS files, to FASTA files. An important question is whether FASTAFS is this famous 15th standard (<https://xkcd.com/927/>)?
-Partially, but it is not designed to replace FASTA nor 2bit as the mountpoints provide an exact identical way of file access as regular flat file acces, and is thus backwards compatible.
+In addition, the corresponding toolkit offers an interface that allows ENA sequence identification, file integrity verification and  management of the mounted files and process ids.
+
+FASTAFS is deliberately made backwards compatible with both TwoBit and Fasta. The package even allows to mount TwoBit files instead of FASTAFS files, to FASTA files. For those who believe FASTAFS is this famous 15th standard (<https://xkcd.com/927/>)?
+Partially, it is not designed to replace FASTA nor TwoBit as the mountpoints provide an exact identical way of file access as regular flat file acces, and is thus backwards compatible. Instead, it offers the same old standard with an elegant toolkit that allows easier integration with workflow management systems.
 
 ## Installation and compilation
 
