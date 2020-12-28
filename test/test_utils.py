@@ -25,6 +25,9 @@ def get_machine_id():
 def get_curtime():
     return str(datetime.datetime.now().strftime('%Y-%m-%d %X'))
 
+def get_fastafs_rev():
+    return subprocess.check_output(['fastafs', '--version']).decode("utf-8").split("\n")[0].replace('fastafs','').strip()
+
 
 #git = get_git_revision()
 #print(get_curtime() + "\t" + get_machine_id() + "\t" + git[0] + "\t" + git[1] )
@@ -148,9 +151,9 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
     parallel_thread.start()
 
     #print(" --- checkpoint 03 --- ")
-    basename = fastafs_tmp_filename.replace('.fastafs.zstd','').replace('.fastafs.zst','').replace('.fastafs.zstd','').split('/')[-1]
+    #basename = fastafs_tmp_filename.replace('.fastafs.zstd','').replace('.fastafs.zst','').replace('.fastafs.zstd','').split('/')[-1]
 
-    fn = mountpoint + basename + ".fastafs.fa"
+    fn = mountpoint + fastafs_mount_alias + ".fa"
     i = 0
     while not os.path.exists(fn):
         print("waiting for file [" + fn + "] to come online")
@@ -162,7 +165,7 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
 
     matches = 0
     try:
-        #os.system('ls -als tmp/mnt/*.fa')
+        #os.system('ls -als tmp/benchmark/mnt/*.fa')
         #time.sleep(0.1)
         #os.system('ls -als tmp/mnt/*.fa')
 

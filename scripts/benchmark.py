@@ -12,11 +12,18 @@ if not os.path.exists(RESULTS_FILE):
     with open(RESULTS_FILE,'w') as fh:
         fh.write(
             "\t".join(
-            ["timestamp", "git-commit", "perf:cycles", "perf:total_time", "perf:user_time", "perf:sys_time", "cmd", "git-mod-status"]
+            ["timestamp", "fastafs-version", "git-commit", "perf:cycles", "perf:total_time", "perf:user_time", "perf:sys_time", "cmd", "git-mod-status"]
             ) + "\n"
         )
 
+FASTAFS_REV = get_fastafs_rev()
 GIT_REV = get_git_revision()
+
+if FASTAFS_REV.find(GIT_REV[0].replace('git-commit:','')) == -1:
+    raise Exception("Used FASTAFS version differs from CODEBASE - cross-check FASTAFS path and binary:\nbinary:       " + FASTAFS_REV + "\ngit revision:        " + GIT_REV[0].replace('git-commit:',''))
+    import sys
+    exit(1)
+
 TIMESTAMP = str(datetime.datetime.now())
 
 
@@ -59,12 +66,13 @@ with open(RESULTS_FILE, 'a') as fh:
     print(" >> difference: " )
     print(difference)
     if(difference['diff']):
-        print("ERROR - DIFFERENCE DETECTED")
+        raise Exception("ERROR - DIFFERENCE DETECTED")
         import sys
         sys.exit(1)
     else:
         fh.write(
             "\t".join([TIMESTAMP,
+                       FASTAFS_REV,
                        GIT_REV[0].replace('git-commit:',''),
                        str(difference['perf']['cycles']),
                        str(difference['perf']['total_time']),
