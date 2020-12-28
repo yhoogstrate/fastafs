@@ -15,17 +15,36 @@
 #include <time.h>
 #include <unistd.h>
 //#include <filesystem>
-
+#include <pthread.h>
+#include <mutex>
+#include <thread>
+#include <unistd.h>
+#include <semaphore.h>
 
 #include "fuse.hpp"
 #include "database.hpp"
 #include "fastafs.hpp"
 #include "ucsc2bit.hpp"
 #include "sequence_region.hpp"
+#include "chunked_reader.hpp"
 
 
 // http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
 // more examples: https://libfuse.github.io/doxygen/hello_8c.html
+
+
+
+struct file_thread_info {
+    chunked_reader *cr;
+    sem_t sem;
+};
+
+int MAX_FILE_THREADS = 4;
+
+struct file_threads {
+    std::vector<file_thread_info> crs;
+    int thread_i = 0; // thread iterator
+};
 
 
 
@@ -36,7 +55,6 @@ struct fuse_instance {
     ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
-    
 
     // ucsc2bit
     ucsc2bit *u2b;
@@ -45,7 +63,7 @@ struct fuse_instance {
     uint32_t padding;
     bool allow_masking;
     int argc_fuse;
-    
+
     timespec ts[2]; // access and modify time
 };
 
@@ -57,7 +75,7 @@ static int do_getattr(const char *path, struct stat *st)
 
     char cur_time[100];
     time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
@@ -76,7 +94,6 @@ static int do_getattr(const char *path, struct stat *st)
 
     st->st_nlink = 1;
 
-    printf("[%s]\n", path);
     if(strcmp(path, "/") == 0) {
         //st->st_mode = S_IFREG | 0444;
         //st->st_nlink = 1;
@@ -91,7 +108,7 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_nlink = 1;
     } else if(strlen(path) > 4 &&  strncmp(path, "/seq/", 5) == 0) {
         // API: "/seq/chr1:123-456"
-        printf("setting to FILE [%s] because /seq/...\n", path);
+        //printf("setting to FILE [%s] because /seq/...\n", path);
         // @ todo - run a check on wether the chr exists and return err otherwise
         st->st_mode = S_IFREG | 0444;
         st->st_nlink = 1;
@@ -104,7 +121,9 @@ static int do_getattr(const char *path, struct stat *st)
 
         if(ffi->from_fastafs) {
             if(ffi->f != nullptr) {
+#if DEBUG
                 printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->f->name.c_str(), ffi->padding);
+#endif
 
                 std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
                 std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
@@ -126,7 +145,9 @@ static int do_getattr(const char *path, struct stat *st)
             }
         } else {
             if(ffi->u2b != nullptr) {
+#if DEBUG
                 printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->u2b->name.c_str(), ffi->padding);
+#endif
 
                 std::string virtual_fasta_filename = "/" + ffi->u2b->name + ".fa";
                 std::string virtual_faidx_filename = "/" + ffi->u2b->name + ".fa.fai";
@@ -151,13 +172,13 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 
     char cur_time[100];
     time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
 
     if(ffi->from_fastafs) {
-        printf("\033[0;32m[%s]\033[0;33m fastafs::do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+        printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 
         std::string virtual_fasta_filename = ffi->f->name + ".fa";
         std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
@@ -172,7 +193,9 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
         }
     } else {
         if(ffi->u2b != nullptr) {
+#if DEBUG
             printf("\033[0;32m[%s]\033[0;33m 2bit::do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
+#endif
 
             std::string virtual_fasta_filename = ffi->u2b->name + ".fa";
             std::string virtual_faidx_filename = ffi->u2b->name + ".fa.fai";
@@ -192,8 +215,88 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 }
 
 
+static int do_open(const char *path, struct fuse_file_info *fi)
+{
+    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
+
+    char cur_time[100];
+    time_t now = time(0);
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+    printf("\033[0;32m[%s]\033[0;33m do_open\n", cur_time);
+    //(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n",
+    //cur_time, (uint32_t) size, (uint32_t) offset, path, );
+
+    //chunked_reader *cr = new chunked_reader(ffi->f->filename.c_str());
+
+    printf("test... \n");
+
+    // has list with 32 chunked_reader objects
+    file_threads *ft = new file_threads();
+    for(ft->thread_i = 0; ft->thread_i < MAX_FILE_THREADS;  ft->thread_i++) {
+        ft->crs.push_back(
+        file_thread_info{
+            new chunked_reader(ffi->f->filename.c_str())
+        }
+        );
+
+        //printf("sem init... \n");
+        sem_init( &(ft->crs[ft->thread_i].sem), 0, 1 );
+        //printf("sem init done... \n");
+    }
+    ft->thread_i = 0;
+
+    fi->fh = reinterpret_cast<uintptr_t>(ft);
+    printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
+
+    printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
+    printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
+    printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
+    printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
+    printf("\033[0;35m fi->padding: %u\n", fi->padding);
+
+    // here the fi->fh should be set?!
+    // if possible to chunked reader?
+    //chunked_reader *cr = new chunked_reader("/tmp/wget");
+    //fi->fh = fh_i++;
+    // should be set to a real fh i presume?
+
+    return 0;
+}
+
+static int do_flush(const char *path, struct fuse_file_info *fi)
+{
+    return 0;
+}
+
+static int do_release(const char *path, struct fuse_file_info *fi)
+{
+    file_threads *ft = (file_threads*) fi->fh;
+    //printf("do_release() - filehandle had [ %i ] locks \n", ft->thread_locks);
+
+    if(ft != nullptr) {
+        for(size_t i = 0; i < ft->crs.size(); i++) {
+            sem_destroy(&ft->crs[i].sem);
+            delete ft->crs[i].cr;
+
+        }
+        delete ft;
+    }
+
+    return 0;
+}
+
+
+// threaded implementation of libfuse?
+// https://libfuse.github.io/doxygen/poll_8c.html
+
+// test file error reads at: do_read(s=4096, off=20480):
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
+    file_threads *ft = (file_threads*) fi->fh;
+    int cur_file_thread = ft->thread_i++ % MAX_FILE_THREADS;
+    sem_wait(&ft->crs[cur_file_thread].sem);
+
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
     static int written = -2;// -1 = permission deinied, -2 = missing file or directory
@@ -202,9 +305,16 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 #if DEBUG
         char cur_time[100];
         time_t now = time(0);
-        strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+        strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
-        printf("\033[0;32m[%s]\033[0;33m fastafs::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+        printf("\033[0;32m[%s]\033[0;33m do_read(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+        //printf("\033[0;35m fi:     0x%p\n", (uintptr_t) fi);
+        printf("\033[0;35m fi:     0x%p\n", (void*) fi);
+        printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
+        printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
+        printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
+        printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
+        printf("\033[0;35m fi->padding: %u\n", fi->padding);
 #endif
 
         std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
@@ -212,9 +322,8 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
         std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
 
-        //printf("?? [[%s]]\n", path);
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset);
+            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset, *ft->crs[cur_file_thread].cr);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
@@ -229,7 +338,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 #if DEBUG
             char cur_time[100];
             time_t now = time(0);
-            strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+            strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 
             printf("\033[0;32m[%s]\033[0;33m 2bit::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
 #endif
@@ -245,7 +354,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         }
     }
 
-    //printf("    return written=%u\n", written);
+    sem_post(&ft->crs[cur_file_thread].sem);
 
     return written;
 }
@@ -290,7 +399,7 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
 
 
 // decoy function to not throw an error if snakemake access this
-// as it doesn't have access to fi it is practically not possible to do a generic update 
+// as it doesn't have access to fi it is practically not possible to do a generic update
 static int do_utimens(const char *path, const struct timespec ts[2]) // seems it doesn't understand 'fuse_file_info ?' , struct fuse_file_info *fi)
 {
     //(void) fi;
@@ -300,7 +409,7 @@ static int do_utimens(const char *path, const struct timespec ts[2]) // seems it
     //res = utimensat(0, path, ts, AT_SYMLINK_NOFOLLOW);
     // set fi data  to ts
     //if (res == -1)
-        //return -errno;
+    //return -errno;
 
     return 0;
 }
@@ -319,6 +428,12 @@ void do_destroy(void *pd)
     if(ffi->u2b != nullptr) {
         delete ffi->u2b;
     }
+
+    // for
+    //if(ffi->cr != nullptr) {
+    //delete ffi->cr;
+    //}
+
 
     delete ffi;
 
@@ -354,12 +469,12 @@ fuse_operations operations  = {
     nullptr,    // int (*chown) (const char *, uid_t, gid_t);
     nullptr,    // int (*truncate) (const char *, off_t);
     nullptr,    // int (*utime) (const char *, struct utimbuf *);
-    nullptr,    // int (*open) (const char *, struct fuse_file_info *);
+    do_open,    // int (*open) (const char *, struct fuse_file_info *);
     do_read,    // int (*read) (const char *, char *, size_t, off_t, struct fuse_file_info *);
     nullptr,    // int (*write) (const char *, const char *, size_t, off_t, struct fuse_file_info *);
     nullptr,    // int (*statfs) (const char *, struct statvfs *);
-    nullptr,    // int (*flush) (const char *, struct fuse_file_info *);
-    nullptr,    // int (*release) (const char *, struct fuse_file_info *);
+    do_flush,   // int (*flush) (const char *, struct fuse_file_info *);
+    do_release, // int (*release) (const char *, struct fuse_file_info *);
     nullptr,    // int (*fsync) (const char *, int, struct fuse_file_info *);
     nullptr,    // int (*setxattr) (const char *, const char *, const char *, size_t, int);
     do_getxattr,// int (*getxattr) (const char *, const char *, char *, size_t);
@@ -478,6 +593,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         nullptr,// pointer to fastafs_init with defined padding
         nullptr, // pointer to fastafs_init with cache size of 0 (for mounting ./seq/chr1:123-456
         true, // from fastafs
+
         nullptr, // pointer to ucsc2bit decoder - if from_fasta is set to false
         60, // default_padding
         true, // allow_masking
@@ -487,8 +603,6 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
     //fuse option variable to send to fuse
     argv_fuse[fi->argc_fuse++] = (char *) "fastafs"; // becomes fuse.fastafs
 
-    printf("checkpoint a\n");
-
     std::vector<char*> fuse_options = {}; // those that need to be appended later
 
     char current_argument = '\0';// could be o for '-o', etc.
@@ -497,7 +611,9 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
     std::vector<int> full_args = {};
     for(signed int i = 0; i < argc; ++i) {
+#if DEBUG
         printf("processing argv[%i] = '%s'     [current argument=%i]\n", i, argv[i], (int) current_argument);
+#endif
 
         if(current_argument != '\0') { // parse the arguments' value
             switch(current_argument) {
@@ -552,14 +668,10 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
-    printf("checkpoint b\n");
-
 
     if(full_args.size() > 2) {
-        printf("checkpoint c\n");
         printf("full_args.size() = %u\n", (uint32_t) full_args.size());
         int mount_target_arg = full_args[full_args.size() - 2 ]; // last two arguments are <fastafs file> and <mount point>, location to last 2 args not starting with --/- are in this vector
-        printf("out of bound???\n");
 
         if(fi->from_fastafs) {
             database d = database();
@@ -598,35 +710,30 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         }
     }
 
-    printf("checkpoint c\n");
-
     return fi;
 }
 
 
 
-
 void fuse(int argc, char *argv[])
 {
-    printf("wake up\n");
+
 
     // part 1 - rewrite args because "fastafs" "mount" is considered as two args, crashing fuse_init
     //  - @todo at some point define that second mount is not really important? if possible
     char *argv2[argc];
     fuse_instance *ffi = parse_args(argc, argv, argv2);
 
-    printf("checkpoint\n");
-
     // part 2 - print what the planning is
     char cur_time[100];
     time_t now = time(0);
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
     printf("\033[0;32m[%s]\033[0;33m init (recv arguments):\033[0m [argc=%i]", cur_time, argc);
     for(int i = 0; i < argc; i++) {
         printf(" argv[%u]=\"%s\"", i, argv[i]);
     }
 
-    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S.000", localtime(&now));
+    strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
     printf("\n\033[0;32m[%s]\033[0;33m init (fuse arguments):\033[0m [argc=%i]", cur_time, ffi->argc_fuse);
     for(int i = 0; i < ffi->argc_fuse; i++) {
         printf(" argv[%u]=\"%s\"", i, argv2[i]);
@@ -641,5 +748,7 @@ void fuse(int argc, char *argv[])
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
     }
     //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
+    
+    //return ret;
 }
 

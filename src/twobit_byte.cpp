@@ -128,13 +128,41 @@ char *twobit_byte::get(unsigned char length)
 
 
 
-const char *twobit_byte::get()
+char *twobit_byte::get()
 {
     return twobit_byte::encode_hash[this->data];
 }
 
 
+/*
+ * To calculate file offset
+ *
+ * example:
+ *
+ * >Seq
+ * [ACTG][ACTG] has offset of 2 (or 3)?
+ *
+ * >Seq
+ * [ACTG][ACTG][AC] has offset of 2 (or 3)?
+ * */
+const off_t twobit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
+{
+    return (off_t) n_nucleotides / twobit_byte::nucleotides_per_byte;
+}
+
+const off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
+{
+    return  twobit_byte::nucleotides_to_compressed_fileoffset(n_nucleotides + twobit_byte::nucleotides_per_byte - 1
+                                                             );
+}
 
 
+
+
+// needs to be separate function because not encodings read byte-per-byte
+void twobit_byte::next(chunked_reader &r)
+{
+    this->data = r.read();
+}
 
 

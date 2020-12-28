@@ -199,7 +199,7 @@ bool is_ucsc2bit_file(char *filename)
 
     if((fp = fopen(filename, "rb")) == NULL) {
         //fclose(fp); segfault if NULL
-        throw std::runtime_error("Could not read first byte of putative FASTA file.");
+        throw std::runtime_error("Could not read first byte of file.");
         return false;
     }
 
@@ -219,6 +219,38 @@ bool is_ucsc2bit_file(char *filename)
 
     return false;
 }
+
+
+
+bool is_zstd_file(const char *filename)
+{
+    char buf[4 + 1];
+    FILE *fp;
+
+    if((fp = fopen(filename, "rb")) == NULL) {
+        //fclose(fp); segfault if NULL
+        throw std::runtime_error("Could not read first byte of file.");
+        return false;
+    }
+
+    if(fread(buf, 1, 4, fp) == 4) {
+        fclose(fp);
+
+        return (
+                   buf[0] == ZSTD_MAGIC[0] and
+                   buf[1] == ZSTD_MAGIC[1] and
+                   buf[2] == ZSTD_MAGIC[2] and
+                   buf[3] == ZSTD_MAGIC[3]
+               );// return true if first byte equals >
+    } else {
+        fclose(fp);
+
+        throw std::runtime_error("Could not read sufficient data.");
+    }
+
+    return false;
+}
+
 
 
 // https://www.systutorials.com/241216/how-to-get-the-directory-path-and-file-name-from-a-absolute-path-in-c-on-linux/
@@ -290,3 +322,8 @@ uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
 }
 
 
+bool file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}

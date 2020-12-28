@@ -842,8 +842,6 @@ BOOST_AUTO_TEST_CASE(test_cache_2)
 
 BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
 {
-    std::cout << " --------------------------------------------- \n\n";
-
     size_t written = fasta_to_fastafs("test/data/test_009.fa", "tmp/test_009.fastafs", true);
 
     static std::string reference =
@@ -863,9 +861,9 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
         "\x00\x00\x00\x00"s//     [, ] m-blocks (2)
 
         "\x00\x00\x00\x47"s//     [14, 17] seq length (71)
-        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s// 
-        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s// 
-        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\xF0"s// 
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s//
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F"s//
+        "\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\x1F\x11\xF1\xF0"s//
         "\x00\x00\x00\x00"s//     [, ] n-blocks (0)
         "\xA7\xBA\xB4\x6A\x83\xB0\xE3\x29\x3F\x26\xE9\xD7\x0D\x97\x01\x3C"s// checksum
         "\x00\x00\x00\x00"s//     [, ] m-blocks (0)
@@ -887,7 +885,7 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
         "\x0E\xB8\xC0\x8A"s
         ;
 
-    //BOOST_CHECK_EQUAL(written, 125);
+    BOOST_CHECK_EQUAL(written, reference.size());
 
     //BOOST_CHECK(output.compare(uppercase) == 0 or output.compare(mixedcase) == 0);
     std::ifstream file("tmp/test_009.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
@@ -911,6 +909,146 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
 
         if(reference[i] != buffer[i]) {
             printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] %d (%c x %02hhX)\n", i, reference[i], reference[i], buffer[i], buffer[i], buffer[i]);
+        }
+
+    }
+
+    delete[] buffer;
+
+}
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_protein)
+{
+    size_t written = fasta_to_fastafs("test/data/test_010.fa", "tmp/test_010.fastafs", true);
+
+    static std::string reference =
+        // GENERIC-HEADER - size: 14
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
+        "\x00\x00\x00\x47"s //    [10, 13] index position in file
+
+        // DATA - size: 43
+        "\x00\x00\x00\x2D"s// [14, 17]    45 x ACTG's
+        "\x01\x03\xAD\x68\xA0"s // [18, 22]
+        "\x94\xC0\x59\x6B\x5A"s // [23, 27]
+        "\x16\x04\x84\x64\x8B"s // [28, 32]
+        "\x0B\x60\xF1\x32\x65"s // [33, 37]
+        "\xCB\x67\x93\x5A\x02"s // [38, 42]
+        "\x4A\x77\x73\x00"s // [43, 46] last bytes contains no info thus  must be skipped
+
+        "\x00\x00\x00\x00"s//     [47, 50] n-blocks (0)
+        "\xA1\x97\x13\xD9\xB6\xE9\xDD\x9F\x19\xC1\x79\x12\x97\xDF\x41\x3C"s// [51, 66] checksum
+        "\x00\x00\x00\x00"s//     [67, 70] m-blocks (2)
+
+        // INDEX
+        "\x00\x00\x00\x01"s     // [71, 74] n sequences
+
+        "\xD0\x00"             // [343, 344] complete, DNA and not circular
+        "\x07"s "PROTEIN"s         // [345, 349] name
+        "\x00\x00\x00\x0E"s     //  data position in file (14)
+
+        // METADATA
+        "\x00"s                 // [399] no metadata fields [padding will come soon?]
+
+        // CRC32 checksums
+        "\x77\xAE\x11\x2D"s // only part that is not yet checked
+        ;
+
+    BOOST_CHECK_EQUAL(written, 94); // 220 bytes compressed data with 44 5/bit/5/bytes
+
+    std::ifstream file("tmp/test_010.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    BOOST_CHECK_EQUAL(file.gcount(), size);
+    file.close();
+
+    //BOOST_CHECK_UNEQUAL(ret, -1);
+
+
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
+        //if(reference[i] != buffer[i]) {
+        //    printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
+        //}
+    }
+
+    delete[] buffer;
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE(test_cache_protein2)
+{
+    size_t written = fasta_to_fastafs("test/data/test_011.fa", "tmp/test_011.fastafs", true);
+
+    static std::string reference =
+        // GENERIC-HEADER - size: 14
+        "\x0F\x0A\x46\x53"s//     [0, 3]
+        "\x00\x00\x00\x00"s//     [4, 7] version
+        "\x80\x00"s//             [8, 9] FASTAFS flag [ 10000000 | 00000000 ]
+        "\x00\x00\x00\x38"s //    [10, 13] index position in file
+
+        // DATA - size: 43
+        "\x00\x00\x00\x15"s// [14, 17]    21 x ACTG's
+        "\x60\x0B\x20\x10\x75" // [18, 22]
+        "\x5A\x89\x71\xC6\x31" // [23, 27]
+        "\x8B\x08\x05\x80" // [28, 31]
+        "\x00\x00\x00\x00"s//     [32, 35] n-blocks (0)
+        "\x83\x1a\x10\x3b\xf8\x03\x3e\x69\x54\xba\xe3\x86\x98\x9f\x60\xf3"s// [36, 51] checksum
+        "\x00\x00\x00\x00"s//     [52, 55] m-blocks (2)
+
+        // INDEX
+        "\x00\x00\x00\x01"s     // [56, 59] n sequences
+
+        "\xD0\x00"             // [60, 61] complete, DNA and not circular
+        "\x1C"s "twobit-fourbit-fivebit-error"s         // [62, 90] name
+        "\x00\x00\x00\x0E"s     // [91, 94]
+
+        // METADATA
+        "\x00"s                 // [95]
+
+        // CRC32 checksums
+        "\x67\x1B\xC6\xB5"s // [96, 99]
+        ;
+
+    BOOST_CHECK_EQUAL(written, 100); // 220 bytes compressed data with 44 5/bit/5/bytes
+
+    std::ifstream file("tmp/test_011.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+    BOOST_REQUIRE(file.is_open());
+
+    std::streampos size;
+    char * buffer;
+    size = file.tellg();
+    buffer = new char [size];
+
+    file.seekg(0, std::ios::beg);
+    file.read(buffer, size);
+    BOOST_CHECK_EQUAL(file.gcount(), size);
+    file.close();
+
+    //BOOST_CHECK_UNEQUAL(ret, -1);
+
+
+    for(unsigned int i = 0; i < size; i++) {
+        BOOST_CHECK_EQUAL(buffer[i], reference[i]);
+
+        if(reference[i] != buffer[i]) {
+            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
         }
 
     }

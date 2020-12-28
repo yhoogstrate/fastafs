@@ -1,0 +1,12 @@
+
+Required dependencies:
+
+cmake
+libboost (libboost-dev + libboost-test-dev + libboost-system-dev + libboost-filesystem-dev)
+libssl (libssl-dev)
+libzstd (libzstd-dev)
+libzstd (libzlib-dev)
+libz / zlib (zlib1g-dev)
+libfuse (fuse) [tested with fuse2]
+libfuse-dev (fuse) [tested with fuse2]
+c & cpp (build-essential)
