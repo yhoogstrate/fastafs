@@ -56,17 +56,23 @@ ll tmp/benchmark/test.fa tmp/test.fa.x
 
 
 with open(RESULTS_FILE, 'a') as fh:
-    #print(" >> difference: " + difference)
-    fh.write(
-        "\t".join([TIMESTAMP,
-                   GIT_REV[0].replace('git-commit:',''),
-                   str(difference['perf']['cycles']),
-                   str(difference['perf']['total_time']),
-                   str(difference['perf']['user_time']),
-                   str(difference['perf']['sys_time']),
-                   " ".join(difference['cmd']),
-                   GIT_REV[1]]) + "\n"
-    )
+    print(" >> difference: " )
+    print(difference)
+    if(difference['diff']):
+        print("ERROR - DIFFERENCE DETECTED")
+        import sys
+        sys.exit(1)
+    else:
+        fh.write(
+            "\t".join([TIMESTAMP,
+                       GIT_REV[0].replace('git-commit:',''),
+                       str(difference['perf']['cycles']),
+                       str(difference['perf']['total_time']),
+                       str(difference['perf']['user_time']),
+                       str(difference['perf']['sys_time']),
+                       " ".join(difference['cmd']),
+                       GIT_REV[1]]) + "\n"
+        )
 
 
  
