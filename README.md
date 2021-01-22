@@ -41,6 +41,12 @@ Compilation is done using cmake. The build command to run cmake for common use i
 ```
 #!/bin/bash
 
+# First install libzstd:
+cd dependencies/zstd
+make
+sudo make install
+
+
 cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 make "$@" -j `nproc`
 sudo make install
