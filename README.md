@@ -36,16 +36,24 @@ Required dependencies are:
  -   libfuse (for access to the fuse layer system and file virtualization)
  -   c++ compiler supporting c++-14
 
+## First install libzstd:
+
+This is currently done by running:
+
+```
+cd dependencies/zstd
+make
+sudo make install
+```
+
+Indeed, we should patch the cmake config to do this automatically.
+
+## Compilation
+
 Compilation is done using cmake. The build command to run cmake for common use is:
 
 ```
 #!/bin/bash
-
-# First install libzstd:
-cd dependencies/zstd
-make
-sudo make install
-
 
 cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 make "$@" -j `nproc`
