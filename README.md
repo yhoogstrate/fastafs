@@ -43,6 +43,10 @@ Required dependencies are:
  -   libfuse (for access to the fuse layer system and file virtualization)
  -   c++ compiler supporting c++-14
 
+### For debian + ubuntu:
+
+sudo apt install git build-essential cmake libboost-dev libssl-dev libboost-test-dev libboost-system-dev libboost-filesystem-dev zlib1g-dev libzstd-dev libfuse-dev
+
 ## First install libzstd:
 
 This is currently done by running:
