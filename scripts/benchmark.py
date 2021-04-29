@@ -7,6 +7,11 @@ from utils import *
 from test_utils import *
 
 
+# force using the local installation
+os.environ["PATH"] = "bin/" + os.pathsep + "../bin/" + os.pathsep + os.environ["PATH"]
+
+
+
 RESULTS_FILE = "benchmarks/" + get_sys_id() + ".txt"
 if not os.path.exists(RESULTS_FILE):
     with open(RESULTS_FILE,'w') as fh:
