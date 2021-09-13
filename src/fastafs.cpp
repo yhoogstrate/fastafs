@@ -173,12 +173,12 @@ struct view_chunk {
 
     size_t n_block; // = cache->n_starts.size();
     size_t m_block; // = cache->m_starts.size();
-    
+
     uint32_t newlines_passed; // = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     const uint32_t nucleotide_pos; // = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-    
+
     uint32_t n_passed; // = 0; this->get_n_offset(nucleotide_pos, &n_passed);
-    
+
     uint32_t compressed_nucleotide_offset; // = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
     unsigned char bit_offset ; //= compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
 };

@@ -241,7 +241,7 @@ static int do_open(const char *path, struct fuse_file_info *fi)
         );
 
         //printf("sem init... \n");
-        sem_init( &(ft->crs[ft->thread_i].sem), 0, 1 );
+        sem_init(&(ft->crs[ft->thread_i].sem), 0, 1);
         //printf("sem init done... \n");
     }
     ft->thread_i = 0;
@@ -748,7 +748,7 @@ void fuse(int argc, char *argv[])
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
     }
     //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
-    
+
     //return ret;
 }
 

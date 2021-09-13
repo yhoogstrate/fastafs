@@ -54,11 +54,11 @@ void database::list()
     std::ifstream infile(this->idx);
     std::string line;
     std::string version;
-    
+
     while(std::getline(infile, line)) {
         std::string fname = this->path + "/" + line + ".fastafs";
         bool zstd_seek = false;
-        
+
         if(!file_exist(fname.c_str())) {
             fname = this->path + "/" + line + ".fastafs.zst";
             zstd_seek = true;
@@ -139,7 +139,7 @@ std::string database::get(std::string fastafs_name_or_id)
     while(std::getline(infile, line)) {
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
-            
+
             if(!file_exist(fname.c_str())) {
                 fname = this->path + "/" + line + ".fastafs.zst";
             }
