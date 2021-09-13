@@ -4,7 +4,7 @@
 #define FASTAFS_HPP
 
 
-
+#include <map>
 #include <vector>
 
 #include <openssl/sha.h>
@@ -15,6 +15,29 @@
 #include "sequence_region.hpp"
 #include "flags.hpp"
 #include "chunked_reader.hpp"
+
+
+
+// std::map
+struct view_chunk {
+    uint32_t pos ; // (uint32_t) start_pos_in_fasta;
+    //uint32_t pos_limit ; // = 0;
+
+    size_t n_block; // = cache->n_starts.size();
+    size_t m_block; // = cache->m_starts.size();
+
+    uint32_t newlines_passed; // = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
+    //uint32_t nucleotide_pos; // = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+
+    uint32_t n_passed; // = 0; this->get_n_offset(nucleotide_pos, &n_passed);
+
+    uint32_t compressed_nucleotide_offset; // = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
+    
+    char *chunk;
+    unsigned char bit_offset ; //= compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
+};
+
+
 
 
 struct ffs2f_init_seq {
@@ -28,6 +51,8 @@ struct ffs2f_init_seq {
 
     std::vector<uint32_t> m_starts;// file position based
     std::vector<uint32_t> m_ends;// file position based
+    
+    std::map<uint32_t, view_chunk *> iterators;
 
     ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines):
         padding(padding),

@@ -26,7 +26,7 @@ def get_curtime():
     return str(datetime.datetime.now().strftime('%Y-%m-%d %X'))
 
 def get_fastafs_rev():
-    return subprocess.check_output(['fastafs', '--version']).decode("utf-8").split("\n")[0].replace('fastafs','').strip()
+    return subprocess.check_output(['./bin/fastafs', '--version']).decode("utf-8").split("\n")[0].replace('fastafs','').strip()
 
 
 #git = get_git_revision()

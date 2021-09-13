@@ -166,22 +166,7 @@ uint32_t fastafs_seq::view_fasta_chunk(
 }
 
 
-// std::map
-struct view_chunk {
-    uint32_t pos ; // (uint32_t) start_pos_in_fasta;
-    uint32_t pos_limit ; // = 0;
 
-    size_t n_block; // = cache->n_starts.size();
-    size_t m_block; // = cache->m_starts.size();
-
-    uint32_t newlines_passed; // = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
-    uint32_t nucleotide_pos; // = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
-
-    uint32_t n_passed; // = 0; this->get_n_offset(nucleotide_pos, &n_passed);
-
-    uint32_t compressed_nucleotide_offset; // = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
-    unsigned char bit_offset ; //= compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
-};
 
 /*
  * fastafs_seq::view_fasta_chunk -
@@ -223,14 +208,12 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         return written;
     }
 
-
+    // if cache.iterators->search() ... 
     view_chunk *iterators = new view_chunk({
         (uint32_t) start_pos_in_fasta, // pos
-        0, // pos_limit - 
         
-        0,0,0,0,0,0,0});
+        0,0,0,0,0,0});
 
-    //uint32_t pos = (uint32_t) start_pos_in_fasta;
     uint32_t pos_limit = 0;
 
     // >
@@ -244,7 +227,10 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     //@todo memcpy | sequence name
+    
     pos_limit += (uint32_t) this->name.size();
+    //size_t tocopy = std::min((size_t) pos_limit, buffer_size);
+    //std::copy(this->name.end() - (pos_limit - iterators->pos), this->name.end() - (pos_limit - iterators->pos) + tocopy, buffer[written]);
     while(iterators->pos < pos_limit) {
         buffer[written++] = this->name[this->name.size() - (pos_limit - iterators->pos)];
         iterators->pos++;
@@ -264,10 +250,10 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     const uint32_t offset_from_sequence_line = iterators->pos - pos_limit;
-    size_t n_block = cache->n_starts.size();
-    size_t m_block = cache->m_starts.size();
-    uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
-    const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
+    iterators->n_block = cache->n_starts.size();// https://github.com/lh3/cgranges ?
+    iterators->m_block = cache->m_starts.size();
+    iterators->newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
+    const uint32_t nucleotide_pos = offset_from_sequence_line - iterators->newlines_passed;// requested nucleotide in file, only at init?
 
     // calculate file position for next twobit
     // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
@@ -290,29 +276,31 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 //    const char *chunk = t.encode_hash[0];// init
 //    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
-    char *chunk = (char *) t.encode_hash[1];// init
+    iterators->chunk = (char *) t.encode_hash[1];// init
 
     if(bit_offset != 0) {
         t.next(fh);
-        chunk = t.get();
+        iterators->chunk = t.get();
     }
-    while(n_block > 0 and iterators->pos <= cache->n_ends[n_block - 1]) { // iterate back
-        n_block--;
+    
+    //@todo interval tree
+    while(iterators->n_block > 0 and iterators->pos <= cache->n_ends[iterators->n_block - 1]) { // iterate back
+        iterators->n_block--;
     }
-    while(m_block > 0 and iterators->pos <= cache->m_ends[m_block - 1]) { // iterate back
-        m_block--;
+    while(iterators->m_block > 0 and iterators->pos <= cache->m_ends[iterators->m_block - 1]) { // iterate back
+        iterators->m_block--;
     }
 
 
     // write sequence
-    pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
-    while(newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
-        pos_limit += std::min(cache->padding, this->n - (newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
+    pos_limit += iterators->newlines_passed * (cache->padding + 1);// passed sequence-containg lines
+    while(iterators->newlines_passed < cache->total_sequence_containing_lines) { // only 'complete' lines that are guarenteed 'padding' number of nucleotides long [ this loop starts at one to be unsigned-safe ]
+        pos_limit += std::min(cache->padding, this->n - (iterators->newlines_passed * cache->padding));// only last line needs to be smaller ~ calculate from the beginning of newlines_passed
 
         // write nucleotides
         while(iterators->pos < pos_limit) {// while next sequence-containing-line is open
-            if(iterators->pos >= cache->n_starts[n_block]) {
-                if(iterators->pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+            if(iterators->pos >= cache->n_starts[iterators->n_block]) {
+                if(iterators->pos >= cache->m_starts[iterators->m_block]) { // IN an m block; lower-case
                     buffer[written++] = T::n_fill_masked;
                 } else {
                     buffer[written++] = T::n_fill_unmasked;
@@ -321,22 +309,22 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
                 if(bit_offset % T::nucleotides_per_chunk == 0) {
                     t.next(fh);
-                    chunk = t.get();
+                    iterators->chunk = t.get();
                 }
 
-                if(iterators->pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
-                    buffer[written++] = (unsigned char)(chunk[bit_offset] + 32);
+                if(iterators->pos >= cache->m_starts[iterators->m_block]) { // IN an m block; lower-case
+                    buffer[written++] = (unsigned char)(iterators->chunk[bit_offset] + 32);
                 } else {
-                    buffer[written++] = chunk[bit_offset];
+                    buffer[written++] = iterators->chunk[bit_offset];
                 }
 
                 bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_chunk;
             }
-            if(iterators->pos == cache->n_ends[n_block]) {
-                n_block++;
+            if(iterators->pos == cache->n_ends[iterators->n_block]) {
+                iterators->n_block++;
             }
-            if(iterators->pos == cache->m_ends[m_block]) {
-                m_block++;
+            if(iterators->pos == cache->m_ends[iterators->m_block]) {
+                iterators->m_block++;
             }
 
             iterators->pos++;
@@ -361,7 +349,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             }
         }
 
-        newlines_passed++;
+        iterators->newlines_passed++;
     }
 
     //fh->clear();
