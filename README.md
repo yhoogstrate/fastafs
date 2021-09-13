@@ -1,4 +1,11 @@
 # FASTAFS: toolkit for file system virtualisation of random access compressed FASTA files
+----
+
+# Pre-print of manuscript
+
+Describing the relevance of virtualisation combined with compression, and details on the used technology:
+
+https://www.biorxiv.org/content/10.1101/2020.11.11.377689v1
 
 ----
 
@@ -35,6 +42,24 @@ Required dependencies are:
  -   libopenssl (for generating MD5 hashes)
  -   libfuse (for access to the fuse layer system and file virtualization)
  -   c++ compiler supporting c++-14
+
+### For debian + ubuntu:
+
+sudo apt install git build-essential cmake libboost-dev libssl-dev libboost-test-dev libboost-system-dev libboost-filesystem-dev zlib1g-dev libzstd-dev libfuse-dev
+
+## First install libzstd:
+
+This is currently done by running:
+
+```
+cd dependencies/zstd
+make
+sudo make install
+```
+
+Indeed, we should patch the cmake config to do this automatically.
+
+## Compilation
 
 Compilation is done using cmake. The build command to run cmake for common use is:
 
