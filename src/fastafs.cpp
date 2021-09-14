@@ -228,59 +228,41 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         return written;
     }
 
+
+
     // if cache.iterators->search() ... 
     view_chunk *iterators;
-    if(cache->iter_cache.count(start_pos_in_fasta) != 0) {
-        printf("Loading [%d].... one that exists!?\n", (int) start_pos_in_fasta);
+    //if(cache->iter_cache.count(start_pos_in_fasta) != 0) {
+        //printf("Loading [%d].... one that exists!?\n", (int) start_pos_in_fasta);
         //iterators = cache->iter_cache.at(start_pos_in_fasta);
         //printf("LOADED:\n");
         
         //print_view_chunk(iterators);
-    }
+    //} else {
     iterators = new view_chunk({
         (uint32_t) start_pos_in_fasta, // pos
         
         0,0,0,0,0,0});
+    //}
 
-
-    uint32_t pos_limit = 0;
-
-    // >
-    pos_limit += 1;
-    if(iterators->pos < pos_limit) {
-        buffer[written++] = '>';
-        iterators->pos++;
-        if(written >= buffer_size) {
-            return written;
-        }
-    }
-
-    //@todo memcpy | sequence name
+    uint32_t pos = (uint32_t) start_pos_in_fasta;
     
-    size_t tocopy = std::min((size_t) this->name.size() + 1, buffer_size) - iterators->pos;
-    //printf("[%d][pos=%d]\n", tocopy, iterators->pos);
-    size_t copied = this->name.copy(buffer, tocopy, 0);
-    //printf("copied: %d\n",copied);
-    written += copied;
-    iterators->pos += copied;
     
-    /*
-    while(iterators->pos < pos_limit) {
-        buffer[written++] = this->name[this->name.size() - (pos_limit - iterators->pos)];
-        iterators->pos++;
-        if(written >= buffer_size) {
-            return written;
-        }
-    }*/
+    // header block
+    size_t pos_limit = this->name.size() + 2;
+    if(pos < pos_limit) {
+        const std::string header = ">" + this->name + "\n";
 
-    // \n
-    pos_limit += 1;
-    if(iterators->pos < pos_limit) {
-        buffer[written++] = '\n';
-        iterators->pos++;
+        const uint32_t tocopy = (uint32_t) std::min(pos_limit - pos, buffer_size); // size to be copied
+        const uint32_t copied = (uint32_t) header.copy(buffer, tocopy, pos); // effective size of copied data
+
+        written += (uint32_t) copied;
+        
         if(written >= buffer_size) {
             return written;
         }
+        
+        pos += (uint32_t) copied;
     }
 
     const uint32_t offset_from_sequence_line = iterators->pos - pos_limit;
@@ -369,8 +351,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                 //fh->clear();
                 //delete[] from_file_buffer;
                 
-                printf("storing at: %d \n", (int) iterators->pos);
-                //cache->iter_cache[iterators->pos] = iterators;
+                //printf("storing at: %d \n", (int) iterators->pos);
+                cache->iter_cache[iterators->pos] = iterators;
                 return written;
             }
         }
