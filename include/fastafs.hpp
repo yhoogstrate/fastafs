@@ -33,9 +33,12 @@ struct view_chunk {
 
     uint32_t compressed_nucleotide_offset; // = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
     
-    char *chunk;
-    unsigned char bit_offset ; //= compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
+    char *chunk; // [ SET ]
+    unsigned char bit_offset ; // [ SET ] = compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
 };
+
+
+
 
 
 
@@ -52,7 +55,7 @@ struct ffs2f_init_seq {
     std::vector<uint32_t> m_starts;// file position based
     std::vector<uint32_t> m_ends;// file position based
     
-    std::map<uint32_t, view_chunk *> iterators;
+    std::map<size_t, view_chunk *> iter_cache;
 
     ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines):
         padding(padding),

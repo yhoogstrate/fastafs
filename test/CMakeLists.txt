@@ -115,6 +115,23 @@ add_executable(test_fastafs             "fastafs/test_fastafs.cpp"
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
                                         "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
 
+add_executable(test_caching             "fastafs/test_caching.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fasta_to_fastafs.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/flags.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/src/fastafs.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/twobit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fourbit_byte.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/fivebit_fivebytes.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/sequence_region.cpp"
+                                        "${CMAKE_SOURCE_DIR}/src/chunked_reader.cpp"
+
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-lib-common/xxhash.c"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_utils.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_compress.cpp"
+                                        "${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp")
+
 
 add_executable(test_check               "check/test_check.cpp"
                                         "${CMAKE_SOURCE_DIR}/src/fasta_to_fastafs.cpp"
@@ -227,6 +244,8 @@ set_target_properties(test_view
 set_target_properties(test_flags
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_fastafs
+                                      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
+set_target_properties(test_caching
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")
 set_target_properties(test_check
                                       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_TEST_DIR}")

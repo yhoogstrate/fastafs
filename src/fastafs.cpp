@@ -168,6 +168,26 @@ uint32_t fastafs_seq::view_fasta_chunk(
 
 
 
+
+/*
+ * @todo move to utils?
+ */
+void print_view_chunk(view_chunk *iterators) {
+    /*
+    printf("    uint32_t pos = % d ;\n    size_t n_block = %d \n    size_t m_block = %d ;\n    uint32_t newlines_passed = %d ;\n    uint32_t n_passed = %d ;\n    uint32_t compressed_nucleotide_offset = %d ;\n    char *chunk = %s ;\n    unsigned char bit_offset = %d ;\n\n",
+        (int) iterators->pos ,
+        (int) iterators->n_block,
+        (int) iterators->m_block,
+        (int) iterators->newlines_passed,
+        (int) iterators->n_passed,
+        (int) iterators->compressed_nucleotide_offset,
+        iterators->chunk,
+        (int) iterators->bit_offset
+    );
+    */
+}
+
+
 /*
  * fastafs_seq::view_fasta_chunk -
  *
@@ -181,7 +201,7 @@ uint32_t fastafs_seq::view_fasta_chunk(
  * returns
  *
  * @todo see if this can be a std::ifstream or some kind of stream type of object?
-*/
+ */
 template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     ffs2f_init_seq* cache,
     char *buffer,
@@ -209,10 +229,19 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     // if cache.iterators->search() ... 
-    view_chunk *iterators = new view_chunk({
+    view_chunk *iterators;
+    if(cache->iter_cache.count(start_pos_in_fasta) != 0) {
+        printf("Loading [%d].... one that exists!?\n", (int) start_pos_in_fasta);
+        //iterators = cache->iter_cache.at(start_pos_in_fasta);
+        //printf("LOADED:\n");
+        
+        //print_view_chunk(iterators);
+    }
+    iterators = new view_chunk({
         (uint32_t) start_pos_in_fasta, // pos
         
         0,0,0,0,0,0});
+
 
     uint32_t pos_limit = 0;
 
@@ -228,16 +257,21 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
     //@todo memcpy | sequence name
     
-    pos_limit += (uint32_t) this->name.size();
-    //size_t tocopy = std::min((size_t) pos_limit, buffer_size);
-    //std::copy(this->name.end() - (pos_limit - iterators->pos), this->name.end() - (pos_limit - iterators->pos) + tocopy, buffer[written]);
+    size_t tocopy = std::min((size_t) this->name.size() + 1, buffer_size) - iterators->pos;
+    //printf("[%d][pos=%d]\n", tocopy, iterators->pos);
+    size_t copied = this->name.copy(buffer, tocopy, 0);
+    //printf("copied: %d\n",copied);
+    written += copied;
+    iterators->pos += copied;
+    
+    /*
     while(iterators->pos < pos_limit) {
         buffer[written++] = this->name[this->name.size() - (pos_limit - iterators->pos)];
         iterators->pos++;
         if(written >= buffer_size) {
             return written;
         }
-    }
+    }*/
 
     // \n
     pos_limit += 1;
@@ -261,7 +295,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     this->get_n_offset(nucleotide_pos, &n_passed);
     uint32_t compressed_nucleotide_offset = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
     fh.seek((uint32_t) this->data_position + 4 + T::nucleotides_to_compressed_fileoffset(compressed_nucleotide_offset));
-    unsigned char bit_offset = compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
+    iterators->bit_offset = compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
 
     /*
      0  0  0  0  1  1  1  1 << desired offset from starting point
@@ -269,16 +303,16 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     *
 
     handigste is om file pointer naar de byte ervoor te zetten
-    vervolgens wanneer bit_offset gelijk is aan nul, lees je de volgende byte
+    vervolgens wanneer iterators->bit_offset gelijk is aan nul, lees je de volgende byte
     * nooit out of bound
 
     */
 //    const char *chunk = t.encode_hash[0];// init
-//    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+//    unsigned char iterators->bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
     iterators->chunk = (char *) t.encode_hash[1];// init
 
-    if(bit_offset != 0) {
+    if(iterators->bit_offset != 0) {
         t.next(fh);
         iterators->chunk = t.get();
     }
@@ -291,6 +325,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         iterators->m_block--;
     }
 
+    print_view_chunk(iterators);
+    
 
     // write sequence
     pos_limit += iterators->newlines_passed * (cache->padding + 1);// passed sequence-containg lines
@@ -307,18 +343,18 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                 }
             } else {
 
-                if(bit_offset % T::nucleotides_per_chunk == 0) {
+                if(iterators->bit_offset % T::nucleotides_per_chunk == 0) {
                     t.next(fh);
                     iterators->chunk = t.get();
                 }
 
                 if(iterators->pos >= cache->m_starts[iterators->m_block]) { // IN an m block; lower-case
-                    buffer[written++] = (unsigned char)(iterators->chunk[bit_offset] + 32);
+                    buffer[written++] = (unsigned char)(iterators->chunk[iterators->bit_offset] + 32);
                 } else {
-                    buffer[written++] = iterators->chunk[bit_offset];
+                    buffer[written++] = iterators->chunk[iterators->bit_offset];
                 }
 
-                bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_chunk;
+                iterators->bit_offset = (unsigned char)(iterators->bit_offset + 1) % T::nucleotides_per_chunk;
             }
             if(iterators->pos == cache->n_ends[iterators->n_block]) {
                 iterators->n_block++;
@@ -332,6 +368,9 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             if(written >= buffer_size) {
                 //fh->clear();
                 //delete[] from_file_buffer;
+                
+                printf("storing at: %d \n", (int) iterators->pos);
+                //cache->iter_cache[iterators->pos] = iterators;
                 return written;
             }
         }
@@ -354,6 +393,9 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
     //fh->clear();
     //delete[] from_file_buffer;
+    //printf("storing at: %d \n", (int) iterators->pos);
+    //cache->iter_cache[iterators->pos] = iterators;
+    
     return written;
 }
 
