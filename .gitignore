@@ -26,3 +26,5 @@ test-mount.sh
 *.dict
 *.pyc
 .venv
+.txt#
+.~lock*
