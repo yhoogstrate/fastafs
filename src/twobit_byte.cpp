@@ -152,8 +152,7 @@ const off_t twobit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotid
 
 const off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
 {
-    return  twobit_byte::nucleotides_to_compressed_fileoffset(n_nucleotides + twobit_byte::nucleotides_per_byte - 1
-                                                             );
+    return  twobit_byte::nucleotides_to_compressed_fileoffset(n_nucleotides + twobit_byte::nucleotides_per_byte - 1);
 }
 
 
