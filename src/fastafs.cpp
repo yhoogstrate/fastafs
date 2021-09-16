@@ -632,7 +632,7 @@ bool fastafs_seq::get_n_offset(uint32_t pos, uint32_t *num_Ns)
 
 
 fastafs::fastafs(std::string arg_name) :
-    name(arg_name), crc32f(0), filetype(compression_type::undefined)
+    name(arg_name), filetype(compression_type::undefined), crc32f(0)
 {
 }
 
