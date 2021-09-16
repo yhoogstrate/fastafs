@@ -29,3 +29,4 @@ test-mount.sh
 .txt#
 .~lock*
 *.txt#
+perf.*
