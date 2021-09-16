@@ -5,11 +5,17 @@ import os
 from tqdm import tqdm
 import datetime
 import subprocess
+import logging
+
 
 
 
 def generate_ACTG_fa(output_file):
+    logging.info("Checking if FA file exists: " + output_file)
+
     if not os.path.exists(output_file):
+        logging.info("Creating test file: output_file")
+        
         with open(output_file, 'w') as fh:
             for chrom in tqdm(['chr1', 'chr2', 'chr3', 'chr4']):
                 fh.write(">" + chrom + "\n")
