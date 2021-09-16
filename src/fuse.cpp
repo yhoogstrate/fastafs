@@ -513,6 +513,7 @@ void print_fuse_help()
     std::cout << "    -2   --2bit            virtualise a 2bit file rather than FASTAFS UID\n";
     std::cout << "    -m   --no-masking      Disable masking; bases in lower-case (not for 2bit output)\n";
     std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
+    std::cout << "    -g   --from-file       force reading from file rather than cache database\n";
     std::cout << "    -o opt,[opt...]        mount options\n";
     std::cout << "    -h   --help            print help\n";
     std::cout << "    -V   --version         print version\n";
@@ -607,7 +608,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
     char current_argument = '\0';// could be o for '-o', etc.
 
-
+    bool from_file_rather_than_from_db = false;
 
     std::vector<int> full_args = {};
     for(signed int i = 0; i < argc; ++i) {
@@ -642,6 +643,10 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 fi->allow_masking = false;
                 break;
 
+            case 'g': // directly use file
+                from_file_rather_than_from_db = true;
+                break;
+
             case 'f': // fuse specific flags
             case 's':
             case 'd':
@@ -670,15 +675,13 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
 
     if(full_args.size() > 2) {
-        printf("full_args.size() = %u\n", (uint32_t) full_args.size());
         int mount_target_arg = full_args[full_args.size() - 2 ]; // last two arguments are <fastafs file> and <mount point>, location to last 2 args not starting with --/- are in this vector
 
         if(fi->from_fastafs) {
-            database d = database();
-            std::string fname = d.get(argv[mount_target_arg]);
-
-            std::string name; // prefix name of mounted fasta dict 2bit and fai files
-            if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
+            std::string fname;
+            std::string name;
+            
+            if(from_file_rather_than_from_db) {
                 fname = std::string(argv[mount_target_arg]);
                 //name = std::filesystem::path(fname).filename();
                 name = basename_cpp(fname);
@@ -686,9 +689,22 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 // remove .fastafs suffix
                 size_t lastindex = name.find_last_of(".");
                 name = name.substr(0, lastindex);
-
             } else {
-                name = std::string(argv[mount_target_arg]);
+                database d = database();
+                fname = d.get(argv[mount_target_arg]);
+
+                if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
+                    fname = std::string(argv[mount_target_arg]);
+                    //name = std::filesystem::path(fname).filename();
+                    name = basename_cpp(fname);
+
+                    // remove .fastafs suffix
+                    size_t lastindex = name.find_last_of(".");
+                    name = name.substr(0, lastindex);
+
+                } else {
+                    name = std::string(argv[mount_target_arg]);
+                }
             }
 
             fi->f = new fastafs(name);
