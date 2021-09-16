@@ -15,6 +15,7 @@ if not os.path.exists(PATH):
 
 
 
+
 FASTAFS_REV = get_fastafs_rev()
 GIT_REV = get_git_revision()
 

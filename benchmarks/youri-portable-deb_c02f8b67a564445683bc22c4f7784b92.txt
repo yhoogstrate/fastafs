@@ -1,0 +1,2 @@
+timestamp	fastafs-version	git-commit	perf:cycles	perf:total_time	perf:user_time	perf:sys_time	cmd	git-mod-status
+2021-04-29 10:58:41.821047	v1.8.0-f6bacfef09e3ca6beecb5fe32050964fc5903218-release	f6bacfef09e3ca6beecb5fe32050964fc5903218	62013197920	18.534552371	24.796847	1.214803	perf stat -e cycles ./bin/fastafs mount -d -f -p 40 -f tmp/benchmark/test.zst tmp/benchmark/mnt/	##_optimizations...origin/optimizations|M_scripts/benchmark.py|??_benchmarks/youri-portable-deb_c02f8b67a564445683bc22c4f7784b92.txt
