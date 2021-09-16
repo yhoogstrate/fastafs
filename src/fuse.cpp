@@ -73,9 +73,11 @@ static int do_getattr(const char *path, struct stat *st)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+#if DEBUG
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
+#endif
 
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
@@ -170,15 +172,19 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+#if DEBUG
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
+#endif
 
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
 
     if(ffi->from_fastafs) {
+#if DEBUG
         printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+#endif
 
         std::string virtual_fasta_filename = ffi->f->name + ".fa";
         std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
@@ -219,6 +225,7 @@ static int do_open(const char *path, struct fuse_file_info *fi)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+#if DEBUG
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -226,10 +233,10 @@ static int do_open(const char *path, struct fuse_file_info *fi)
     printf("\033[0;32m[%s]\033[0;33m do_open\n", cur_time);
     //(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n",
     //cur_time, (uint32_t) size, (uint32_t) offset, path, );
+#endif
 
     //chunked_reader *cr = new chunked_reader(ffi->f->filename.c_str());
 
-    printf("test... \n");
 
     // has list with 32 chunked_reader objects
     file_threads *ft = new file_threads();
@@ -247,13 +254,14 @@ static int do_open(const char *path, struct fuse_file_info *fi)
     ft->thread_i = 0;
 
     fi->fh = reinterpret_cast<uintptr_t>(ft);
-    printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
-
+    
+#if DEBUG
     printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
     printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
     printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
     printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
     printf("\033[0;35m fi->padding: %u\n", fi->padding);
+#endif
 
     // here the fi->fh should be set?!
     // if possible to chunked reader?
@@ -740,6 +748,7 @@ void fuse(int argc, char *argv[])
     char *argv2[argc];
     fuse_instance *ffi = parse_args(argc, argv, argv2);
 
+#if DEBUG
     // part 2 - print what the planning is
     char cur_time[100];
     time_t now = time(0);
@@ -756,6 +765,8 @@ void fuse(int argc, char *argv[])
     }
 
     printf("\n");
+#endif
+
 
     if(ffi->f == nullptr && ffi->u2b == nullptr) { // no fastafs was loaded
         print_fuse_help();
