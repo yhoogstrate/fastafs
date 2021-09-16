@@ -138,6 +138,8 @@ public:
 
     std::string name;
     std::string filename;
+    compression_type filetype;
+    
     std::vector<fastafs_seq*> data;
     uint32_t crc32f;// crc32 as found in fastafs file
 

@@ -10,6 +10,7 @@ import subprocess
 import time
 import wget
 import sys
+import logging
 
 
 
@@ -31,9 +32,67 @@ def get_fastafs_rev():
     return subprocess.check_output(['./bin/fastafs', '--version']).decode("utf-8").split("\n")[0].replace('fastafs','').strip()
 
 
-#git = get_git_revision()
-#print(get_curtime() + "\t" + get_machine_id() + "\t" + git[0] + "\t" + git[1] )
+def check_cache_file_plain(fastafs_binary, filename_in, filename_out):
+    logging.info("Checking if plain fastafs file exists: " + filename_out)
+    
+    if not os.path.exists(filename_out):
+        logging.info("Creating new fastafs archive: " + filename_in)
+        cmd = [fastafs_binary, 'cache', '--fastafs-only', '-o', filename_out, filename_in]
 
+        logging.info("Running: " + ' '.join(cmd))
+        p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)#:# as p:
+        stdout, stderr = p.communicate()
+
+
+def check_cache_file_zstd(fastafs_binary, filename_in, filename_out):
+    logging.info("Checking if ZSTD fastafs file exists: " + filename_out)
+    
+    if not os.path.exists(filename_out):
+        logging.info("Creating new zstd archive" + filename_in)
+        
+        cmd = [fastafs_binary, 'cache', '-o', re.sub('.zst$', '', filename_out) , filename_in]
+        logging.info("Running: " + ' '.join(cmd))
+        p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)#:# as p:
+        stdout, stderr = p.communicate()
+
+
+def check_benchmark_file(RESULTS_FILE):
+    logging.info("Checking presence of file: " + RESULTS_FILE)
+    
+    if not os.path.exists(RESULTS_FILE):
+        logging.info("Creating benchmark file: " + RESULTS_FILE)
+        with open(RESULTS_FILE,'w') as fh:
+            fh.write(
+                "\t".join(
+                ["timestamp", "fastafs-version", "git-commit", "perf:cycles", "perf:total_time", "perf:user_time", "perf:sys_time", "cmd", "git-mod-status"]
+                ) + "\n"
+            )
+    
+
+def write_benchmark_file(RESULTS_FILE, difference, TIMESTAMP, FASTAFS_REV, GIT_REV):
+    with open(RESULTS_FILE, 'a') as fh:
+        #print(difference)
+        if(difference['diff']):
+            raise Exception("ERROR - DIFFERENCE DETECTED")
+            import sys
+            sys.exit(1)
+        else:
+            logging.info("Appending benchmark results to file\n  - cycles:    %s sec\n  - total-time: %s sec\n  - user-time: %s sec\n  - sys-time:   %s sec",
+                           str(difference['perf']['cycles']),
+                           str(difference['perf']['total_time']),
+                           str(difference['perf']['user_time']),
+                           str(difference['perf']['sys_time']))
+            fh.write(
+                "\t".join([TIMESTAMP,
+                           FASTAFS_REV,
+                           GIT_REV[0].replace('git-commit:',''),
+                           str(difference['perf']['cycles']),
+                           str(difference['perf']['total_time']),
+                           str(difference['perf']['user_time']),
+                           str(difference['perf']['sys_time']),
+                           " ".join(difference['cmd']),
+                           GIT_REV[1]]) + "\n"
+            )
 
 
 
@@ -101,7 +160,7 @@ def run_mount_bg(fastafs_binary, args, return_dict):
 
 
 
-def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alias, padding, fastafs_binary, mountpoint = "tmp/mnt"):
+def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alias, padding, fastafs_binary, use_zstd, mountpoint = "tmp/mnt"):
     """
     Do a diff with an original fasta and one fastafs converted and mounted
     """
@@ -118,19 +177,25 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
 
     # 1. fasta to FASTAFS:
     prog = 'cache'
-    cmd = [fastafs_binary, prog, '-o', fastafs_tmp_filename, fasta_file]
+    if use_zstd:
+        cmd = [fastafs_binary, prog, '-o', fastafs_tmp_filename, fasta_file]
+        fastafs_tmp_filename = fastafs_tmp_filename + ".zst"
+    else:
+        fastafs_tmp_filename = fastafs_tmp_filename + ".fastafs"
+        cmd = [fastafs_binary, prog, '--fastafs-only', '-o', fastafs_tmp_filename, fasta_file]
 
 
-    p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)#:# as p:
-    stdout, stderr = p.communicate()
-    output['cmd'][prog] = cmd
-    output['stdout'][prog] = stdout.decode("utf-8")
-    output['stderr'][prog] = stderr.decode("utf-8")
-    output['retcode'][prog] = p.returncode
+    if not os.path.exists(fastafs_tmp_filename):
+        print(' '.join(cmd))
+
+        p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)#:# as p:
+        stdout, stderr = p.communicate()
+        output['cmd'][prog] = cmd
+        output['stdout'][prog] = stdout.decode("utf-8")
+        output['stderr'][prog] = stderr.decode("utf-8")
+        output['retcode'][prog] = p.returncode
 
 
-    fastafs_tmp_filename = fastafs_tmp_filename + ".zst"
-    
     # 2. check integrity:
     """ # uncomment when supported with chunked zstd(!!!)
     prog = 'check'
@@ -147,8 +212,8 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
     # 3. run active mount process and push it to the background
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
-    cmd = [fastafs_binary, "mount", '-p', str(padding), '-f', fastafs_tmp_filename, mountpoint]
-    #print(' '.join(cmd))
+    cmd = [fastafs_binary, "mount", '-p', str(padding), '-g', '-f', fastafs_tmp_filename, mountpoint]
+    print(' '.join(cmd))
     parallel_thread = Process(target=run_mount_bg, args=(cmd[0], cmd[2:], return_dict))
     parallel_thread.start()
 
@@ -167,10 +232,6 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
 
     matches = 0
     try:
-        #os.system('ls -als tmp/benchmark/mnt/*.fa')
-        #time.sleep(0.1)
-        #os.system('ls -als tmp/mnt/*.fa')
-
         with open(fn) as fh_mnt, open(fasta_file) as fh_orig:
             for line1, line2 in tqdm(zip(fh_mnt, fh_orig)):
                 if line1.strip() != line2.strip():
@@ -181,12 +242,6 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
                     matches += 1
 
     except Exception as e:
-        # print('-> ',fn)
-        # print(':: ',os.path.exists(fn))
-        # print('-> ',fasta_file)
-        # print(':: ',os.path.exists(fasta_file))
-        # print("***********************************")
-        # print("xxxxx ",str(e))
         output['diff'] = True
 
 
@@ -221,7 +276,7 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
 
 
 
-def diff_fasta_with_view(fasta_file, fastafs_tmp_name, padding, fastafs_binary, mountpoint):
+def diff_fasta_with_view(fasta_file, fastafs_tmp_filename, padding, fastafs_binary, use_zstd, mountpoint = "tmp/mnt"):
     """
     Do a diff with an original fasta with 'fastafs view' command
     """
@@ -238,31 +293,42 @@ def diff_fasta_with_view(fasta_file, fastafs_tmp_name, padding, fastafs_binary, 
 
     # 1. fasta to FASTAFS:
     prog = 'cache'
-    #cmd = [fastafs_binary, prog, '-o', fastafs_tmp_file , fasta_file]
-    cmd = [fastafs_binary, prog, fastafs_tmp_name , fasta_file]
-    print(cmd)
-    p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    output['cmd'][prog] = cmd
-    output['stdout'][prog] = stdout.decode("utf-8")
-    output['stderr'][prog] = stderr.decode("utf-8")
-    output['retcode'][prog] = p.returncode
-    p.terminate()
+    if use_zstd:
+        #cmd = [fastafs_binary, prog, '-o', fastafs_tmp_filename, fasta_file]
+        fastafs_tmp_filename = fastafs_tmp_filename + ".zst"
+    else:
+        fastafs_tmp_filename = fastafs_tmp_filename + ".fastafs"
+        #cmd = [fastafs_binary, prog, '--fastafs-only', '-o', fastafs_tmp_filename, fasta_file]
     
-    # 2. check integrity:
-    prog = 'check'
-    cmd = [fastafs_binary, 'check', fastafs_tmp_name, fastafs_tmp_name]
-    p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    output['cmd'][prog] = cmd
-    output['stdout'][prog] = stdout.decode("utf-8")
-    output['stderr'][prog] = stderr.decode("utf-8")
-    output['retcode'][prog] = p.returncode
-    p.terminate()
+    
+    # if not os.path.exists(fastafs_tmp_filename):
+        # print('$ ' + ' '.join(cmd))
 
-    # 3. run view
+        # p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)
+        # stdout, stderr = p.communicate()
+        # output['cmd'][prog] = cmd
+        # output['stdout'][prog] = stdout.decode("utf-8")
+        # output['stderr'][prog] = stderr.decode("utf-8")
+        # output['retcode'][prog] = p.returncode
+        # p.terminate()
+    
+    # # 2. check integrity:
+    # prog = 'check'
+    # cmd = [fastafs_binary, 'check', fastafs_tmp_name, fastafs_tmp_name]
+    # p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)
+    # stdout, stderr = p.communicate()
+    # output['cmd'][prog] = cmd
+    # output['stdout'][prog] = stdout.decode("utf-8")
+    # output['stderr'][prog] = stderr.decode("utf-8")
+    # output['retcode'][prog] = p.returncode
+    # p.terminate()
+
+    # 3. run view and test outcome
+    """
+    logging.info("Run view from beginning to end and check file consistency")
     prog = 'view'
-    cmd = [fastafs_binary, prog, '-p', str(padding), fastafs_tmp_name]
+    cmd = [fastafs_binary, prog, '-p', str(padding), '-f' , fastafs_tmp_filename]
+    print('$ ' + ' '.join(cmd))
     
     os.environ['PYTHONUNBUFFERED'] = "1"
     p = subprocess.Popen(cmd,  stdout=subprocess.PIPE, bufsize=10) # bufsize=1, universal_newlines=True
@@ -279,8 +345,38 @@ def diff_fasta_with_view(fasta_file, fastafs_tmp_name, padding, fastafs_binary, 
                     break
 
     p.stdout.close()
-    
+    """
 
-    return output
+    # 4. perf view
+    cmd = ['perf', 'stat', '-e', 'cycles', fastafs_binary, 'view', '-f' , fastafs_tmp_filename]
+    
+    return_dict = {'cmd': cmd, 'diff': False}
+
+    o = ''
+    e = ''
+
+    with subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.DEVNULL) as p:
+        while p.poll() is None:
+            stdout, stderr = p.communicate()
+
+            #stdout = stdout.decode("utf-8")
+            stderr = stderr.decode("utf-8")
+
+            # i believe return_dict values can be set only once, so first cache and store later
+            #o += "\n---\n" + str(stdout)#[0:50] + "..." + str(stdout)[-50:]
+            e += "\n---\n" + str(stderr)#[0:50] + "..." + str(stderr)[-50:]
+        p.terminate()
+
+    #return_dict['stdout'] = o[0:100]
+    return_dict['stderr'] = e[0:100]
+
+    return_dict['perf'] = {'cycles': int(re.search('([0-9,]+)[ \t]+cycles' , e, re.IGNORECASE).group(1).replace(",","")),
+             'total_time': float(re.search('([0-9\.]+)[ \t]+seconds time elapsed' , e, re.IGNORECASE).group(1)),
+             'user_time': float(re.search('([0-9\.]+)[ \t]+seconds user', e, re.IGNORECASE).group(1)), 
+             'sys_time': float(re.search('([0-9\.]+)[ \t]+seconds sys', e, re.IGNORECASE).group(1)) }
+
+    
+    return return_dict
+
 
 

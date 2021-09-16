@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE fastfs_caching
+#define BOOST_TEST_MODULE fastafs_fastafs
 
 #include <sys/types.h>
 #include <sys/stat.h>

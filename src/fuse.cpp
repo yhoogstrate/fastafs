@@ -39,7 +39,7 @@ struct file_thread_info {
     sem_t sem;
 };
 
-int MAX_FILE_THREADS = 4;
+int MAX_FILE_THREADS = 12;
 
 struct file_threads {
     std::vector<file_thread_info> crs;
@@ -73,9 +73,11 @@ static int do_getattr(const char *path, struct stat *st)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+#if DEBUG
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
+#endif
 
     // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
@@ -170,15 +172,19 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, of
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+#if DEBUG
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
+#endif
 
     filler(buffer, ".", NULL, 0); // Current Directory
     filler(buffer, "..", NULL, 0); // Parent Directory
 
     if(ffi->from_fastafs) {
+#if DEBUG
         printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
+#endif
 
         std::string virtual_fasta_filename = ffi->f->name + ".fa";
         std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
@@ -219,6 +225,7 @@ static int do_open(const char *path, struct fuse_file_info *fi)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+#if DEBUG
     char cur_time[100];
     time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -226,10 +233,10 @@ static int do_open(const char *path, struct fuse_file_info *fi)
     printf("\033[0;32m[%s]\033[0;33m do_open\n", cur_time);
     //(\033[0ms=%u, off=%u\033[0;33m):\033[0m %s \033[0;35m(%s, pad: %u)\033[0m\n",
     //cur_time, (uint32_t) size, (uint32_t) offset, path, );
+#endif
 
     //chunked_reader *cr = new chunked_reader(ffi->f->filename.c_str());
 
-    printf("test... \n");
 
     // has list with 32 chunked_reader objects
     file_threads *ft = new file_threads();
@@ -247,13 +254,14 @@ static int do_open(const char *path, struct fuse_file_info *fi)
     ft->thread_i = 0;
 
     fi->fh = reinterpret_cast<uintptr_t>(ft);
-    printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
-
+    
+#if DEBUG
     printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
     printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
     printf("\033[0;35m fi->direct_io: %u\n", fi->direct_io);
     printf("\033[0;35m fi->keep_cache: %u\n", fi->keep_cache);
     printf("\033[0;35m fi->padding: %u\n", fi->padding);
+#endif
 
     // here the fi->fh should be set?!
     // if possible to chunked reader?
@@ -513,6 +521,7 @@ void print_fuse_help()
     std::cout << "    -2   --2bit            virtualise a 2bit file rather than FASTAFS UID\n";
     std::cout << "    -m   --no-masking      Disable masking; bases in lower-case (not for 2bit output)\n";
     std::cout << "    -p <n>,--padding <n>   padding / FASTA line length\n";
+    std::cout << "    -g   --from-file       force reading from file rather than cache database\n";
     std::cout << "    -o opt,[opt...]        mount options\n";
     std::cout << "    -h   --help            print help\n";
     std::cout << "    -V   --version         print version\n";
@@ -607,7 +616,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
     char current_argument = '\0';// could be o for '-o', etc.
 
-
+    bool from_file_rather_than_from_db = false;
 
     std::vector<int> full_args = {};
     for(signed int i = 0; i < argc; ++i) {
@@ -642,6 +651,10 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 fi->allow_masking = false;
                 break;
 
+            case 'g': // directly use file
+                from_file_rather_than_from_db = true;
+                break;
+
             case 'f': // fuse specific flags
             case 's':
             case 'd':
@@ -670,15 +683,13 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
 
 
     if(full_args.size() > 2) {
-        printf("full_args.size() = %u\n", (uint32_t) full_args.size());
         int mount_target_arg = full_args[full_args.size() - 2 ]; // last two arguments are <fastafs file> and <mount point>, location to last 2 args not starting with --/- are in this vector
 
         if(fi->from_fastafs) {
-            database d = database();
-            std::string fname = d.get(argv[mount_target_arg]);
-
-            std::string name; // prefix name of mounted fasta dict 2bit and fai files
-            if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
+            std::string fname;
+            std::string name;
+            
+            if(from_file_rather_than_from_db) {
                 fname = std::string(argv[mount_target_arg]);
                 //name = std::filesystem::path(fname).filename();
                 name = basename_cpp(fname);
@@ -686,9 +697,22 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 // remove .fastafs suffix
                 size_t lastindex = name.find_last_of(".");
                 name = name.substr(0, lastindex);
-
             } else {
-                name = std::string(argv[mount_target_arg]);
+                database d = database();
+                fname = d.get(argv[mount_target_arg]);
+
+                if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
+                    fname = std::string(argv[mount_target_arg]);
+                    //name = std::filesystem::path(fname).filename();
+                    name = basename_cpp(fname);
+
+                    // remove .fastafs suffix
+                    size_t lastindex = name.find_last_of(".");
+                    name = name.substr(0, lastindex);
+
+                } else {
+                    name = std::string(argv[mount_target_arg]);
+                }
             }
 
             fi->f = new fastafs(name);
@@ -724,6 +748,7 @@ void fuse(int argc, char *argv[])
     char *argv2[argc];
     fuse_instance *ffi = parse_args(argc, argv, argv2);
 
+#if DEBUG
     // part 2 - print what the planning is
     char cur_time[100];
     time_t now = time(0);
@@ -740,6 +765,8 @@ void fuse(int argc, char *argv[])
     }
 
     printf("\n");
+#endif
+
 
     if(ffi->f == nullptr && ffi->u2b == nullptr) { // no fastafs was loaded
         print_fuse_help();

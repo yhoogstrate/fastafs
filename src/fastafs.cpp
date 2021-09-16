@@ -667,7 +667,7 @@ bool fastafs_seq::get_n_offset(uint32_t pos, uint32_t *num_Ns)
 
 
 fastafs::fastafs(std::string arg_name) :
-    name(arg_name), crc32f(0)
+    name(arg_name), filetype(compression_type::undefined), crc32f(0)
 {
 }
 
@@ -685,6 +685,8 @@ void fastafs::load(std::string afilename)
 
     chunked_reader fh_in = chunked_reader(afilename.c_str());
     {
+        this->filetype = fh_in.filetype;
+        
         memblock = new char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
@@ -1588,6 +1590,18 @@ int fastafs::info(bool ena_verify_checksum)
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         std::cout << "# FASTAFS NAME: " << this->filename << "\n";
+        std::cout << "# FORMAT: v0-x32";
+        switch(this->filetype) {
+            case compression_type::undefined:
+                printf("?\n");
+            break;
+            case compression_type::uncompressed :
+                printf("\n");
+            break;
+            case compression_type::zstd:
+                printf("+Z\n");
+            break;
+        }
         printf("# SEQUENCES:    %u\n", (uint32_t) this->data.size());
 
         for(uint32_t i = 0; i < this->data.size(); i++) {

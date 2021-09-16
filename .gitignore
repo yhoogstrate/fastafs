@@ -28,3 +28,4 @@ test-mount.sh
 .venv
 .txt#
 .~lock*
+*.txt#
