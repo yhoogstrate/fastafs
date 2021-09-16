@@ -208,36 +208,22 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     uint32_t pos = (uint32_t) start_pos_in_fasta;
-    uint32_t pos_limit = 0;
-
-    // >
-    pos_limit += 1;
+    
+    
+    size_t pos_limit = this->name.size() + 2;
     if(pos < pos_limit) {
-        buffer[written++] = '>';
-        pos++;
-        if(written >= buffer_size) {
-            return written;
-        }
-    }
+        const std::string header = ">" + this->name + "\n";
 
-    // sequence name
-    pos_limit += (uint32_t) this->name.size();
-    while(pos < pos_limit) {
-        buffer[written++] = this->name[this->name.size() - (pos_limit - pos)];
-        pos++;
-        if(written >= buffer_size) {
-            return written;
-        }
-    }
+        const uint32_t tocopy = (uint32_t) std::min(pos_limit - pos, buffer_size); // size to be copied
+        const uint32_t copied = (uint32_t) header.copy(buffer, tocopy, pos); // effective size of copied data
 
-    // \n
-    pos_limit += 1;
-    if(pos < pos_limit) {
-        buffer[written++] = '\n';
-        pos++;
+        written += (uint32_t) copied;
+        
         if(written >= buffer_size) {
             return written;
         }
+        
+        pos += (uint32_t) copied;
     }
 
     const uint32_t offset_from_sequence_line = pos - pos_limit;
