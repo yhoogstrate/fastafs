@@ -39,7 +39,7 @@ struct file_thread_info {
     sem_t sem;
 };
 
-int MAX_FILE_THREADS = 4;
+int MAX_FILE_THREADS = 12;
 
 struct file_threads {
     std::vector<file_thread_info> crs;
