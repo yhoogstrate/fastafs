@@ -1,0 +1,2 @@
+timestamp	fastafs-version	git-commit	perf:cycles	perf:total_time	perf:user_time	perf:sys_time	cmd	git-mod-status
+2021-09-16 11:21:05.379749	v1.8.0-5a66a8c2a14b4dadd883931536f102d8281ec176-debug	5a66a8c2a14b4dadd883931536f102d8281ec176	306092007794	69.960764319	126.631244	1.217015	perf stat -e cycles ./bin/fastafs mount -d -f -p 40 -g -f tmp/benchmark/test.zst tmp/benchmark/mnt/	##_master...origin/master_[ahead_3]|M_scripts/benchmark.py|M_src/utils.cpp|M_test/test_utils.py

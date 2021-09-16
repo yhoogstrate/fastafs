@@ -326,4 +326,8 @@ bool file_exist(const char *fileName)
 {
     std::ifstream infile(fileName);
     return infile.good();
+    
+    //following implementation should be faster
+    //struct stat buffer;
+    //return (stat (fileName, &buffer) == 0);
 }

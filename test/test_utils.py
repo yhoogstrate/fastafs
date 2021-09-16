@@ -26,7 +26,7 @@ def get_curtime():
     return str(datetime.datetime.now().strftime('%Y-%m-%d %X'))
 
 def get_fastafs_rev():
-    return subprocess.check_output(['fastafs', '--version']).decode("utf-8").split("\n")[0].replace('fastafs','').strip()
+    return subprocess.check_output(['./bin/fastafs', '--version']).decode("utf-8").split("\n")[0].replace('fastafs','').strip()
 
 
 #git = get_git_revision()
@@ -99,7 +99,7 @@ def run_mount_bg(fastafs_binary, args, return_dict):
 
 
 
-def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alias, padding, fastafs_binary, mountpoint = "tmp/mnt"):
+def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alias, padding, fastafs_binary, use_zstd, mountpoint = "tmp/mnt"):
     """
     Do a diff with an original fasta and one fastafs converted and mounted
     """
@@ -116,19 +116,24 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
 
     # 1. fasta to FASTAFS:
     prog = 'cache'
-    cmd = [fastafs_binary, prog, '-o', fastafs_tmp_filename, fasta_file]
+    print(fastafs_tmp_filename)
+    if use_zstd:
+        cmd = [fastafs_binary, prog, '-o', fastafs_tmp_filename, fasta_file]
+        fastafs_tmp_filename = fastafs_tmp_filename + ".zst"
+    else:
+        fastafs_tmp_filename = fastafs_tmp_filename + ".fastafs"
+        cmd = [fastafs_binary, prog, '--fastafs-only', '-o', fastafs_tmp_filename, fasta_file]
+    print(fastafs_tmp_filename)
 
 
-    p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)#:# as p:
-    stdout, stderr = p.communicate()
-    output['cmd'][prog] = cmd
-    output['stdout'][prog] = stdout.decode("utf-8")
-    output['stderr'][prog] = stderr.decode("utf-8")
-    output['retcode'][prog] = p.returncode
+    #p = subprocess.Popen(cmd,  stderr=subprocess.PIPE, stdout = subprocess.PIPE)#:# as p:
+    #stdout, stderr = p.communicate()
+    #output['cmd'][prog] = cmd
+    #output['stdout'][prog] = stdout.decode("utf-8")
+    #output['stderr'][prog] = stderr.decode("utf-8")
+    #output['retcode'][prog] = p.returncode
 
 
-    fastafs_tmp_filename = fastafs_tmp_filename + ".zst"
-    
     # 2. check integrity:
     """ # uncomment when supported with chunked zstd(!!!)
     prog = 'check'
@@ -145,8 +150,8 @@ def diff_fasta_with_mounted(fasta_file, fastafs_tmp_filename, fastafs_mount_alia
     # 3. run active mount process and push it to the background
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
-    cmd = [fastafs_binary, "mount", '-p', str(padding), '-f', fastafs_tmp_filename, mountpoint]
-    #print(' '.join(cmd))
+    cmd = [fastafs_binary, "mount", '-p', str(padding), '-g', '-f', fastafs_tmp_filename, mountpoint]
+    print(' '.join(cmd))
     parallel_thread = Process(target=run_mount_bg, args=(cmd[0], cmd[2:], return_dict))
     parallel_thread.start()
 
