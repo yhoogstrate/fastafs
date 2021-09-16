@@ -48,21 +48,14 @@ def main():
     check_benchmark_file(RESULTS_FILE)
     write_benchmark_file(RESULTS_FILE, diff_fasta_with_mounted(PATH + "/test.fa", "tmp/benchmark/test", "test", 40, './bin/fastafs', False, 'tmp/benchmark/mnt'), TIMESTAMP, FASTAFS_REV, GIT_REV)
 
+    RESULTS_FILE = "benchmarks/" + get_sys_id() + "_view_ZSTD.txt"
+    check_benchmark_file(RESULTS_FILE)
+    write_benchmark_file(RESULTS_FILE, diff_fasta_with_view(PATH + "/test.fa", "tmp/benchmark/test", 40, './bin/fastafs', True, 'tmp/benchmark/mnt'), TIMESTAMP, FASTAFS_REV, GIT_REV)
 
-
-"""
     RESULTS_FILE = "benchmarks/" + get_sys_id() + "_view_plain.txt"
-    if not os.path.exists(RESULTS_FILE):
-        with open(RESULTS_FILE,'w') as fh:
-            fh.write(
-                "\t".join(
-                ["timestamp", "fastafs-version", "git-commit", "perf:cycles", "perf:total_time", "perf:user_time", "perf:sys_time", "cmd", "git-mod-status"]
-                ) + "\n"
-            )
+    check_benchmark_file(RESULTS_FILE)
+    write_benchmark_file(RESULTS_FILE, diff_fasta_with_view(PATH + "/test.fa", "tmp/benchmark/test", 40, './bin/fastafs', False, 'tmp/benchmark/mnt'), TIMESTAMP, FASTAFS_REV, GIT_REV)
 
-        
-    difference = diff_fasta_with_view(PATH + "/test.fa", "tmp/benchmark/test", 40, './bin/fastafs', False, 'tmp/benchmark/mnt')
-"""
 
 
 if __name__ == '__main__':
