@@ -22,18 +22,21 @@ struct ffs2f_init_seq {
     // fasta seq newlines/padding lines
     const uint32_t padding;// padding used for this sequence, cannot be 0
     const uint32_t total_sequence_containing_lines;// calculate total number of full nucleotide lines: (this->n + padding - 1) / padding
+    const uint32_t filesize;// with padding and newlines [fastafs_seq->fasta_filesize(cache->padding_arg)]
 
     std::vector<uint32_t> n_starts;// file position based
     std::vector<uint32_t> n_ends;// file position based
 
     std::vector<uint32_t> m_starts;// file position based
     std::vector<uint32_t> m_ends;// file position based
+    
 
-    ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines):
+    ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize):
         padding(padding),
         total_sequence_containing_lines(n_lines),
         n_starts(n_blocks), n_ends(n_blocks),
-        m_starts(m_blocks), m_ends(m_blocks)
+        m_starts(m_blocks), m_ends(m_blocks),
+        filesize(filesize)
     {}
 };
 
@@ -43,8 +46,7 @@ struct ffs2f_init {
 
     ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
 
-    ~ffs2f_init(void)
-    {
+    ~ffs2f_init(void) {
         for(size_t i = 0; i < sequences.size(); i++) {
             delete sequences[i];
         }

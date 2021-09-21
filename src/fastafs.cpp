@@ -98,9 +98,9 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
     ffs2f_init_seq* data;
 
     if(allow_masking) {
-        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines);
+        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines, this->fasta_filesize(padding));
     } else {
-        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  1, total_sequence_containing_lines);
+        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  1, total_sequence_containing_lines, this->fasta_filesize(padding));
     }
 
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
@@ -914,24 +914,24 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
 
     while(i < data.size()) {
         seq = this->data[i];
-        const uint32_t sequence_file_size = seq->fasta_filesize(cache->padding_arg);
+        const uint32_t filesize = cache->sequences[i]->filesize;
 
-        if(pos < sequence_file_size) {
+        if(pos < filesize) {
             const uint32_t written_seq = seq->view_fasta_chunk(
                                              cache->sequences[i],
                                              &buffer[written],
-                                             std::min((uint32_t) buffer_size - written, sequence_file_size),
+                                             std::min((uint32_t) buffer_size - written, filesize),
                                              pos,
                                              fh);
 
             written += written_seq;
-            pos -= (sequence_file_size - written_seq);
+            pos -= (filesize - written_seq);
 
             if(written == buffer_size) {
                 return written;
             }
         } else {
-            pos -= sequence_file_size;
+            pos -= filesize;
         }
 
         i++;

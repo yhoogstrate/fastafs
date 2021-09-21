@@ -286,8 +286,8 @@ static int do_release(const char *path, struct fuse_file_info *fi)
         for(size_t i = 0; i < ft->crs.size(); i++) {
             sem_destroy(&ft->crs[i].sem);
             delete ft->crs[i].cr;
-
         }
+        
         delete ft;
     }
 
