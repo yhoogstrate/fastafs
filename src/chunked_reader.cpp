@@ -87,7 +87,11 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
     buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
-    while(this->buffer_i < this->buffer_n and written < buffer_size) {
+  size_t to_copy = std::min(this->buffer_n - this->buffer_i , buffer_size);
+
+//    while(this->buffer_i < this->buffer_n and written < buffer_size) {
+    while(to_copy--) {
+
         arg_buffer[written++] = this->buffer[this->buffer_i++];
     }
 
