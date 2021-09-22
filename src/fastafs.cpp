@@ -308,7 +308,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                 cur_n_end = cache->n_ends[n_block];
                 cur_n_start = cache->n_starts[n_block];
             }
-            if(pos ==- cur_m_end) {
+            if(pos == cur_m_end) {
             //if(pos == cache->m_ends[m_block]) {
                 m_block++;
                 cur_m_end = cache->m_ends[m_block];
