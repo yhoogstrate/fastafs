@@ -266,6 +266,12 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         m_block--;
     }
 
+    uint32_t cur_n_end = cache->n_ends[n_block];
+    uint32_t cur_n_start = cache->n_starts[n_block];
+
+    uint32_t cur_m_end = cache->m_ends[m_block];
+    uint32_t cur_m_start = cache->m_starts[m_block];
+
 
     // write sequence
     pos_limit += newlines_passed * (cache->padding + 1);// passed sequence-containg lines
@@ -274,8 +280,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
         // write nucleotides
         while(pos < pos_limit) {// while next sequence-containing-line is open
-            if(pos >= cache->n_starts[n_block]) {
-                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+            if(pos >= cur_n_start) {
+                if(pos >= cur_m_start) { // IN an m block; lower-case
                     buffer[written++] = T::n_fill_masked;
                 } else {
                     buffer[written++] = T::n_fill_unmasked;
@@ -287,7 +293,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                     chunk = t.get();
                 }
 
-                if(pos >= cache->m_starts[m_block]) { // IN an m block; lower-case
+                if(pos >= cur_m_start) { // IN an m block; lower-case
                     buffer[written++] = (unsigned char)(chunk[bit_offset] + 32);
                 } else {
                     buffer[written++] = chunk[bit_offset];
@@ -295,11 +301,18 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
                 bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_chunk;
             }
-            if(pos == cache->n_ends[n_block]) {
+
+            if(pos == cur_n_end) {
+            //if(pos == cache->n_ends[n_block]) {
                 n_block++;
+                cur_n_end = cache->n_ends[n_block];
+                cur_n_start = cache->n_starts[n_block];
             }
-            if(pos == cache->m_ends[m_block]) {
+            if(pos ==- cur_m_end) {
+            //if(pos == cache->m_ends[m_block]) {
                 m_block++;
+                cur_m_end = cache->m_ends[m_block];
+                cur_m_start = cache->m_starts[m_block];
             }
 
             pos++;

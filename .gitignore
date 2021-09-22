@@ -30,3 +30,5 @@ test-mount.sh
 .~lock*
 *.txt#
 perf.*
+/gmon.out
+analysis.txt
