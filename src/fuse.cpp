@@ -364,6 +364,10 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 
     sem_post(&ft->crs[cur_file_thread].sem);
 
+#if DEBUG
+    printf("\033[0;35m written: %u\n", written);
+#endif
+
     return written;
 }
 
