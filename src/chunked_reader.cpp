@@ -111,9 +111,11 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
         case zstd:
             this->update_zstd_buffer();
             break;
+#if DEBUG
         default:
             throw std::runtime_error("[chunked_reader::read] reading from uninitialized object\n");
             break;
+#endif
         }
 
         // same loop again
