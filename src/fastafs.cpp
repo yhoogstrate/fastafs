@@ -1487,14 +1487,10 @@ std::string fastafs::get_faidx(uint32_t padding)
 uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
     std::string contents = this->get_faidx(padding);
-    uint32_t written = 0;
 
-    while(written < buffer_size and written + file_offset < (uint32_t) contents.size()) {
-        buffer[written] = contents[written];
-        written++;
-    }
+    size_t to_copy = std::min(buffer_size, contents.size() - file_offset );
 
-    return written;
+    return contents.copy(buffer, to_copy, file_offset );
 }
 
 
