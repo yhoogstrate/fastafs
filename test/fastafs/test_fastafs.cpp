@@ -398,7 +398,12 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 't');
+        
+        delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:3";
@@ -417,7 +422,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 't');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:4";
@@ -436,7 +444,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'c');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:15";
@@ -455,7 +466,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'g');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:16";
@@ -474,6 +488,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         //BOOST_CHECK_EQUAL(buffer[0], '\n');
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 
@@ -495,7 +510,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'A');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -515,7 +532,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'C');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:7";
@@ -534,7 +554,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -554,7 +576,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:9";
@@ -573,7 +598,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:10";
@@ -592,7 +620,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
+
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:11";
@@ -611,7 +642,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -632,7 +665,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'A');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -652,7 +687,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -673,7 +710,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -694,7 +733,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -714,7 +755,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         //BOOST_CHECK_EQUAL(buffer[0], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
+
 
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -741,6 +784,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[7], 'n');
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 
@@ -765,6 +809,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[3], 'n');
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 
@@ -789,6 +834,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         //BOOST_CHECK_EQUAL(buffer[3], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 
@@ -812,8 +858,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[1], 'T');
 
         delete[] buffer;
+        delete cache_p0;
     }
-
 
 
     {
@@ -871,6 +917,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 15);
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 
@@ -894,6 +941,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 
@@ -915,6 +963,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 0);
 
         delete[] buffer;
+        delete cache_p0;
     }
 
 }
@@ -949,18 +998,18 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
     chunked_reader fh1 = chunked_reader(fs.filename.c_str());
     flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
     ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 0, fh1);
-    printf("[%i]\n", ret);
+    //printf("[%i]\n", ret);
     buffer[4096] = '\0';
     //printf("[%s]\n", buffer);
-    printf("----------------------------------------------------------------\n", buffer);
+    //printf("----------------------------------------------------------------\n", buffer);
 
     // test the first read
     flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
     ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 0);
-    printf("[%i]\n", ret);
+    //printf("[%i]\n", ret);
     buffer[4096] = '\0';
     //printf("[%s]\n", buffer);
-    printf("----------------------------------------------------------------\n", buffer);
+    //printf("----------------------------------------------------------------\n", buffer);
 
 
 
@@ -969,18 +1018,18 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
     //chunked_reader fh2 = chunked_reader(fs.filename.c_str());
     flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
     ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 20480, fh1);
-    printf("[%i]\n", ret);
+    //printf("[%i]\n", ret);
     buffer[4096] = '\0';
-    printf("[%s]\n", buffer);
-    printf("----------------------------------------------------------------\n", buffer);
+    //printf("[%s]\n", buffer);
+    //printf("----------------------------------------------------------------\n", buffer);
 
     // test the first read
     flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
     ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 20480);
-    printf("[%i]\n", ret);
+    //printf("[%i]\n", ret);
     buffer[4096] = '\0';
     //printf("[%s]\n", buffer);
-    printf("----------------------------------------------------------------\n", buffer);
+    //printf("----------------------------------------------------------------\n", buffer);
 
 
 
