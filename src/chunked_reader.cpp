@@ -4,15 +4,14 @@
 
 
 chunked_reader::chunked_reader(char * afilename) :
-    fh_flat(nullptr), fh_zstd(nullptr), buffer_i(0), buffer_n(0), file_i(0)
+    fh_flat(nullptr), fh_zstd(nullptr), file_i(0)
 {
-
     this->filename = realpath_cpp(afilename);
     this->init();
 }
 
 chunked_reader::chunked_reader(const char * afilename) :
-    fh_flat(nullptr), fh_zstd(nullptr), buffer_i(0), buffer_n(0), file_i(0)
+    fh_flat(nullptr), fh_zstd(nullptr), file_i(0)
 {
     this->filename = realpath_cpp(afilename);
     this->init();
@@ -43,6 +42,9 @@ chunked_reader::~chunked_reader()
 
 void chunked_reader::init()
 {
+    this->buffer_ii = this->buffer;
+    this->buffer_nn = this->buffer;//was set to 0 before
+
     this->set_filetype();
 
     switch(this->filetype) {
@@ -85,12 +87,11 @@ void chunked_reader::set_filetype()
 size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
 {
 
-
     buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
-    while(this->buffer_i < this->buffer_n and written < buffer_size) {
-        arg_buffer[written++] = this->buffer[this->buffer_i++];
+    while(this->buffer_ii < this->buffer_nn and written < buffer_size) {
+        arg_buffer[written++] = *this->buffer_ii++;
     }
 
 
@@ -119,8 +120,8 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
         }
 
         // same loop again
-        while(this->buffer_i < this->buffer_n and written < buffer_size) {
-            arg_buffer[written++] = this->buffer[this->buffer_i++];
+        while(this->buffer_ii < this->buffer_nn and written < buffer_size) {
+            arg_buffer[written++] = *this->buffer_ii++;
         }
         /* - somehow memcpy is slightly slower - test again @ mom laptop
         size_t n = std::min(this->buffer_n - this->buffer_i, buffer_size - written);
@@ -140,12 +141,11 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
 size_t chunked_reader::read(unsigned char *arg_buffer, size_t buffer_size)
 {
 
-
     buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
     size_t written = 0;
 
-    while(this->buffer_i < this->buffer_n and written < buffer_size) {
-        arg_buffer[written++] = this->buffer[this->buffer_i++];
+    while(this->buffer_ii < this->buffer_nn) {
+        arg_buffer[written++] = *this->buffer_ii++;
     }
 
 
@@ -164,8 +164,8 @@ size_t chunked_reader::read(unsigned char *arg_buffer, size_t buffer_size)
         }
 
         // same loop again
-        while(this->buffer_i < this->buffer_n and written < buffer_size) {
-            arg_buffer[written++] = this->buffer[this->buffer_i++];
+        while(this->buffer_ii < this->buffer_nn and written < buffer_size) {
+            arg_buffer[written++] = *this->buffer_ii++;
         }
     }
 
@@ -177,7 +177,7 @@ size_t chunked_reader::read(unsigned char *arg_buffer, size_t buffer_size)
 // reads single byte from the buffer
 unsigned char chunked_reader::read()
 {
-    if(this->buffer_i >= this->buffer_n) {
+    if(this->buffer_ii >= this->buffer_nn) {
         switch(this->filetype) {
         case uncompressed:
             this->update_flat_buffer();
@@ -191,7 +191,7 @@ unsigned char chunked_reader::read()
         }
     }
 
-    return this->buffer[this->buffer_i++];
+    return *this->buffer_ii++;
 }
 
 
@@ -200,10 +200,12 @@ unsigned char chunked_reader::read()
 void chunked_reader::update_flat_buffer()
 {
     this->fh_flat->read(this->buffer, READ_BUFFER_SIZE);
+    int count = this->fh_flat->gcount();
 
-    this->buffer_i = 0;
-    this->buffer_n = (size_t) this->fh_flat->gcount();
-    this->file_i += this->buffer_n;
+    this->buffer_ii = this->buffer;
+    this->buffer_nn = this->buffer + count;
+    
+    this->file_i += count;
 }
 
 
@@ -212,8 +214,9 @@ void chunked_reader::update_zstd_buffer()
     //size_t written = ZSTD_seekable_decompressFile_orDie(this->filename.c_str(), this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
     size_t written = ZSTD_seekable_decompressFile_orDie(this->fh_zstd, this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
 
-    this->buffer_i = 0;
-    this->buffer_n = written;
+    this->buffer_ii = this->buffer;
+    
+    this->buffer_nn = this->buffer + written;
     this->file_i += written;
 }
 
@@ -243,6 +246,11 @@ void chunked_reader::seek(off_t offset)
 
 size_t chunked_reader::tell()
 {
-    return this->file_i - this->buffer_n + this->buffer_i;
+        //10 - 5  + 2 = 7
+        //10 + (5 - 3)
+        
+    //return this->file_i - this->buffer_n + this->buffer_i;
+    
+    return this->file_i + (this->buffer_ii - this->buffer_nn);
 }
 

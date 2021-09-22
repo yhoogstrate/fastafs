@@ -48,11 +48,11 @@ public:
 
     compression_type filetype;
     char buffer[READ_BUFFER_SIZE + 1];
-    size_t buffer_i;
-    size_t buffer_n;
+    //size_t buffer_i;
+    //size_t buffer_n;
     
-    //char *buffer_ii;
-    //char *buffer_nn;
+    char *buffer_ii;
+    char *buffer_nn;
     
 
     off_t file_i;
