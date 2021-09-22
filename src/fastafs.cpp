@@ -1456,7 +1456,17 @@ std::string fastafs::get_faidx(uint32_t padding)
             offset += 1;// '>'
             offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
 
-            contents += data[i]->name + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
+            // fasta headers may contanis spaces etc. which need to be excluded from fai files
+
+            std::string name_t;
+            std::string::size_type truncate = data[i]->name.find(" ");
+            if(truncate > 1) {
+                name_t = data[i]->name.substr(0, truncate);
+            } else {
+                name_t = data[i]->name;
+            }
+
+            contents += name_t + "\t" + std::to_string(this->data[i]->n) + "\t" + std::to_string(offset) + "\t" + padding_s + "\t" + padding_s2 + "\n";
 
             offset += this->data[i]->n; // ACTG NNN
             offset += (this->data[i]->n + (padding - 1)) / padding;// number of newlines corresponding to ACTG NNN lines
@@ -1468,6 +1478,7 @@ std::string fastafs::get_faidx(uint32_t padding)
     } else {
         throw std::runtime_error("[fastafs::get_faidx] could not load fastafs: " + this->filename);
     }
+
     return contents;
 }
 
@@ -1571,7 +1582,7 @@ int fastafs::info(bool ena_verify_checksum)
 
 
             // print sequence name & size & checksum
-            printf("%-24s%-12i%s    %s", this->data[i]->name.c_str(), this->data[i]->n, compression_type.c_str(), md5_hash);
+            printf("%s\t%i\t%s\t%s", this->data[i]->name.c_str(), this->data[i]->n, compression_type.c_str(), md5_hash);
 
 
             if(ena_verify_checksum) {
