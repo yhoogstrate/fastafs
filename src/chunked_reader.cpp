@@ -86,12 +86,14 @@ void chunked_reader::set_filetype()
 
 size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
 {
+    char *arg_buffer_orig = arg_buffer;
+    
 
-    buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
-    size_t written = 0;
+    //=buffer_size = std::min(buffer_size, (size_t) READ_BUFFER_SIZE);
+    size_t to_copy = std::min(buffer_size,  (size_t) (this->buffer_nn - this->buffer_ii));
 
-    while(this->buffer_ii < this->buffer_nn and written < buffer_size) {
-        arg_buffer[written++] = *this->buffer_ii++;
+    while(to_copy--) {
+        *arg_buffer++ = *this->buffer_ii++;
     }
 
 
@@ -103,7 +105,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
     this->buffer_i += n;
     */
 
-    if(written < buffer_size) {
+    if(arg_buffer - arg_buffer_orig < buffer_size) {
         // overwrite buffer
         switch(this->filetype) {
         case uncompressed:
@@ -119,10 +121,17 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
 #endif
         }
 
-        // same loop again
-        while(this->buffer_ii < this->buffer_nn and written < buffer_size) {
-            arg_buffer[written++] = *this->buffer_ii++;
+
+        size_t to_copy = std::min(buffer_size,  (size_t) (this->buffer_nn - this->buffer_ii));
+
+        while(to_copy--) {
+            *arg_buffer++ = *this->buffer_ii++;
         }
+
+        // same loop again
+        //while(this->buffer_ii < this->buffer_nn and written < buffer_size) {
+        //    arg_buffer[written++] = *this->buffer_ii++;
+        //}
         /* - somehow memcpy is slightly slower - test again @ mom laptop
         size_t n = std::min(this->buffer_n - this->buffer_i, buffer_size - written);
         memcpy(&arg_buffer[written], &this->buffer[this->buffer_i] , n);
@@ -131,7 +140,7 @@ size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
         */
     }
 
-    return written;
+    return arg_buffer - arg_buffer_orig;
 }
 
 
