@@ -229,7 +229,7 @@ bool is_ucsc2bit_file(char *filename)
 
 bool is_zstd_file(const char *filename)
 {
-    char buf[4 + 1];
+    char buf[4 + 1] = "\0\0\0\0";
     FILE *fp;
 
     if((fp = fopen(filename, "rb")) == NULL) {
@@ -241,14 +241,10 @@ bool is_zstd_file(const char *filename)
     if(fread(buf, 1, 4, fp) == 4) {
         fclose(fp);
 
-        return ZSTD_MAGIC.compare(0, 4, buf) == 0;
-
-        //return (
-                   //buf[0] == ZSTD_MAGIC[0] and
-                   //buf[1] == ZSTD_MAGIC[1] and
-                   //buf[2] == ZSTD_MAGIC[2] and
-                   //buf[3] == ZSTD_MAGIC[3]
-               //);// return true if first byte equals >
+        return     buf[0] == ZSTD_MAGIC[0] and
+                   buf[1] == ZSTD_MAGIC[1] and
+                   buf[2] == ZSTD_MAGIC[2] and
+                   buf[3] == ZSTD_MAGIC[3];
     } else {
         fclose(fp);
 
