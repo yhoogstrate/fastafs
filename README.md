@@ -3,11 +3,13 @@
 
 # Citing FASTAFS or its virtualisation philosophy
 
-Authors: Youri Hoogstrate, Guido W. Jenster, Harmen J.G. van de Werken
-Title: FASTAFS: file system virtualisation of random access compressed FASTA files.
-Journal: BMC Bioinformatics
-DOI: 10.1186/s12859-021-04455-3
-URL: https://dx.doi.org/10.1186/s12859-021-04455-3
+Hoogstrate, Y., Jenster, G.W. & v.d. Werken, H.J.G.
+
+FASTAFS: file system virtualisation of random access compressed FASTA files.
+
+BMC Bioinformatics 22, 535 (2021).
+
+https://doi.org/10.1186/s12859-021-04455-3
 
 ----
 
