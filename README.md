@@ -3,7 +3,7 @@
 
 # Citing FASTAFS or its virtualisation philosophy
 
-Hoogstrate, Y., Jenster, G.W. & v.d. Werken, H.J.G.
+Hoogstrate, Y., Jenster, G.W. & van de Werken, H.J.G.
 
 FASTAFS: file system virtualisation of random access compressed FASTA files.
 
