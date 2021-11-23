@@ -1,11 +1,15 @@
 # FASTAFS: toolkit for file system virtualisation of random access compressed FASTA files
 ----
 
-# Pre-print of manuscript
+# Citing FASTAFS or its virtualisation philosophy
 
-Describing the relevance of virtualisation combined with compression, and details on the used technology:
+Hoogstrate, Y., Jenster, G.W. & van de Werken, H.J.G.
 
-https://www.biorxiv.org/content/10.1101/2020.11.11.377689v1
+FASTAFS: file system virtualisation of random access compressed FASTA files.
+
+BMC Bioinformatics 22, 535 (2021).
+
+https://doi.org/10.1186/s12859-021-04455-3
 
 ----
 
