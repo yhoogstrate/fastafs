@@ -201,8 +201,8 @@ set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
 
 ##set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
 ## great, this doesn't go automagically with an entire dir
-set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
-##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/chunked_reader.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
 ##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
 # ----------------------------------------------------------------------
