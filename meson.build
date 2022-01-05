@@ -26,17 +26,22 @@ configure_file(input : 'include/config.hpp.in',
 
 
 
-src = ['./src/fasta_to_fourbit_fastafs.cpp', './src/fasta_to_twobit_fastafs.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/fastafs.cpp', './src/fuse.cpp', './src/utils.cpp', './src/database.cpp', './src/lsfastafs.cpp', './src/main.cpp']
+src = [
+'./dependencies/zstd-lib-common/xxhash.cpp',
+'./dependencies/zstd-seekable-adapted/zstdseek_compress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_utils.cpp',
+'./src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp', './src/main.cpp']
 
 
-incdir = include_directories('include')
+incdir = include_directories('dependencies/zstd-seekable-adapted', './dependencies/zstd-lib-common', 'include')
+
 
 fuse = dependency('fuse')
 crypto = dependency('libcrypto')
 openssl = dependency('openssl')
 zlib = dependency('zlib')
+zstd = dependency('libzstd')
 
 executable('fastafs', src, 
 							include_directories : incdir,
-							dependencies: [crypto, openssl, fuse, zlib])
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
