@@ -32,3 +32,4 @@ test-mount.sh
 perf.*
 /gmon.out
 analysis.txt
+*.naf
