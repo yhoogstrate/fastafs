@@ -348,7 +348,7 @@ static size_t ZSTD_seekable_loadSeekTable(ZSTD_seekable* zs)
 
 size_t ZSTD_seekable_initBuff(ZSTD_seekable* zs, const void* src, size_t srcSize)
 {
-    zs->buffWrapper = (buffWrapper_t){src, srcSize, 0};
+    zs->buffWrapper = (buffWrapper_t) buffWrapper_t({src, srcSize, 0});
     {   ZSTD_seekable_customFile srcFile = {&zs->buffWrapper,
                                             &ZSTD_seekable_read_buff,
                                             &ZSTD_seekable_seek_buff};
@@ -406,7 +406,7 @@ size_t ZSTD_seekable_decompress(ZSTD_seekable* zs, void* dst, size_t len, unsign
             CHECK_IO(zs->src.seek(zs->src.opaque,
                                   zs->seekTable.entries[targetFrame].cOffset,
                                   SEEK_SET));
-            zs->in = (ZSTD_inBuffer){zs->inBuff, 0, 0};
+            zs->in = (ZSTD_inBuffer) ZSTD_inBuffer({zs->inBuff, 0, 0});
             XXH64_reset(&zs->xxhState, 0);
             ZSTD_resetDStream(zs->dstream);
         }
@@ -417,9 +417,9 @@ size_t ZSTD_seekable_decompress(ZSTD_seekable* zs, void* dst, size_t len, unsign
             size_t prevOutPos;
             if (zs->decompressedOffset < offset) {
                 /* dummy decompressions until we get to the target offset */
-                outTmp = (ZSTD_outBuffer){zs->outBuff, MIN(SEEKABLE_BUFF_SIZE, offset - zs->decompressedOffset), 0};
+                outTmp = (ZSTD_outBuffer) ZSTD_outBuffer({zs->outBuff, MIN(SEEKABLE_BUFF_SIZE, offset - zs->decompressedOffset), 0});
             } else {
-                outTmp = (ZSTD_outBuffer){dst, len, zs->decompressedOffset - offset};
+                outTmp = (ZSTD_outBuffer) ZSTD_outBuffer({dst, len, zs->decompressedOffset - offset});
             }
 
             prevOutPos = outTmp.pos;

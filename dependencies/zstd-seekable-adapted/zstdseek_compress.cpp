@@ -190,9 +190,9 @@ size_t ZSTD_seekable_logFrame(ZSTD_frameLog* fl,
         fl->capacity = (U32)newCapacity;
     }
 
-    fl->entries[fl->size] = (framelogEntry_t){
+    fl->entries[fl->size] = (framelogEntry_t)framelogEntry_t({
             compressedSize, decompressedSize, checksum
-    };
+    });
     fl->size++;
 
     return 0;

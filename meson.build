@@ -6,6 +6,7 @@ project_version = run_command('bash', '-c' , 'grep PROJECT_VERSION CMakeLists.tx
 
 add_global_arguments('-O3', language : 'cpp')
 add_global_arguments('-D_FILE_OFFSET_BITS=64', language : 'cpp')
+add_global_arguments('-static', language : 'cpp')
 
 
 # make config:
@@ -18,7 +19,7 @@ conf_data.set('DEBUG', 'false')
 configure_file(input : 'include/config.hpp.in',
                output : 'config.hpp',
                configuration : conf_data)
-#configuration_inc = include_directories('include')
+configuration_inc = include_directories('include')
 
 
 
