@@ -385,7 +385,7 @@ size_t ZSTD_seekable_getFileDecompressedSize(ZSTD_seekable* zs)
 {
     size_t written = 0;
 
-    for(size_t i = 0 ; i < zs->seekTable.tableLen ; i++) {
+    for(unsigned int i = 0 ; i < zs->seekTable.tableLen ; i++) {
         written += ZSTD_seekable_getFrameDecompressedSize(zs, i);
     }
 

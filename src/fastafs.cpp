@@ -1503,7 +1503,7 @@ uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer
 
     size_t to_copy = std::min(buffer_size, contents.size() - file_offset );
 
-    return contents.copy(buffer, to_copy, file_offset );
+    return (uint32_t) contents.copy(buffer, to_copy, file_offset );
 }
 
 
