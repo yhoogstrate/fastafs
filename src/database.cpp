@@ -136,7 +136,7 @@ std::string database::get(std::string fastafs_name_or_id)
     std::ifstream infile(this->idx);
     std::string line;
 
-    while(std::getline(infile, line)) {
+    while(std::getline(infile, line, '\n')) {
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
             
