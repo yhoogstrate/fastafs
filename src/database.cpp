@@ -68,9 +68,12 @@ void database::list()
             fastafs f = fastafs(line);
             f.load(fname);
 
-            std::ifstream file(fname, std::ios::in | std::ios::binary | std::ios::ate);
-            uint32_t size = (uint32_t) file.tellg();
-            file.close();
+            uint32_t size;
+            {
+                std::ifstream file(fname, std::ios::in | std::ios::binary | std::ios::ate);
+                size = (uint32_t) file.tellg();
+                file.close();
+            }
 
 
             std::string mountpoints = "-";
@@ -136,7 +139,7 @@ std::string database::get(std::string fastafs_name_or_id)
     std::ifstream infile(this->idx);
     std::string line;
 
-    while(std::getline(infile, line)) {
+    while(std::getline(infile, line, '\n')) {
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
             
