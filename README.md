@@ -47,43 +47,42 @@ Required dependencies are:
  -   libopenssl (for generating MD5 hashes)
  -   libfuse (for access to the fuse layer system and file virtualization)
  -   c++ compiler supporting c++-14
+ -   glibc
+ -   libssl (for checking sequences with ENA)
+ -   zlib (crc32 checksum)
+ -   cmake or meson + ninja-build
+ -   libcrypto for MD5sums
+ 
 
 ### For debian + ubuntu:
 
+```
 sudo apt install git build-essential cmake libboost-dev libssl-dev libboost-test-dev libboost-system-dev libboost-filesystem-dev zlib1g-dev libzstd-dev libfuse-dev
-
-## First install libzstd:
-
-This is currently done by running:
-
-```
-cd dependencies/zstd
-make
-sudo make install
+git clone https://github.com/yhoogstrate/fastafs.git
+cd fastafs
 ```
 
-Indeed, we should patch the cmake config to do this automatically.
-
-## Compilation
-
-Compilation is done using cmake. The build command to run cmake for common use is:
-
+Compile (release, recommended):
 ```
-#!/bin/bash
-
 cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 make "$@" -j `nproc`
 sudo make install
 ```
 
+If you do not have root permission, use the following instead:
+```
+cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
+make "$@" -j `nproc`
+make install
+```
 
 If you like to play with the code and like to help development, you can create a debug binary as follows:
+```
+cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
+make "$@" -j `nproc`
+sudo make install
+```
 
-```
-$ cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
-$ make "$@" -j `nproc`
-$ make install
-```
 
 If you have patches, changes or even cool new features you believe are worth contributing, please run astyle with the following command:
 
