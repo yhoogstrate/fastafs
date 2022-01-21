@@ -50,7 +50,7 @@
 using namespace std::literals;
 
 /* 4096 */
-static const int READ_BUFFER_SIZE = 262144;
+#define READ_BUFFER_SIZE 262144
 
 static const std::string UCSC2BIT_MAGIC = "\x43\x27\x41\x1a"s;
 static const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;

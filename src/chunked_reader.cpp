@@ -6,7 +6,8 @@
 chunked_reader::chunked_reader(char * afilename) :
     fh_flat(nullptr), fh_zstd(nullptr), buffer_i(0), buffer_n(0), file_i(0)
 {
-
+    this->buffer = new char[READ_BUFFER_SIZE + 1];
+    
     this->filename = realpath_cpp(afilename);
     this->init();
 }
@@ -14,13 +15,15 @@ chunked_reader::chunked_reader(char * afilename) :
 chunked_reader::chunked_reader(const char * afilename) :
     fh_flat(nullptr), fh_zstd(nullptr), buffer_i(0), buffer_n(0), file_i(0)
 {
+    this->buffer = new char[READ_BUFFER_SIZE + 1];
+    
     this->filename = realpath_cpp(afilename);
     this->init();
 }
 
 chunked_reader::~chunked_reader()
 {
-    //printf("[chunked_reader::~chunked_reader] exterminate, destroy(!)\n");
+    delete[] this->buffer;
 
     if(this->fh_flat != nullptr) {
         if(this->fh_flat->is_open()) {
@@ -60,7 +63,6 @@ void chunked_reader::init()
         break;
 
     case zstd:
-        //printf("[chunked_reader::init()] - init ZSTD_seekable_decompress_init_data* fh_zstd; \n");
         this->fh_zstd = ZSTD_seekable_decompressFile_init(this->filename.c_str());
         // make zstd handle - to be implemented later on
         //ZSTD_seekable_decompress_data

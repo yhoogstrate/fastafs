@@ -47,7 +47,8 @@ public:
 
 
     compression_type filetype;
-    char buffer[READ_BUFFER_SIZE + 1];
+    //char buffer[READ_BUFFER_SIZE + 1];
+    char *buffer;
     size_t buffer_i;
     size_t buffer_n;
 
