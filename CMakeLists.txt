@@ -190,6 +190,22 @@ add_library(libfastafs SHARED
 					dependencies/zstd-seekable-adapted/zstdseek_utils.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_compress.cpp
 					dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp
+
+					include/chunked_reader.hpp
+					include/database.hpp
+					include/fastafs.hpp
+					include/fasta_to_fastafs.hpp
+					include/fivebit_fivebytes.hpp
+					include/flags.hpp
+					include/fourbit_byte.hpp
+					include/fuse.hpp
+					include/lsfastafs.hpp
+					include/sequence_region.hpp
+					include/twobit_byte.hpp
+					include/ucsc2bit.hpp
+					include/ucsc2bit_to_fastafs.hpp
+					include/utils.hpp
+
 )
 target_include_directories(libfastafs PUBLIC include)
 target_sources(libfastafs PUBLIC include/fastafs.hpp)
