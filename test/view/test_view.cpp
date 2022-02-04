@@ -896,10 +896,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
         [.]
          [.]
      */
-    size_t n = (float) full_file.size();
+    size_t n = full_file.size();
     uint32_t start_pos = 0;
-    for(float i = 0.0; i <= 15.0; i += 1) { // perform limited subset of tests
-        start_pos = (i/15.0) * n;//printf("[%f] %i / %i\n",i, start_pos, n);
+    for(float i = 0.0; i <= 12.0; i += 1) { // perform limited subset of tests
+        start_pos = (uint32_t) ((i/12.0) * (double) n);
+        printf(" - %uli / %zu\n",start_pos, n);
         for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 
