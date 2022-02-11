@@ -675,8 +675,8 @@ void fastafs::load(std::string afilename)
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
-            for(i = 4 ; i < 8;  i++) {
-                if(memblock[i] != FASTAFS_VERSION[i]) {
+            for(i = 0 ; i < 4;  i++) {
+                if(memblock[i + 4] != FASTAFS_VERSION[i]) {
                     throw std::invalid_argument("Corrupt file: " + filename);
                 }
             }
