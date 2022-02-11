@@ -54,13 +54,25 @@ Required dependencies are:
  -   libcrypto for MD5sums
  
 
-### For debian + ubuntu:
+
 
 ```
+# debian + ubuntu like systems:
+
 sudo apt install git build-essential cmake libboost-dev libssl-dev libboost-test-dev libboost-system-dev libboost-filesystem-dev zlib1g-dev libzstd-dev libfuse-dev
 git clone https://github.com/yhoogstrate/fastafs.git
 cd fastafs
 ```
+
+```
+# RHEL + CentOS + Fedora like systems:
+
+sudo yum install git cmake gcc-c++ boost-devel openssl-devel libzstd-devel zlib-devel fuse-devel
+git clone https://github.com/yhoogstrate/fastafs.git
+cd fastafs
+```
+
+
 
 Compile (release, recommended):
 ```
