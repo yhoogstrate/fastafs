@@ -41,10 +41,11 @@ bool twobit_flag::get_flag(unsigned char bit)
 // https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
 void twobit_flag::set_flag(unsigned char bit, bool enable)
 {
+#if DEBUG
     if(bit >= 16) {
         throw std::runtime_error("twobit_flag::set_flag = out of bound: " + std::to_string(bit) + "\n");
     }
-
+#endif //DEBUG
 
     if(enable) { //
         //this->bits[bit / 8] |= bitmasks[bit];
@@ -67,6 +68,11 @@ std::array<unsigned char, 2> &twobit_flag::get_bits(void)
 bool fastafs_flags::is_complete()
 {
     return this->get_flag(FASTAFS_BITFLAG_COMPLETE);
+}
+
+bool fastafs_flags::is_incomplete()
+{
+    return !this->is_complete();
 }
 
 void fastafs_flags::set_complete()
@@ -119,9 +125,19 @@ bool fastafs_sequence_flags::is_complete()
     return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE);
 }
 
+bool fastafs_sequence_flags::is_incomplete()
+{
+    return !this->is_complete();
+}
+
 bool fastafs_sequence_flags::is_circular()
 {
     return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR);
+}
+
+bool fastafs_sequence_flags::is_linear()
+{
+    return this->is_circular();
 }
 
 

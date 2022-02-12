@@ -38,23 +38,21 @@ constexpr std::array<unsigned char, 16> bitmasks = {
 };
 
 
-//#include "utils.hpp"
-
 
 class twobit_flag
 {
+private:
+    std::array<unsigned char, 2> bits; // 00000000 00000000
+
 protected:
     twobit_flag();
 
-    std::array<unsigned char, 2> bits; // 00000000 00000000
-
-    // set by flag
     void set_flag(unsigned char, bool);// counting flag from bit 0(!)
     bool get_flag(unsigned char);
 
 public:
     void set(char *);
-    std::array<unsigned char, 2> &get_bits(void); // get bit 0 or bit 1
+    std::array<unsigned char, 2> &get_bits(void); // get bit 0 or bit 1 - needed for exporting flags to file(s)
 };
 
 
@@ -62,10 +60,7 @@ class fastafs_flags : public twobit_flag
 {
 public:
     bool is_complete();
-    bool is_incomplete()
-    {
-        return !this->is_complete();
-    };
+    bool is_incomplete();
 
     void set_complete();
     void set_incomplete();
@@ -83,16 +78,10 @@ public:
     bool is_protein(); // alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWYZX*-'
 
     bool is_complete();
-    bool is_incomplete()
-    {
-        return !this->is_complete();
-    };
+    bool is_incomplete(); // is not complete
 
     bool is_circular();
-    bool is_linear()
-    {
-        return !this->is_circular();
-    };
+    bool is_linear(); // is not circular
 
     bool is_twobit()
     {
