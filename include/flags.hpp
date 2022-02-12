@@ -6,13 +6,13 @@
 #include <array>
 
 
-const unsigned char FASTAFS_BITFLAG_COMPLETE = 0;
+const static unsigned char FASTAFS_BITFLAG_COMPLETE = 0;
 
-const unsigned char FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1 = 0;
-const unsigned char FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2 = 1;
-// const unsigned char FASTAFS_SEQUENCE_BITFLAG_???? = 2 ; // is reserved
-const unsigned char FASTAFS_SEQUENCE_BITFLAG_COMPLETE = 3;
-const unsigned char FASTAFS_SEQUENCE_BITFLAG_CIRCULAR = 4;
+const static unsigned char FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1 = 0;
+const static unsigned char FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2 = 1;
+// const static unsigned char FASTAFS_SEQUENCE_BITFLAG_???? = 2 ; // is reserved
+const static unsigned char FASTAFS_SEQUENCE_BITFLAG_COMPLETE = 3;
+const static unsigned char FASTAFS_SEQUENCE_BITFLAG_CIRCULAR = 4;
 
 
 
@@ -83,14 +83,8 @@ public:
     bool is_circular();
     bool is_linear(); // is not circular
 
-    bool is_twobit()
-    {
-        return (this->is_dna() | this->is_rna());
-    };
-    bool is_fourbit()
-    {
-        return this->is_iupec_nucleotide();
-    };
+    bool is_twobit();
+    bool is_fourbit();
 
 
     // set by entity
