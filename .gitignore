@@ -33,3 +33,4 @@ perf.*
 /gmon.out
 analysis.txt
 *.naf
+.kdev4
