@@ -363,13 +363,13 @@ size_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_re
 
 
     size_t total_requested_size;
-    if(sr->has_defined_end) {
-        total_requested_size = std::min((size_t) this->n, (size_t) sr->end + 1);
+    if(sr->has_defined_end()) {
+        total_requested_size = std::min((size_t) this->n, (size_t) sr->get_end_position() + 1);
     } else {
         total_requested_size = this->n;
     }
 
-    total_requested_size -= sr->start;
+    total_requested_size -= sr->get_start_position();
     return total_requested_size;
 }
 
@@ -395,13 +395,13 @@ uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache,
     uint32_t written = 0;
 
     size_t total_requested_size;
-    if(sr->has_defined_end) {
-        total_requested_size = std::min((size_t) this->n, (size_t) sr->end + 1);
+    if(sr->has_defined_end()) {
+        total_requested_size = std::min((size_t) this->n, (size_t) sr->get_end_position() + 1);
     } else {
         total_requested_size = this->n;
     }
 
-    total_requested_size -= sr->start;
+    total_requested_size -= sr->get_start_position();
     total_requested_size -= offset;
     total_requested_size = std::min(size, total_requested_size);
 
@@ -409,7 +409,7 @@ uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache,
                   cache, // ffs2f_init_seq* cache,
                   buffer, // char *buffer
                   (size_t) total_requested_size, // size_t buffer_size,
-                  (off_t) 2 + this->name.size() + sr->start + offset, // offset is for chunked reading
+                  (off_t) 2 + this->name.size() + sr->get_start_position() + offset, // offset is for chunked reading
                   fh
               );
 

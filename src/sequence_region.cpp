@@ -4,7 +4,7 @@
 
 
 sequence_region::sequence_region(char * seqstr) :
-    seq_name(""), has_defined_end(false), start(0), end(0)
+    seq_name(""), defined_end(false), start(0), end(0)
 {
 
     parse((const char *) seqstr);// char* can be converted to cost char*, but not vice versa
@@ -12,7 +12,7 @@ sequence_region::sequence_region(char * seqstr) :
 }
 
 sequence_region::sequence_region(const char * seqstr) :
-    seq_name(""), has_defined_end(false), start(0), end(0)
+    seq_name(""), defined_end(false), start(0), end(0)
 {
 
     parse(seqstr);
@@ -63,7 +63,7 @@ void sequence_region::parse(const char * seqstr)
 
             this->start = std::stoi(start);
 
-            this->has_defined_end = true;
+            this->defined_end = true;
             this->end = this->start;
         } else if(p2 == (p + 1)) {// chrA:-123
             std::string end = std::string(seqstr, p2 + 1, strlen(seqstr) - p2 - 1);
@@ -71,13 +71,13 @@ void sequence_region::parse(const char * seqstr)
             this->start = 0;
             this->end = std::stoi(end) ;
 
-            this->has_defined_end = true;
+            this->defined_end = true;
         } else if(p2 > (p + 1)) { // chrA:123- | chrA:123-456 | chrA:123-456ERR
             if(p2 + 1 == strlen(seqstr)) { // chrA:123-
                 std::string start = std::string(seqstr, p + 1, p2 - p - 1);
 
                 this->start = std::stoi(start);
-                this->has_defined_end = false;
+                this->defined_end = false;
             } else { // chrA:123-456 | chrA:123-456ERR
                 std::string start = std::string(seqstr, p + 1, p2 - p - 1);
                 std::string end = std::string(seqstr, p2 + 1, strlen(seqstr) - p2 - 1);
@@ -85,14 +85,19 @@ void sequence_region::parse(const char * seqstr)
 
                 this->start = std::stoi(start) ;
 
-                this->has_defined_end = true;
+                this->defined_end = true;
                 this->end = std::stoi(end) ;
             }
         }
 
     }
 
-    if(this->has_defined_end and this->start > this->end) {
+#if DEBUG
+    if(this->has_defined_end() and this->get_start_position() > this->get_end_position()) {
         throw std::invalid_argument("Invalid region - start larger than end.");
     }
+#endif //DEBUG
 }
+
+
+
