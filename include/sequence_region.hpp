@@ -20,10 +20,10 @@
 
 
 
+
 class sequence_region
 {
 private:
-
     bool defined_end;//whether the requested region has a defined end position (chr1:1-) has; (chr1:1-2) has not
 
     off_t start;
@@ -32,7 +32,7 @@ private:
     std::string seq_name;
 
     
-    void parse(const char *);   
+    void parse(const char *);
 
     
 public:

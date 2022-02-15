@@ -116,9 +116,16 @@ void database::list()
 }
 
 
+
+
 // @todo return a filestream to a particular file one day?
 std::string database::add(char *name)
 {
+    if(this->get(std::string(name)) != "") 
+    {
+        throw std::runtime_error("Trying to add duplicate entry to database.");
+    }
+    
     std::ofstream outputFile;
 
     outputFile.open(this->idx, std::fstream::app);
@@ -135,7 +142,7 @@ std::string database::add(char *name)
  */
 std::string database::get(std::string fastafs_name_or_id)
 {
-    std::string fname;
+    std::string fname = "";
     std::ifstream infile(this->idx);
     std::string line;
 
