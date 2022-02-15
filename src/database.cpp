@@ -10,6 +10,20 @@
 #include "fastafs.hpp"
 #include "lsfastafs.hpp"
 
+
+    
+const std::string database::get_default_dir()
+{
+    std::string home = std::string(getenv("HOME"));
+    if(home == "")
+    {
+        
+    }
+    return home + "/.local/share/fastafs";
+}
+
+
+
 void database::force_db_exists()
 {
     DIR *dir = opendir(this->path.c_str());
@@ -34,9 +48,9 @@ void database::force_db_exists()
 
 
 
-database::database() :
-    path(std::string(getenv("HOME")) + "/.local/share/fastafs"),
-    idx(std::string(getenv("HOME")) + "/.local/share/fastafs/index")
+database::database(const std::string &path_arg) :
+    path(path_arg),
+    idx(path_arg + "/index")
 {
     this->load();
 }

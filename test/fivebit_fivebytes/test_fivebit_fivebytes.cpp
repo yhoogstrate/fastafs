@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_conversions)
 
 
 
-BOOST_AUTO_TEST_CASE(test_dict_conv)
+BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes__dict_conversions)
 {
     char hash[255];
     hash['A'] = 0;

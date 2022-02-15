@@ -702,7 +702,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 size_t lastindex = name.find_last_of(".");
                 name = name.substr(0, lastindex);
             } else {
-                database d = database();
+                database d = database(database::get_default_dir());
                 fname = d.get(argv[mount_target_arg]);
 
                 if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object

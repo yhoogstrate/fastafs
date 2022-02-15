@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
                 // reserve place in database
                 std::string fname_out;
                 if(to_cache) {
-                    database d = database();
+                    database d = database(database::get_default_dir());
                     fname_out = d.add(argv[argc - 2]);
                 } else {
                     fname_out = std::string(argv[argc - 2]);
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
                 } else {
-                    database d = database();
+                    database d = database(database::get_default_dir());
                     fname = d.get(argv[argc - 1]);
 
                     if(fname.size() == 0) {
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
                 } else {
-                    database d = database();
+                    database d = database(database::get_default_dir());
                     fname = d.get(argv[argc - 1]);
 
                     if(fname.size() == 0) {
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
         } else if(strcmp(argv[1], "mount") == 0) {
             fuse(argc, argv);
         } else if(strcmp(argv[1], "list") == 0) {
-            database d = database();
+            database d = database(database::get_default_dir());
             d.list();
         } else if(strcmp(argv[1], "ps") == 0) {
             std::unordered_multimap<std::string, std::pair<std::string, std::string> > fastafs_fuse_mounts = get_fastafs_processes();
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
                 if(from_file) {
                     fname = std::string(argv[argc - 1]);
                 } else {
-                    database d = database();
+                    database d = database(database::get_default_dir());
                     fname = d.get(argv[argc - 1]);
 
                     if(fname.size() == 0) {

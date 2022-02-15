@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
 /**
  * @description test contains a sequence that intially failed chunked_view with chunk size > 1
  */
-BOOST_AUTO_TEST_CASE(test__twobytes_to_uint)
+BOOST_AUTO_TEST_CASE(test_utils__twobytes_to_uint)
 {
     {
         // test: 00000000 00000000 = 0

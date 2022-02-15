@@ -1048,7 +1048,7 @@ BOOST_AUTO_TEST_CASE(test_cache_protein2)
         BOOST_CHECK_EQUAL(buffer[i], reference[i]);
 
         if(reference[i] != buffer[i]) {
-            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i], buffer[i]);
+            printf("comparing char %u   ** mismatch   [ref] %d %02hhX != [buf] (%u x %02hhX)\n", i, reference[i], reference[i], buffer[i], (unsigned char) buffer[i]);
         }
 
     }

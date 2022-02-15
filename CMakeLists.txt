@@ -201,6 +201,11 @@ add_test(test_chunked_reader ${BUILD_TEST_DIR}/test_chunked_reader)
 set_target_properties(test_chunked_reader PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
 target_link_libraries(test_chunked_reader libfastafs)
 
+add_executable(test_database test/database/test_database.cpp)
+set_target_properties(test_database PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
+target_link_libraries(test_database libfastafs)
+add_test(test_database ${BUILD_TEST_DIR}/test_database)
+
 add_executable(test_fastafs_as_ucsc2bit test/fastafs/test_ucsc2bit.cpp)
 add_test(test_fastafs_as_ucsc2bit ${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit)
 set_target_properties(test_fastafs_as_ucsc2bit PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
