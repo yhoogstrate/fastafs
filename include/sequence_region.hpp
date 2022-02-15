@@ -21,7 +21,6 @@
 
 class sequence_region
 {
-
 private:
 
     bool defined_end;//whether the requested region has a defined end position (chr1:1-) has; (chr1:1-2) has not

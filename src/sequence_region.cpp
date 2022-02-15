@@ -2,21 +2,17 @@
 #include "sequence_region.hpp"
 
 
-
 sequence_region::sequence_region(char * seqstr) :
     seq_name(""), defined_end(false), start(0), end(0)
 {
-
     parse((const char *) seqstr);// char* can be converted to cost char*, but not vice versa
-
 }
+
 
 sequence_region::sequence_region(const char * seqstr) :
     seq_name(""), defined_end(false), start(0), end(0)
 {
-
     parse(seqstr);
-
 }
 
 
