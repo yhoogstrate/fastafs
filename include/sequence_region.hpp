@@ -19,6 +19,7 @@
 
 
 
+
 class sequence_region
 {
 private:
@@ -28,18 +29,21 @@ private:
     off_t start;
     off_t end;
 
+    std::string seq_name;
+
+    
     void parse(const char *);   
 
     
 public:
     sequence_region(char *);
-    sequence_region(const char *);
+    sequence_region(const char * seqstr );
 
-    std::string seq_name;
-    //const std::string& get_seq_name() {return seq_name; };
-    bool has_defined_end(void) const {return defined_end; };
+    
+    std::string get_seq_name() {return seq_name; };
     off_t get_start_position(void) const {return start; };
     off_t get_end_position(void) const {return end; };
+    bool has_defined_end(void) const {return defined_end; };
 };
 
 

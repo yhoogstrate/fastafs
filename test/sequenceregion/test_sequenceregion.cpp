@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         char arg[] = "/seq/chr1";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);  // not defined; sequence's end
     }
 
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         char arg[] = "/seq/chr1:";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);  // not defined; sequence's end
     }
 
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         char arg[] = "/seq/chr1:123";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         char arg[] = "/seq/chr1:-123";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 0);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         char arg[] = "/seq/chr1:123-456";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         char arg[] = "/seq/chr1:123-";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         char arg[] = "/seq/chrRr1";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);  // not defined; sequence's end
     }
 
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         char arg[] = "/seq/chrRr1:";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);  // not defined; sequence's end
     }
 
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         char arg[] = "/seq/chrRr1:1234";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 1234);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         char arg[] = "/seq/chrRr1:-1234";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 0);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         char arg[] = "/seq/chrRr1:1234-1235";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 1234);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         char arg[] = "/seq/chrRr1:1234-";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 1234);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);  // not defined; sequence's end
     }
 
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1:";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);  // not defined; sequence's end
     }
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1:123";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1:-123";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 0);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1:123-456";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region2)
         char arg[] = "/seq/chrRr1:123-";
         sequence_region sr = sequence_region(&(arg[5]));
 
-        BOOST_CHECK_EQUAL(sr.seq_name, "chrRr1");
+        BOOST_CHECK_EQUAL(sr.get_seq_name(), "chrRr1");
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), false);

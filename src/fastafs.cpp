@@ -850,7 +850,7 @@ size_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_reg
 
         // 02 : check if 'chr' is equals this->data[i].name
         for(size_t i = 0; i < this->data.size(); i++) {
-            if(sr.seq_name.compare(this->data[i]->name) == 0) {
+            if(sr.get_seq_name().compare(this->data[i]->name) == 0) {
                 return this->data[i]->view_sequence_region_size(cache->sequences[i], &sr, &file);
             }
         }
@@ -885,7 +885,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
 
     // 02 : check if 'chr' is equals this->data[i].name
     for(size_t i = 0; i < this->data.size(); i++) {
-        if(sr.seq_name.compare(this->data[i]->name) == 0) {
+        if(sr.get_seq_name().compare(this->data[i]->name) == 0) {
             return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, fh);
         }
     }
