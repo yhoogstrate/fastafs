@@ -17,8 +17,8 @@ public:
     static const char n_fill_masked = '-';
 
     static const unsigned char bits_per_nucleotide = 4;
-    static const char nucleotides_per_byte = 8 / bits_per_nucleotide ; // this is about compressed data
-    static const char nucleotides_per_chunk = 8 / bits_per_nucleotide ; // this is about decompressed chunks
+    static const char nucleotides_per_byte = 8 / fourbit_byte::bits_per_nucleotide ; // this is about compressed data
+    static const char nucleotides_per_chunk = 8 / fourbit_byte::bits_per_nucleotide ; // this is about decompressed chunks
 
     unsigned char data;
     void set(unsigned char, unsigned char);
@@ -31,6 +31,8 @@ public:
     static const off_t nucleotides_to_compressed_fileoffset(size_t); // file offset waarna gelezen kan worden
     static const off_t nucleotides_to_compressed_offset(size_t);// aantal bytes nodig om zoveel data weg te schrijven
 
+    //@todo chunked reader should be in a function above this.
+    //next(char *) should be implemented with decompressed content only
     void next(chunked_reader &); // update the compressed data and set buffer to decompressed data
 };
 
