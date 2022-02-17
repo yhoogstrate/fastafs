@@ -6,17 +6,19 @@
 #include "config.hpp"
 
 #include "chunked_reader.hpp"
+#include "xbit_byte_encoder.hpp"
 
 
-class fourbit_byte
+class fourbit_byte : xbit_byte_encoder
 {
 public:
+    static const char xbit_byte_encoder::n_fill_unmasked = '-';
+    static const char xbit_byte_encoder::n_fill_masked = '-';
+    static const unsigned char xbit_byte_encoder::bits_per_nucleotide = 4;
+    
     static const char fourbit_alhpabet[17];
     static char encode_hash[256][3];
-    static const char n_fill_unmasked = '-';
-    static const char n_fill_masked = '-';
 
-    static const unsigned char bits_per_nucleotide = 4;
     static const char nucleotides_per_byte = 8 / fourbit_byte::bits_per_nucleotide ; // this is about compressed data
     static const char nucleotides_per_chunk = 8 / fourbit_byte::bits_per_nucleotide ; // this is about decompressed chunks
 

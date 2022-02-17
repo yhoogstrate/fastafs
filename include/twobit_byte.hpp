@@ -6,22 +6,24 @@
 #include "config.hpp"
 
 #include "chunked_reader.hpp"
+#include "xbit_byte_encoder.hpp"
 
 
-
-class twobit_byte
+class twobit_byte : xbit_byte_encoder
 {
 private: // things only needed by the compression [encoding, not decoding]
 
 public:
+    static const char xbit_byte_encoder::n_fill_unmasked = 'N';
+    static const char xbit_byte_encoder::n_fill_masked = 'n';
+    static const unsigned char xbit_byte_encoder::bits_per_nucleotide = 2;
+
     char (&encode_hash)[256][5];
     twobit_byte(char (&encode_hash_arg)[256][5]): encode_hash(encode_hash_arg) {};
-    static const char n_fill_unmasked = 'N';
-    static const char n_fill_masked = 'n';
 
-    static const unsigned char bits_per_nucleotide = 2;
-    static const char nucleotides_per_byte = 8 / bits_per_nucleotide ; // this is about compressed data
-    static const char nucleotides_per_chunk = 8 / bits_per_nucleotide ; // this is about decompressed chunks
+    
+    static const char nucleotides_per_byte = 8 / twobit_byte::bits_per_nucleotide ; // this is about compressed data
+    static const char nucleotides_per_chunk = 8 / twobit_byte::bits_per_nucleotide ; // this is about decompressed chunks
 
     unsigned char data; // go private
     void set(unsigned char, unsigned char);

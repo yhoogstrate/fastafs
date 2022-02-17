@@ -128,9 +128,12 @@ add_library(libfastafs SHARED
 					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
+					
+					src/xbit_byte_encoder.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
 					src/fivebit_fivebytes.cpp
+					
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
