@@ -30,8 +30,8 @@ public:
 
     static unsigned char iterator_to_offset(unsigned int);
 
-    static const off_t nucleotides_to_compressed_fileoffset(size_t); // file offset waarna gelezen kan worden
-    static const off_t nucleotides_to_compressed_offset(size_t);// aantal bytes nodig om zoveel data weg te schrijven
+    static off_t nucleotides_to_compressed_fileoffset(size_t); // file offset waarna gelezen kan worden
+    //static off_t nucleotides_to_compressed_offset(size_t);// aantal bytes nodig om zoveel data weg te schrijven
 
     //@todo chunked reader should be in a function above this.
     //next(char *) should be implemented with decompressed content only

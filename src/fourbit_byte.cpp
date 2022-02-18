@@ -263,7 +263,7 @@ char *fourbit_byte::get()
  * dit is naar beneden afgerond zodat de file pointer ervoor start
  *
  * */
-const off_t fourbit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
+off_t fourbit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
 {
     return (off_t) n_nucleotides / fourbit_byte::nucleotides_per_byte;
 }

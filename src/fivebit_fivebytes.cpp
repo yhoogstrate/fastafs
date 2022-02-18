@@ -242,7 +242,7 @@ unsigned char fivebit_fivebytes::decompressed_to_compressed_bytes(unsigned char 
  * >Seq
  * [ABCDEFGH][ABCDEFGH][ACCCAAC] has offset of 2?
  * */
-const off_t fivebit_fivebytes::nucleotides_to_compressed_fileoffset(size_t n_amino_acids)
+off_t fivebit_fivebytes::nucleotides_to_compressed_fileoffset(size_t n_amino_acids)
 {
     off_t out = n_amino_acids / (off_t) fivebit_fivebytes::nucleotides_per_chunk;
 
@@ -263,7 +263,7 @@ const off_t fivebit_fivebytes::nucleotides_to_compressed_fileoffset(size_t n_ami
  * [ABCDEFGH][ABCDEFGH][A] has offset of 11?
  *
  */
-const off_t fivebit_fivebytes::nucleotides_to_compressed_offset(size_t n_amino_acids)
+off_t fivebit_fivebytes::nucleotides_to_compressed_offset(size_t n_amino_acids)
 {
     return  fivebit_fivebytes::nucleotides_to_compressed_fileoffset(n_amino_acids)
             + fivebit_fivebytes::decompressed_to_compressed_bytes(n_amino_acids % fivebit_fivebytes::nucleotides_per_chunk);

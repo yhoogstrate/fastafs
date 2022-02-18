@@ -78,7 +78,7 @@ public:
     uint32_t fasta_filesize(uint32_t padding);
     void view_fasta(ffs2f_init_seq*, chunked_reader &fh);
 
-    size_t view_sequence_region_size(ffs2f_init_seq*, sequence_region*, std::ifstream *);
+    size_t view_sequence_region_size(sequence_region*);
     uint32_t view_sequence_region(ffs2f_init_seq*, sequence_region*, char *, size_t, off_t, chunked_reader &);
     uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
     template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);

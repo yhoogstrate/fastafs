@@ -226,7 +226,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         pos += (uint32_t) copied;
     }
 
-    const uint32_t offset_from_sequence_line = pos - pos_limit;
+    const uint32_t offset_from_sequence_line = (uint32_t) (pos - pos_limit);
     size_t n_block = cache->n_starts.size();
     size_t m_block = cache->m_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
@@ -348,17 +348,12 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
 
-size_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_region* sr, std::ifstream *fh)
+size_t fastafs_seq::view_sequence_region_size(sequence_region* sr)
 {
 #if DEBUG
-    if(cache == nullptr) {
-        throw std::invalid_argument("fastafs_seq::view_sequence_region - error 01\n");
-    }
-
     if(sr == nullptr) {
         throw std::invalid_argument("fastafs_seq::view_sequence_region - error 02\n");
     }
-
 #endif
 
 
@@ -707,7 +702,8 @@ void fastafs::load(std::string afilename)
 
                 // name
                 size_t namesize = (unsigned char) memblock[0]; // cast to something that is large enough (> 128)
-                char name[namesize + 1];
+                //char name[namesize + 1];
+                char *name = new char[namesize + 1];
                 fh_in.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
@@ -851,7 +847,7 @@ size_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_reg
         // 02 : check if 'chr' is equals this->data[i].name
         for(size_t i = 0; i < this->data.size(); i++) {
             if(sr.get_seq_name().compare(this->data[i]->name) == 0) {
-                return this->data[i]->view_sequence_region_size(cache->sequences[i], &sr, &file);
+                return this->data[i]->view_sequence_region_size(&sr);
             }
         }
     }
