@@ -116,7 +116,7 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_nlink = 1;
 
         //@todo this needs to be defined with some api stuff:!!
-        st->st_size = (signed int) ffi->f->view_sequence_region_size(ffi->cache_p0, (strchr(path, '/') + 5));
+        st->st_size = (signed int) ffi->f->view_sequence_region_size( (strchr(path, '/') + 5));
     } else {
         st->st_mode = S_IFREG | 0444;
         st->st_nlink = 1;

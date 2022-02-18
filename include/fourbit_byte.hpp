@@ -9,7 +9,7 @@
 #include "xbit_byte_encoder.hpp"
 
 
-class fourbit_byte : xbit_byte_encoder
+class fourbit_byte : public xbit_byte_encoder
 {
 public:
     static const char xbit_byte_encoder::n_fill_unmasked = '-';
@@ -22,7 +22,6 @@ public:
     static const char nucleotides_per_byte = 8 / fourbit_byte::bits_per_nucleotide ; // this is about compressed data
     static const char nucleotides_per_chunk = 8 / fourbit_byte::bits_per_nucleotide ; // this is about decompressed chunks
 
-    unsigned char data;
     void set(unsigned char, unsigned char);
     void set(char*);// string met 4 bytes set
     char *get(void);
@@ -35,7 +34,7 @@ public:
 
     //@todo chunked reader should be in a function above this.
     //next(char *) should be implemented with decompressed content only
-    void next(chunked_reader &); // update the compressed data and set buffer to decompressed data
+    //void next(chunked_reader &); // update the compressed data and set buffer to decompressed data
 };
 
 #endif

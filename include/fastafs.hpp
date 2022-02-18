@@ -126,7 +126,7 @@ public:
     void load(std::string);
     void view_fasta(ffs2f_init*);
 
-    size_t view_sequence_region_size(ffs2f_init*, const char *); // read stuff like "chr1:123-456" into the buffer
+    size_t view_sequence_region_size(const char *); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_sequence_region(ffs2f_init*, const char *, char*, size_t, off_t); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t, chunked_reader &);
     uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t);

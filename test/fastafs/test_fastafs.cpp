@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 0);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -486,7 +486,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -506,7 +506,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -525,7 +525,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -545,7 +545,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -564,7 +564,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -602,7 +602,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -622,7 +622,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
 
@@ -643,7 +643,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -663,7 +663,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -684,7 +684,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -705,7 +705,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 0);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -725,7 +725,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 8);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -753,7 +753,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 4);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -777,7 +777,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
@@ -801,7 +801,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
 
@@ -825,7 +825,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
 
@@ -836,7 +836,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[2], 'T');
         BOOST_CHECK_EQUAL(buffer[3], 'G');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 4); // small buffer size
@@ -846,7 +846,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[2], 'T');
         BOOST_CHECK_EQUAL(buffer[3], 'G');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
 
@@ -857,7 +857,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[2], 'a');
         BOOST_CHECK_EQUAL(buffer[3], 'a');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 12); // small buffer size
@@ -866,7 +866,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[1], 'c');
         BOOST_CHECK_EQUAL(buffer[2], 'c');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
         delete[] buffer;
@@ -883,7 +883,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         buffer = new char[READ_BUFFER_SIZE + 1];
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 4);
 
 
@@ -907,7 +907,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         flush_buffer(buffer, READ_BUFFER_SIZE, '\0');
 
 
-        written = fs.view_sequence_region_size(cache_p0, (strchr(arg, '/') + 5));
+        written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 0);
 
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0); // small buffer size

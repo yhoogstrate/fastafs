@@ -823,22 +823,8 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 
 
 // estimates the whole file size of a file such as "/seq/chr1:56-"
-size_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_region_arg)
+size_t fastafs::view_sequence_region_size(const char *seq_region_arg)
 {
-#if DEBUG
-    if(cache == nullptr) {
-        throw std::invalid_argument("fastafs::view_sequence_region - error 01\n");
-    }
-
-    if(cache->padding_arg != 0) {
-        throw std::invalid_argument("fastafs::view_sequence_region - error 02\n");
-    }
-
-    if(cache->sequences.size() == 0) {
-        throw std::invalid_argument("fastafs::view_sequence_region - error 03\n");
-    }
-#endif
-
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         // parse "chr..:..-.." string

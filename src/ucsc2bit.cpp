@@ -299,7 +299,8 @@ void ucsc2bit::load(std::string afilename)
                 }
 
                 // name
-                char name[memblock[0] + 1];
+                //char name[memblock[0] + 1];
+                char *name = new char[memblock[0] + 1];
                 if(!file.read(name, memblock[0])) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);

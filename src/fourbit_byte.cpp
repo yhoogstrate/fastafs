@@ -134,7 +134,7 @@ void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         break;
 #endif //DEBUG
     }
-};
+}
 
 
 // input char "AACCCTTGG"
@@ -269,11 +269,5 @@ off_t fourbit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
 }
 
 
-
-
-void fourbit_byte::next(chunked_reader &r)
-{
-    this->data = r.read();
-}
 
 

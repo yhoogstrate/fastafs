@@ -9,7 +9,7 @@
 #include "xbit_byte_encoder.hpp"
 
 
-class twobit_byte : xbit_byte_encoder
+class twobit_byte : public xbit_byte_encoder
 {
 private: // things only needed by the compression [encoding, not decoding]
 
@@ -25,7 +25,6 @@ public:
     static const char nucleotides_per_byte = 8 / twobit_byte::bits_per_nucleotide ; // this is about compressed data
     static const char nucleotides_per_chunk = 8 / twobit_byte::bits_per_nucleotide ; // this is about decompressed chunks
 
-    unsigned char data; // go private
     void set(unsigned char, unsigned char);
     void set(char*);// string met 4 bytes set
     char *get(void);
@@ -36,7 +35,7 @@ public:
     static off_t nucleotides_to_compressed_fileoffset(size_t); // file offset waarna gelezen kan worden
     static off_t nucleotides_to_compressed_offset(size_t);// aantal bytes nodig om zoveel data weg te schrijven
 
-    void next(chunked_reader &);  // update the compressed data
+    //void next(chunked_reader &);  // update the compressed data
 };
 
 

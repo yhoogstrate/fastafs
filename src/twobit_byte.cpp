@@ -66,7 +66,7 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         break;
 #endif //DEBUG
     }
-};
+}
 
 
 // input char "AACCCTTGG"
@@ -158,10 +158,5 @@ off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
 
 
 
-// needs to be separate function because not encodings read byte-per-byte
-void twobit_byte::next(chunked_reader &r)
-{
-    this->data = r.read();
-}
 
 
