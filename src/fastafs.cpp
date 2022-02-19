@@ -644,7 +644,7 @@ void fastafs::load(std::string afilename)
 
     chunked_reader fh_in = chunked_reader(afilename.c_str());
     {
-        this->filetype = fh_in.filetype;
+        this->filetype = fh_in.get_filetype();
         
         memblock = new char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's

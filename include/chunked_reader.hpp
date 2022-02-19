@@ -30,6 +30,21 @@ enum compression_type : signed char {
 
 class chunked_reader
 {
+private:
+    std::ifstream *fh_flat;
+    ZSTD_seekable_decompress_init_data* fh_zstd;
+
+    std::string filename; // try doing this with inode
+    
+    compression_type filetype;
+    
+    char buffer[READ_BUFFER_SIZE + 1];
+    size_t buffer_i;
+    size_t buffer_n;
+
+    off_t file_i;
+
+
 public:
     chunked_reader(char *); // filename
     chunked_reader(const char *); // filename
@@ -37,23 +52,14 @@ public:
 
     void init(); // generic tasks needed for init
 
-    std::string filename; // try doing this with inode
-
-    std::ifstream *fh_flat;
     void update_flat_buffer();
-
-    ZSTD_seekable_decompress_init_data* fh_zstd;
     void update_zstd_buffer();
 
 
-    compression_type filetype;
-    char buffer[READ_BUFFER_SIZE + 1];
-    size_t buffer_i;
-    size_t buffer_n;
+    void find_filetype();
 
-    off_t file_i;
-
-    void set_filetype();
+    void set_filetype(compression_type);
+    compression_type get_filetype() { return this->filetype ; };
 
     size_t read(char *, size_t);// @deprecate
     size_t read(unsigned char *, size_t);

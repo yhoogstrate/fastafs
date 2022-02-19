@@ -43,7 +43,7 @@ chunked_reader::~chunked_reader()
 
 void chunked_reader::init()
 {
-    this->set_filetype();
+    this->find_filetype();
 
     switch(this->filetype) {
 
@@ -72,14 +72,22 @@ void chunked_reader::init()
     }
 }
 
-void chunked_reader::set_filetype()
+void chunked_reader::find_filetype()
 {
     if(is_zstd_file((const char*) this->filename.c_str())) {
-        this->filetype = zstd;
+        this->set_filetype(zstd);
     } else {
-        this->filetype = uncompressed;
+        this->set_filetype(uncompressed);
     }
 }
+
+void chunked_reader::set_filetype(compression_type arg_filetype)
+{
+    this->filetype = arg_filetype;
+}
+
+
+void set_filtetype(compression_type &filetype_arg);
 
 
 size_t chunked_reader::read(char *arg_buffer, size_t buffer_size)
