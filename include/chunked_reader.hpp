@@ -26,6 +26,9 @@ enum compression_type : signed char {
 };
 
 
+//@todo implement w/ state design pattern
+//url: https://refactoring.guru/design-patterns/state
+
 
 
 class chunked_reader
