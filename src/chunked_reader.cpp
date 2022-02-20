@@ -254,36 +254,41 @@ size_t chunked_reader::tell()
 
 
 
+void State::set_context(Context *arg_context)
+{
+    this->context = arg_context;
+}
 
 
 
 
-
-
-Context::Context(const char * arg_filename) : state_(nullptr)
+Context::Context(const char * arg_filename) : buffer("\0"), buffer_i(0), buffer_n(0), file_i(0), state(nullptr)
 {
     printf("Constructor alive\n");
-    
+
     this->TransitionTo(Context::find_state(arg_filename));
 }
 
-void Context::TransitionTo(State *state) {
-    std::cout << "Context: Transition to " << typeid(*state).name() << ".\n";
+void Context::TransitionTo(State *arg_state) {
+    std::cout << "Context: Transition to " << typeid(*arg_state).name() << ".\n";
     
-    if (this->state_ != nullptr)
+    if (this->state != nullptr)
     {
-        delete this->state_; // delete and destruct previous state, incl file points, should also run fh.close(); etc.
+        delete this->state; // delete and destruct previous state, incl file points, should also run fh.close(); etc.
     }
 
-    this->state_ = state;
-    //this->state_->set_context(this);
+    this->state = arg_state;
+    this->state->set_context(this);
 }
 
 State * Context::find_state(const char * arg_filename)
 {
-    if(is_zstd_file(arg_filename)) {
+    if(is_zstd_file(arg_filename))
+    {
         return new ContextZstdSeekable;
-    } else {
+    }
+    else
+    {
         return new ContextUncompressed;
     }
 }

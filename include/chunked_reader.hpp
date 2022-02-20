@@ -75,39 +75,61 @@ public:
 
 
 
+
+class Context;
+
 class State
 {
+protected:
+    Context *context; // back-reference to context, to access file_i etc.
+
 public:
-    public:
     virtual ~State() {};
-    void set_context();//
-    
+    void set_context(Context *);
+
+
+    // virtual functions:
     virtual void update_buffer() = 0;
     
 }; // comrpession type
 
+
+
 class ContextUncompressed : public State
 {
 private:
-    uint i; // implementation specific  integer
+    std::ifstream *fh_flat;
+
 public:
     void update_buffer() override;
 };
 
 class ContextZstdSeekable : public State
 {
+private:
+    ZSTD_seekable_decompress_init_data* fh_zstd;
+
 public:
     void update_buffer() override;
 };
 
+
 class Context // master chunked_reader
 {
+private:
+    char buffer[READ_BUFFER_SIZE + 1];
+
+    size_t buffer_i;
+    size_t buffer_n;
+
+    off_t file_i;
+
 protected:
-    State *state_;
+    State *state;
 
 public:
     void TransitionTo(State *state); // @todo rename to set_compression_type
-    Context(const char * arg_filename);
+    Context(const char * arg_filename) ;
     
     static State* find_state(const char *arg_filename);
 };
