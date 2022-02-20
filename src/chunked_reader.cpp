@@ -281,6 +281,15 @@ void Context::TransitionTo(State *arg_state) {
     this->state->set_context(this);
 }
 
+void Context::fopen(off_t file_offset)
+{
+    this->state->fopen(file_offset);
+}
+
+
+
+
+
 State * Context::find_state(const char * arg_filename)
 {
     if(is_zstd_file(arg_filename))
@@ -294,10 +303,29 @@ State * Context::find_state(const char * arg_filename)
 }
 
 
+void ContextUncompressed::fopen(off_t start_pos)
+{
+    //this->fh_flat->clear(); // reset error state
+
+    //if(!this->fh_flat->is_open()) {
+    //    this->fh_flat->open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    //}
+
+    //this->fh_flat->seekg(offset, std::ios::beg);
+    //this->update_flat_buffer();
+}
 
 void ContextUncompressed::update_buffer() {
     printf("hello Uncompr\n");
 }
+
+
+
 void ContextZstdSeekable::update_buffer() {
     printf("hello ZstdSeek\n");
+}
+
+void ContextZstdSeekable::fopen(off_t start_pos)
+{
+
 }

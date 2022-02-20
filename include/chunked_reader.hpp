@@ -89,6 +89,7 @@ public:
 
 
     // virtual functions:
+    virtual void fopen(off_t) = 0;
     virtual void update_buffer() = 0;
     
 }; // comrpession type
@@ -98,9 +99,10 @@ public:
 class ContextUncompressed : public State
 {
 private:
-    std::ifstream *fh_flat;
+    std::ifstream *fh_flat;// = nullptr;
 
 public:
+    void fopen(off_t) override;
     void update_buffer() override;
 };
 
@@ -110,6 +112,7 @@ private:
     ZSTD_seekable_decompress_init_data* fh_zstd;
 
 public:
+    void fopen(off_t) override;
     void update_buffer() override;
 };
 
@@ -132,6 +135,7 @@ public:
     Context(const char * arg_filename) ;
     
     static State* find_state(const char *arg_filename);
+    void fopen(off_t);
 };
 
 

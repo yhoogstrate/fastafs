@@ -334,7 +334,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
         ////chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
         
         Context c = Context(fastafs_file.c_str());
-        //c.findState(); // let it self determine to choose Zstd or Flat
+        c.fopen(0); // open file handle
+        
     }
 }
 
