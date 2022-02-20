@@ -281,9 +281,9 @@ void Context::TransitionTo(State *arg_state) {
     this->state->set_context(this);
 }
 
-void Context::fopen(off_t file_offset)
+void Context::fopen(const char * arg_filename, off_t file_offset)
 {
-    this->state->fopen(file_offset);
+    this->state->fopen(arg_filename, file_offset);
 }
 
 
@@ -303,16 +303,24 @@ State * Context::find_state(const char * arg_filename)
 }
 
 
-void ContextUncompressed::fopen(off_t start_pos)
+void ContextUncompressed::fopen(const char * arg_filename, off_t start_pos)
 {
-    //this->fh_flat->clear(); // reset error state
+    if(this->fh_flat != nullptr)
+    {
+        throw std::runtime_error("[ContextUncompressed::fopen] opening a non closed reader.\n");
+    }
 
-    //if(!this->fh_flat->is_open()) {
-    //    this->fh_flat->open(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    //}
+    this->fh_flat = new std::ifstream;
+    this->fh_flat->open(arg_filename, std::ios::in | std::ios::binary | std::ios::ate);
 
-    //this->fh_flat->seekg(offset, std::ios::beg);
-    //this->update_flat_buffer();
+    /*
+    if(this->fh_flat->is_open()) {
+        this->fh_flat->seekg(0, std::ios::beg);
+        this->update_flat_buffer();
+    } else {
+        throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
+    }
+    */
 }
 
 void ContextUncompressed::update_buffer() {
@@ -325,7 +333,7 @@ void ContextZstdSeekable::update_buffer() {
     printf("hello ZstdSeek\n");
 }
 
-void ContextZstdSeekable::fopen(off_t start_pos)
+void ContextZstdSeekable::fopen(const char * arg_filename, off_t start_pos)
 {
 
 }

@@ -89,7 +89,7 @@ public:
 
 
     // virtual functions:
-    virtual void fopen(off_t) = 0;
+    virtual void fopen(const char *, off_t) = 0;
     virtual void update_buffer() = 0;
     
 }; // comrpession type
@@ -102,7 +102,7 @@ private:
     std::ifstream *fh_flat;// = nullptr;
 
 public:
-    void fopen(off_t) override;
+    void fopen(const char *, off_t) override;
     void update_buffer() override;
 };
 
@@ -112,7 +112,7 @@ private:
     ZSTD_seekable_decompress_init_data* fh_zstd;
 
 public:
-    void fopen(off_t) override;
+    void fopen(const char *, off_t) override;
     void update_buffer() override;
 };
 
@@ -131,11 +131,11 @@ protected:
     State *state;
 
 public:
-    void TransitionTo(State *state); // @todo rename to set_compression_type
-    Context(const char * arg_filename) ;
+    void TransitionTo(State *); // @todo rename to set_compression_type
+    Context(const char *) ;
     
-    static State* find_state(const char *arg_filename);
-    void fopen(off_t);
+    static State* find_state(const char *);
+    void fopen(const char *, off_t);
 };
 
 
