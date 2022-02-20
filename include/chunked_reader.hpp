@@ -107,7 +107,7 @@ protected:
 
 public:
     void TransitionTo(State *state);
-    Context : state_(nullptr) (const char * arg_filename);
+    Context (const char * arg_filename);
     
     static State* find_state(const char *arg_filename);
 };

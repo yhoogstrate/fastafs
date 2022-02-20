@@ -260,7 +260,7 @@ size_t chunked_reader::tell()
 
 
 
-Context::Context(const char * arg_filename)
+Context::Context(const char * arg_filename) : state_(nullptr)
 {
     printf("Constructor alive\n");
     
