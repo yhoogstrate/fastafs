@@ -264,7 +264,19 @@ Context::Context(const char * arg_filename) : state_(nullptr)
 {
     printf("Constructor alive\n");
     
-    State *state = Context::find_state(arg_filename);
+    this->TransitionTo(Context::find_state(arg_filename));
+}
+
+void Context::TransitionTo(State *state) {
+    std::cout << "Context: Transition to " << typeid(*state).name() << ".\n";
+    
+    if (this->state_ != nullptr)
+    {
+        delete this->state_; // delete and destruct previous state, incl file points, should also run fh.close(); etc.
+    }
+
+    this->state_ = state;
+    //this->state_->set_context(this);
 }
 
 State * Context::find_state(const char * arg_filename)

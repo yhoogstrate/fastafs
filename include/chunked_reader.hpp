@@ -106,8 +106,8 @@ protected:
     State *state_;
 
 public:
-    void TransitionTo(State *state);
-    Context (const char * arg_filename);
+    void TransitionTo(State *state); // @todo rename to set_compression_type
+    Context(const char * arg_filename);
     
     static State* find_state(const char *arg_filename);
 };
