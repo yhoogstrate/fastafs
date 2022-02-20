@@ -252,3 +252,35 @@ size_t chunked_reader::tell()
     return this->file_i - this->buffer_n + this->buffer_i;
 }
 
+
+
+
+
+
+
+
+
+Context::Context(const char * arg_filename)
+{
+    printf("Constructor alive\n");
+    
+    State *state = Context::find_state(arg_filename);
+}
+
+State * Context::find_state(const char * arg_filename)
+{
+    if(is_zstd_file(arg_filename)) {
+        return new ContextZstdSeekable;
+    } else {
+        return new ContextUncompressed;
+    }
+}
+
+
+
+void ContextUncompressed::update_buffer() {
+    printf("hello Uncompr\n");
+}
+void ContextZstdSeekable::update_buffer() {
+    printf("hello ZstdSeek\n");
+}

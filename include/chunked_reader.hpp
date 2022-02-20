@@ -19,7 +19,7 @@
 #include "zstd_seekable_utils.hpp"
 
 
-enum compression_type : signed char {
+enum compression_type : signed char { // dit is State
     undefined = -1,
     uncompressed = 0,
     zstd = 1
@@ -31,7 +31,7 @@ enum compression_type : signed char {
 
 
 
-class chunked_reader
+class chunked_reader // dit is Context
 {
 private:
     std::ifstream *fh_flat;
@@ -72,6 +72,46 @@ public:
     size_t tell();
     //size_t size();
 };
+
+
+
+class State
+{
+public:
+    public:
+    virtual ~State() {};
+    void set_context();//
+    
+    virtual void update_buffer() = 0;
+    
+}; // comrpession type
+
+class ContextUncompressed : public State
+{
+private:
+    uint i; // implementation specific  integer
+public:
+    void update_buffer() override;
+};
+
+class ContextZstdSeekable : public State
+{
+public:
+    void update_buffer() override;
+};
+
+class Context // master chunked_reader
+{
+protected:
+    State *state_;
+
+public:
+    void TransitionTo(State *state);
+    Context : state_(nullptr) (const char * arg_filename);
+    
+    static State* find_state(const char *arg_filename);
+};
+
 
 
 
