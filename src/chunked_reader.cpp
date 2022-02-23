@@ -393,25 +393,28 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
 #endif //DEBUG
 
     size_t written = 0;
-    size_t n = std::min(buffer_n - buffer_i, arg_buffer_to_size);
+    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);
+    const size_t n2 = std::min(buffer_i, arg_buffer_to_size - n1);
     
-    printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n = %i\n",buffer_n, buffer_i, arg_buffer_to_size, n);
+    printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n = %i, READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, READ_BUFFER_SIZE);
 
     // copy current internal buffer completely
-    while(written < n)
+    while(written < n1)
     {
         arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
     }
 
-    if(written < arg_buffer_to_size) {
-        //
-
-        // same loop again
-        /*
-        while(this->buffer_i < this->buffer_n and written < buffer_size) {
-            arg_buffer[written++] = this->buffer[this->buffer_i++];
-        } */
-        printf("recursively call another read\n");
+    if(n2 > 0)
+    {
+        printf("this->buffer_i = %i\n",buffer_i);
+        this->context->cache_buffer();
+        printf("this->buffer_i = %i\n",buffer_i);
+        
+        while(written < (n1 + n2))
+        {
+            arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
+        }
+        printf("recursively call another read :: %i\n", n2);
     }
 
     return written;

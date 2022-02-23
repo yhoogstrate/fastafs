@@ -333,11 +333,25 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
     {
         ////chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
         
-        Context c = Context(fastafs_file.c_str());
+        std::string tf = "test.txt";
+        
+        //Context c = Context(fastafs_file.c_str());
+        Context c = Context(tf.c_str());
         c.fopen(0); // open file handle and load buffer
         
-        written = c.read(buffer, 1024);
-        printf("written = %i\n", written);
+        written = c.read(buffer, 10);
+        buffer[written] = '\0';
+        printf("[%s]\n%i\n",buffer,written);
+        
+        written = c.read(buffer, 1024*4);
+        buffer[written] = '\0';
+        printf("[%s]\n%i\n",buffer,written);
+        
+        written = c.read(buffer, 1024*4);
+        buffer[written] = '\0';
+        printf("[%s]\n%i\n",buffer,written);
+        
+        //printf("written = %i\n", written);
     }
 }
 
