@@ -90,7 +90,8 @@ public:
 
     // virtual functions:
     virtual void fopen(off_t) = 0;
-    virtual size_t read_into_buffer() = 0; // formerly update_..._buffer
+    virtual size_t cache_buffer() = 0; // formerly update_..._buffer
+    virtual size_t read(char *, size_t, size_t &, size_t &) = 0;
     
 }; // comrpession type
 
@@ -103,7 +104,8 @@ private:
 
 public:
     void fopen(off_t) override;
-    size_t read_into_buffer() override;
+    size_t cache_buffer() override;
+    size_t read(char *, size_t, size_t &, size_t &) override;
 
     ~ContextUncompressed() override;
 };
@@ -111,11 +113,12 @@ public:
 class ContextZstdSeekable : public State
 {
 private:
-    ZSTD_seekable_decompress_init_data* fh;
+    ZSTD_seekable_decompress_init_data* fh = nullptr;
 
 public:
     void fopen(off_t) override;
-    size_t read_into_buffer() override;
+    size_t cache_buffer() override;
+    size_t read(char *, size_t, size_t &, size_t &) override;
 };
 
 
@@ -142,7 +145,8 @@ public:
     
     const std::string& get_filename();
     char* get_buffer();
-    size_t read_into_buffer();
+    size_t cache_buffer();
+    size_t read(char *, size_t);
 };
 
 

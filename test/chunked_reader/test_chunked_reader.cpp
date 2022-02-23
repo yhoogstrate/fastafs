@@ -334,8 +334,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
         ////chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
         
         Context c = Context(fastafs_file.c_str());
-        c.fopen(0); // open file handle
+        c.fopen(0); // open file handle and load buffer
         
+        written = c.read(buffer, 1024);
+        printf("written = %i\n", written);
     }
 }
 

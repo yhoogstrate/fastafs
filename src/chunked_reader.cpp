@@ -279,14 +279,33 @@ char * Context::get_buffer()
     return &(this->buffer[0]);
 }
 
-size_t Context::read_into_buffer()
+size_t Context::cache_buffer()
 {
-    this->buffer_n = this->state->read_into_buffer();
+    
+    printf("[x] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
+    
+    size_t s = this->state->cache_buffer();
+    printf("<s=%i>\n",s);
+    this->buffer_n = s;
 
     this->buffer_i = 0;
-    this->file_i += this->buffer_n;
+    this->file_i += s;
+    
+    printf("[y] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
 }
 
+size_t Context::read(char *arg_buffer, size_t arg_buffer_size)
+{
+    //arg_buffer_size = std::min(arg_buffer_size, (size_t) READ_BUFFER_SIZE);
+#if DEBUG
+    if(arg_buffer_size > READ_BUFFER_SIZE)
+    {
+        throw std::runtime_error("[ContextUncompressed::read] Requested buffer size larger than internal context buffer.\n");
+    }
+#endif //DEBUG
+
+    return this->state->read(arg_buffer, arg_buffer_size, this->buffer_i, this->buffer_n);
+}
 
 
 void Context::TransitionTo(State *arg_state) {
@@ -303,7 +322,11 @@ void Context::TransitionTo(State *arg_state) {
 
 void Context::fopen(off_t file_offset)
 {
+    printf("[1] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
     this->state->fopen(file_offset);
+    printf("[2] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
+    this->cache_buffer();
+    printf("[3] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
 }
 
 
@@ -336,17 +359,62 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
 
     if(this->fh->is_open()) {
         this->fh->seekg(start_pos, std::ios::beg);
-        //this->read_into_buffer();
     } else {
         throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
     }
 }
 
-size_t ContextUncompressed::read_into_buffer()
+size_t ContextUncompressed::cache_buffer()
 {
     this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
 
-    return this->fh->gcount();
+    if(!this->fh)
+    {
+        printf("[%s]\n", this->context->get_buffer());
+        throw std::runtime_error("[ContextUncompressed::cache_buffer] Coult not open file. \n");
+    }
+    
+    printf("ContextUncompressed::cache_buffer\n");
+
+    size_t s = (size_t) this->fh->gcount();
+    printf("[s=%i]\n",s);
+
+    return s;
+}
+
+size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
+            size_t &buffer_i, size_t &buffer_n)
+{
+#if DEBUG
+    if(arg_buffer_to_size > READ_BUFFER_SIZE)
+    {
+        throw std::runtime_error("[ContextUncompressed::read] Requested buffer size larger than internal context buffer.\n");
+    }
+#endif //DEBUG
+
+    size_t written = 0;
+    size_t n = std::min(buffer_n - buffer_i, arg_buffer_to_size);
+    
+    printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n = %i\n",buffer_n, buffer_i, arg_buffer_to_size, n);
+
+    // copy current internal buffer completely
+    while(written < n)
+    {
+        arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
+    }
+
+    if(written < arg_buffer_to_size) {
+        //
+
+        // same loop again
+        /*
+        while(this->buffer_i < this->buffer_n and written < buffer_size) {
+            arg_buffer[written++] = this->buffer[this->buffer_i++];
+        } */
+        printf("recursively call another read\n");
+    }
+
+    return written;
 }
 
 ContextUncompressed::~ContextUncompressed()
@@ -370,7 +438,7 @@ ContextUncompressed::~ContextUncompressed()
 
 
 
-size_t ContextZstdSeekable::read_into_buffer() {
+size_t ContextZstdSeekable::cache_buffer() {
     printf("hello ZstdSeek\n");
     
     return 0;
@@ -380,3 +448,10 @@ void ContextZstdSeekable::fopen(off_t start_pos)
 {
     throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
 }
+
+size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
+            size_t &buffer_i, size_t &buffer_n)
+{
+    return 0;
+}
+
