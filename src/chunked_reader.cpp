@@ -308,29 +308,48 @@ State * Context::find_state()
 }
 
 
-void ContextUncompressed::fopen(off_t start_pos)
+void ContextUncompressed::fopen(off_t start_pos = 0)
 {
-    if(this->fh_flat != nullptr)
+    if(this->fh != nullptr)
     {
         throw std::runtime_error("[ContextUncompressed::fopen] opening a non closed reader.\n");
     }
 
-    this->fh_flat = new std::ifstream;
-    this->fh_flat->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    this->fh = new std::ifstream;
+    this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
-    /*
-    if(this->fh_flat->is_open()) {
-        this->fh_flat->seekg(0, std::ios::beg);
-        this->update_flat_buffer();
+
+    if(this->fh->is_open()) {
+        this->fh->seekg(start_pos, std::ios::beg);
+        //this->context->update_flat_buffer();
     } else {
         throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
     }
-    */
 }
 
-void ContextUncompressed::update_buffer() {
+void ContextUncompressed::update_buffer()
+{
     printf("hello Uncompr\n");
 }
+
+ContextUncompressed::~ContextUncompressed()
+{
+    if(this->fh != nullptr)
+    {
+        if(!this->fh)
+        {
+            this->fh->close();
+            throw std::runtime_error("[ContextUncompressed::~ContextUncompressed] unexpected closed filehandle found.\n");
+        }
+        else
+        {
+            this->fh->close();
+        }
+
+        delete this->fh;
+    }
+}
+
 
 
 

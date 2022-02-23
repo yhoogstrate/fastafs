@@ -99,11 +99,13 @@ public:
 class ContextUncompressed : public State
 {
 private:
-    std::ifstream *fh_flat;// = nullptr;
+    std::ifstream *fh = nullptr;
 
 public:
     void fopen(off_t) override;
     void update_buffer() override;
+
+    ~ContextUncompressed() override;
 };
 
 class ContextZstdSeekable : public State
