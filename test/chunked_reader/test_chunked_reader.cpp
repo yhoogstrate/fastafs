@@ -341,17 +341,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
         
         written = c.read(buffer, 10);
         buffer[written] = '\0';
-        printf("[%s]\n%i\n",buffer,written);
+        printf("\n[%s]\n%i\n",buffer,written);
         
-        written = c.read(buffer, 1024*4);
+        written = c.read(buffer, 100);
         buffer[written] = '\0';
-        printf("[%s]\n%i\n",buffer,written);
-        
-        written = c.read(buffer, 1024*4);
+        printf("\n[%s]\n%i\n",buffer,written);
+
+        written = c.read(buffer, 100);
         buffer[written] = '\0';
-        printf("[%s]\n%i\n",buffer,written);
-        
-        //printf("written = %i\n", written);
+        printf("\n[%s]\n%i\n",buffer,written);
+
     }
 }
 

@@ -281,17 +281,12 @@ char * Context::get_buffer()
 
 size_t Context::cache_buffer()
 {
-    
-    printf("[x] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
-    
     size_t s = this->state->cache_buffer();
-    printf("<s=%i>\n",s);
+    printf("<s=%i> - gelezen bytes?\n",s);
     this->buffer_n = s;
 
     this->buffer_i = 0;
     this->file_i += s;
-    
-    printf("[y] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
 }
 
 size_t Context::read(char *arg_buffer, size_t arg_buffer_size)
@@ -370,14 +365,10 @@ size_t ContextUncompressed::cache_buffer()
 
     if(!this->fh)
     {
-        printf("[%s]\n", this->context->get_buffer());
         throw std::runtime_error("[ContextUncompressed::cache_buffer] Coult not open file. \n");
     }
-    
-    printf("ContextUncompressed::cache_buffer\n");
 
     size_t s = (size_t) this->fh->gcount();
-    printf("[s=%i]\n",s);
 
     return s;
 }
@@ -394,9 +385,8 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
 
     size_t written = 0;
     const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);
-    const size_t n2 = std::min(buffer_i, arg_buffer_to_size - n1);
     
-    printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n = %i, READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, READ_BUFFER_SIZE);
+    //printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n1 = %i, n2 = %i READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, n2, READ_BUFFER_SIZE);
 
     // copy current internal buffer completely
     while(written < n1)
@@ -404,17 +394,16 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
         arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
     }
 
-    if(n2 > 0)
+    if(written < arg_buffer_to_size)
     {
-        printf("this->buffer_i = %i\n",buffer_i);
         this->context->cache_buffer();
-        printf("this->buffer_i = %i\n",buffer_i);
-        
-        while(written < (n1 + n2))
+
+        while(buffer_i < buffer_n and written < arg_buffer_to_size)
         {
             arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
         }
-        printf("recursively call another read :: %i\n", n2);
+
+        //printf("recursively call another read :: %i\n", n2);
     }
 
     return written;
