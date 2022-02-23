@@ -81,7 +81,7 @@ class Context;
 class State
 {
 protected:
-    Context *context; // back-reference to context, to access file_i etc.
+    Context *context; // back-reference to context, to access file_i, filename etc.
 
 public:
     virtual ~State() {};
@@ -90,7 +90,7 @@ public:
 
     // virtual functions:
     virtual void fopen(off_t) = 0;
-    virtual void update_buffer() = 0;
+    virtual void read_into_buffer() = 0; // formerly update_..._buffer
     
 }; // comrpession type
 
@@ -103,7 +103,7 @@ private:
 
 public:
     void fopen(off_t) override;
-    void update_buffer() override;
+    void read_into_buffer() override;
 
     ~ContextUncompressed() override;
 };
@@ -111,11 +111,11 @@ public:
 class ContextZstdSeekable : public State
 {
 private:
-    ZSTD_seekable_decompress_init_data* fh_zstd;
+    ZSTD_seekable_decompress_init_data* fh;
 
 public:
     void fopen(off_t) override;
-    void update_buffer() override;
+    void read_into_buffer() override;
 };
 
 
@@ -141,6 +141,7 @@ public:
     void fopen(off_t);
     
     const std::string& get_filename();
+    char * get_buffer();
 };
 
 

@@ -274,6 +274,11 @@ const std::string& Context::get_filename()
     return this->filename;
 }
 
+char * Context::get_buffer()
+{
+    return &(this->buffer[0]);
+}
+
 void Context::TransitionTo(State *arg_state) {
     std::cout << "Context: Transition to " << typeid(*arg_state).name() << ".\n";
     
@@ -327,9 +332,13 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
     }
 }
 
-void ContextUncompressed::update_buffer()
+void ContextUncompressed::read_into_buffer()
 {
-    printf("hello Uncompr\n");
+    this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
+
+    //this->buffer_i = 0;
+    //this->buffer_n = (size_t) this->fh->gcount();
+    //this->file_i += this->buffer_n;
 }
 
 ContextUncompressed::~ContextUncompressed()
@@ -353,7 +362,7 @@ ContextUncompressed::~ContextUncompressed()
 
 
 
-void ContextZstdSeekable::update_buffer() {
+void ContextZstdSeekable::read_into_buffer() {
     printf("hello ZstdSeek\n");
 }
 
