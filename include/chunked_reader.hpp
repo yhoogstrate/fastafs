@@ -90,7 +90,7 @@ public:
 
     // virtual functions:
     virtual void fopen(off_t) = 0;
-    virtual void read_into_buffer() = 0; // formerly update_..._buffer
+    virtual size_t read_into_buffer() = 0; // formerly update_..._buffer
     
 }; // comrpession type
 
@@ -103,7 +103,7 @@ private:
 
 public:
     void fopen(off_t) override;
-    void read_into_buffer() override;
+    size_t read_into_buffer() override;
 
     ~ContextUncompressed() override;
 };
@@ -115,7 +115,7 @@ private:
 
 public:
     void fopen(off_t) override;
-    void read_into_buffer() override;
+    size_t read_into_buffer() override;
 };
 
 
@@ -141,7 +141,8 @@ public:
     void fopen(off_t);
     
     const std::string& get_filename();
-    char * get_buffer();
+    char* get_buffer();
+    size_t read_into_buffer();
 };
 
 

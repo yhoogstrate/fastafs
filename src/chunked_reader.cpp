@@ -279,6 +279,16 @@ char * Context::get_buffer()
     return &(this->buffer[0]);
 }
 
+size_t Context::read_into_buffer()
+{
+    this->buffer_n = this->state->read_into_buffer();
+
+    this->buffer_i = 0;
+    this->file_i += this->buffer_n;
+}
+
+
+
 void Context::TransitionTo(State *arg_state) {
     std::cout << "Context: Transition to " << typeid(*arg_state).name() << ".\n";
     
@@ -326,19 +336,17 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
 
     if(this->fh->is_open()) {
         this->fh->seekg(start_pos, std::ios::beg);
-        //this->context->update_flat_buffer();
+        //this->read_into_buffer();
     } else {
         throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
     }
 }
 
-void ContextUncompressed::read_into_buffer()
+size_t ContextUncompressed::read_into_buffer()
 {
     this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
 
-    //this->buffer_i = 0;
-    //this->buffer_n = (size_t) this->fh->gcount();
-    //this->file_i += this->buffer_n;
+    return this->fh->gcount();
 }
 
 ContextUncompressed::~ContextUncompressed()
@@ -362,8 +370,10 @@ ContextUncompressed::~ContextUncompressed()
 
 
 
-void ContextZstdSeekable::read_into_buffer() {
+size_t ContextZstdSeekable::read_into_buffer() {
     printf("hello ZstdSeek\n");
+    
+    return 0;
 }
 
 void ContextZstdSeekable::fopen(off_t start_pos)
