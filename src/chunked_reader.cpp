@@ -262,11 +262,16 @@ void State::set_context(Context *arg_context)
 
 
 
-Context::Context(const char * arg_filename) : buffer("\0"), buffer_i(0), buffer_n(0), file_i(0), state(nullptr)
+Context::Context(const char * arg_filename) : filename(arg_filename), buffer("\0"), buffer_i(0), buffer_n(0), file_i(0), state(nullptr)
 {
     printf("Constructor alive\n");
 
-    this->TransitionTo(Context::find_state(arg_filename));
+    this->TransitionTo(this->find_state());
+}
+
+const std::string& Context::get_filename()
+{
+    return this->filename;
 }
 
 void Context::TransitionTo(State *arg_state) {
@@ -281,18 +286,18 @@ void Context::TransitionTo(State *arg_state) {
     this->state->set_context(this);
 }
 
-void Context::fopen(const char * arg_filename, off_t file_offset)
+void Context::fopen(off_t file_offset)
 {
-    this->state->fopen(arg_filename, file_offset);
+    this->state->fopen(file_offset);
 }
 
 
 
 
 
-State * Context::find_state(const char * arg_filename)
+State * Context::find_state()
 {
-    if(is_zstd_file(arg_filename))
+    if(is_zstd_file(this->filename.c_str()))
     {
         return new ContextZstdSeekable;
     }
@@ -303,7 +308,7 @@ State * Context::find_state(const char * arg_filename)
 }
 
 
-void ContextUncompressed::fopen(const char * arg_filename, off_t start_pos)
+void ContextUncompressed::fopen(off_t start_pos)
 {
     if(this->fh_flat != nullptr)
     {
@@ -311,7 +316,7 @@ void ContextUncompressed::fopen(const char * arg_filename, off_t start_pos)
     }
 
     this->fh_flat = new std::ifstream;
-    this->fh_flat->open(arg_filename, std::ios::in | std::ios::binary | std::ios::ate);
+    this->fh_flat->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
     /*
     if(this->fh_flat->is_open()) {
@@ -333,7 +338,7 @@ void ContextZstdSeekable::update_buffer() {
     printf("hello ZstdSeek\n");
 }
 
-void ContextZstdSeekable::fopen(const char * arg_filename, off_t start_pos)
+void ContextZstdSeekable::fopen(off_t start_pos)
 {
-
+    throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
 }

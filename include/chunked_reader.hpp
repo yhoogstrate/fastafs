@@ -89,7 +89,7 @@ public:
 
 
     // virtual functions:
-    virtual void fopen(const char *, off_t) = 0;
+    virtual void fopen(off_t) = 0;
     virtual void update_buffer() = 0;
     
 }; // comrpession type
@@ -102,7 +102,7 @@ private:
     std::ifstream *fh_flat;// = nullptr;
 
 public:
-    void fopen(const char *, off_t) override;
+    void fopen(off_t) override;
     void update_buffer() override;
 };
 
@@ -112,14 +112,16 @@ private:
     ZSTD_seekable_decompress_init_data* fh_zstd;
 
 public:
-    void fopen(const char *, off_t) override;
+    void fopen(off_t) override;
     void update_buffer() override;
 };
 
 
 class Context // master chunked_reader
 {
-private:
+protected:
+    std::string filename;
+
     char buffer[READ_BUFFER_SIZE + 1];
 
     size_t buffer_i;
@@ -127,15 +129,16 @@ private:
 
     off_t file_i;
 
-protected:
     State *state;
 
 public:
     void TransitionTo(State *); // @todo rename to set_compression_type
     Context(const char *) ;
     
-    static State* find_state(const char *);
-    void fopen(const char *, off_t);
+    State* find_state();
+    void fopen(off_t);
+    
+    const std::string& get_filename();
 };
 
 
