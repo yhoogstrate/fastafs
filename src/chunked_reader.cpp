@@ -317,13 +317,20 @@ void Context::TransitionTo(State *arg_state) {
 
 void Context::fopen(off_t file_offset)
 {
-    printf("[1] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
-    this->state->fopen(file_offset);
-    printf("[2] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
-    this->cache_buffer();
-    printf("[3] this->buffer_i = %i, this->buffer_n = %i, this->file_i = %i\n",this->buffer_i, this->buffer_n, this->file_i);
+    this->state->fopen(file_offset); // open file handle
+    this->cache_buffer(); // read into buffer
 }
 
+
+void Context::seek(off_t arg_offset)
+{
+    this->state->seek(arg_offset);
+}
+
+size_t Context::tell()
+{
+    return this->file_i - this->buffer_n + this->buffer_i;
+}
 
 
 
@@ -384,7 +391,7 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
 #endif //DEBUG
 
     size_t written = 0;
-    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);
+    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
     
     //printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n1 = %i, n2 = %i READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, n2, READ_BUFFER_SIZE);
 
@@ -409,6 +416,17 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
     return written;
 }
 
+void ContextUncompressed::seek(off_t arg_offset)
+{
+    if(!this->fh->is_open())
+    {
+        throw std::runtime_error("[ContextUncompressed::seek] unexpected closed filehandle found.\n");
+    }
+
+    this->fh->seekg(arg_offset, std::ios::beg);
+}
+
+
 ContextUncompressed::~ContextUncompressed()
 {
     if(this->fh != nullptr)
@@ -430,8 +448,9 @@ ContextUncompressed::~ContextUncompressed()
 
 
 
-size_t ContextZstdSeekable::cache_buffer() {
-    printf("hello ZstdSeek\n");
+size_t ContextZstdSeekable::cache_buffer()
+{
+    throw std::runtime_error("[ContextZstdSeekable::cache_buffer] not implemented.\n");
     
     return 0;
 }
@@ -444,6 +463,17 @@ void ContextZstdSeekable::fopen(off_t start_pos)
 size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
             size_t &buffer_i, size_t &buffer_n)
 {
+    throw std::runtime_error("[ContextZstdSeekable::read] not implemented.\n");
+    
     return 0;
 }
 
+void ContextZstdSeekable::seek(off_t arg_offset)
+{
+    throw std::runtime_error("[ContextZstdSeekable::seek] not implemented.\n");
+}
+
+ContextZstdSeekable::~ContextZstdSeekable()
+{
+    throw std::runtime_error("[ContextUncompressed::~ContextUncompressed] not implemented.\n");
+}
