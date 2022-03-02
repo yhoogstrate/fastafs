@@ -359,9 +359,12 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
     this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
 
-    if(this->fh->is_open()) {
-        this->fh->seekg(start_pos, std::ios::beg);
-    } else {
+    if(this->fh->is_open())
+    {
+        this->seek(start_pos);
+    }
+    else
+    {
         throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
     }
 }
@@ -457,6 +460,25 @@ size_t ContextZstdSeekable::cache_buffer()
 
 void ContextZstdSeekable::fopen(off_t start_pos)
 {
+    
+    if(this->fh != nullptr)
+    {
+        throw std::runtime_error("[ContextZstdSeekable::fopen] opening a non closed reader.\n");
+    }
+
+    //this->fh = new std::ifstream;
+    //this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+
+    //if(this->fh->is_open())
+    //{
+    //    this->fh->seekg(start_pos, std::ios::beg);
+    //}
+    //else
+    //{
+    //    throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
+    //}
+    
     throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
 }
 
