@@ -282,7 +282,6 @@ char * Context::get_buffer()
 size_t Context::cache_buffer()
 {
     size_t s = this->state->cache_buffer();
-    printf("<s=%i> - gelezen bytes?\n",s);
     this->buffer_n = s;
 
     this->buffer_i = 0;
@@ -304,9 +303,7 @@ size_t Context::read(char *arg_buffer, size_t arg_buffer_size)
 
 
 void Context::TransitionTo(State *arg_state) {
-    std::cout << "Context: Transition to " << typeid(*arg_state).name() << ".\n";
-    
-    if (this->state != nullptr)
+    if(this->state != nullptr)
     {
         delete this->state; // delete and destruct previous state, incl file points, should also run fh.close(); etc.
     }
@@ -470,7 +467,7 @@ void ContextZstdSeekable::fopen(off_t start_pos)
     this->fh = ZSTD_seekable_decompressFile_init(this->context->get_filename().c_str());
 
 
-    if(fh->fin == NULL | feof(fh->fin))
+    if((fh->fin == NULL) | feof(fh->fin))
     {
         throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
     }
@@ -479,6 +476,11 @@ void ContextZstdSeekable::fopen(off_t start_pos)
         fseek_orDie(fh->fin, 0, SEEK_SET);// set initial file handle to 0?
         // this->fh->seekg(start_pos, std::ios::beg);
 
+        size_t const initResult = ZSTD_seekable_initFile(this->seekable, fh->fin);
+        if (ZSTD_isError(initResult)) { fprintf(stderr, "ZSTD_seekable_init() error : %s \n", ZSTD_getErrorName(initResult)); exit(11); }
+
+        //@todo class member?
+        size_t maxFileSize = ZSTD_seekable_getFileDecompressedSize(this->seekable);
     }
 }
 
