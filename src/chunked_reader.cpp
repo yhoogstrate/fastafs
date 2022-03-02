@@ -480,13 +480,31 @@ void ContextZstdSeekable::fopen(off_t start_pos)
         if (ZSTD_isError(initResult)) { fprintf(stderr, "ZSTD_seekable_init() error : %s \n", ZSTD_getErrorName(initResult)); exit(11); }
 
         //@todo class member?
-        size_t maxFileSize = ZSTD_seekable_getFileDecompressedSize(this->seekable);
+        this->maxFileSize = ZSTD_seekable_getFileDecompressedSize(this->seekable);
     }
 }
 
 size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
             size_t &buffer_i, size_t &buffer_n)
 {
+
+/*
+    while (startOffset < endOffset) {
+        size_t const result = ZSTD_seekable_decompress(seekable, buffOut, MIN(endOffset - startOffset, buffOutSize), startOffset);
+        if (!result) {
+            break;
+        }
+
+        if (ZSTD_isError(result)) {
+            fprintf(stderr, "ZSTD_seekable_decompress() error : %s \n",
+                    ZSTD_getErrorName(result));
+            exit(12);
+        }
+        fwrite_orDie(buffOut, result, fout);
+        startOffset += result;
+    }
+ */
+
     throw std::runtime_error("[ContextZstdSeekable::read] not implemented.\n");
     
     return 0;

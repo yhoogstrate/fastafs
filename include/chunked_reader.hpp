@@ -121,6 +121,8 @@ private:
     char* const buffOut = (char*) malloc_orDie(buffOutSize);
     ZSTD_seekable* const seekable = ZSTD_seekable_create(); //@todo -> in constructor, check if not NULL
 
+    size_t maxFileSize;
+
 public:
     void fopen(off_t) override;
     size_t cache_buffer() override;
