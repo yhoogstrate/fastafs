@@ -116,6 +116,10 @@ class ContextZstdSeekable : public State
 {
 private:
     ZSTD_seekable_decompress_init_data* fh = nullptr;
+    
+    size_t const buffOutSize = ZSTD_DStreamOutSize();
+    char* const buffOut = (char*) malloc_orDie(buffOutSize);
+    ZSTD_seekable* const seekable = ZSTD_seekable_create(); //@todo -> in constructor, check if not NULL
 
 public:
     void fopen(off_t) override;

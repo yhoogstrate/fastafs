@@ -359,7 +359,7 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
     this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
 
-    if(this->fh->is_open())
+    if(this->fh->is_open()) // @todo move to top-level fopen()
     {
         this->seek(start_pos);
     }
@@ -465,21 +465,21 @@ void ContextZstdSeekable::fopen(off_t start_pos)
     {
         throw std::runtime_error("[ContextZstdSeekable::fopen] opening a non closed reader.\n");
     }
-
-    //this->fh = new std::ifstream;
-    //this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-
-
-    //if(this->fh->is_open())
-    //{
-    //    this->fh->seekg(start_pos, std::ios::beg);
-    //}
-    //else
-    //{
-    //    throw std::runtime_error("[chunked_reader::init] Cannot open file for reading.\n");
-    //}
     
-    throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
+    
+    this->fh = ZSTD_seekable_decompressFile_init(this->context->get_filename().c_str());
+
+
+    if(fh->fin == NULL | feof(fh->fin))
+    {
+        throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
+    }
+    else
+    {
+        fseek_orDie(fh->fin, 0, SEEK_SET);// set initial file handle to 0?
+        // this->fh->seekg(start_pos, std::ios::beg);
+
+    }
 }
 
 size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
