@@ -56,7 +56,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
     {
         chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
+        Context c(fastafs_file.c_str());
+        c.fopen(0);
+
         written = r_flat.read(buffer, 1024);
+        BOOST_CHECK_EQUAL(written, 403);
+        std_buffer = std::string(buffer, written);
+        BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
+        flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+
+        written = c.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 403);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
