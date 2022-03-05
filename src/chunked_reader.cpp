@@ -303,6 +303,7 @@ size_t Context::read(char *arg_buffer, size_t arg_buffer_size)
 
 
 void Context::TransitionTo(State *arg_state) {
+
     if(this->state != nullptr)
     {
         delete this->state; // delete and destruct previous state, incl file points, should also run fh.close(); etc.
@@ -327,6 +328,11 @@ void Context::seek(off_t arg_offset)
 size_t Context::tell()
 {
     return this->file_i - this->buffer_n + this->buffer_i;
+}
+
+const std::type_info& Context::typeid_state()
+{
+    return typeid(*this->state); // somehow pointer is needed to return ContextSubvariant rather than State
 }
 
 
@@ -426,6 +432,12 @@ void ContextUncompressed::seek(off_t arg_offset)
     this->fh->seekg(arg_offset, std::ios::beg);
 }
 
+
+ContextUncompressed::ContextUncompressed()
+{
+    printf("[INVOKING ContextUncompressed::ContextUncompressed]\n");
+    std::cout << "[[ " << typeid(this).name() << " ]]\n";
+}
 
 ContextUncompressed::~ContextUncompressed()
 {
