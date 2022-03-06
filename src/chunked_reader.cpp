@@ -249,6 +249,9 @@ void chunked_reader::seek(off_t offset)
 
 size_t chunked_reader::tell()
 {
+    //@todo decide what to return when out of bound
+    //e.g. when exceeding file size
+
     return this->file_i - this->buffer_n + this->buffer_i;
 }
 
@@ -322,7 +325,9 @@ void Context::fopen(off_t file_offset)
 
 void Context::seek(off_t arg_offset)
 {
-    this->state->seek(arg_offset);
+    this->file_i = arg_offset; // @todo obtain return value from this->state->seek() and limit this
+    this->state->seek(arg_offset);// set file pointer
+    this->cache_buffer();// update internal buffer
 }
 
 
@@ -376,6 +381,14 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
 
 size_t ContextUncompressed::cache_buffer()
 {
+    if(!this->fh->is_open())
+    {
+        throw std::runtime_error("[ContextUncompressed::seek] this seek killed the filehandle.\n");
+    }
+    printf("AA cache_buffer at: %i\n",this->fh->tellg());
+    this->fh->seekg(0, std::ios::beg);
+    printf("BB cache_buffer at: %i\n",this->fh->tellg());
+
     this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
 
     if(!this->fh)
@@ -384,6 +397,7 @@ size_t ContextUncompressed::cache_buffer()
     }
 
     size_t s = (size_t) this->fh->gcount();
+    printf("read: %i\n",s);
 
     return s;
 }
@@ -401,7 +415,7 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
     size_t written = 0;
     const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
     
-    //printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n1 = %i, n2 = %i READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, n2, READ_BUFFER_SIZE);
+    printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n1 = %i, READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, (int) READ_BUFFER_SIZE);
 
     // copy current internal buffer completely
     while(written < n1)
@@ -435,11 +449,6 @@ void ContextUncompressed::seek(off_t arg_offset)
 }
 
 
-ContextUncompressed::ContextUncompressed()
-{
-    printf("[INVOKING ContextUncompressed::ContextUncompressed]\n");
-    std::cout << "[[ " << typeid(this).name() << " ]]\n";
-}
 
 ContextUncompressed::~ContextUncompressed()
 {

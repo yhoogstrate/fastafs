@@ -108,7 +108,6 @@ public:
     size_t read(char *, size_t, size_t &, size_t &) override;
     void seek(off_t);
 
-    ContextUncompressed();
     ~ContextUncompressed() override;
 };
 

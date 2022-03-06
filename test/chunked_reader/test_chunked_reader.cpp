@@ -111,27 +111,56 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         }
 
 
-
-
-
+        // test seek stuff
+        BOOST_CHECK_EQUAL(r_flat.tell(), 403);
+        r_flat.seek(0);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 0);
+        r_flat.seek(1);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 1);
+        r_flat.seek(402);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 402);
+        // when out of 'bound' return -1
+        // type should be 'streampos'
+        //r_flat.seek(1337);
+        //BOOST_CHECK_EQUAL(r_flat.tell(), 403);
+        
+        
         // Context equivalent
         {
-            written = c.read(buffer, 1024);
-            BOOST_CHECK_EQUAL(written, 0);
-            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c.tell(), 403);
+            c.seek(0);
+            BOOST_CHECK_EQUAL(c.tell(), 0);
+            c.seek(1);
+            BOOST_CHECK_EQUAL(c.tell(), 1);
+            c.seek(402);
+            BOOST_CHECK_EQUAL(c.tell(), 402);
+
+            //r_flat.seek(1337);
+            //BOOST_CHECK_EQUAL(r_flat.tell(), 403 | 402);
         }
 
 
-        // test seek stuff
-        r_flat.seek(0); // reset to first pos in file
-        BOOST_CHECK_EQUAL(r_flat.tell(), 0);
-
+        r_flat.seek(0);
         written = r_flat.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_flat.tell(), 4);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+
+
+        // Context equivalent
+        {
+            c.seek(0);
+            BOOST_CHECK_EQUAL(c.tell(), 0);
+            written = c.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+
+            BOOST_CHECK_EQUAL(c.tell(), 4);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
 
         r_flat.seek(1); // reset to first pos in file
@@ -383,10 +412,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
     {
         ////chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
         
-        std::string tf = "test.txt";
-        
-        //Context c = Context(fastafs_file.c_str());
-        Context c = Context(tf.c_str());
+        Context c = Context(fasta_file.c_str());
         c.fopen(0); // open file handle and load buffer
         
         written = c.read(buffer, 10);
