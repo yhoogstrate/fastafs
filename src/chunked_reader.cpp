@@ -325,6 +325,8 @@ void Context::seek(off_t arg_offset)
     this->state->seek(arg_offset);
 }
 
+
+// positio in the (decompressed) file
 size_t Context::tell()
 {
     return this->file_i - this->buffer_n + this->buffer_i;
@@ -499,6 +501,36 @@ void ContextZstdSeekable::fopen(off_t start_pos)
 size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
             size_t &buffer_i, size_t &buffer_n)
 {
+    size_t written = 0;
+
+
+
+
+
+
+    size_t endOffset = std::min( (size_t) buffer_n, (size_t) READ_BUFFER_SIZE);
+    size_t startOffset = buffer_i;
+
+    size_t buffer_out_i = 0;
+    while (startOffset < endOffset) {
+        size_t const result = ZSTD_seekable_decompress(seekable, this->context->get_buffer(), std::min((size_t) endOffset - startOffset, buffOutSize), (size_t) startOffset);
+
+        if (ZSTD_isError(result)) {
+            fprintf(stderr, "ZSTD_seekable_decompress() error : %s \n",
+                    ZSTD_getErrorName(result));
+            exit(12);
+        }
+
+        /*for(size_t i = 0; i < result; i++) {
+            this->buffer[buffer_out_i] = arg_buffer_to[i];
+            buffer_out_i++;
+        }*/
+
+        startOffset += result;
+        written += result;
+    }
+
+
 
 /*
     while (startOffset < endOffset) {
@@ -517,9 +549,7 @@ size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
     }
  */
 
-    throw std::runtime_error("[ContextZstdSeekable::read] not implemented.\n");
-    
-    return 0;
+    return written;
 }
 
 void ContextZstdSeekable::seek(off_t arg_offset)

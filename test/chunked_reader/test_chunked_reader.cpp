@@ -61,32 +61,65 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         BOOST_CHECK(c.typeid_state() == typeid(ContextUncompressed));
         BOOST_CHECK(c.typeid_state() != typeid(ContextZstdSeekable));
 
+        BOOST_CHECK_EQUAL(r_flat.tell(), 0);
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 403);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        BOOST_CHECK_EQUAL(r_flat.tell(), 403);
 
 
         // Context equivalent
         {
+            BOOST_CHECK_EQUAL(c.tell(), 0);
             written = c.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 403);
             std_buffer = std::string(buffer, written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c.tell(), 403);
+
             BOOST_CHECK(c.typeid_state() == typeid(ContextUncompressed));
             BOOST_CHECK(c.typeid_state() != typeid(ContextZstdSeekable));
+            
         }
 
+        // test what happens when file is closed (twice)
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        BOOST_CHECK_EQUAL(c.tell(), 403);
 
-        // test what happens when file is closed
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        BOOST_CHECK_EQUAL(c.tell(), 403);
+
+
+        // Context equivalent
+        {
+            written = c.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c.tell(), 403);
+
+            written = c.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c.tell(), 403);
+        }
+
+
+
+
+
+        // Context equivalent
+        {
+            written = c.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
 
         // test seek stuff
