@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(fastafs)
 
+# helps debugging:
 # Do this once in a while - find different compiler warnings
 #set(CMAKE_CXX_COMPILER             "clang++")
 
