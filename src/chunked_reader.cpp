@@ -381,19 +381,33 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
 
 size_t ContextUncompressed::cache_buffer()
 {
-    if(!this->fh->is_open())
+    if(!this->fh->good())
     {
-        throw std::runtime_error("[ContextUncompressed::seek] this seek killed the filehandle.\n");
+        std::cout << "pre read(): \n";
+        std::cout << " good()=" << this->fh->good() << "\n";
+        std::cout << " eof()=" << this->fh->eof() << "\n";
+        std::cout << " fail()=" << this->fh->fail() << "\n";
+        std::cout << " bad()=" << this->fh->bad() << "\n\n";
+        //throw std::runtime_error("[ContextUncompressed::cache_buffer] fh is not 'good'. \n");
     }
+    
     printf("AA cache_buffer at: %i\n",this->fh->tellg());
-    this->fh->seekg(0, std::ios::beg);
-    printf("BB cache_buffer at: %i\n",this->fh->tellg());
+    if(this->fh->tellg() == -1)
+    {
+        this->fh->seekg(0, std::ios::beg);
+        printf("BB cache_buffer at: %i [after flushing  to 0?]\n",this->fh->tellg());
+    }
 
     this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
 
-    if(!this->fh)
+    if(!this->fh->good())
     {
-        throw std::runtime_error("[ContextUncompressed::cache_buffer] Coult not open file. \n");
+        std::cout << "post read(): \n";
+        std::cout << " good()=" << this->fh->good() << "\n";
+        std::cout << " eof()=" << this->fh->eof() << "\n";
+        std::cout << " fail()=" << this->fh->fail() << "\n";
+        std::cout << " bad()=" << this->fh->bad() << "\n\n";
+        //throw std::runtime_error("[ContextUncompressed::cache_buffer] fh is not 'good'. \n");
     }
 
     size_t s = (size_t) this->fh->gcount();
