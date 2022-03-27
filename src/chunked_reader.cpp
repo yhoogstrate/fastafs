@@ -408,10 +408,16 @@ size_t ContextUncompressed::cache_buffer()
         std::cout << " fail()=" << this->fh->fail() << "\n";
         std::cout << " bad()=" << this->fh->bad() << "\n\n";
         //throw std::runtime_error("[ContextUncompressed::cache_buffer] fh is not 'good'. \n");
+
     }
 
     size_t s = (size_t) this->fh->gcount();
     printf("read: %i\n",s);
+
+    if(this->fh->eof()) {
+        this->fh->clear();
+        this->fh->seekg(0, std::ios::end);
+    }
 
     return s;
 }
