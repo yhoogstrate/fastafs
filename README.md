@@ -20,6 +20,11 @@ Direct link to the file format specification:
 
 ----
 
+Links:
+[bio.tools](https://bio.tools/fastafs)
+
+---
+
 ![](https://bioinf-galaxian.erasmusmc.nl/public/images/fastafs/fastafs-example.gif)
 
 ## Elegant integration of sequence data archives, backwards compatible with FASTA and no API's needed
