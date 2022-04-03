@@ -267,8 +267,6 @@ void State::set_context(Context *arg_context)
 
 Context::Context(const char * arg_filename) : filename(arg_filename), buffer("\0"), buffer_i(0), buffer_n(0), file_i(0), state(nullptr)
 {
-    printf("Constructor alive\n");
-
     this->TransitionTo(this->find_state());
 }
 
@@ -345,7 +343,7 @@ const std::type_info& Context::typeid_state()
 
 
 
-State * Context::find_state()
+State *Context::find_state()
 {
     if(is_zstd_file(this->filename.c_str()))
     {
@@ -400,6 +398,8 @@ size_t ContextUncompressed::cache_buffer()
     return s;
 }
 
+
+// This does not read the actual flat file, this copies its internal buffer to arg_buffer_to
 size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
             size_t &buffer_i, size_t &buffer_n)
 {
@@ -413,8 +413,6 @@ size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
     size_t written = 0;
     const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
     
-    printf("buffer_n = %i, buffer_i = %i, arg_buffer_to_size = %i, n1 = %i, READ_BUFFER_SIZE=%i\n",buffer_n, buffer_i, arg_buffer_to_size, n1, (int) READ_BUFFER_SIZE);
-
     // copy current internal buffer completely
     while(written < n1)
     {
@@ -471,14 +469,47 @@ ContextUncompressed::~ContextUncompressed()
 
 size_t ContextZstdSeekable::cache_buffer()
 {
-    throw std::runtime_error("[ContextZstdSeekable::cache_buffer] not implemented.\n");
+    //size_t written = ZSTD_seekable_decompressFile_orDie(this->fh_zstd, this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
+    //this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
     
-    return 0;
+    size_t written = ZSTD_seekable_decompressFile_orDie(
+            this->fh, 
+            0, //this->context->file_i,
+            this->context->get_buffer(),
+            0 + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
+        );
+    
+    printf("written = %i\n", written);
+    
+    /*
+    {
+    #if DEBUG
+        if(this->fh->tellg() == -1)
+        {
+            throw std::runtime_error("ContextUncompressed::cache_buffer\n");
+        }
+    #endif //DEBUG
+
+        this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
+
+        size_t s = (size_t) this->fh->gcount();
+
+        if(this->fh->eof()) {
+            this->fh->clear();
+            this->fh->seekg(0, std::ios::end);
+        }
+
+        return s;
+    }
+    */
+
+    //throw std::runtime_error("[ContextZstdSeekable::cache_buffer] not implemented.\n");
+    
+    return written;
 }
 
 void ContextZstdSeekable::fopen(off_t start_pos)
 {
-    
     if(this->fh != nullptr)
     {
         throw std::runtime_error("[ContextZstdSeekable::fopen] opening a non closed reader.\n");

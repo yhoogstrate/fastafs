@@ -65,10 +65,12 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
         
         // Context equivalent - compressed
-        //Context c2(fastafs_file_zstd.c_str());
-        //c2.fopen(0);
-        //BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
-        //BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
+        printf("checkpoint 1\n");
+        Context c2(fastafs_file_zstd.c_str());
+        c2.fopen(0);
+        BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
+        BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
+        printf("checkpoint 2\n");
 
 
 
