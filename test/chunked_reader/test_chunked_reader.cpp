@@ -55,11 +55,24 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
     std::string reference3 = "\x0a\x46\x53\x00"s;
 
     {
+        // old init
         chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
-        Context c(fastafs_file.c_str());
-        c.fopen(0);
-        BOOST_CHECK(c.typeid_state() == typeid(ContextUncompressed));
-        BOOST_CHECK(c.typeid_state() != typeid(ContextZstdSeekable));
+        
+        // Context equivalent - uncompressed
+        Context c1(fastafs_file.c_str());
+        c1.fopen(0);
+        BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
+        BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
+        
+        // Context equivalent - compressed
+        printf("checkpoint 1\n");
+        Context c2(fastafs_file_zstd.c_str());
+        c2.fopen(0);
+        BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
+        BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
+        printf("checkpoint 2\n");
+
+
 
         BOOST_CHECK_EQUAL(r_flat.tell(), 0);
         written = r_flat.read(buffer, 1024);
@@ -69,45 +82,43 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         BOOST_CHECK_EQUAL(r_flat.tell(), 403);
 
-
-        // Context equivalent
+        // Context equivalent - uncompressed
         {
-            BOOST_CHECK_EQUAL(c.tell(), 0);
-            written = c.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(c1.tell(), 0);
+            written = c1.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 403);
             std_buffer = std::string(buffer, written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-            BOOST_CHECK_EQUAL(c.tell(), 403);
+            BOOST_CHECK_EQUAL(c1.tell(), 403);
 
-            BOOST_CHECK(c.typeid_state() == typeid(ContextUncompressed));
-            BOOST_CHECK(c.typeid_state() != typeid(ContextZstdSeekable));
-            
+            BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
+            BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
         }
+
 
         // test what happens when file is closed (twice)
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        BOOST_CHECK_EQUAL(c.tell(), 403);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 403);
 
         written = r_flat.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        BOOST_CHECK_EQUAL(c.tell(), 403);
+        BOOST_CHECK_EQUAL(r_flat.tell(), 403);
 
-
-        // Context equivalent
+        // Context equivalent - uncompressed
         {
-            written = c.read(buffer, 1024);
+            written = c1.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 0);
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-            BOOST_CHECK_EQUAL(c.tell(), 403);
+            BOOST_CHECK_EQUAL(c1.tell(), 403);
 
-            written = c.read(buffer, 1024);
+            written = c1.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 0);
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-            BOOST_CHECK_EQUAL(c.tell(), 403);
+            BOOST_CHECK_EQUAL(c1.tell(), 403);
         }
 
 
@@ -119,24 +130,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         BOOST_CHECK_EQUAL(r_flat.tell(), 1);
         r_flat.seek(402);
         BOOST_CHECK_EQUAL(r_flat.tell(), 402);
-        // when out of 'bound' return -1
-        // type should be 'streampos'
-        //r_flat.seek(1337);
-        //BOOST_CHECK_EQUAL(r_flat.tell(), 403);
-        
-        
-        // Context equivalent
-        {
-            BOOST_CHECK_EQUAL(c.tell(), 403);
-            c.seek(0);
-            BOOST_CHECK_EQUAL(c.tell(), 0);
-            c.seek(1);
-            BOOST_CHECK_EQUAL(c.tell(), 1);
-            c.seek(402);
-            BOOST_CHECK_EQUAL(c.tell(), 402);
 
-            //r_flat.seek(1337);
-            //BOOST_CHECK_EQUAL(r_flat.tell(), 403 | 402);
+        // Context equivalent - uncompressed
+        {
+            BOOST_CHECK_EQUAL(c1.tell(), 403);
+            c1.seek(0);
+            BOOST_CHECK_EQUAL(c1.tell(), 0);
+            c1.seek(1);
+            BOOST_CHECK_EQUAL(c1.tell(), 1);
+            c1.seek(402);
+            BOOST_CHECK_EQUAL(c1.tell(), 402);
         }
 
 
@@ -149,14 +152,14 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
 
-        // Context equivalent
+        // Context equivalent - uncompressed
         {
-            c.seek(0);
-            BOOST_CHECK_EQUAL(c.tell(), 0);
-            written = c.read(buffer, 4);
+            c1.seek(0);
+            BOOST_CHECK_EQUAL(c1.tell(), 0);
+            written = c1.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
 
-            BOOST_CHECK_EQUAL(c.tell(), 4);
+            BOOST_CHECK_EQUAL(c1.tell(), 4);
             std_buffer = std::string(buffer, written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
@@ -166,13 +169,33 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         r_flat.seek(1); // reset to first pos in file
         BOOST_CHECK_EQUAL(r_flat.tell(), 1);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-
         written = r_flat.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_flat.tell(), 5);
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+
+        // Context equivalent - uncompressed
+        {
+            c1.seek(1);
+            BOOST_CHECK_EQUAL(c1.tell(), 1);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            written = c1.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+            BOOST_CHECK_EQUAL(c1.tell(), 5);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
+
+        r_flat.seek(1024*1024); // trigger out of bound
+
+        // Context equivalent - uncompressed
+        {
+            c1.seek(1024*1024);
+        }
     }
 
     {
