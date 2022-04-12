@@ -262,6 +262,50 @@ void State::set_context(Context *arg_context)
     this->context = arg_context;
 }
 
+// This does not read the actual flat file, this copies its internal buffer to arg_buffer_to
+size_t State::read(char *arg_buffer_to, size_t arg_buffer_to_size,
+            size_t &buffer_i, size_t &buffer_n)
+{
+#if DEBUG
+    if(arg_buffer_to_size > READ_BUFFER_SIZE)
+    {
+        throw std::runtime_error("[ContextUncompressed::read] Requested buffer size larger than internal context buffer.\n");
+    }
+#endif //DEBUG
+
+    size_t written = 0;
+    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
+    printf("a. buffer_i = %i     buffer_n = %i   n1 = %i    written = %i     arg_buffer_to_size = %i\n", buffer_i, buffer_n , n1, written, arg_buffer_to_size);
+    
+    // copy current internal buffer completely
+    while(written < n1)
+    {
+        arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
+    }
+
+    printf("b. buffer_i = %i     buffer_n = %i   n1 = %i    written = %i     arg_buffer_to_size = %i\n", buffer_i, buffer_n , n1, written, arg_buffer_to_size);
+    if(written < arg_buffer_to_size)
+    {
+        printf("true\n");
+        this->context->cache_buffer();// needs to set n to 0
+
+        printf("c. buffer_i = %i     buffer_n = %i   n1 = %i    written = %i     arg_buffer_to_size = %i\n", buffer_i, buffer_n , n1, written, arg_buffer_to_size);
+        while(buffer_i < buffer_n and written < arg_buffer_to_size)
+        {
+            arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
+        }
+        printf("d. buffer_i = %i     buffer_n = %i   n1 = %i    written = %i     arg_buffer_to_size = %i\n", buffer_i, buffer_n , n1, written, arg_buffer_to_size);
+
+
+        //printf("recursively call another read :: %i\n", n2);
+    }
+    printf("e. buffer_i = %i     buffer_n = %i   n1 = %i    written = %i     arg_buffer_to_size = %i\n", buffer_i, buffer_n , n1, written, arg_buffer_to_size);
+
+
+    return written;
+}
+
+
 
 
 
@@ -399,40 +443,6 @@ size_t ContextUncompressed::cache_buffer()
 }
 
 
-// This does not read the actual flat file, this copies its internal buffer to arg_buffer_to
-size_t ContextUncompressed::read(char *arg_buffer_to, size_t arg_buffer_to_size,
-            size_t &buffer_i, size_t &buffer_n)
-{
-#if DEBUG
-    if(arg_buffer_to_size > READ_BUFFER_SIZE)
-    {
-        throw std::runtime_error("[ContextUncompressed::read] Requested buffer size larger than internal context buffer.\n");
-    }
-#endif //DEBUG
-
-    size_t written = 0;
-    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
-    
-    // copy current internal buffer completely
-    while(written < n1)
-    {
-        arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
-    }
-
-    if(written < arg_buffer_to_size)
-    {
-        this->context->cache_buffer();
-
-        while(buffer_i < buffer_n and written < arg_buffer_to_size)
-        {
-            arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
-        }
-
-        //printf("recursively call another read :: %i\n", n2);
-    }
-
-    return written;
-}
 
 void ContextUncompressed::seek(off_t arg_offset)
 {
@@ -472,14 +482,19 @@ size_t ContextZstdSeekable::cache_buffer()
     //size_t written = ZSTD_seekable_decompressFile_orDie(this->fh_zstd, this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
     //this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
     
+    // figure out the location in the decompressed file
+    
+    printf("%i\n",this->context->tell());
+    
     size_t written = ZSTD_seekable_decompressFile_orDie(
             this->fh, 
-            0, //this->context->file_i,
+            this->context->tell(), //this->context->file_i,
             this->context->get_buffer(),
-            0 + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
+            this->context->tell() + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
         );
     
-    printf("written = %i\n", written);
+    //printf("written = %i\n", written);
+    //printf("{{%s}}\n",  this->context->get_buffer());
     
     /*
     {
@@ -534,60 +549,6 @@ void ContextZstdSeekable::fopen(off_t start_pos)
         //@todo class member?
         this->maxFileSize = ZSTD_seekable_getFileDecompressedSize(this->seekable);
     }
-}
-
-size_t ContextZstdSeekable::read(char *arg_buffer_to, size_t arg_buffer_to_size,
-            size_t &buffer_i, size_t &buffer_n)
-{
-    size_t written = 0;
-
-
-
-
-
-
-    size_t endOffset = std::min( (size_t) buffer_n, (size_t) READ_BUFFER_SIZE);
-    size_t startOffset = buffer_i;
-
-    size_t buffer_out_i = 0;
-    while (startOffset < endOffset) {
-        size_t const result = ZSTD_seekable_decompress(seekable, this->context->get_buffer(), std::min((size_t) endOffset - startOffset, buffOutSize), (size_t) startOffset);
-
-        if (ZSTD_isError(result)) {
-            fprintf(stderr, "ZSTD_seekable_decompress() error : %s \n",
-                    ZSTD_getErrorName(result));
-            exit(12);
-        }
-
-        /*for(size_t i = 0; i < result; i++) {
-            this->buffer[buffer_out_i] = arg_buffer_to[i];
-            buffer_out_i++;
-        }*/
-
-        startOffset += result;
-        written += result;
-    }
-
-
-
-/*
-    while (startOffset < endOffset) {
-        size_t const result = ZSTD_seekable_decompress(seekable, buffOut, MIN(endOffset - startOffset, buffOutSize), startOffset);
-        if (!result) {
-            break;
-        }
-
-        if (ZSTD_isError(result)) {
-            fprintf(stderr, "ZSTD_seekable_decompress() error : %s \n",
-                    ZSTD_getErrorName(result));
-            exit(12);
-        }
-        fwrite_orDie(buffOut, result, fout);
-        startOffset += result;
-    }
- */
-
-    return written;
 }
 
 void ContextZstdSeekable::seek(off_t arg_offset)

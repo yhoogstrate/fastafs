@@ -86,12 +86,11 @@ protected:
 public:
     virtual ~State() {};
     void set_context(Context *);
-
+    size_t read(char *, size_t, size_t &, size_t &); // reads from buffer, context a-specific
 
     // virtual functions:
     virtual void fopen(off_t) = 0;
     virtual size_t cache_buffer() = 0; // formerly update_..._buffer
-    virtual size_t read(char *, size_t, size_t &, size_t &) = 0;
     virtual void seek(off_t) = 0;
 }; // compression type
 
@@ -105,7 +104,6 @@ private:
 public:
     void fopen(off_t) override;
     size_t cache_buffer() override;
-    size_t read(char *, size_t, size_t &, size_t &) override;
     void seek(off_t);
 
     ~ContextUncompressed() override;
@@ -125,7 +123,6 @@ private:
 public:
     void fopen(off_t) override;
     size_t cache_buffer() override;
-    size_t read(char *, size_t, size_t &, size_t &) override;
     void seek(off_t);
 
     ~ContextZstdSeekable() override;

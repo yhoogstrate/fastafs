@@ -230,6 +230,7 @@ size_t ZSTD_seekable_decompressFile_orDie(ZSTD_seekable_decompress_init_data* fh
     
     //fh->fin_locked = false;
 
+
     return written;
 }
 

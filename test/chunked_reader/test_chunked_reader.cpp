@@ -65,12 +65,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
         
         // Context equivalent - compressed
-        printf("checkpoint 1\n");
         Context c2(fastafs_file_zstd.c_str());
         c2.fopen(0);
         BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
         BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
-        printf("checkpoint 2\n");
 
 
 
@@ -94,6 +92,29 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
             BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
             BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
+        }
+        
+        // Context equivalent - compressed zstd
+        {
+            printf("checkpoint 1\n");
+
+            BOOST_CHECK_EQUAL(c2.tell(), 0);
+            printf("checkpoint 2\n");
+
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 403);
+            printf("checkpoint 3\n");
+
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
+            printf("checkpoint 4\n");
+
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c2.tell(), 403);
+            printf("checkpoint 5\n");
+
+            BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
+            BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
         }
 
 
