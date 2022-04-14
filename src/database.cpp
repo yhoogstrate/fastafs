@@ -14,17 +14,15 @@
 #include "lsfastafs.hpp"
 
 
-    
+
 const std::string database::get_default_dir()
 {
     const char* home_c = getenv("HOME");
-    if(home_c == nullptr)
-    {
+    if(home_c == nullptr) {
         struct passwd *pw = getpwuid(getuid());
         home_c = pw->pw_dir;
 
-        if(home_c == nullptr)
-        {
+        if(home_c == nullptr) {
             throw std::runtime_error("Could not deterimine home dir. Also, no $HOME environment variable is set.");
         }
     }
@@ -78,11 +76,11 @@ void database::list()
     std::ifstream infile(this->idx);
     std::string line;
     std::string version;
-    
+
     while(std::getline(infile, line)) {
         std::string fname = this->path + "/" + line + ".fastafs";
         bool zstd_seek = false;
-        
+
         if(!file_exist(fname.c_str())) {
             fname = this->path + "/" + line + ".fastafs.zst";
             zstd_seek = true;
@@ -145,11 +143,10 @@ void database::list()
 // @todo return a filestream to a particular file one day?
 std::string database::add(char *name)
 {
-    if(this->get(name) != "") 
-    {
+    if(this->get(name) != "") {
         throw std::runtime_error("Trying to add duplicate entry to database.");
     }
-    
+
     std::ofstream outputFile;
 
     outputFile.open(this->idx, std::fstream::app);
@@ -173,7 +170,7 @@ std::string database::get(char *fastafs_name_or_id)
     while(std::getline(infile, line, '\n')) {
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
-            
+
             if(!file_exist(fname.c_str())) {
                 fname = this->path + "/" + line + ".fastafs.zst";
             }

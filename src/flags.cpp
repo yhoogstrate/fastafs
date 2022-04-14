@@ -40,7 +40,7 @@ bool twobit_flag::get_flag(unsigned char bit)
 /**
  * @param bit denotes the i'th of 16 bits to set value of
  * @param enable whether to enable of disable the bit
- * 
+ *
  * more info: https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
  */
 void twobit_flag::set_flag(unsigned char bit, bool enable)

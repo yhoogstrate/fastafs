@@ -21,7 +21,7 @@ public:
     char (&encode_hash)[256][5];
     twobit_byte(char (&encode_hash_arg)[256][5]): encode_hash(encode_hash_arg) {};
 
-    
+
     static const char nucleotides_per_byte = 8 / twobit_byte::bits_per_nucleotide ; // this is about compressed data
     static const char nucleotides_per_chunk = 8 / twobit_byte::bits_per_nucleotide ; // this is about decompressed chunks
 

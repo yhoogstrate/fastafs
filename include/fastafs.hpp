@@ -28,7 +28,7 @@ struct ffs2f_init_seq {
 
     std::vector<uint32_t> m_starts;// file position based
     std::vector<uint32_t> m_ends;// file position based
-    
+
     const uint32_t filesize;// with padding and newlines [fastafs_seq->fasta_filesize(cache->padding_arg)]
 
     ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize):
@@ -46,7 +46,8 @@ struct ffs2f_init {
 
     ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
 
-    ~ffs2f_init(void) {
+    ~ffs2f_init(void)
+    {
         for(size_t i = 0; i < sequences.size(); i++) {
             delete sequences[i];
         }
@@ -113,7 +114,7 @@ public:
     std::string name;
     std::string filename;
     compression_type filetype;
-    
+
     std::vector<fastafs_seq*> data;
     uint32_t crc32f;// crc32 as found in fastafs file
 

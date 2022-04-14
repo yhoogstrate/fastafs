@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         BOOST_CHECK_EQUAL(sr.get_start_position(), 123);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
-        BOOST_CHECK_EQUAL(sr.get_end_position() , 123);
+        BOOST_CHECK_EQUAL(sr.get_end_position(), 123);
     }
 
     {
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region)
         BOOST_CHECK_EQUAL(sr.get_start_position(), 0);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
-        BOOST_CHECK_EQUAL(sr.get_end_position() , 123);
+        BOOST_CHECK_EQUAL(sr.get_end_position(), 123);
     }
 
     {
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         BOOST_CHECK_EQUAL(sr.get_start_position(), 1234);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
-        BOOST_CHECK_EQUAL(sr.get_end_position() , 1234);
+        BOOST_CHECK_EQUAL(sr.get_end_position(), 1234);
     }
 
     {
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         BOOST_CHECK_EQUAL(sr.get_start_position(), 0);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
-        BOOST_CHECK_EQUAL(sr.get_end_position() , 1234);
+        BOOST_CHECK_EQUAL(sr.get_end_position(), 1234);
     }
 
     {
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(test_sequence_region3)
         BOOST_CHECK_EQUAL(sr.get_start_position(), 1234);
 
         BOOST_CHECK_EQUAL(sr.has_defined_end(), true);
-        BOOST_CHECK_EQUAL(sr.get_end_position() , 1235);
+        BOOST_CHECK_EQUAL(sr.get_end_position(), 1235);
     }
 
 

@@ -16,7 +16,7 @@ class database
 
 public:
     database(const std::string &);
-    
+
     const static std::string get_default_dir();
 
     void force_db_exists();

@@ -28,7 +28,7 @@ static int test_i = 0;
 
 BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
     /*
         padding=4, offset=0, position_until=0, 1, 2, 3:      0  "A" "AC" "ACT" "ACTG"
         padding=4, offset=0, position_until=4, 5, 6, 7, 8:   1  "ACTG\n" "ACTG\nA" "ACTG\nAA" "ACTG\nAAA" "ACTG\nAAAA"
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
 
 BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     // testing "ACTGACTGNNNNACTG"
     uint32_t num_Ns; // number of N's until certain nucleotide is reached
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
  */
 BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
 
     uint32_t written;
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     uint32_t written;
     std::string test_name = "test";
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     std::string test_name = "test_004";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -547,7 +547,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
 
@@ -581,7 +581,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
 
@@ -616,7 +616,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
 
@@ -656,7 +656,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
 
     std::string test_name = "test";
@@ -845,7 +845,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     std::string test_name = "test_003";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -899,8 +899,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     size_t n = full_file.size();
     uint32_t start_pos = 0;
     for(float i = 0.0; i <= 12.0; i += 1) { // perform limited subset of tests
-        start_pos = (uint32_t) ((i/12.0) * (double) n);
-        printf(" - %uli / %zu\n",start_pos, n);
+        start_pos = (uint32_t)((i / 12.0) * (double) n);
+        printf(" - %uli / %zu\n", start_pos, n);
         for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 

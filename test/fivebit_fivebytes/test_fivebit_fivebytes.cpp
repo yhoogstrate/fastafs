@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes__dict_conversions)
     for(size_t i = 0; i < dict.size(); i++) {
         // set and compress amino acid string
         for(size_t j = 0 ; j < 8; j ++) {
-            f.set((unsigned char) j, (unsigned char) hash[ (unsigned char) dict[i][j] ]) ;
+            f.set((unsigned char) j, (unsigned char) hash[(unsigned char) dict[i][j] ]) ;
         }
 
         // decompress

@@ -207,15 +207,15 @@ bool is_ucsc2bit_file(char *filename)
 
     if(fread(buf, 1, 4, fp) == 4) {
         fclose(fp);
-        
-        
+
+
         return UCSC2BIT_MAGIC.compare(0, 4, buf) == 0;
         //return (
-                   //buf[0] == UCSC2BIT_MAGIC[0] and
-                   //buf[1] == UCSC2BIT_MAGIC[1] and
-                   //buf[2] == UCSC2BIT_MAGIC[2] and
-                   //buf[3] == UCSC2BIT_MAGIC[3]
-               //);// return true if first byte equals >
+        //buf[0] == UCSC2BIT_MAGIC[0] and
+        //buf[1] == UCSC2BIT_MAGIC[1] and
+        //buf[2] == UCSC2BIT_MAGIC[2] and
+        //buf[3] == UCSC2BIT_MAGIC[3]
+        //);// return true if first byte equals >
     } else {
         fclose(fp);
 
@@ -330,8 +330,8 @@ bool file_exist(const char *fileName)
     //moe classical but slower implementation
     //std::ifstream infile(fileName);
     //return infile.good();
-    
+
     //following implementation should be faster
     struct stat buffer;
-    return (stat (fileName, &buffer) == 0);
+    return (stat(fileName, &buffer) == 0);
 }

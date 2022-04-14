@@ -208,8 +208,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     uint32_t pos = (uint32_t) start_pos_in_fasta;
-    
-    
+
+
     size_t pos_limit = this->name.size() + 2;
     if(pos < pos_limit) {
         const std::string header = ">" + this->name + "\n";
@@ -218,15 +218,15 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         const uint32_t copied = (uint32_t) header.copy(buffer, tocopy, pos); // effective size of copied data
 
         written += (uint32_t) copied;
-        
+
         if(written >= buffer_size) {
             return written;
         }
-        
+
         pos += (uint32_t) copied;
     }
 
-    const uint32_t offset_from_sequence_line = (uint32_t) (pos - pos_limit);
+    const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
     size_t n_block = cache->n_starts.size();
     size_t m_block = cache->m_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
@@ -303,13 +303,13 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             }
 
             if(pos == cur_n_end) {
-            //if(pos == cache->n_ends[n_block]) {
+                //if(pos == cache->n_ends[n_block]) {
                 n_block++;
                 cur_n_end = cache->n_ends[n_block];
                 cur_n_start = cache->n_starts[n_block];
             }
             if(pos == cur_m_end) {
-            //if(pos == cache->m_ends[m_block]) {
+                //if(pos == cache->m_ends[m_block]) {
                 m_block++;
                 cur_m_end = cache->m_ends[m_block];
                 cur_m_start = cache->m_starts[m_block];
@@ -645,7 +645,7 @@ void fastafs::load(std::string afilename)
     chunked_reader fh_in = chunked_reader(afilename.c_str());
     {
         this->filetype = fh_in.get_filetype();
-        
+
         memblock = new char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
@@ -1483,9 +1483,9 @@ uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer
 {
     std::string contents = this->get_faidx(padding);
 
-    size_t to_copy = std::min(buffer_size, contents.size() - file_offset );
+    size_t to_copy = std::min(buffer_size, contents.size() - file_offset);
 
-    return (uint32_t) contents.copy(buffer, to_copy, file_offset );
+    return (uint32_t) contents.copy(buffer, to_copy, file_offset);
 }
 
 
@@ -1545,14 +1545,14 @@ int fastafs::info(bool ena_verify_checksum)
         std::cout << "# FASTAFS NAME: " << this->filename << "\n";
         std::cout << "# FORMAT: v0-x32";
         switch(this->filetype) {
-            case compression_type::undefined:
-                printf("?\n");
+        case compression_type::undefined:
+            printf("?\n");
             break;
-            case compression_type::uncompressed :
-                printf("\n");
+        case compression_type::uncompressed :
+            printf("\n");
             break;
-            case compression_type::zstd:
-                printf("+Z\n");
+        case compression_type::zstd:
+            printf("+Z\n");
             break;
         }
         printf("# SEQUENCES:    %u\n", (uint32_t) this->data.size());

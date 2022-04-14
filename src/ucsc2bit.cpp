@@ -271,7 +271,7 @@ void ucsc2bit::load(std::string afilename)
 
             // check version
             for(i = 0 ; i < 4;  i++) {
-                if(memblock[i+4] != UCSC2BIT_VERSION[i]) {
+                if(memblock[i + 4] != UCSC2BIT_VERSION[i]) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt 2bit file. unknown version: " + filename);
                 }
