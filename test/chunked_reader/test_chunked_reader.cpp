@@ -141,6 +141,19 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
             BOOST_CHECK_EQUAL(c1.tell(), 403);
         }
+        
+        // Context equivalent - compressed zstd
+        {
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c2.tell(), 403);
+
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            BOOST_CHECK_EQUAL(c2.tell(), 403);
+        }
 
 
         // test seek stuff
