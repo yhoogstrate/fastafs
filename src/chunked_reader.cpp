@@ -534,13 +534,13 @@ void ContextZstdSeekable::fopen(off_t start_pos)
     this->fh = ZSTD_seekable_decompressFile_init(this->context->get_filename().c_str());
 
 
-    if((fh->fin == NULL) | feof(fh->fin))
+    if((this->fh->fin == NULL) | feof(this->fh->fin))
     {
         throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
     }
     else
     {
-        fseek_orDie(fh->fin, 0, SEEK_SET);// set initial file handle to 0?
+        fseek_orDie(this->fh->fin, 0, SEEK_SET);// set initial file handle to 0?
         // this->fh->seekg(start_pos, std::ios::beg);
 
         size_t const initResult = ZSTD_seekable_initFile(this->seekable, fh->fin);
@@ -553,7 +553,7 @@ void ContextZstdSeekable::fopen(off_t start_pos)
 
 void ContextZstdSeekable::seek(off_t arg_offset)
 {
-    throw std::runtime_error("[ContextZstdSeekable::seek] not implemented.\n");
+    fseek_orDie(fh->fin, arg_offset, SEEK_SET);
 }
 
 ContextZstdSeekable::~ContextZstdSeekable()

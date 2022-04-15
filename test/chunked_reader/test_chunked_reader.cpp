@@ -176,6 +176,17 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             BOOST_CHECK_EQUAL(c1.tell(), 402);
         }
 
+        // Context equivalent - compressed zstd
+        {
+            BOOST_CHECK_EQUAL(c2.tell(), 403);
+            c2.seek(0);
+            BOOST_CHECK_EQUAL(c2.tell(), 0);
+            c2.seek(1);
+            BOOST_CHECK_EQUAL(c2.tell(), 1);
+            c2.seek(402);
+            BOOST_CHECK_EQUAL(c2.tell(), 402);
+        }
+
 
         r_flat.seek(0);
         written = r_flat.read(buffer, 4);
@@ -194,6 +205,20 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             BOOST_CHECK_EQUAL(written, 4);
 
             BOOST_CHECK_EQUAL(c1.tell(), 4);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
+
+        // Context equivalent - compressed zstd
+        {
+            c2.seek(0);
+            BOOST_CHECK_EQUAL(c2.tell(), 0);
+            written = c2.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+
+            BOOST_CHECK_EQUAL(c2.tell(), 4);
             std_buffer = std::string(buffer, written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
@@ -223,12 +248,31 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
 
+        // Context equivalent - compressed zstd
+        {
+            c2.seek(1);
+            BOOST_CHECK_EQUAL(c2.tell(), 1);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+            written = c2.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+            BOOST_CHECK_EQUAL(c2.tell(), 5);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
+
+        //@todo should trigger error!?
         r_flat.seek(1024*1024); // trigger out of bound
 
         // Context equivalent - uncompressed
         {
             c1.seek(1024*1024);
+        }
+
+        // Context equivalent - compressed zstd
+        {
+            c2.seek(1024*1024);
         }
     }
 
