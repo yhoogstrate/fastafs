@@ -79,7 +79,7 @@ If you experience or witness unacceptable behavior, or have any other concerns,
 please report it to any combination of the following people that makes you feel
 the most comfortable:
 
-- Dr. Youri Hoogstrate (y.hoogstrate <at> [g][m][a][i][l] {dot} [com]).
+- Dr. Youri Hoogstrate (y.hoogstrate :at: [g][m][a][i][l] {dot} [com]).
 
 All reports will be handled with discretion. In your report please include:
 
