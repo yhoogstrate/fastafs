@@ -249,15 +249,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
         // Context equivalent - compressed zstd
         {
-            printf("---------------------\n");
-
             c2.seek(1);
-            printf("?????????????????????\n");
             BOOST_CHECK_EQUAL(c2.tell(), 1);
 
-            printf(":::::::::::::::::::::\n");
-
-        
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
             written = c2.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
@@ -314,30 +308,54 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         
-        //{
-            //written = c1.read(buffer, 1024);
-            //BOOST_CHECK_EQUAL(written, 403);
-            //std_buffer = std::string(buffer, written);
-            //BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
-            //flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        //}
+        {
+            written = c1.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 403);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
-        //{
-            //written = c2.read(buffer, 1024);
-            //BOOST_CHECK_EQUAL(written, 403);
-            //std_buffer = std::string(buffer, written);
-            //BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
-            //flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        //}
+        {
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 403);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+
+        {
+            written = c1.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
+        {
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         // test what happens when file is closed
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+
+        {
+            written = c1.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
+        {
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         // test seek stuff
         r_zstd.seek(0); // reset to first pos in file

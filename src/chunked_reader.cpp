@@ -493,7 +493,6 @@ size_t ContextZstdSeekable::cache_buffer()
     
     // figure out the location in the decompressed file
     
-    printf("[%i] << tell \n",this->context->tell());
     printf("[%i] << file_i \n",this->context->get_file_i());
     
     size_t written = ZSTD_seekable_decompressFile_orDie(
