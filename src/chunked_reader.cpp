@@ -20,8 +20,6 @@ chunked_reader::chunked_reader(const char * afilename) :
 
 chunked_reader::~chunked_reader()
 {
-    //printf("[chunked_reader::~chunked_reader] exterminate, destroy(!)\n");
-
     if(this->fh_flat != nullptr) {
         if(this->fh_flat->is_open()) {
             this->fh_flat->close();
@@ -376,7 +374,18 @@ void Context::seek(off_t arg_offset)
 // positio in the (decompressed) file
 size_t Context::tell()
 {
+    printf("Context :: tell: %i - %i + %i = %i\n",
+    this->file_i , 
+    this->buffer_n , 
+    this->buffer_i ,
+     this->file_i - this->buffer_n + this->buffer_i);
+     
     return this->file_i - this->buffer_n + this->buffer_i;
+}
+
+size_t Context::get_file_i()
+{
+    return this->file_i;
 }
 
 const std::type_info& Context::typeid_state()
@@ -484,11 +493,12 @@ size_t ContextZstdSeekable::cache_buffer()
     
     // figure out the location in the decompressed file
     
-    printf("%i\n",this->context->tell());
+    printf("[%i] << tell \n",this->context->tell());
+    printf("[%i] << file_i \n",this->context->get_file_i());
     
     size_t written = ZSTD_seekable_decompressFile_orDie(
             this->fh, 
-            this->context->tell(), //this->context->file_i,
+            this->context->get_file_i(), //this->context->file_i,
             this->context->get_buffer(),
             this->context->tell() + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
         );
@@ -553,6 +563,7 @@ void ContextZstdSeekable::fopen(off_t start_pos)
 
 void ContextZstdSeekable::seek(off_t arg_offset)
 {
+    printf("fseekordie: %i\n", arg_offset);
     fseek_orDie(fh->fin, arg_offset, SEEK_SET);
 }
 

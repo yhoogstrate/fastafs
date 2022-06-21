@@ -159,6 +159,7 @@ public:
     size_t read(char *, size_t);
     void seek(off_t);
     size_t tell();
+    size_t get_file_i();
 };
 
 
