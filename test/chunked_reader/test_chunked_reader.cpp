@@ -360,6 +360,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         // test seek stuff
         r_zstd.seek(0); // reset to first pos in file
         BOOST_CHECK_EQUAL(r_zstd.tell(), 0);
+        
+        {
+            r_zstd.seek(0); // reset to first pos in file
+            BOOST_CHECK_EQUAL(c1.tell(), 0);
+        }
+        
+        {
+            r_zstd.seek(0); // reset to first pos in file
+            BOOST_CHECK_EQUAL(c2.tell(), 0);
+        }
 
         written = r_zstd.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
@@ -368,10 +378,39 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
+        {
+            written = c1.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+            BOOST_CHECK_EQUAL(r_zstd.tell(), 4);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
+        {
+            written = c2.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+            BOOST_CHECK_EQUAL(r_zstd.tell(), 4);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         r_zstd.seek(1); // reset to first pos in file
         BOOST_CHECK_EQUAL(r_zstd.tell(), 1);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+
+        {
+            c1.seek(1); // reset to first pos in file
+            BOOST_CHECK_EQUAL(r_zstd.tell(), 1);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
+        {
+            c2.seek(1); // reset to first pos in file
+            BOOST_CHECK_EQUAL(r_zstd.tell(), 1);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         written = r_zstd.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
@@ -379,6 +418,24 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         std_buffer = std::string(buffer, written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        
+        {
+            written = c1.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+            BOOST_CHECK_EQUAL(r_zstd.tell(), 5);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+        
+        {
+            written = c2.read(buffer, 4);
+            BOOST_CHECK_EQUAL(written, 4);
+            BOOST_CHECK_EQUAL(r_zstd.tell(), 5);
+            std_buffer = std::string(buffer, written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
     }
 }
 
