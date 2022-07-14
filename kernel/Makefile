@@ -15,4 +15,5 @@ test:
 	sudo dmesg -C
 	sudo insmod fastafs.ko
 	sudo rmmod fastafs.ko
+	/sbin/modinfo fastafs.ko
 	dmesg
