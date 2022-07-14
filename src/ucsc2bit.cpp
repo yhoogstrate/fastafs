@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include <filesystem>
+//#include <filesystem>
 
 
 #include "config.hpp"
@@ -95,8 +95,8 @@ uint32_t ucsc2bit_seq::view_fasta_chunk(uint32_t padding, char *buffer, size_t b
     uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
     fh->seekg((uint32_t) this->sequence_data_position + ((nucleotide_pos) / 4), std::ios::beg);// std::ios::beg | fh->beg
 
-    twobit_byte t = twobit_byte();
-    const char *chunk = twobit_byte::twobit_hash[0];
+    twobit_byte t = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
+    const char *chunk = t.encode_hash[0];
 
     unsigned char twobit_offset = nucleotide_pos % 4;
 
@@ -239,7 +239,8 @@ void ucsc2bit::load(std::string afilename)
     if(file.is_open()) {
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
-        this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
+        //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
+        this->filename = realpath_cpp(afilename);
 
         if(file.tellg() < 16) {
             file.close();
@@ -269,8 +270,8 @@ void ucsc2bit::load(std::string afilename)
             }
 
             // check version
-            for(i = 4 ; i < 8;  i++) {
-                if(memblock[i] != UCSC2BIT_VERSION[i]) {
+            for(i = 0 ; i < 4;  i++) {
+                if(memblock[i+4] != UCSC2BIT_VERSION[i]) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt 2bit file. unknown version: " + filename);
                 }
@@ -373,7 +374,7 @@ void ucsc2bit::load(std::string afilename)
 
 
 /*
-* ucsc2bit::view_fasta_chunk_cached -
+* ucsc2bit::view_fasta_chunk -
 *
 * @padding: size of padding - placement of newlines (default = 60)
 * @buffer:
@@ -421,7 +422,7 @@ uint32_t ucsc2bit::view_fasta_chunk(uint32_t padding, char *buffer, size_t buffe
         file.close();
 
     } else {
-        throw std::runtime_error("[ucsc2bit::view_fasta_chunk_cached] could not load ucsc2bit: " + this->filename);
+        throw std::runtime_error("[ucsc2bit::view_fasta_chunk] could not load ucsc2bit: " + this->filename);
     }
 
     return written;

@@ -1,3 +1,88 @@
+2020-04-29  Youri Hoogstrate
+
+   * v1.9.0
+   * Improved building
+   * Bugfix thanks to @Y4NG333 [out of bound checking fastafs version]
+
+2020-04-29  Youri Hoogstrate
+
+   * v1.8.0
+   * Support for zstd-seekable
+   * Support for protein sequences using 8-to-5 byte compression
+   * Object type for chunked/buffered file reading
+   * Requires libzstd (1.4.5 and above) as dependency
+
+2020-03-03  Youri Hoogstrate
+
+   * v1.7.5
+   * Added argument `check -5/--md5sum` to do file verification using md5sums as well
+   * Fixed error code returned after `fastafs check --help`
+
+2020-02-27  Youri Hoogstrate
+
+   * v1.7.4
+   * Added argument `cache --2bit` for statistical analysis
+
+2020-02-26  Youri Hoogstrate
+
+   * v1.7.3
+   * Small decoy function added for basic snakemake compatiblity
+
+2020-02-04  Youri Hoogstrate
+
+   * v1.7.2
+   * Reduce file read syscalls and gain performance
+   * Functional testing in python, for both view to stdout as mounting
+   * Added templating for cleaner code
+   * Auto conversion to fourbit if that is more efficient compression
+
+2020-02-01  Youri Hoogstrate
+
+   * v1.7.1
+   * Fixed an errornous syscall (when `ls -l` requests a certain xattr
+   * Set chmods to 0555 and 0777
+
+2020-01-27  Youri Hoogstrate
+
+   * v1.7.0
+   * `fastafs cache -o` for custom output files and bypassing the config
+   * Random access subsequence retrieval diretly via filesystem: `<mount>/seq/chr1:100-200`
+   * Implements CRC32 checksums for whole-file integritity
+   * Converting to meson because of insane build times using cmake+make and re-building files that have not changed
+   * `fastafs view|mount -m/--no-masking` virtualises fasta files without masking (uppercase)
+   * Minor support for building with meson and ninja
+   * cmake template allows building for guix (+guix file provided)
+   * Changed requirement from c++17 on c++14 to avoid large compatibility issues
+   * Implements bitflags with corresponding class
+   * Implements fourbit (and automatically switches over if non ACTGUN chars are found
+   * Implements functions `is_fasta_file`, and `is_ucsc2bit_file` using file MAGIC
+   * Creates by FASTAFS files that are first flagged as incomplete, that are unflagged after conversion has completed
+   * MD5sums working for fourbit compressed sequences
+   * Implements `fastafs cache -o` to export to desired output fastafs file
+   * Adds compression type to `fastafs list` output
+   * More and improved testing, including file integrity detection
+
+2019-09-06  Youri Hoogstrate
+
+    * v1.6.2
+    * Rewritten argument parsing of fuse/mounting
+    * Added binary `mount.fastafs` only for mounting, wihtout the toolkit
+    * `fastafs --version` will now also output whether the binary was compiled as debug or release.
+
+2019-08-21  Youri Hoogstrate
+
+    * v1.6.1
+    * Adds process' pid to `fastafs ps`
+
+2019-08-21  Youri Hoogstrate
+
+    * v1.6.0
+    * `fastafs list` now supports view running instances of the fastafs files
+    * function `lsfastafs()` allows finding all fuse mounted fastafs instances/mointpoints
+      by making use of the 'fastafs-file'-xattr (`getfattr -n fastafs-file /mnt/fastafs/test`)
+    * Adds `fastafs ps` listing all mounted fastafs instances and their corresponding
+      mountpoints (also that are not present in the 'database').
+
 2019-08-02  Youri Hoogstrate
 
     * v1.5.0

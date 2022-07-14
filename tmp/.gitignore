@@ -1,0 +1,9 @@
+*.2bit
+benchmark
+*.fa
+*.fasta
+*.fastafs
+/mnt
+*.txt
+*.x
+*.zst

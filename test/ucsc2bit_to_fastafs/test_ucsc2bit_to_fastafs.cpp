@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     std::string ucsc2bit_file = "tmp/test.2bit";
 
     // 01 fasta_to_fastafs()
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
 
     // 02 load fastafs
     fastafs fs = fastafs("test");
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
     std::istream_iterator<char> b2(ifs2), e2;
 
     BOOST_CHECK_EQUAL_COLLECTIONS(b1, e1, b2, e2);
-    BOOST_CHECK_EQUAL(written, (size_t) 399);
+    BOOST_CHECK_EQUAL(written, (size_t) 403);
 }
 
 

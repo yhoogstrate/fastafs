@@ -50,7 +50,12 @@
 using namespace std::literals;
 
 
+#if DEBUG
 static const int READ_BUFFER_SIZE = 4096;
+#else
+static const int READ_BUFFER_SIZE = 262144;
+#endif //DEBUG
+
 
 static const std::string UCSC2BIT_MAGIC = "\x43\x27\x41\x1a"s;
 static const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
@@ -58,7 +63,26 @@ static const std::string UCSC2BIT_VERSION = "\x00\x00\x00\x00"s;
 static const std::string FASTAFS_MAGIC = "\x0F\x0A\x46\x53"s;
 static const std::string FASTAFS_VERSION = "\x00\x00\x00\x00"s;
 
+static const std::string ZSTD_MAGIC = "\x28\xB5\x2F\xFD"s;
+
+
 static const std::string DICT_HEADER = "@HD\tVN:1.0\tSO:unsorted\n";
+
+
+static const std::string FASTAFS_FILE_XATTR_NAME = "fastafs-file";
+static const std::string FASTAFS_PID_XATTR_NAME = "fastafs-pid";
+
+
+static const size_t MAX_SIZE_SEQ_NAME = 255;
+
+
+const static char DICT_TWOBIT = 1;
+const static char DICT_FOURBIT = 2;
+const static char DICT_FIVEBIT = 3;
+
+
+static const int ZSTD_COMPRESSION_QUALIITY = 5;
+static const unsigned ZSTD_SEEKABLE_FRAME_SIZE = 1024 * 1024; // size in bytes [1mb]
 
 
 #endif

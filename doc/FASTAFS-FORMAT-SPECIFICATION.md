@@ -21,7 +21,7 @@ If this metadata would be written in the header located before the sequence data
 | GENERIC-HEADER |        |        |        |
 |        | [MAGIC](#magic) | 4 bytes | `x0F x0A x46 x53` |
 |        | [FILE FORMAT VERSION](#file-format-version) | [4-byte integer](#four-byte-integer) | `x00 x00 x00 x00` |
-|        | [FASTAFS-FLAG](#fastafs-flag) | 2 bytes | Certain binary flags |
+|        | [FASTAFS-FLAGS](#fastafs-flags) | 2 bytes | Certain binary flags |
 |        | [FILE-POSITION-OF-INDEX](#file-position-of-the-index) | [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the INDEX is located | 
 | DATA | --- | --- | --- |
 |   -> per sequence | 
@@ -40,7 +40,7 @@ If this metadata would be written in the header located before the sequence data
 | INDEX  | --- | --- |  |
 |        | NUMBER-SEQUENCES | uint32_t as [4-byte integer](#four-byte-integer) | Number of sequences included |
 |   -> per sequence | 
-|        | [SEQUENCE-FLAG](#sequence-flag) | 2 bytes | storing metadata and type of data |
+|        | [SEQUENCE-FLAGS](#sequence-flags) | 2 bytes | storing metadata and type of data |
 |        | NAME-LENGTH | 1 byte as unsigned char | length in bytes; name cannot exceed 255 bytes |
 |        | NAME-FASTA | NAME-LENGTH x char | FASTA header; may not include new-lines or '>' |
 |        | START-POSITION-IN-BODY of N-COMPR-NUC | uint32_t as [4-byte integer](#four-byte-integer) | Location in the file (offset in bytes from beginning) where the DATA block for this sequence starts |
@@ -50,7 +50,7 @@ If this metadata would be written in the header located before the sequence data
 |          | METADATA-TYPE-FLAG | 2 bytes | 
 |          | ENTRY | type specific, examples below: |
 |          | => ORIGINAL PADDING | uint32_t as [4-byte integer](#four-byte-integer) | The number of nucleotides per line in the original FASTA file |
-
+| CRC32  | Checksum on entire file | 4 bytes | To ensure whole file integrity |
 
 ### GENERIC-HEADER ###
 
@@ -80,7 +80,7 @@ The bit representation of these bytes are:
     +--------+--------+--------+--------+
 ```
 
-#### FASTAFS-FLAG ####
+#### FASTAFS-FLAGS ####
 
 ``` 
 bit 0   file-complete
@@ -115,13 +115,23 @@ The index is located at the end of the data. This file offset in bytes from the 
 
 Repeated for every sequence, in order matching SEQUENCE-HEADER
 
-#### SEQUENCE-FLAG #### 
+#### SEQUENCE-FLAGS #### 
 
 The sequence flag allows to describe the following metadata for each sequence:
 
 ```
-bit 0   is-rna      [1 = yes, 0 = DNA]
-bit 1   reserved    [reserved, library type 2 -> protein]
+bit 0   combined sequence type
+bit 1   combined sequence type
+```
+
+| bit-0 | bit-1 | Type | Alphabet |
+| ---- | ---- | - | - |
+| `0` | `0` | DNA | `ACTG` + `N` |
+| `1` | `0` | RNA | `ACUG` + `N` |
+| `0` | `1` | IUPEC Nucleotide | `ACGTURYKMSWBDHVN` + `-` |
+| `1` | `1` | reserved for protein | to be determined |
+
+```
 bit 2   reserved    [reserved, library type 2 -> protein]
 bit 3   is-complete [1: checksum is present, 0: some regions are reserved but not yet 'downloaded']
 bit 4   is-circular 

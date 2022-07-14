@@ -5,7 +5,6 @@
 
 #include "twobit_byte.hpp"
 
-const char twobit_byte::twobit_hash[256][5] = {"TTTT", "TTTC", "TTTA", "TTTG", "TTCT", "TTCC", "TTCA", "TTCG", "TTAT", "TTAC", "TTAA", "TTAG", "TTGT", "TTGC", "TTGA", "TTGG", "TCTT", "TCTC", "TCTA", "TCTG", "TCCT", "TCCC", "TCCA", "TCCG", "TCAT", "TCAC", "TCAA", "TCAG", "TCGT", "TCGC", "TCGA", "TCGG", "TATT", "TATC", "TATA", "TATG", "TACT", "TACC", "TACA", "TACG", "TAAT", "TAAC", "TAAA", "TAAG", "TAGT", "TAGC", "TAGA", "TAGG", "TGTT", "TGTC", "TGTA", "TGTG", "TGCT", "TGCC", "TGCA", "TGCG", "TGAT", "TGAC", "TGAA", "TGAG", "TGGT", "TGGC", "TGGA", "TGGG", "CTTT", "CTTC", "CTTA", "CTTG", "CTCT", "CTCC", "CTCA", "CTCG", "CTAT", "CTAC", "CTAA", "CTAG", "CTGT", "CTGC", "CTGA", "CTGG", "CCTT", "CCTC", "CCTA", "CCTG", "CCCT", "CCCC", "CCCA", "CCCG", "CCAT", "CCAC", "CCAA", "CCAG", "CCGT", "CCGC", "CCGA", "CCGG", "CATT", "CATC", "CATA", "CATG", "CACT", "CACC", "CACA", "CACG", "CAAT", "CAAC", "CAAA", "CAAG", "CAGT", "CAGC", "CAGA", "CAGG", "CGTT", "CGTC", "CGTA", "CGTG", "CGCT", "CGCC", "CGCA", "CGCG", "CGAT", "CGAC", "CGAA", "CGAG", "CGGT", "CGGC", "CGGA", "CGGG", "ATTT", "ATTC", "ATTA", "ATTG", "ATCT", "ATCC", "ATCA", "ATCG", "ATAT", "ATAC", "ATAA", "ATAG", "ATGT", "ATGC", "ATGA", "ATGG", "ACTT", "ACTC", "ACTA", "ACTG", "ACCT", "ACCC", "ACCA", "ACCG", "ACAT", "ACAC", "ACAA", "ACAG", "ACGT", "ACGC", "ACGA", "ACGG", "AATT", "AATC", "AATA", "AATG", "AACT", "AACC", "AACA", "AACG", "AAAT", "AAAC", "AAAA", "AAAG", "AAGT", "AAGC", "AAGA", "AAGG", "AGTT", "AGTC", "AGTA", "AGTG", "AGCT", "AGCC", "AGCA", "AGCG", "AGAT", "AGAC", "AGAA", "AGAG", "AGGT", "AGGC", "AGGA", "AGGG", "GTTT", "GTTC", "GTTA", "GTTG", "GTCT", "GTCC", "GTCA", "GTCG", "GTAT", "GTAC", "GTAA", "GTAG", "GTGT", "GTGC", "GTGA", "GTGG", "GCTT", "GCTC", "GCTA", "GCTG", "GCCT", "GCCC", "GCCA", "GCCG", "GCAT", "GCAC", "GCAA", "GCAG", "GCGT", "GCGC", "GCGA", "GCGG", "GATT", "GATC", "GATA", "GATG", "GACT", "GACC", "GACA", "GACG", "GAAT", "GAAC", "GAAA", "GAAG", "GAGT", "GAGC", "GAGA", "GAGG", "GGTT", "GGTC", "GGTA", "GGTG", "GGCT", "GGCC", "GGCA", "GGCG", "GGAT", "GGAC", "GGAA", "GGAG", "GGGT", "GGGC", "GGGA", "GGGG"};
 
 
 /*
@@ -48,18 +47,18 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         //      ??????00
         //          11?? ~(3 << bit_offset)
         // data ????????
-        this->data = (unsigned char)(this->data & ~(3 << bit_offset));
+        this->data = (unsigned char)(this->data & ~((2 + 1) << bit_offset));
         break;
     case 1://NUCLEOTIDE_C (01)
-        this->data = (unsigned char)(this->data & ~(2 << bit_offset));
-        this->data = (unsigned char)(this->data | (1 << bit_offset));
+        this->data = (unsigned char)(this->data & ~((2) << bit_offset));
+        this->data = (unsigned char)(this->data | ((1) << bit_offset));
         break;
     case 2://NUCLEOTIDE_A (10)
-        this->data = (unsigned char)(this->data & ~(1 << bit_offset));
-        this->data = (unsigned char)(this->data | (2 << bit_offset));
+        this->data = (unsigned char)(this->data & ~((1) << bit_offset));
+        this->data = (unsigned char)(this->data | ((2) << bit_offset));
         break;
     case 3://NUCLEOTIDE_G (11)
-        this->data = (unsigned char)(this->data | (nucleotide << bit_offset));
+        this->data = (unsigned char)(this->data | ((2 + 1) << bit_offset));
         break;
 #if DEBUG
     default:
@@ -72,6 +71,7 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 
 // input char "AACCCTTGG"
 // N's are treated as 0, for some weird reason
+// this function seems specific for UCSC 2 bit format?! - if so, denote it like that
 void twobit_byte::set(char* buffer)
 {
     const std::array< unsigned char, 4> bit_offsets = {6, 4, 2, 0};
@@ -110,17 +110,58 @@ void twobit_byte::set(char* buffer)
 **/
 char *twobit_byte::get(unsigned char length)
 {
+#if DEBUG
+    if(length > 4) {
+        throw std::invalid_argument("twobit_byte::get(unsigned char length) -> out of bound: " + std::to_string(length) + "\n");
+    }
+#endif //DEBUG
+
     char *seq = new char[length + 1];
+
     for(unsigned char i = 0; i < length; i++) { // length = 4: i = 0, 1, 2, 3
-        seq[i] = twobit_byte::twobit_hash[this->data][i];
+        seq[i] = twobit_byte::encode_hash[this->data][i];
     }
     seq[length] = '\0';
+
     return seq;
 }
 
 
 
-const char *twobit_byte::get()
+char *twobit_byte::get()
 {
-    return twobit_byte::twobit_hash[this->data];
+    return twobit_byte::encode_hash[this->data];
 }
+
+
+/*
+ * To calculate file offset
+ *
+ * example:
+ *
+ * >Seq
+ * [ACTG][ACTG] has offset of 2 (or 3)?
+ *
+ * >Seq
+ * [ACTG][ACTG][AC] has offset of 2 (or 3)?
+ * */
+const off_t twobit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
+{
+    return (off_t) n_nucleotides / twobit_byte::nucleotides_per_byte;
+}
+
+const off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
+{
+    return  twobit_byte::nucleotides_to_compressed_fileoffset(n_nucleotides + twobit_byte::nucleotides_per_byte - 1);
+}
+
+
+
+
+// needs to be separate function because not encodings read byte-per-byte
+void twobit_byte::next(chunked_reader &r)
+{
+    this->data = r.read();
+}
+
+

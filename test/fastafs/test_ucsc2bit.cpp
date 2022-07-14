@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
 
     // 2. load fastafs
     fastafs fs = fastafs("test");
@@ -400,7 +400,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
 {
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
-    fasta_to_fastafs("test/data/test.fa", fastafs_file);
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);

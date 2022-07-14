@@ -27,6 +27,9 @@ struct ucsc2bit_seq_header {
     uint32_t m_blocks;
     std::vector<uint32_t> m_block_starts;
     std::vector<uint32_t> m_block_sizes;
+
+    ucsc2bit_seq_header():
+        name_size(0), name(nullptr), n_blocks(0) { }
 };
 
 struct ucsc2bit_seq_header_conversion_data {
