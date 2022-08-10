@@ -14,7 +14,7 @@
 #include "config.hpp"
 
 // as these chars are coming from ifstream.read
-uint32_t fourbytes_to_uint(char *chars, unsigned char offset)
+uint32_t fourbytes_to_uint(unsigned char *chars, unsigned char offset)
 {
     uint32_t u = ((unsigned char) chars[0 + offset] << 24) | ((unsigned char) chars[1 + offset] << 16) | ((unsigned char)  chars[2 + offset] << 8) | ((unsigned char) chars[3 + offset]);
     return u;
@@ -36,7 +36,7 @@ the equivalent of 129 in their encoding is as follows:
 
 The function below decodes these 4 charred strings into an uint32_teger
 */
-uint32_t fourbytes_to_uint_ucsc2bit(char *chars, unsigned char offset)
+uint32_t fourbytes_to_uint_ucsc2bit(unsigned char *chars, unsigned char offset)
 {
     uint32_t u = ((unsigned char) chars[3 + offset] << 24) | ((unsigned char) chars[2 + offset] << 16) | ((unsigned char)  chars[1 + offset] << 8) | ((unsigned char) chars[0 + offset]);
 
@@ -84,7 +84,7 @@ size_t remove_chars(char *s, int c, size_t l)
 }
 
 
-void uint_to_fourbytes(char *chars, uint32_t n)
+void uint_to_fourbytes(unsigned char *chars, uint32_t n)
 {
     chars[0] = (signed char)((n >> 24) & 0xFF);
     chars[1] = (signed char)((n >> 16) & 0xFF);

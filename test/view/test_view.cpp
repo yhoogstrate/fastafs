@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
     fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
-
+    
     for(uint32_t i = 0 ; i <= 7; i++) {
         in_N = fs.data[1]->get_n_offset(i, &num_Ns);
         BOOST_CHECK_EQUAL(num_Ns, 0);
@@ -336,6 +336,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
     //std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 100);
 
@@ -380,6 +381,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     // test fastafs_seq functions
     //std::ifstream fh(fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     chunked_reader fh = chunked_reader(fastafs_file.c_str());
+    fh.fopen(0);
     //BOOST_REQUIRE(fh.is_open());
 
     // 1   2   3   4   5   6   7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22
@@ -521,6 +523,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 
     std::string full_file = ">IUPAC\nNBKA\nHMDC\nUWGS\nYVTR\nHGWV\nUMTB\nSDN-\n----\n----\n-BGY\nADNH\nSMUT\nRCKW\nVsbh\nvdnr\ntgyc\nmkwu\naAVT\nSDKN\nB---\nUGWM\nHYRC\n";// length = 117
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 200);
 
@@ -883,6 +886,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     ffs2f_init* cache = fs.init_ffs2f(60, true);
 
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
 
     /* maak alle substrings:
       [....]
