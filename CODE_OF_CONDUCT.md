@@ -4,7 +4,7 @@ This code of conduct outlines our expectations for participants within the
 FASTAFS (and derivative projects) community, as well as steps to reporting
 unacceptable behavior. We are committed to providing a welcoming and inspiring 
 community for all and expect our code of conduct to be honored. Anyone who 
-iolates this code of conduct may be banned from the community.
+violates this code of conduct may be banned from the community.
 
 Our open source community strives to:
 
@@ -15,7 +15,7 @@ Our open source community strives to:
   limited to members of any race, ethnicity, culture, national origin, colour,
   immigration status, social and economic class, educational level, sex, sexual
   orientation, gender identity and expression, age, size, family status,
-  political belief, religion, and mental and physical ability.
+  political belief, religion, right/left handed and mental and physical ability.
 
 * **Be considerate**: Your work will be used by other people, and you in turn
   will depend on the work of others. Any decision you take will affect users
