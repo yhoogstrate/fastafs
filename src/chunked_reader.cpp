@@ -364,6 +364,8 @@ void Context::fopen(off_t file_offset)
 
 void Context::seek(off_t arg_offset)
 {
+    printf("context::seek()\n");
+
     this->file_i = arg_offset; // @todo obtain return value from this->state->seek() and limit this
     this->state->seek(arg_offset);// set file pointer
     this->cache_buffer();// update internal buffer

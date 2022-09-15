@@ -359,16 +359,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
         // test seek stuff
         r_zstd.seek(0); // reset to first pos in file
-        BOOST_CHECK_EQUAL(r_zstd.tell(), 0);
+        BOOST_REQUIRE_EQUAL(r_zstd.tell(), 0);
         
         {
-            r_zstd.seek(0); // reset to first pos in file
-            BOOST_CHECK_EQUAL(c1.tell(), 0);
+            c1.seek(0); // reset to first pos in file
+            BOOST_REQUIRE_EQUAL(c1.tell(), 0);
         }
         
         {
-            r_zstd.seek(0); // reset to first pos in file
-            BOOST_CHECK_EQUAL(c2.tell(), 0);
+            c2.seek(0); // reset to first pos in file
+            BOOST_REQUIRE_EQUAL(c2.tell(), 0);
         }
 
         written = r_zstd.read(buffer, 4);
