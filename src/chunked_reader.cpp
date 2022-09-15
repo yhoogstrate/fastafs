@@ -6,7 +6,6 @@
 chunked_reader::chunked_reader(char * afilename) :
     fh_flat(nullptr), fh_zstd(nullptr), buffer_i(0), buffer_n(0), file_i(0)
 {
-
     this->filename = realpath_cpp(afilename);
     this->init();
 }
