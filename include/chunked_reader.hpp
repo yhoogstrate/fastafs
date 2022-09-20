@@ -31,7 +31,7 @@ enum compression_type : signed char { // dit is State
 
 
 
-class chunked_reader // dit is Context
+class chunked_reader_old // dit is Context
 {
 private:
     std::ifstream *fh_flat;
@@ -49,9 +49,9 @@ private:
 
 
 public:
-    chunked_reader(char *); // filename
-    chunked_reader(const char *); // filename
-    ~chunked_reader();
+    chunked_reader_old(char *); // filename
+    chunked_reader_old(const char *); // filename
+    ~chunked_reader_old();
 
     void init(); // generic tasks needed for init
 
@@ -76,17 +76,17 @@ public:
 
 
 
-class Context;
+class chunked_reader;
 
 class State
 {
 protected:
-    Context *context; // back-reference to context, to access file_i, filename etc.
+    chunked_reader *context; // back-reference to context, to access file_i, filename etc.
 
 public:
     virtual ~State() {};
-    void set_context(Context *);
-    size_t read(char *, size_t, size_t &, size_t &); // reads from buffer, context a-specific
+    void set_context(chunked_reader *);
+    size_t read(unsigned char *, size_t, size_t &, size_t &); // reads from buffer, context a-specific
 
     // virtual functions:
     virtual void fopen(off_t) = 0;
@@ -129,7 +129,7 @@ public:
 };
 
 
-class Context // master chunked_reader
+class chunked_reader // master chunked_reader
 {
 protected:
     std::string filename;
@@ -145,23 +145,24 @@ protected:
 
 public:
     void TransitionTo(State *); // @todo rename to set_compression_type
-    Context(const char *) ;
-    
+    chunked_reader(const char *) ;
+    ~chunked_reader();
+  
     State* find_state();
     const std::type_info& typeid_state();
 
-    
     const std::string& get_filename();
     char* get_buffer();
 
+    compression_type get_filetype();
+
     void fopen(off_t);
     size_t cache_buffer();
-    size_t read(char *, size_t);
+    size_t read(unsigned char *, size_t);
     void seek(off_t);
     size_t tell();
     size_t get_file_i();
 };
-
 
 
 

@@ -52,6 +52,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     // >  c  h  r  1 \n  t  t  t  t  c  c  c  c  a  a  a  a  g  g  g \n  g \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(15), 24);
     chunked_reader file = chunked_reader(fs.filename.c_str());
+    file.fopen(0);
 
     ffs2f_init* cache_p40 = fs.init_ffs2f(40, true);
     ffs2f_init* cache_p23 = fs.init_ffs2f(23, true);
@@ -102,6 +103,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     // >  c  h  r  1 \n  T  T  T  T  C  C  C  C  A  A  A  A  G  G  G  G \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(fs.data[0]->n), 23);
     chunked_reader file = chunked_reader(fs.filename.c_str());
+    file.fopen(0);
     ffs2f_init* cache_p0 = fs.init_ffs2f(0, true);
 
     // then: check returncodes:
@@ -109,12 +111,13 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     char chunk[1];
 
     std::string ref = ">chr1\nttttccccaaaagggg\n";
-
+    
     for(uint32_t i = 0; i < ref.size(); i++) {
         ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
+
 
     // check if out of bound query returns 0
     ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), file);
@@ -140,6 +143,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     // >  c  h  r  1 \n  T  T  T  T  C  C  C  C  A  A  A  A  G  G  G  G \n
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(fs.data[0]->n), 23);
     chunked_reader file = chunked_reader(fs.filename.c_str());
+    file.fopen(0);
 
     ffs2f_init* cache_p0 = fs.init_ffs2f(0, false); // no masking; everything must be uppercase
 
@@ -174,6 +178,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     BOOST_REQUIRE(fs.data.size() > 0);
 
     chunked_reader file = chunked_reader(fs.filename.c_str());
+    file.fopen(0);
 
     //fs.data[0]->sha1(cache_p0->sequences[0], &file);
     BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache_p0->sequences[0], file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
@@ -194,6 +199,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_md5)
     BOOST_REQUIRE(fs.data.size() > 0);
 
     chunked_reader file = chunked_reader(fs.filename.c_str());
+    file.fopen(0);
 
     BOOST_CHECK_EQUAL(fs.data[0]->md5(cache->sequences[0], file), "75255c6d90778999ad3643a2e69d4344");
     BOOST_CHECK_EQUAL(fs.data[1]->md5(cache->sequences[1], file), "8b5673724a9965c29a1d76fe7031ac8a");

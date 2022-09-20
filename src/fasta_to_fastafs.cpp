@@ -111,7 +111,7 @@ void fasta_to_fastafs_seq::finish_sequence(std::ofstream &fh_fastafs)
     }
 #endif //DEBUG
 
-    char buffer[4 +  1];
+    unsigned char buffer[4 +  1];
 
     // (over)write number nucleotides
     std::streamoff index_file_position = fh_fastafs.tellp();
@@ -1347,7 +1347,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
 
     // write index/footer
     unsigned int index_file_position = (uint32_t) fh_fastafs.tellp();
-    char buffer[4 + 1];
+    unsigned char buffer[4 + 1];
     uint_to_fourbytes(buffer, (uint32_t) index.size());
     fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
@@ -1402,7 +1402,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
     // close fastafs, calc crc32, re-open and save
     fh_fastafs.close();
     uint32_t crc32c = file_crc32(fastafs_file, 4, written);
-    char byte_enc[5] = "\x00\x00\x00\x00";
+    unsigned char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
     std::ofstream fh_fastafs2(fastafs_file.c_str(), std::ios::out | std::ios::binary | std::ios::app);
     if(fh_fastafs2.is_open()) {

@@ -1,5 +1,5 @@
 
-#define BOOST_TEST_MODULE fastfs_test_chunked_reader
+#define BOOST_TEST_MODULE fastfs_test_chunked_reader_old
 
 
 #include <iostream>
@@ -17,7 +17,7 @@
 
 
 
-void flush_buffer(char *buffer, size_t n, char fill)
+void flush_buffer(unsigned char *buffer, size_t n, unsigned char fill)
 {
     for(size_t i = 0; i < n; i++) {
         buffer[i] = fill;
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_SUITE(Testing)
 
 
 
-BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
+BOOST_AUTO_TEST_CASE(test_chunked_reader_old__small_file)
 {
     std::string test_name = "test";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
                                      (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
 
 
-    char buffer[READ_BUFFER_SIZE + 1];
+    unsigned char buffer[READ_BUFFER_SIZE + 1];
     flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     std::string std_buffer;
     buffer[1024] = '\0';
@@ -56,16 +56,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
     {
         // old init
-        chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
+        chunked_reader_old r_flat = chunked_reader_old(fastafs_file.c_str());
         
         // Context equivalent - uncompressed
-        Context c1(fastafs_file.c_str());
+        chunked_reader c1(fastafs_file.c_str());
         c1.fopen(0);
         BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
         BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
         
         // Context equivalent - compressed
-        Context c2(fastafs_file_zstd.c_str());
+        chunked_reader c2(fastafs_file_zstd.c_str());
         c2.fopen(0);
         BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
         BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
@@ -73,9 +73,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
 
         BOOST_CHECK_EQUAL(r_flat.tell(), 0);
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 403);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         BOOST_CHECK_EQUAL(r_flat.tell(), 403);
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             BOOST_CHECK_EQUAL(c1.tell(), 0);
             written = c1.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 403);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
             BOOST_CHECK_EQUAL(c1.tell(), 403);
@@ -96,22 +96,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         
         // Context equivalent - compressed zstd
         {
-            printf("checkpoint 1\n");
-
             BOOST_CHECK_EQUAL(c2.tell(), 0);
-            printf("checkpoint 2\n");
 
             written = c2.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 403);
-            printf("checkpoint 3\n");
 
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
-            printf("checkpoint 4\n");
 
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
             BOOST_CHECK_EQUAL(c2.tell(), 403);
-            printf("checkpoint 5\n");
 
             BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
             BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
@@ -119,12 +113,12 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
 
         // test what happens when file is closed (twice)
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         BOOST_CHECK_EQUAL(r_flat.tell(), 403);
 
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         BOOST_CHECK_EQUAL(r_flat.tell(), 403);
@@ -189,10 +183,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
 
         r_flat.seek(0);
-        written = r_flat.read(buffer, 4);
+        written = r_flat.read((char*) &buffer[0], 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_flat.tell(), 4);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -204,7 +198,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             BOOST_CHECK_EQUAL(written, 4);
 
             BOOST_CHECK_EQUAL(c1.tell(), 4);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -218,7 +212,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             BOOST_CHECK_EQUAL(written, 4);
 
             BOOST_CHECK_EQUAL(c2.tell(), 4);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -227,10 +221,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         r_flat.seek(1); // reset to first pos in file
         BOOST_CHECK_EQUAL(r_flat.tell(), 1);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
-        written = r_flat.read(buffer, 4);
+        written = r_flat.read((char*) &buffer[0], 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_flat.tell(), 5);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -242,7 +236,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             written = c1.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
             BOOST_CHECK_EQUAL(c1.tell(), 5);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -256,7 +250,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             written = c2.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
             BOOST_CHECK_EQUAL(c2.tell(), 5);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL(std_buffer.size(), reference3.size());
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
             if(std_buffer.compare(reference3) != 0) {
@@ -286,16 +280,16 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
     }
 
     {
-        chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
+        chunked_reader_old r_zstd = chunked_reader_old(fastafs_file_zstd.c_str());
         
         // Context equivalent - uncompressed
-        Context c1(fastafs_file.c_str());
+        chunked_reader c1(fastafs_file.c_str());
         c1.fopen(0);
         BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
         BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
         
         // Context equivalent - compressed
-        Context c2(fastafs_file_zstd.c_str());
+        chunked_reader c2(fastafs_file_zstd.c_str());
         c2.fopen(0);
         BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
         BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
@@ -304,14 +298,14 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 403);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         
         {
             written = c1.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 403);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -319,7 +313,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         {
             written = c2.read(buffer, 1024);
             BOOST_CHECK_EQUAL(written, 403);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -374,7 +368,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         written = r_zstd.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_zstd.tell(), 4);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -382,7 +376,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             written = c1.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
             BOOST_CHECK_EQUAL(r_zstd.tell(), 4);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -391,7 +385,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             written = c2.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
             BOOST_CHECK_EQUAL(r_zstd.tell(), 4);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -415,7 +409,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
         written = r_zstd.read(buffer, 4);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(r_zstd.tell(), 5);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         
@@ -423,7 +417,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             written = c1.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
             BOOST_CHECK_EQUAL(r_zstd.tell(), 5);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -432,7 +426,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
             written = c2.read(buffer, 4);
             BOOST_CHECK_EQUAL(written, 4);
             BOOST_CHECK_EQUAL(r_zstd.tell(), 5);
-            std_buffer = std::string(buffer, written);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content");
             flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
         }
@@ -440,7 +434,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__small_file)
 }
 
 
-BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
+BOOST_AUTO_TEST_CASE(test_chunked_reader_old__large_file)
 {
     // this file needs two buffers as its size is 1593
 
@@ -456,7 +450,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
                                      (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
 
 
-    char buffer[READ_BUFFER_SIZE + 1];
+    unsigned char buffer[READ_BUFFER_SIZE + 1];
     flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     std::string std_buffer;
     size_t written;
@@ -470,25 +464,25 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
 
 
     {
-        chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
+        chunked_reader_old r_flat = chunked_reader_old(fastafs_file.c_str());
 
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 1024);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content 1st read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 569);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -496,9 +490,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
         // set back
         r_flat.seek(1024);
 
-        written = r_flat.read(buffer, 1024);
+        written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 569);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -506,46 +500,46 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
         // set back
         r_flat.seek(4);
 
-        written = r_flat.read(buffer, 1024);// reads across two buffers?
+        written = r_flat.read((char*) &buffer[0], 1024);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 1024);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
-        written = r_flat.read(buffer, 1024);// reads across two buffers?
+        written = r_flat.read((char*) &buffer[0], 1024);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 565);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference4), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
 
         r_flat.seek(4);
 
-        written = r_flat.read(buffer, 4);// reads across two buffers?
+        written = r_flat.read((char*) &buffer[0], 4);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 4);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference5), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
-        written = r_flat.read(buffer, 1024);// reads across two buffers?
+        written = r_flat.read((char*) &buffer[0], 1024);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 1024);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference6), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     }
 
     {
-        chunked_reader r_zstd = chunked_reader(fastafs_file_zstd.c_str());
+        chunked_reader_old r_zstd = chunked_reader_old(fastafs_file_zstd.c_str());
 
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 1024);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content 1st read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 569);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -563,7 +557,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
 
         written = r_zstd.read(buffer, 1024);
         BOOST_CHECK_EQUAL(written, 569);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -573,13 +567,13 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
 
         written = r_zstd.read(buffer, 1024);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 1024);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference3), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
         written = r_zstd.read(buffer, 1024);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 565);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference4), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
@@ -588,20 +582,20 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__large_file)
 
         written = r_zstd.read(buffer, 4);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 4);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference5), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
 
         written = r_zstd.read(buffer, 1024);// reads across two buffers?
         BOOST_CHECK_EQUAL(written, 1024);
-        std_buffer = std::string(buffer, written);
+        std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference6), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     }
 }
 
 
-BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
+BOOST_AUTO_TEST_CASE(test_chunked_reader_old__new_style)
 {
     // this file needs two buffers as its size is 1593
 
@@ -617,7 +611,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
                                      (unsigned) ZSTD_SEEKABLE_FRAME_SIZE);
 
 
-    char buffer[READ_BUFFER_SIZE + 1];
+    unsigned char buffer[READ_BUFFER_SIZE + 1];
     flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
     std::string std_buffer;
     size_t written;
@@ -631,22 +625,19 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__new_style)
 
 
     {
-        ////chunked_reader r_flat = chunked_reader(fastafs_file.c_str());
+        ////chunked_reader_old r_flat = chunked_reader_old(fastafs_file.c_str());
         
-        Context c = Context(fasta_file.c_str());
+        chunked_reader c = chunked_reader(fasta_file.c_str());
         c.fopen(0); // open file handle and load buffer
         
         written = c.read(buffer, 10);
         buffer[written] = '\0';
-        printf("\n[%s]\n%i\n",buffer,written);
         
         written = c.read(buffer, 100);
         buffer[written] = '\0';
-        printf("\n[%s]\n%i\n",buffer,written);
 
         written = c.read(buffer, 100);
         buffer[written] = '\0';
-        printf("\n[%s]\n%i\n",buffer,written);
 
     }
 }

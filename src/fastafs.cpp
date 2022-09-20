@@ -639,30 +639,44 @@ fastafs::~fastafs()
 
 void fastafs::load(std::string afilename)
 {
+    printf("aa\n");
     std::streampos size;
-    char *memblock;
-
+    unsigned char *memblock;
+    printf("ab\n");
+    
     chunked_reader fh_in = chunked_reader(afilename.c_str());
+    printf("ac\n");
+    
     {
+        printf("ad\n");
+        fh_in.fopen(0);
+        printf("ae\n");
+    
         this->filetype = fh_in.get_filetype();
+        printf("af\n");
+    
 
-        memblock = new char [20 + 1]; //sha1 is 20b
+
+        memblock = new unsigned char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
         //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
         this->filename = realpath_cpp(afilename);
+
         size = (size_t) fh_in.read(memblock, 16);
 
         if(size < 16) {
             //file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
+
             fh_in.seek(0);
             uint32_t i;
 
             // HEADER
             fh_in.read(memblock, 14);
             memblock[16] = '\0';
+
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
@@ -703,10 +717,10 @@ void fastafs::load(std::string afilename)
                 // name
                 size_t namesize = (unsigned char) memblock[0]; // cast to something that is large enough (> 128)
                 //char name[namesize + 1];
-                char *name = new char[namesize + 1];
+                unsigned char *name = new unsigned char[namesize + 1];
                 fh_in.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
-                s->name = std::string(name);
+                s->name = std::string(reinterpret_cast<char*>(name));
 
                 // set cursor and save sequence data position
                 fh_in.read(memblock, 4);
@@ -797,6 +811,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     chunked_reader fh = chunked_reader(this->filename.c_str());
+    fh.fopen(0);
 
     for(uint32_t i = 0; i < this->data.size(); i++) {
         this->data[i]->view_fasta(cache->sequences[i], fh);
@@ -860,6 +875,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
 #endif
 
     chunked_reader fh = chunked_reader(this->filename.c_str());
+    fh.fopen(0);
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     // parse "chr..:..-.." string
@@ -891,10 +907,13 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
  */
 uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
 {
-
     chunked_reader fh = chunked_reader(this->filename.c_str());
+    fh.fopen(0);
 
-    return this->view_fasta_chunk(cache, buffer, buffer_size, file_offset, fh);
+    uint32_t s = this->view_fasta_chunk(cache, buffer, buffer_size, file_offset, fh);
+    //#printf("%02hhX %02hhX %02hhX %02hhX\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+
+    return s;
 }
 
 
@@ -953,6 +972,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     chunked_reader file = chunked_reader(this->filename.c_str());
+    file.fopen(0);
     char n_seq[4];
     pos_limit += 4;// skip this loop after writing first four bytes
     while(pos < pos_limit) {
@@ -1675,12 +1695,12 @@ bool fastafs::check_file_integrity(bool verbose)
 {
     uint32_t crc32_current = this->get_crc32();
 
-    char buf_old[5] = "\x00\x00\x00\x00";
+    unsigned char buf_old[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(buf_old, (uint32_t) this->crc32f);
 
     if(crc32_current != this->crc32f) {
 
-        char buf_new[5] = "\x00\x00\x00\x00";
+        unsigned char buf_new[5] = "\x00\x00\x00\x00";
         uint_to_fourbytes(buf_new, (uint32_t) crc32_current);
 
         if(verbose) {
@@ -1726,6 +1746,7 @@ bool fastafs::check_sequence_integrity(bool verbose)
     ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
 
     chunked_reader file = chunked_reader(this->filename.c_str());
+    file.fopen(0);
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     for(uint32_t i = 0; i < this->data.size(); i++) {

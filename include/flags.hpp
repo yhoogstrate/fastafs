@@ -51,7 +51,7 @@ protected:
     bool get_flag(unsigned char);
 
 public:
-    void set(char *);
+    void set(unsigned char *);
     std::array<unsigned char, 2> &get_bits(void); // get bit 0 or bit 1 - needed for exporting flags to file(s)
 };
 

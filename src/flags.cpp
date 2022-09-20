@@ -16,7 +16,7 @@ twobit_flag::twobit_flag()
 
 
 
-void twobit_flag::set(char *data)
+void twobit_flag::set(unsigned char *data)
 {
     this->bits[0] = data[0];
     this->bits[1] = data[1];
