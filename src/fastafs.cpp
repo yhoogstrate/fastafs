@@ -639,23 +639,13 @@ fastafs::~fastafs()
 
 void fastafs::load(std::string afilename)
 {
-    printf("aa\n");
     std::streampos size;
     unsigned char *memblock;
-    printf("ab\n");
     
     chunked_reader fh_in = chunked_reader(afilename.c_str());
-    printf("ac\n");
-    
     {
-        printf("ad\n");
         fh_in.fopen(0);
-        printf("ae\n");
-    
         this->filetype = fh_in.get_filetype();
-        printf("af\n");
-    
-
 
         memblock = new unsigned char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's

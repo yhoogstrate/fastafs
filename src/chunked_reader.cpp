@@ -345,6 +345,8 @@ size_t chunked_reader::cache_buffer()
 
     this->buffer_i = 0;
     this->file_i += s;
+    
+    return s;
 }
 
 size_t chunked_reader::read(unsigned char *arg_buffer, size_t arg_buffer_size)
@@ -389,8 +391,6 @@ void chunked_reader::fopen(off_t file_offset)
 
 void chunked_reader::seek(off_t arg_offset)
 {
-    printf("context::seek()\n");
-
     this->file_i = arg_offset; // @todo obtain return value from this->state->seek() and limit this
     this->state->seek(arg_offset);// set file pointer
     this->cache_buffer();// update internal buffer
@@ -545,7 +545,8 @@ size_t ContextZstdSeekable::cache_buffer()
             this->context->get_buffer(),
             this->context->tell() + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
         );
-    
+
+
     //printf("written = %i\n", written);
     //printf("{{%s}}\n",  this->context->get_buffer());
     
@@ -593,7 +594,7 @@ void ContextZstdSeekable::fopen(off_t start_pos)
     }
     else
     {
-        fseek_orDie(this->fh->fin, 0, SEEK_SET);// set initial file handle to 0?
+        fseek_orDie(this->fh->fin, start_pos, SEEK_SET);// set initial file handle to 0?
         // this->fh->seekg(start_pos, std::ios::beg);
 
         size_t const initResult = ZSTD_seekable_initFile(this->seekable, fh->fin);
@@ -606,7 +607,6 @@ void ContextZstdSeekable::fopen(off_t start_pos)
 
 void ContextZstdSeekable::seek(off_t arg_offset)
 {
-    printf("fseekordie: %i\n", arg_offset);
     fseek_orDie(fh->fin, arg_offset, SEEK_SET);
 }
 
