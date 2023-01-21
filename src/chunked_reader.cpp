@@ -437,18 +437,17 @@ State *chunked_reader::find_state()
 
 void ContextUncompressed::fopen(off_t start_pos = 0)
 {
-    if(this->fh == nullptr)
-    {
-        throw std::runtime_error("[ContextUncompressed::fopen] empty fh?.\n");
-    }
     if(this->fh != nullptr)
     {
         throw std::runtime_error("[ContextUncompressed::fopen] opening a non closed reader.\n");
     }
-
+    
     this->fh = new std::ifstream;
     this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-
+    if(this->fh == nullptr)
+    {
+        throw std::runtime_error("[ContextUncompressed::fopen] empty fh?\n");
+    }
 
     if(this->fh->is_open()) // @todo move to top-level fopen()
     {
@@ -515,14 +514,10 @@ ContextUncompressed::~ContextUncompressed()
 {
     if(this->fh != nullptr)
     {
+        this->fh->close();
         if(!this->fh)
         {
-            this->fh->close();
-            throw std::runtime_error("[ContextUncompressed::~ContextUncompressed] unexpected closed filehandle found.\n");
-        }
-        else
-        {
-            this->fh->close();
+            std::cerr << "[ContextUncompressed::~ContextUncompressed] unexpected closed filehandle found.\n";
         }
 
         delete this->fh;

@@ -35,3 +35,5 @@ analysis.txt
 *.naf
 .kdev4
 compile_commands.json
+*.fastafs
+*.zst
