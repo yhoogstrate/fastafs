@@ -508,10 +508,38 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader_old__large_file)
         std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        
+        { // C1
+            written = c1.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 569);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+        
+        { // C2
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 569);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference2), 0, "Difference in content 2nd read");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 0);
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        
+        { // C1
+            written = c1.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+        
+        { // C2
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 0);
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
 
         written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 0);
