@@ -31,14 +31,28 @@ src = [
 './dependencies/zstd-lib-common/xxhash.cpp',
 './dependencies/zstd-seekable-adapted/zstdseek_compress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_utils.cpp',
 './src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', './src/xbit_byte_encoder.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp',
- './src/main.cpp'
- ]
+'./src/main.cpp'
+]
+ 
+src__test_check = [
+'./dependencies/zstd-lib-common/xxhash.cpp',
+'./dependencies/zstd-seekable-adapted/zstdseek_compress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_utils.cpp',
+'./src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', './src/xbit_byte_encoder.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp',
+'./test/check/test_check.cpp'
+] 
 
-src2 = [
+src__test_cache = [
 './dependencies/zstd-lib-common/xxhash.cpp',
 './dependencies/zstd-seekable-adapted/zstdseek_compress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_utils.cpp',
 './src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', './src/xbit_byte_encoder.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp',
  './test/cache/test_cache.cpp'
+ ]
+
+src__test_chunked_reader = [
+'./dependencies/zstd-lib-common/xxhash.cpp',
+'./dependencies/zstd-seekable-adapted/zstdseek_compress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_utils.cpp',
+'./src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', './src/xbit_byte_encoder.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp',
+ './test/chunked_reader/test_chunked_reader.cpp'
  ]
 
 
@@ -55,7 +69,15 @@ executable('fastafs', src,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_cache_meson', src2, 
+executable('test_cache', src__test_cache, 
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_check', src__test_check, 
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_chunked_reader', src__test_chunked_reader, 
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
