@@ -465,12 +465,43 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader_old__large_file)
 
     {
         chunked_reader_old r_flat = chunked_reader_old(fastafs_file.c_str());
+        
+        // Context equivalent - uncompressed
+        chunked_reader c1(fastafs_file.c_str());
+        c1.fopen(0);
+        BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
+        BOOST_CHECK(c1.typeid_state() != typeid(ContextZstdSeekable));
+        
+        // Context equivalent - compressed
+        chunked_reader c2(fastafs_file_zstd.c_str());
+        c2.fopen(0);
+        BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
+        BOOST_CHECK(c2.typeid_state() != typeid(ContextUncompressed));
+
+
 
         written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 1024);
         std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
         BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content 1st read");
         flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        
+        { // C1
+            written = c1.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 1024);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content 1st read");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+        
+        { // C2
+            written = c2.read(buffer, 1024);
+            BOOST_CHECK_EQUAL(written, 1024);
+            std_buffer = std::string(reinterpret_cast<char *>(&buffer), written);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(reference1), 0, "Difference in content 1st read");
+            flush_buffer(buffer, READ_BUFFER_SIZE + 1, '\0');
+        }
+
 
         written = r_flat.read((char*) &buffer[0], 1024);
         BOOST_CHECK_EQUAL(written, 569);
