@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
     fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
-    
+
     for(uint32_t i = 0 ; i <= 7; i++) {
         in_N = fs.data[1]->get_n_offset(i, &num_Ns);
         BOOST_CHECK_EQUAL(num_Ns, 0);

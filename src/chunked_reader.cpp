@@ -259,30 +259,26 @@ void State::set_context(chunked_reader *arg_context)
 
 // This does not read the actual flat file, this copies its internal buffer to arg_buffer_to
 size_t State::read(unsigned char *arg_buffer_to, size_t arg_buffer_to_size,
-            size_t &buffer_i, size_t &buffer_n)
+                   size_t &buffer_i, size_t &buffer_n)
 {
 #if DEBUG
-    if(arg_buffer_to_size > READ_BUFFER_SIZE)
-    {
+    if(arg_buffer_to_size > READ_BUFFER_SIZE) {
         throw std::runtime_error("[ContextUncompressed::read] Requested buffer size larger than internal context buffer.\n");
     }
 #endif //DEBUG
 
     size_t written = 0;
     const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
-    
+
     // copy current internal buffer completely
-    while(written < n1)
-    {
+    while(written < n1) {
         arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
     }
 
-    if(written < arg_buffer_to_size)
-    {
+    if(written < arg_buffer_to_size) {
         this->context->cache_buffer();// needs to set n to 0
 
-        while(buffer_i < buffer_n and written < arg_buffer_to_size)
-        {
+        while(buffer_i < buffer_n and written < arg_buffer_to_size) {
             arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
         }
     }
@@ -321,16 +317,11 @@ char * chunked_reader::get_buffer()
 //@todo remove and use typeid only
 compression_type chunked_reader::get_filetype()
 {
-    if(this->typeid_state() == typeid(ContextUncompressed))
-    {
+    if(this->typeid_state() == typeid(ContextUncompressed)) {
         return compression_type::uncompressed;
-    }
-    else if(this->typeid_state() == typeid(ContextZstdSeekable))
-    {
+    } else if(this->typeid_state() == typeid(ContextZstdSeekable)) {
         return compression_type::zstd;
-    }
-    else
-    {
+    } else {
         return compression_type::undefined;
     }
 }
@@ -345,7 +336,7 @@ size_t chunked_reader::cache_buffer()
 
     this->buffer_i = 0;
     this->file_i += s;
-    
+
     return s;
 }
 
@@ -353,28 +344,26 @@ size_t chunked_reader::read(unsigned char *arg_buffer, size_t arg_buffer_size)
 {
     //arg_buffer_size = std::min(arg_buffer_size, (size_t) READ_BUFFER_SIZE);
 #if DEBUG
-    
-    if(arg_buffer == nullptr)
-    {
+
+    if(arg_buffer == nullptr) {
         throw std::runtime_error("[chunked_reader::read] Invalid / not allocated buffer.\n");
     }
 
-    if(arg_buffer_size > READ_BUFFER_SIZE)
-    {
+    if(arg_buffer_size > READ_BUFFER_SIZE) {
         throw std::runtime_error("[chunked_reader::read] Requested buffer size larger than internal context buffer.\n");
     }
-    
+
 #endif //DEBUG
-    
+
     return this->state->read(arg_buffer, arg_buffer_size, this->buffer_i, this->buffer_n);
 
 }
 
 
-void chunked_reader::TransitionTo(State *arg_state) {
+void chunked_reader::TransitionTo(State *arg_state)
+{
 
-    if(this->state != nullptr)
-    {
+    if(this->state != nullptr) {
         delete this->state; // delete and destruct previous state, incl file points, should also run fh.close(); etc.
     }
 
@@ -401,11 +390,11 @@ void chunked_reader::seek(off_t arg_offset)
 size_t chunked_reader::tell()
 {
     //printf("Context :: tell: %i - %i + %i = %i\n",
-    //this->file_i , 
-    //this->buffer_n , 
+    //this->file_i ,
+    //this->buffer_n ,
     //this->buffer_i ,
-     //this->file_i - this->buffer_n + this->buffer_i);
-     
+    //this->file_i - this->buffer_n + this->buffer_i);
+
     return this->file_i - this->buffer_n + this->buffer_i;
 }
 
@@ -424,12 +413,9 @@ const std::type_info& chunked_reader::typeid_state()
 
 State *chunked_reader::find_state()
 {
-    if(is_zstd_file(this->filename.c_str()))
-    {
+    if(is_zstd_file(this->filename.c_str())) {
         return new ContextZstdSeekable;
-    }
-    else
-    {
+    } else {
         return new ContextUncompressed;
     }
 }
@@ -437,24 +423,19 @@ State *chunked_reader::find_state()
 
 void ContextUncompressed::fopen(off_t start_pos = 0)
 {
-    if(this->fh != nullptr)
-    {
+    if(this->fh != nullptr) {
         throw std::runtime_error("[ContextUncompressed::fopen] opening a non closed reader.\n");
     }
-    
+
     this->fh = new std::ifstream;
     this->fh->open(this->context->get_filename().c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(this->fh == nullptr)
-    {
+    if(this->fh == nullptr) {
         throw std::runtime_error("[ContextUncompressed::fopen] empty fh?\n");
     }
 
-    if(this->fh->is_open()) // @todo move to top-level fopen()
-    {
+    if(this->fh->is_open()) { // @todo move to top-level fopen()
         this->seek(start_pos);
-    }
-    else
-    {
+    } else {
         throw std::runtime_error("[chunked_reader_old::init] Cannot open file for reading.\n");
     }
 }
@@ -462,13 +443,11 @@ void ContextUncompressed::fopen(off_t start_pos = 0)
 size_t ContextUncompressed::cache_buffer()
 {
 #if DEBUG
-    if(this->fh->tellg() == -1)
-    {
+    if(this->fh->tellg() == -1) {
         throw std::runtime_error("ContextUncompressed::cache_buffer\n");
     }
-    
-    if(this->context->get_buffer() == nullptr)
-    {
+
+    if(this->context->get_buffer() == nullptr) {
         throw std::runtime_error("ContextUncompressed::cache_buffer - no valid buffer?\n");
     }
 #endif //DEBUG
@@ -492,7 +471,7 @@ size_t ContextUncompressed::cache_buffer()
         this->fh->clear();
         this->fh->seekg(0, std::ios::end);
     }
-    
+
     return s;
 }
 
@@ -500,8 +479,7 @@ size_t ContextUncompressed::cache_buffer()
 
 void ContextUncompressed::seek(off_t arg_offset)
 {
-    if(!this->fh->is_open())
-    {
+    if(!this->fh->is_open()) {
         throw std::runtime_error("[ContextUncompressed::seek] unexpected closed filehandle found.\n");
     }
 
@@ -512,11 +490,9 @@ void ContextUncompressed::seek(off_t arg_offset)
 
 ContextUncompressed::~ContextUncompressed()
 {
-    if(this->fh != nullptr)
-    {
+    if(this->fh != nullptr) {
         this->fh->close();
-        if(!this->fh)
-        {
+        if(!this->fh) {
             std::cerr << "[ContextUncompressed::~ContextUncompressed] unexpected closed filehandle found.\n";
         }
 
@@ -531,20 +507,20 @@ size_t ContextZstdSeekable::cache_buffer()
 {
     //size_t written = ZSTD_seekable_decompressFile_orDie(this->fh_zstd, this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
     //this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
-    
+
     // figure out the location in the decompressed file
-    
+
     size_t written = ZSTD_seekable_decompressFile_orDie(
-            this->fh, 
-            this->context->get_file_i(), //this->context->file_i,
-            this->context->get_buffer(),
-            this->context->tell() + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
-        );
+                         this->fh,
+                         this->context->get_file_i(), //this->context->file_i,
+                         this->context->get_buffer(),
+                         this->context->tell() + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
+                     );
 
 
     //printf("written = %i\n", written);
     //printf("{{%s}}\n",  this->context->get_buffer());
-    
+
     /*
     {
     #if DEBUG
@@ -568,32 +544,31 @@ size_t ContextZstdSeekable::cache_buffer()
     */
 
     //throw std::runtime_error("[ContextZstdSeekable::cache_buffer] not implemented.\n");
-    
+
     return written;
 }
 
 void ContextZstdSeekable::fopen(off_t start_pos)
 {
-    if(this->fh != nullptr)
-    {
+    if(this->fh != nullptr) {
         throw std::runtime_error("[ContextZstdSeekable::fopen] opening a non closed reader.\n");
     }
-    
-    
+
+
     this->fh = ZSTD_seekable_decompressFile_init(this->context->get_filename().c_str());
 
 
-    if((this->fh->fin == NULL) | feof(this->fh->fin))
-    {
+    if((this->fh->fin == NULL) | feof(this->fh->fin)) {
         throw std::runtime_error("[ContextZstdSeekable::fopen] not implemented.\n");
-    }
-    else
-    {
+    } else {
         fseek_orDie(this->fh->fin, start_pos, SEEK_SET);// set initial file handle to 0?
         // this->fh->seekg(start_pos, std::ios::beg);
 
         size_t const initResult = ZSTD_seekable_initFile(this->seekable, fh->fin);
-        if (ZSTD_isError(initResult)) { fprintf(stderr, "ZSTD_seekable_init() error : %s \n", ZSTD_getErrorName(initResult)); exit(11); }
+        if(ZSTD_isError(initResult)) {
+            fprintf(stderr, "ZSTD_seekable_init() error : %s \n", ZSTD_getErrorName(initResult));
+            exit(11);
+        }
 
         //@todo class member?
         this->maxFileSize = ZSTD_seekable_getFileDecompressedSize(this->seekable);
@@ -616,6 +591,6 @@ ContextZstdSeekable::~ContextZstdSeekable()
 
         delete this->fh;
     }
-    
+
     //throw std::runtime_error("[ContextUncompressed::~ContextUncompressed] not implemented.\n");
 }

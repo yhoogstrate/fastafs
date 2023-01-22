@@ -38,9 +38,9 @@ private:
     ZSTD_seekable_decompress_init_data* fh_zstd;
 
     std::string filename; // try doing this with inode
-    
+
     compression_type filetype;
-    
+
     char buffer[READ_BUFFER_SIZE + 1];
     size_t buffer_i;
     size_t buffer_n;
@@ -62,7 +62,10 @@ public:
     void find_filetype();
 
     void set_filetype(compression_type);
-    compression_type get_filetype() { return this->filetype ; };
+    compression_type get_filetype()
+    {
+        return this->filetype ;
+    };
 
     size_t read(char *, size_t);// @deprecate
     size_t read(unsigned char *, size_t);
@@ -113,7 +116,7 @@ class ContextZstdSeekable : public State
 {
 private:
     ZSTD_seekable_decompress_init_data* fh = nullptr;
-    
+
     size_t const buffOutSize = ZSTD_DStreamOutSize();
     char* const buffOut = (char*) malloc_orDie(buffOutSize);
     ZSTD_seekable* const seekable = ZSTD_seekable_create(); //@todo -> in constructor, check if not NULL
@@ -147,7 +150,7 @@ public:
     void TransitionTo(State *); // @todo rename to set_compression_type
     chunked_reader(const char *) ;
     ~chunked_reader();
-  
+
     State* find_state();
     const std::type_info& typeid_state();
 

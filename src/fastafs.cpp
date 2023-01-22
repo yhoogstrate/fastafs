@@ -641,7 +641,7 @@ void fastafs::load(std::string afilename)
 {
     std::streampos size;
     unsigned char *memblock;
-    
+
     chunked_reader fh_in = chunked_reader(afilename.c_str());
     {
         fh_in.fopen(0);

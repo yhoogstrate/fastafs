@@ -51,7 +51,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
         // Read UCSC2bit header (n seq)
-        fh_ucsc2bit.read(  (char*)( &buffer[0]) , 12);//conversion from unsigned char* to char* (https://stackoverflow.com/questions/604431/c-reading-unsigned-char-from-file-stream)
+        fh_ucsc2bit.read((char*)(&buffer[0]), 12);    //conversion from unsigned char* to char* (https://stackoverflow.com/questions/604431/c-reading-unsigned-char-from-file-stream)
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
         uint_to_fourbytes(buffer, n);
         std::vector<ucsc2bit_seq_header *> data(n);

@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     char chunk[1];
 
     std::string ref = ">chr1\nttttccccaaaagggg\n";
-    
+
     for(uint32_t i = 0; i < ref.size(); i++) {
         ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
