@@ -10,16 +10,18 @@
 
 class database
 {
-    std::string path;
-    std::string idx;// current default: ~/.local/share/fastafs/
+    const std::string path;
+    const std::string idx;// current default: ~/.local/share/fastafs/
     //hash_map<string, unsigned int> idx;// "test": path + "/" + tostr(i) + ".fastafs"
 
 public:
-    database();
+    database(const std::string &);
+
+    const static std::string get_default_dir();
 
     void force_db_exists();
     std::string add(char *);
     void load();// reads path + "/" + info.txt, only containing N
     void list();// 'ls'
-    std::string get(std::string);
+    std::string get(char *);
 };

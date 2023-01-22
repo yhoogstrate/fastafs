@@ -175,7 +175,6 @@ size_t ZSTD_seekable_decompressFile_orDie(ZSTD_seekable_decompress_init_data* fh
     size_t written = 0;
   
     if(fh->fin == NULL) {
-        printf("fin == NULL: YES!!\n");
         exit(124);
     }
     //else {
@@ -183,7 +182,6 @@ size_t ZSTD_seekable_decompressFile_orDie(ZSTD_seekable_decompress_init_data* fh
     //}
 
     if (feof(fh->fin)) {
-      printf ("!!!! FEOF !!!!! \n");
       exit(123);
     }
     //else {
@@ -231,6 +229,7 @@ size_t ZSTD_seekable_decompressFile_orDie(ZSTD_seekable_decompress_init_data* fh
     
     
     //fh->fin_locked = false;
+
 
     return written;
 }

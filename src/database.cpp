@@ -5,10 +5,32 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "database.hpp"
 #include "fastafs.hpp"
 #include "lsfastafs.hpp"
+
+
+
+const std::string database::get_default_dir()
+{
+    const char* home_c = getenv("HOME");
+    if(home_c == nullptr) {
+        struct passwd *pw = getpwuid(getuid());
+        home_c = pw->pw_dir;
+
+        if(home_c == nullptr) {
+            throw std::runtime_error("Could not deterimine home dir. Also, no $HOME environment variable is set.");
+        }
+    }
+    std::string home_s = std::string(home_c);
+    return home_s + "/.local/share/fastafs";
+}
+
+
 
 void database::force_db_exists()
 {
@@ -34,9 +56,9 @@ void database::force_db_exists()
 
 
 
-database::database() :
-    path(std::string(getenv("HOME")) + "/.local/share/fastafs"),
-    idx(std::string(getenv("HOME")) + "/.local/share/fastafs/index")
+database::database(const std::string &path_arg) :
+    path(path_arg),
+    idx(path_arg + "/index")
 {
     this->load();
 }
@@ -54,11 +76,11 @@ void database::list()
     std::ifstream infile(this->idx);
     std::string line;
     std::string version;
-    
+
     while(std::getline(infile, line)) {
         std::string fname = this->path + "/" + line + ".fastafs";
         bool zstd_seek = false;
-        
+
         if(!file_exist(fname.c_str())) {
             fname = this->path + "/" + line + ".fastafs.zst";
             zstd_seek = true;
@@ -116,9 +138,15 @@ void database::list()
 }
 
 
+
+
 // @todo return a filestream to a particular file one day?
 std::string database::add(char *name)
 {
+    if(this->get(name) != "") {
+        throw std::runtime_error("Trying to add duplicate entry to database.");
+    }
+
     std::ofstream outputFile;
 
     outputFile.open(this->idx, std::fstream::app);
@@ -133,16 +161,16 @@ std::string database::add(char *name)
 /**
  * @brief searches for a filename that corresponds to the uid
  */
-std::string database::get(std::string fastafs_name_or_id)
+std::string database::get(char *fastafs_name_or_id)
 {
-    std::string fname;
+    std::string fname = "";
     std::ifstream infile(this->idx);
     std::string line;
 
     while(std::getline(infile, line, '\n')) {
         if(line.compare(fastafs_name_or_id) == 0) {
             fname = this->path + "/" + line + ".fastafs";
-            
+
             if(!file_exist(fname.c_str())) {
                 fname = this->path + "/" + line + ".fastafs.zst";
             }

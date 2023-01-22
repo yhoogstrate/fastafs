@@ -28,7 +28,7 @@ static int test_i = 0;
 
 BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
     /*
         padding=4, offset=0, position_until=0, 1, 2, 3:      0  "A" "AC" "ACT" "ACTG"
         padding=4, offset=0, position_until=4, 5, 6, 7, 8:   1  "ACTG\n" "ACTG\nA" "ACTG\nAA" "ACTG\nAAA" "ACTG\nAAAA"
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_static_func)
 
 BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     // testing "ACTGACTGNNNNACTG"
     uint32_t num_Ns; // number of N's until certain nucleotide is reached
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_twobit_offset_calc)
  */
 BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
 
     uint32_t written;
@@ -336,6 +336,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     std::string full_file = ">chr1\nTTTT\nCCCC\nAAAA\nGGGG\n>chr2\nACTG\nACTG\nNNNN\nACTG\n>chr3.1\nACTG\nACTG\nAAAA\nC\n>chr3.2\nACTG\nACTG\nAAAA\nCC\n>chr3.3\nACTG\nACTG\nAAAA\nCCC\n>chr4\nACTG\nNNNN\n>chr5\nNNAC\nTG\n";
     //std::string full_file = ">chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG ";
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 100);
 
@@ -360,7 +361,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     uint32_t written;
     std::string test_name = "test";
@@ -380,6 +381,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     // test fastafs_seq functions
     //std::ifstream fh(fastafs_file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     chunked_reader fh = chunked_reader(fastafs_file.c_str());
+    fh.fopen(0);
     //BOOST_REQUIRE(fh.is_open());
 
     // 1   2   3   4   5   6   7   8    9   10  11  12  13  14  15  16  17  18  19  20  21  22
@@ -405,7 +407,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     std::string test_name = "test_004";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -521,6 +523,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 
     std::string full_file = ">IUPAC\nNBKA\nHMDC\nUWGS\nYVTR\nHGWV\nUMTB\nSDN-\n----\n----\n-BGY\nADNH\nSMUT\nRCKW\nVsbh\nvdnr\ntgyc\nmkwu\naAVT\nSDKN\nB---\nUGWM\nHYRC\n";// length = 117
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 200);
 
@@ -547,7 +550,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 {
-    printf("test %i\n",++test_i);
+#if DEBUG
+    printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
 
@@ -573,6 +577,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 
     delete[] buffer;
     delete cache_p0;
+
+#else
+    // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
+#endif //DEBUG
+
 }
 
 
@@ -581,7 +590,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 {
-    printf("test %i\n",++test_i);
+#if DEBUG
+
+    printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
 
@@ -607,6 +618,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 
     delete[] buffer;
     delete cache_p0;
+
+#else
+    // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
+#endif //DEBUG
+
 }
 
 
@@ -616,7 +632,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 {
-    printf("test %i\n",++test_i);
+#if DEBUG
+
+    printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
 
@@ -649,6 +667,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 
     delete[] buffer;
     delete cache_p72;
+
+#else
+    // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
+#endif //DEBUG
 }
 
 
@@ -656,7 +678,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
 
     std::string test_name = "test";
@@ -845,7 +867,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 
 BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
 {
-    printf("test %i\n",++test_i);
+    printf("test %i\n", ++test_i);
 
     std::string test_name = "test_003";
     std::string fasta_file = "test/data/" + test_name + ".fa";
@@ -883,6 +905,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     ffs2f_init* cache = fs.init_ffs2f(60, true);
 
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
 
     /* maak alle substrings:
       [....]
@@ -899,8 +922,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     size_t n = full_file.size();
     uint32_t start_pos = 0;
     for(float i = 0.0; i <= 12.0; i += 1) { // perform limited subset of tests
-        start_pos = (uint32_t) ((i/12.0) * (double) n);
-        printf(" - %uli / %zu\n",start_pos, n);
+        start_pos = (uint32_t)((i / 12.0) * (double) n);
+        printf(" - %u / %zu\n", start_pos, n);
         for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 

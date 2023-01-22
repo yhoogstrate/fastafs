@@ -246,7 +246,7 @@ void ucsc2bit::load(std::string afilename)
             file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
-            char *memblock = new char [20 + 1]; // buffer
+            unsigned char *memblock = new unsigned char [20 + 1]; // buffer
             if(memblock == 0) {
                 throw std::invalid_argument("Could not alloc\n");
             }
@@ -256,7 +256,7 @@ void ucsc2bit::load(std::string afilename)
             uint32_t i;
 
             // HEADER
-            if(!file.read(memblock, 16)) {
+            if(!file.read((char *) &memblock[0], 16)) {
                 delete[] memblock;
                 throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
             }
@@ -271,7 +271,7 @@ void ucsc2bit::load(std::string afilename)
 
             // check version
             for(i = 0 ; i < 4;  i++) {
-                if(memblock[i+4] != UCSC2BIT_VERSION[i]) {
+                if(memblock[i + 4] != UCSC2BIT_VERSION[i]) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt 2bit file. unknown version: " + filename);
                 }
@@ -293,13 +293,14 @@ void ucsc2bit::load(std::string afilename)
                 s = new ucsc2bit_seq;
 
                 // name length
-                if(!file.read(memblock, 1)) {
+                if(!file.read((char *) &memblock[0], 1)) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
 
                 // name
-                char name[memblock[0] + 1];
+                //char name[memblock[0] + 1];
+                char *name = new char[memblock[0] + 1];
                 if(!file.read(name, memblock[0])) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
@@ -309,7 +310,7 @@ void ucsc2bit::load(std::string afilename)
                 s->name = std::string(name);
 
                 // file offset for seq-block
-                if(!file.read(memblock, 4)) {
+                if(!file.read((char *) &memblock[0], 4)) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
@@ -324,11 +325,11 @@ void ucsc2bit::load(std::string afilename)
                 s = data[i];
                 file.seekg(s->data_position, std::ios::beg);
 
-                file.read(memblock, 4);
+                file.read((char *) &memblock[0], 4);
                 s->n = fourbytes_to_uint_ucsc2bit(memblock, 0);
 
                 // n blocks
-                if(!file.read(memblock, 4)) {
+                if(!file.read((char *) &memblock[0], 4)) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
@@ -336,7 +337,7 @@ void ucsc2bit::load(std::string afilename)
                 s->n_starts.resize(n_blocks);
                 s->n_ends.resize(n_blocks);
                 for(j = 0; j < n_blocks; j++) {
-                    file.read(memblock, 8);
+                    file.read((char *) &memblock[0], 8);
                     uint32_t n_block_s = fourbytes_to_uint_ucsc2bit(memblock, 0);
 
                     s->n_starts[j] = n_block_s;
@@ -344,7 +345,7 @@ void ucsc2bit::load(std::string afilename)
                 }
 
                 // m blocks
-                if(!file.read(memblock, 4)) {
+                if(!file.read((char *) &memblock[0], 4)) {
                     delete[] memblock;
                     throw std::invalid_argument("Corrupt, unreadable or truncated file (early EOF): " + filename);
                 }
@@ -352,7 +353,7 @@ void ucsc2bit::load(std::string afilename)
                 s->m_starts.resize(m_blocks);
                 s->m_ends.resize(m_blocks);
                 for(j = 0; j < m_blocks; j++) {
-                    file.read(memblock, 8);
+                    file.read((char *) &memblock[0], 8);
                     uint32_t m_block_s = fourbytes_to_uint_ucsc2bit(memblock, 0);
 
                     s->m_starts[j] = m_block_s;

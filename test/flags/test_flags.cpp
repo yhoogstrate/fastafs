@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 {
     fastafs_flags f;
 
-    char buffer[2 + 1];
+    unsigned char buffer[2 + 1];
     buffer[2] = '\0';
 
     // test: 00000000 00000000

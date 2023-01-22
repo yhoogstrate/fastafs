@@ -1,3 +1,10 @@
+2023-01-22
+   * v.10.0
+   * Better ninja/meson support
+   * Code clean-ups
+   * Restructured the chunked_reader class and subclasses according to
+     the desgin patterns philisopy
+
 2020-04-29  Youri Hoogstrate
 
    * v1.9.0

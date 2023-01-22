@@ -116,7 +116,7 @@ static int do_getattr(const char *path, struct stat *st)
         st->st_nlink = 1;
 
         //@todo this needs to be defined with some api stuff:!!
-        st->st_size = (signed int) ffi->f->view_sequence_region_size(ffi->cache_p0, (strchr(path, '/') + 5));
+        st->st_size = (signed int) ffi->f->view_sequence_region_size((strchr(path, '/') + 5));
     } else {
         st->st_mode = S_IFREG | 0444;
         st->st_nlink = 1;
@@ -168,7 +168,7 @@ static int do_getattr(const char *path, struct stat *st)
 
 
 
-static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, __attribute__((__unused__)) off_t offset, __attribute__((__unused__)) struct fuse_file_info *fi)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
@@ -248,13 +248,13 @@ static int do_open(const char *path, struct fuse_file_info *fi)
         );
 
         //printf("sem init... \n");
-        sem_init( &(ft->crs[ft->thread_i].sem), 0, 1 );
+        sem_init(&(ft->crs[ft->thread_i].sem), 0, 1);
         //printf("sem init done... \n");
     }
     ft->thread_i = 0;
 
     fi->fh = reinterpret_cast<uintptr_t>(ft);
-    
+
 #if DEBUG
     printf("\033[0;35m fi->fh: %u\n", (unsigned int) fi->fh);
     printf("\033[0;35m fi->writepage: %u\n", fi->writepage);
@@ -272,7 +272,7 @@ static int do_open(const char *path, struct fuse_file_info *fi)
     return 0;
 }
 
-static int do_flush(const char *path, struct fuse_file_info *fi)
+static int do_flush(const char *path, __attribute__((__unused__)) struct fuse_file_info *fi)
 {
     return 0;
 }
@@ -287,7 +287,7 @@ static int do_release(const char *path, struct fuse_file_info *fi)
             sem_destroy(&ft->crs[i].sem);
             delete ft->crs[i].cr;
         }
-        
+
         delete ft;
     }
 
@@ -692,7 +692,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
         if(fi->from_fastafs) {
             std::string fname;
             std::string name;
-            
+
             if(from_file_rather_than_from_db) {
                 fname = std::string(argv[mount_target_arg]);
                 //name = std::filesystem::path(fname).filename();
@@ -702,7 +702,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 size_t lastindex = name.find_last_of(".");
                 name = name.substr(0, lastindex);
             } else {
-                database d = database();
+                database d = database(database::get_default_dir());
                 fname = d.get(argv[mount_target_arg]);
 
                 if(fname.size() == 0) { // invalid mount argument, don't bind fastafs object
@@ -779,7 +779,7 @@ void fuse(int argc, char *argv[])
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
     }
     //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
-    
+
     //return ret;
 }
 

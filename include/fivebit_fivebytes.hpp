@@ -39,8 +39,8 @@ public:
     static unsigned char iterator_to_offset(unsigned int);
     static unsigned char decompressed_to_compressed_bytes(unsigned char); // when only 5/8 bytes are filled, only 4/5 bytes need to be written
 
-    static const off_t nucleotides_to_compressed_fileoffset(size_t); // file offset waarna gelezen kan worden
-    static const off_t nucleotides_to_compressed_offset(size_t);// aantal bytes nodig om zoveel data weg te schrijven
+    static off_t nucleotides_to_compressed_fileoffset(size_t); // file offset waarna gelezen kan worden
+    static off_t nucleotides_to_compressed_offset(size_t);// aantal bytes nodig om zoveel data weg te schrijven
 
 
     void next(chunked_reader &); // update the compressed data and set buffer to decompressed data

@@ -404,8 +404,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
     BOOST_REQUIRE(fs.data.size() > 0);
+
     std::ifstream file(fs.filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     BOOST_REQUIRE(file.is_open());
+
     // check ucsc2bit header:
     char buffer[1024 + 1];
     static std::string reference = UCSC2BIT_MAGIC + UCSC2BIT_VERSION + "\x07\x00\x00\x00"s "\x00\x00\x00\x00"s // literals bypass a char* conversion and preserve nullbytes
@@ -459,6 +461,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
                                    "\x00\x00\x00\x00"s
                                    "\x09\x30" // NNAC TG?? = 00001001 00110000
                                    ;
+
     uint32_t complen;
     // voor lengte 1...(245-1)
     //  voor i = 0, 245-lengte
@@ -467,6 +470,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
             BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0, complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
         }
+
+        printf("\n");
     }
     //for(uint32_t i = 0; i < complen; i++) {
     //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);

@@ -5,10 +5,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(fastafs)
 
+# helps debugging:
 # Do this once in a while - find different compiler warnings
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.9.0")
+set(PROJECT_VERSION "1.10.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -112,7 +113,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 # -DXXH_NAMESPACE=ZST_
 if(DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pg   -ggdb -Wconversion -D_FILE_OFFSET_BITS=64")# -Werror makes compilation crash when warnings are given (also part of Travis)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pg -ggdb -Wconversion -D_FILE_OFFSET_BITS=64 -g -DBOOST_TEST_TOOLS_UNDER_DEBUGGER -DBOOST_TEST_TOOLS_DEBUGGABLE")# -Werror makes compilation crash when warnings are given (also part of Travis)
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -D_FILE_OFFSET_BITS=64")
 endif()
@@ -128,9 +129,12 @@ add_library(libfastafs SHARED
 					src/flags.cpp
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
+					
+					src/xbit_byte_encoder.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
 					src/fivebit_fivebytes.cpp
+					
 					src/database.cpp
 					src/utils.cpp
 					src/sequence_region.cpp
@@ -200,6 +204,11 @@ add_executable(test_chunked_reader test/chunked_reader/test_chunked_reader.cpp )
 add_test(test_chunked_reader ${BUILD_TEST_DIR}/test_chunked_reader)
 set_target_properties(test_chunked_reader PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
 target_link_libraries(test_chunked_reader libfastafs)
+
+add_executable(test_database test/database/test_database.cpp)
+set_target_properties(test_database PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
+target_link_libraries(test_database libfastafs)
+add_test(test_database ${BUILD_TEST_DIR}/test_database)
 
 add_executable(test_fastafs_as_ucsc2bit test/fastafs/test_ucsc2bit.cpp)
 add_test(test_fastafs_as_ucsc2bit ${BUILD_TEST_DIR}/test_fastafs_as_ucsc2bit)

@@ -16,7 +16,7 @@ twobit_flag::twobit_flag()
 
 
 
-void twobit_flag::set(char *data)
+void twobit_flag::set(unsigned char *data)
 {
     this->bits[0] = data[0];
     this->bits[1] = data[1];
@@ -37,14 +37,19 @@ bool twobit_flag::get_flag(unsigned char bit)
 }
 
 
-
-// https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
+/**
+ * @param bit denotes the i'th of 16 bits to set value of
+ * @param enable whether to enable of disable the bit
+ *
+ * more info: https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
+ */
 void twobit_flag::set_flag(unsigned char bit, bool enable)
 {
+#if DEBUG
     if(bit >= 16) {
         throw std::runtime_error("twobit_flag::set_flag = out of bound: " + std::to_string(bit) + "\n");
     }
-
+#endif //DEBUG
 
     if(enable) { //
         //this->bits[bit / 8] |= bitmasks[bit];
@@ -69,6 +74,11 @@ bool fastafs_flags::is_complete()
     return this->get_flag(FASTAFS_BITFLAG_COMPLETE);
 }
 
+bool fastafs_flags::is_incomplete()
+{
+    return !this->is_complete();
+}
+
 void fastafs_flags::set_complete()
 {
     this->set_flag(FASTAFS_BITFLAG_COMPLETE, true);
@@ -85,32 +95,28 @@ void fastafs_flags::set_incomplete()
 // alphabet: 'ACTG' + 'N'
 bool fastafs_sequence_flags::is_dna()
 {
-    return (
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
+    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
+            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
 }
 
 // alphabet: 'ACUG' + 'N'
 bool fastafs_sequence_flags::is_rna()
 {
-    return (
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
+    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
+            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
 }
 
 // alphabet: 'ACGTURYKMSWBDHVN' + '-'
 bool fastafs_sequence_flags::is_iupec_nucleotide()
 {
-    return (
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
+    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
+            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
 }
 
 bool fastafs_sequence_flags::is_protein()
 {
-    return (
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
-               this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
+    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
+            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
 }
 
 
@@ -119,11 +125,30 @@ bool fastafs_sequence_flags::is_complete()
     return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE);
 }
 
+bool fastafs_sequence_flags::is_incomplete()
+{
+    return !this->is_complete();
+}
+
 bool fastafs_sequence_flags::is_circular()
 {
     return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR);
 }
 
+bool fastafs_sequence_flags::is_linear()
+{
+    return !this->is_circular();
+}
+
+bool fastafs_sequence_flags::is_twobit()
+{
+    return (this->is_dna() | this->is_rna());
+}
+
+bool fastafs_sequence_flags::is_fourbit()
+{
+    return this->is_iupec_nucleotide();
+}
 
 
 

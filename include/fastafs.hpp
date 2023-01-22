@@ -28,7 +28,7 @@ struct ffs2f_init_seq {
 
     std::vector<uint32_t> m_starts;// file position based
     std::vector<uint32_t> m_ends;// file position based
-    
+
     const uint32_t filesize;// with padding and newlines [fastafs_seq->fasta_filesize(cache->padding_arg)]
 
     ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize):
@@ -46,7 +46,8 @@ struct ffs2f_init {
 
     ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
 
-    ~ffs2f_init(void) {
+    ~ffs2f_init(void)
+    {
         for(size_t i = 0; i < sequences.size(); i++) {
             delete sequences[i];
         }
@@ -78,7 +79,7 @@ public:
     uint32_t fasta_filesize(uint32_t padding);
     void view_fasta(ffs2f_init_seq*, chunked_reader &fh);
 
-    size_t view_sequence_region_size(ffs2f_init_seq*, sequence_region*, std::ifstream *);
+    size_t view_sequence_region_size(sequence_region*);
     uint32_t view_sequence_region(ffs2f_init_seq*, sequence_region*, char *, size_t, off_t, chunked_reader &);
     uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
     template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
@@ -113,7 +114,7 @@ public:
     std::string name;
     std::string filename;
     compression_type filetype;
-    
+
     std::vector<fastafs_seq*> data;
     uint32_t crc32f;// crc32 as found in fastafs file
 
@@ -126,7 +127,7 @@ public:
     void load(std::string);
     void view_fasta(ffs2f_init*);
 
-    size_t view_sequence_region_size(ffs2f_init*, const char *); // read stuff like "chr1:123-456" into the buffer
+    size_t view_sequence_region_size(const char *); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_sequence_region(ffs2f_init*, const char *, char*, size_t, off_t); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t, chunked_reader &);
     uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t);

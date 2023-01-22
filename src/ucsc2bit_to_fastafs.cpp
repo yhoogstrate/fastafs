@@ -26,7 +26,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     const char ng[2] = "G";
     const char nn[2] = "N";
 
-    char buffer[16 +  1];
+    unsigned char buffer[16 +  1];
     fastafs fs_new = fastafs("");
     uint32_t i, j, n;
 
@@ -51,7 +51,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
         fh_fastafs << "\x00\x00\x00\x00"s;// position of metedata ~ unknown YET
 
         // Read UCSC2bit header (n seq)
-        fh_ucsc2bit.read(buffer, 12);
+        fh_ucsc2bit.read((char*)(&buffer[0]), 12);    //conversion from unsigned char* to char* (https://stackoverflow.com/questions/604431/c-reading-unsigned-char-from-file-stream)
         n = fourbytes_to_uint_ucsc2bit(buffer, 8);
         uint_to_fourbytes(buffer, n);
         std::vector<ucsc2bit_seq_header *> data(n);
@@ -66,15 +66,15 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             data[i] = s;
             data2[i] = t;
 
-            fh_ucsc2bit.read(buffer, 1);
+            fh_ucsc2bit.read((char*)&buffer[0], 1);
             s->name_size = buffer[0];
 
-            fh_ucsc2bit.read(buffer, s->name_size);
+            fh_ucsc2bit.read((char*)&buffer[0], s->name_size);
             s->name = new char[s->name_size + 1];
-            strncpy(s->name, buffer, s->name_size);
+            strncpy(s->name, (char*)&buffer[0], s->name_size);
             s->name[s->name_size] = '\0';
 
-            fh_ucsc2bit.read(buffer, 4);
+            fh_ucsc2bit.read((char*)&buffer[0], 4);
             s->offset = fourbytes_to_uint_ucsc2bit(buffer, 0);
         }
         for(i = 0 ; i < n; i ++) {
@@ -84,31 +84,31 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             t = data2[i];
             t->file_offset_dna_in_ucsc2bit = fh_fastafs.tellp();
 
-            fh_ucsc2bit.read(buffer, 4);
+            fh_ucsc2bit.read((char*)&buffer[0], 4);
             s->dna_size = fourbytes_to_uint_ucsc2bit(buffer, 0);
 
             // parse N blocks
-            fh_ucsc2bit.read(buffer, 4);
+            fh_ucsc2bit.read((char*)&buffer[0], 4);
             s->n_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
             for(j = 0; j < s->n_blocks; j++) {
-                fh_ucsc2bit.read(buffer, 4);
+                fh_ucsc2bit.read((char*)&buffer[0], 4);
                 s->n_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
             for(j = 0; j < s->n_blocks; j++) {
-                fh_ucsc2bit.read(buffer, 4);
+                fh_ucsc2bit.read((char*)&buffer[0], 4);
                 s->n_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
                 t->N += s->n_block_sizes.back();//ucsc2bit provides lengths
             }
 
             // parse M blocks
-            fh_ucsc2bit.read(buffer, 4);
+            fh_ucsc2bit.read((char*)&buffer[0], 4);
             s->m_blocks = fourbytes_to_uint_ucsc2bit(buffer, 0);
             for(j = 0; j < s->m_blocks; j++) {
-                fh_ucsc2bit.read(buffer, 4);
+                fh_ucsc2bit.read((char*)&buffer[0], 4);
                 s->m_block_starts.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
             for(j = 0; j < s->m_blocks; j++) {
-                fh_ucsc2bit.read(buffer, 4);
+                fh_ucsc2bit.read((char*)&buffer[0], 4);
                 s->m_block_sizes.push_back(fourbytes_to_uint_ucsc2bit(buffer, 0));
             }
 
@@ -117,7 +117,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             fh_fastafs.write(reinterpret_cast<char *>(&buffer), (size_t) 4);
 
             // parse and convert sequence
-            fh_ucsc2bit.read(buffer, 4);
+            fh_ucsc2bit.read((char*)&buffer[0], 4);
             twobit_byte t_in = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
             const char *decoded_in = t_in.encode_hash[0];// unnecessary initialization but otherwise gcc whines
             twobit_byte t_out = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
@@ -133,7 +133,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
             }
             for(j = 0; j < s->dna_size; j++) {
                 if(j % 4 == 0) {
-                    fh_ucsc2bit.read(buffer, 1);
+                    fh_ucsc2bit.read((char*)&buffer[0], 1);
                     t_in.data = buffer[0];
                     decoded_in = t_in.get();// pointer to the right value?
                 }
@@ -272,7 +272,7 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
     f.load(fastafs_file);
     uint32_t crc32c = f.get_crc32();
 
-    char byte_enc[5] = "\x00\x00\x00\x00";
+    unsigned char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
     //printf("[%i][%i][%i][%i] input!! \n", byte_enc[0], byte_enc[1], byte_enc[2], byte_enc[3]);
     fh_fastafs.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);

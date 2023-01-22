@@ -208,8 +208,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     uint32_t pos = (uint32_t) start_pos_in_fasta;
-    
-    
+
+
     size_t pos_limit = this->name.size() + 2;
     if(pos < pos_limit) {
         const std::string header = ">" + this->name + "\n";
@@ -218,15 +218,15 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         const uint32_t copied = (uint32_t) header.copy(buffer, tocopy, pos); // effective size of copied data
 
         written += (uint32_t) copied;
-        
+
         if(written >= buffer_size) {
             return written;
         }
-        
+
         pos += (uint32_t) copied;
     }
 
-    const uint32_t offset_from_sequence_line = pos - pos_limit;
+    const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
     size_t n_block = cache->n_starts.size();
     size_t m_block = cache->m_starts.size();
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
@@ -303,13 +303,13 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             }
 
             if(pos == cur_n_end) {
-            //if(pos == cache->n_ends[n_block]) {
+                //if(pos == cache->n_ends[n_block]) {
                 n_block++;
                 cur_n_end = cache->n_ends[n_block];
                 cur_n_start = cache->n_starts[n_block];
             }
             if(pos == cur_m_end) {
-            //if(pos == cache->m_ends[m_block]) {
+                //if(pos == cache->m_ends[m_block]) {
                 m_block++;
                 cur_m_end = cache->m_ends[m_block];
                 cur_m_start = cache->m_starts[m_block];
@@ -348,28 +348,23 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
 
-size_t fastafs_seq::view_sequence_region_size(ffs2f_init_seq* cache, sequence_region* sr, std::ifstream *fh)
+size_t fastafs_seq::view_sequence_region_size(sequence_region* sr)
 {
 #if DEBUG
-    if(cache == nullptr) {
-        throw std::invalid_argument("fastafs_seq::view_sequence_region - error 01\n");
-    }
-
     if(sr == nullptr) {
         throw std::invalid_argument("fastafs_seq::view_sequence_region - error 02\n");
     }
-
 #endif
 
 
     size_t total_requested_size;
-    if(sr->has_defined_end) {
-        total_requested_size = std::min((size_t) this->n, (size_t) sr->end + 1);
+    if(sr->has_defined_end()) {
+        total_requested_size = std::min((size_t) this->n, (size_t) sr->get_end_position() + 1);
     } else {
         total_requested_size = this->n;
     }
 
-    total_requested_size -= sr->start;
+    total_requested_size -= sr->get_start_position();
     return total_requested_size;
 }
 
@@ -395,13 +390,13 @@ uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache,
     uint32_t written = 0;
 
     size_t total_requested_size;
-    if(sr->has_defined_end) {
-        total_requested_size = std::min((size_t) this->n, (size_t) sr->end + 1);
+    if(sr->has_defined_end()) {
+        total_requested_size = std::min((size_t) this->n, (size_t) sr->get_end_position() + 1);
     } else {
         total_requested_size = this->n;
     }
 
-    total_requested_size -= sr->start;
+    total_requested_size -= sr->get_start_position();
     total_requested_size -= offset;
     total_requested_size = std::min(size, total_requested_size);
 
@@ -409,7 +404,7 @@ uint32_t fastafs_seq::view_sequence_region(ffs2f_init_seq* cache,
                   cache, // ffs2f_init_seq* cache,
                   buffer, // char *buffer
                   (size_t) total_requested_size, // size_t buffer_size,
-                  (off_t) 2 + this->name.size() + sr->start + offset, // offset is for chunked reading
+                  (off_t) 2 + this->name.size() + sr->get_start_position() + offset, // offset is for chunked reading
                   fh
               );
 
@@ -645,29 +640,33 @@ fastafs::~fastafs()
 void fastafs::load(std::string afilename)
 {
     std::streampos size;
-    char *memblock;
+    unsigned char *memblock;
 
     chunked_reader fh_in = chunked_reader(afilename.c_str());
     {
-        this->filetype = fh_in.filetype;
-        
-        memblock = new char [20 + 1]; //sha1 is 20b
+        fh_in.fopen(0);
+        this->filetype = fh_in.get_filetype();
+
+        memblock = new unsigned char [20 + 1]; //sha1 is 20b
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
         //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
         this->filename = realpath_cpp(afilename);
+
         size = (size_t) fh_in.read(memblock, 16);
 
         if(size < 16) {
             //file.close();
             throw std::invalid_argument("Corrupt file: " + filename);
         } else {
+
             fh_in.seek(0);
             uint32_t i;
 
             // HEADER
             fh_in.read(memblock, 14);
             memblock[16] = '\0';
+
 
             // check magic
             for(i = 0 ; i < 4;  i++) {
@@ -707,10 +706,11 @@ void fastafs::load(std::string afilename)
 
                 // name
                 size_t namesize = (unsigned char) memblock[0]; // cast to something that is large enough (> 128)
-                char name[namesize + 1];
+                //char name[namesize + 1];
+                unsigned char *name = new unsigned char[namesize + 1];
                 fh_in.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
-                s->name = std::string(name);
+                s->name = std::string(reinterpret_cast<char*>(name));
 
                 // set cursor and save sequence data position
                 fh_in.read(memblock, 4);
@@ -801,6 +801,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     chunked_reader fh = chunked_reader(this->filename.c_str());
+    fh.fopen(0);
 
     for(uint32_t i = 0; i < this->data.size(); i++) {
         this->data[i]->view_fasta(cache->sequences[i], fh);
@@ -827,22 +828,8 @@ ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 
 
 // estimates the whole file size of a file such as "/seq/chr1:56-"
-size_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_region_arg)
+size_t fastafs::view_sequence_region_size(const char *seq_region_arg)
 {
-#if DEBUG
-    if(cache == nullptr) {
-        throw std::invalid_argument("fastafs::view_sequence_region - error 01\n");
-    }
-
-    if(cache->padding_arg != 0) {
-        throw std::invalid_argument("fastafs::view_sequence_region - error 02\n");
-    }
-
-    if(cache->sequences.size() == 0) {
-        throw std::invalid_argument("fastafs::view_sequence_region - error 03\n");
-    }
-#endif
-
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(file.is_open()) {
         // parse "chr..:..-.." string
@@ -850,8 +837,8 @@ size_t fastafs::view_sequence_region_size(ffs2f_init* cache, const char *seq_reg
 
         // 02 : check if 'chr' is equals this->data[i].name
         for(size_t i = 0; i < this->data.size(); i++) {
-            if(sr.seq_name.compare(this->data[i]->name) == 0) {
-                return this->data[i]->view_sequence_region_size(cache->sequences[i], &sr, &file);
+            if(sr.get_seq_name().compare(this->data[i]->name) == 0) {
+                return this->data[i]->view_sequence_region_size(&sr);
             }
         }
     }
@@ -878,6 +865,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
 #endif
 
     chunked_reader fh = chunked_reader(this->filename.c_str());
+    fh.fopen(0);
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     // parse "chr..:..-.." string
@@ -885,7 +873,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
 
     // 02 : check if 'chr' is equals this->data[i].name
     for(size_t i = 0; i < this->data.size(); i++) {
-        if(sr.seq_name.compare(this->data[i]->name) == 0) {
+        if(sr.get_seq_name().compare(this->data[i]->name) == 0) {
             return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, fh);
         }
     }
@@ -909,10 +897,13 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
  */
 uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset)
 {
-
     chunked_reader fh = chunked_reader(this->filename.c_str());
+    fh.fopen(0);
 
-    return this->view_fasta_chunk(cache, buffer, buffer_size, file_offset, fh);
+    uint32_t s = this->view_fasta_chunk(cache, buffer, buffer_size, file_offset, fh);
+    //#printf("%02hhX %02hhX %02hhX %02hhX\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+
+    return s;
 }
 
 
@@ -971,6 +962,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     chunked_reader file = chunked_reader(this->filename.c_str());
+    file.fopen(0);
     char n_seq[4];
     pos_limit += 4;// skip this loop after writing first four bytes
     while(pos < pos_limit) {
@@ -1501,9 +1493,9 @@ uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer
 {
     std::string contents = this->get_faidx(padding);
 
-    size_t to_copy = std::min(buffer_size, contents.size() - file_offset );
+    size_t to_copy = std::min(buffer_size, contents.size() - file_offset);
 
-    return (uint32_t) contents.copy(buffer, to_copy, file_offset );
+    return (uint32_t) contents.copy(buffer, to_copy, file_offset);
 }
 
 
@@ -1563,14 +1555,14 @@ int fastafs::info(bool ena_verify_checksum)
         std::cout << "# FASTAFS NAME: " << this->filename << "\n";
         std::cout << "# FORMAT: v0-x32";
         switch(this->filetype) {
-            case compression_type::undefined:
-                printf("?\n");
+        case compression_type::undefined:
+            printf("?\n");
             break;
-            case compression_type::uncompressed :
-                printf("\n");
+        case compression_type::uncompressed :
+            printf("\n");
             break;
-            case compression_type::zstd:
-                printf("+Z\n");
+        case compression_type::zstd:
+            printf("+Z\n");
             break;
         }
         printf("# SEQUENCES:    %u\n", (uint32_t) this->data.size());
@@ -1693,12 +1685,12 @@ bool fastafs::check_file_integrity(bool verbose)
 {
     uint32_t crc32_current = this->get_crc32();
 
-    char buf_old[5] = "\x00\x00\x00\x00";
+    unsigned char buf_old[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(buf_old, (uint32_t) this->crc32f);
 
     if(crc32_current != this->crc32f) {
 
-        char buf_new[5] = "\x00\x00\x00\x00";
+        unsigned char buf_new[5] = "\x00\x00\x00\x00";
         uint_to_fourbytes(buf_new, (uint32_t) crc32_current);
 
         if(verbose) {
@@ -1744,6 +1736,7 @@ bool fastafs::check_sequence_integrity(bool verbose)
     ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
 
     chunked_reader file = chunked_reader(this->filename.c_str());
+    file.fopen(0);
     //std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     //if(file.is_open()) {
     for(uint32_t i = 0; i < this->data.size(); i++) {

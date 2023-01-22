@@ -66,7 +66,7 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
         break;
 #endif //DEBUG
     }
-};
+}
 
 
 // input char "AACCCTTGG"
@@ -145,12 +145,12 @@ char *twobit_byte::get()
  * >Seq
  * [ACTG][ACTG][AC] has offset of 2 (or 3)?
  * */
-const off_t twobit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
+off_t twobit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
 {
     return (off_t) n_nucleotides / twobit_byte::nucleotides_per_byte;
 }
 
-const off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
+off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
 {
     return  twobit_byte::nucleotides_to_compressed_fileoffset(n_nucleotides + twobit_byte::nucleotides_per_byte - 1);
 }
@@ -158,10 +158,5 @@ const off_t twobit_byte::nucleotides_to_compressed_offset(size_t n_nucleotides)
 
 
 
-// needs to be separate function because not encodings read byte-per-byte
-void twobit_byte::next(chunked_reader &r)
-{
-    this->data = r.read();
-}
 
 

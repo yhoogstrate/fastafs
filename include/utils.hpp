@@ -1,13 +1,13 @@
 
-uint32_t fourbytes_to_uint(char *, unsigned char);
-uint32_t fourbytes_to_uint_ucsc2bit(char *, unsigned char);
+uint32_t fourbytes_to_uint(unsigned char *, unsigned char);
+uint32_t fourbytes_to_uint_ucsc2bit(unsigned char *, unsigned char);
 
 // for flags
 uint16_t twobytes_to_uint(char *);
 void uint_to_twobytes(char *chars, uint16_t n);
 
 size_t remove_chars(char *s, int c, size_t l);// to remove - characters from string
-void uint_to_fourbytes(char *, uint32_t);
+void uint_to_fourbytes(unsigned char *, uint32_t);
 void uint_to_fourbytes_ucsc2bit(char *, uint32_t);
 
 char *human_readable_fs(uint32_t, char *);
