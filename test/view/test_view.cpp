@@ -550,6 +550,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 {
+#if DEBUG
     printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
@@ -576,6 +577,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 
     delete[] buffer;
     delete cache_p0;
+
+#else
+    // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
+#endif //DEBUG
+
 }
 
 
@@ -584,6 +590,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 {
+#if DEBUG
+
     printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
@@ -610,6 +618,11 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 
     delete[] buffer;
     delete cache_p0;
+
+#else
+    // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
+#endif //DEBUG
+
 }
 
 
@@ -619,6 +632,8 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
 // it can return less bytes than the buffer_size
 BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 {
+#if DEBUG
+
     printf("test %i\n", ++test_i);
 
     BOOST_REQUIRE_EQUAL(READ_BUFFER_SIZE, 4096);// required for this test
@@ -652,6 +667,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
 
     delete[] buffer;
     delete cache_p72;
+
+#else
+    // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
+#endif //DEBUG
 }
 
 
@@ -904,7 +923,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     uint32_t start_pos = 0;
     for(float i = 0.0; i <= 12.0; i += 1) { // perform limited subset of tests
         start_pos = (uint32_t)((i / 12.0) * (double) n);
-        printf(" - %uli / %zu\n", start_pos, n);
+        printf(" - %u / %zu\n", start_pos, n);
         for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 
