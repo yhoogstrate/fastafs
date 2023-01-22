@@ -168,7 +168,7 @@ static int do_getattr(const char *path, struct stat *st)
 
 
 
-static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, __attribute__((__unused__)) off_t offset, __attribute__((__unused__)) struct fuse_file_info *fi)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
@@ -272,7 +272,7 @@ static int do_open(const char *path, struct fuse_file_info *fi)
     return 0;
 }
 
-static int do_flush(const char *path, struct fuse_file_info *fi)
+static int do_flush(const char *path, __attribute__((__unused__)) struct fuse_file_info *fi)
 {
     return 0;
 }

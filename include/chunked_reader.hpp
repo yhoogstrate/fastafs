@@ -30,55 +30,6 @@ enum compression_type : signed char { // dit is State
 //url: https://refactoring.guru/design-patterns/state
 
 
-
-class chunked_reader_old // dit is Context
-{
-private:
-    std::ifstream *fh_flat;
-    ZSTD_seekable_decompress_init_data* fh_zstd;
-
-    std::string filename; // try doing this with inode
-
-    compression_type filetype;
-
-    char buffer[READ_BUFFER_SIZE + 1];
-    size_t buffer_i;
-    size_t buffer_n;
-
-    off_t file_i;
-
-
-public:
-    chunked_reader_old(char *); // filename
-    chunked_reader_old(const char *); // filename
-    ~chunked_reader_old();
-
-    void init(); // generic tasks needed for init
-
-    void update_flat_buffer();
-    void update_zstd_buffer();
-
-
-    void find_filetype();
-
-    void set_filetype(compression_type);
-    compression_type get_filetype()
-    {
-        return this->filetype ;
-    };
-
-    size_t read(char *, size_t);// @deprecate
-    size_t read(unsigned char *, size_t);
-    unsigned char read();
-
-    void seek(off_t);
-    size_t tell();
-    //size_t size();
-};
-
-
-
-
 class chunked_reader;
 
 class State
