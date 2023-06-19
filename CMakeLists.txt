@@ -130,6 +130,8 @@ add_library(libfastafs SHARED
 					src/fastafs.cpp
 					src/ucsc2bit.cpp
 					
+                    src/byte_decoder.cpp
+                    
 					src/xbit_byte_encoder.cpp
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
@@ -219,6 +221,11 @@ add_executable(test_fastafs test/fastafs/test_fastafs.cpp)
 add_test(test_fastafs ${BUILD_TEST_DIR}/test_fastafs)
 set_target_properties(test_fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
 target_link_libraries(test_fastafs libfastafs)
+
+add_executable(test_byte_decoder test/byte_decoder/test_byte_decoder.cpp)
+add_test(test_byte_decoder ${BUILD_TEST_DIR}/test_byte_decoder)
+set_target_properties(test_byte_decoder PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
+target_link_libraries(test_byte_decoder libfastafs)
 
 add_executable(test_fivebit_byte test/fivebit_fivebytes/test_fivebit_fivebytes.cpp)
 add_test(test_fivebit_byte ${BUILD_TEST_DIR}/test_fivebit_byte)
