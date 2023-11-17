@@ -83,6 +83,13 @@ public:
 };
 
 
+
+/**
+ * Reads a flat or compressed file per chunk, with random access. Current
+ * implemented formats are flat files and zstd-seekable compressed files.
+ * 
+ * @param 
+ */
 class chunked_reader // master chunked_reader
 {
 protected:

@@ -64,16 +64,17 @@ add_custom_target(tidy DEPENDS make_tidy )
 # ----------------------------------------------------------------------
 # --------------------------- Documentation ----------------------------
 
-#find_program(ASTYLE doxygen)
+find_program(DOXYGEN doxygen)
+find_program(DOT dot) # sudo apt install graphviz
 
-#configure_file("doc/Doxyfile.in" "doc/Doxyfile")
+configure_file("doc/Doxyfile.in" "doc/Doxyfile")
 
-#add_custom_command(
-				#OUTPUT  make_doc
-				#COMMAND doxygen doc/Doxyfile
-			#)
+add_custom_command(
+				OUTPUT  make_doc
+				COMMAND doxygen doc/Doxyfile
+			)
 
-#add_custom_target(doc DEPENDS make_doc)
+add_custom_target(doc DEPENDS make_doc)
 
 # ----------------------------------------------------------------------
 # ---------------------------- Compilation -----------------------------

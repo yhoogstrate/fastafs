@@ -41,7 +41,11 @@ size_t State::read(unsigned char *arg_buffer_to, size_t arg_buffer_to_size,
 
 
 
-
+/**
+ * Inits the chunked_reader class, by:
+ *  - storing the file name
+ *  - find the compression format and adapt class stucture to it (state pattern)
+ */
 chunked_reader::chunked_reader(const char * arg_filename) : filename(arg_filename), buffer("\0"), buffer_i(0), buffer_n(0), file_i(0), state(nullptr)
 {
     this->TransitionTo(this->find_state());
