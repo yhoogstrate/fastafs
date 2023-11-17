@@ -100,14 +100,23 @@ sudo make install
 ```
 
 
-If you have patches, changes or even cool new features you believe are worth contributing, please run astyle with the following command:
+If you have patches, changes or even cool new features you believe are worth contributing, please run `astyle` with the following command:
 
 ```
-$ make tidy
+cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
+make tidy
 ```
 
 This styles the code in a more or less compatible way with the rest of the code.
 Thanks in advance(!)
+
+
+Make or overwrite docs:
+
+```
+cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
+make doc
+```
 
 ## usage
 ### fastafs cache: adding files to fastafs
