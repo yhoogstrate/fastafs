@@ -78,25 +78,24 @@ cd fastafs
 ```
 
 
-
 Compile (release, recommended):
 ```
 cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
-make "$@" -j `nproc`
+make "$@" -j $(nproc)
 sudo make install
 ```
 
 If you do not have root permission, use the following instead:
 ```
 cmake -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
-make "$@" -j `nproc`
+make "$@" -j $(nproc)
 make install
 ```
 
 If you like to play with the code and like to help development, you can create a debug binary as follows:
 ```
 cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
-make "$@" -j `nproc`
+make "$@" -j $(nproc)
 sudo make install
 ```
 
