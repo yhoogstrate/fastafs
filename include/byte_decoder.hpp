@@ -8,9 +8,24 @@
 #include <iostream>
 #include <fstream>
 
+#include <algorithm>
+#include <functional>
+#include <memory>
 
 
+
+// https://refactoring.guru/design-patterns/state/cpp/example
 // https://refactoring.guru/design-patterns/strategy/cpp/example
+
+
+class byte_decoder_interface // generic decoder interface/
+{
+public:
+    virtual ~byte_decoder_interface() = default;
+    virtual std::string doAlgorithm(std::string data) const = 0;
+};
+
+
 
 
 class byte_decoder {
@@ -26,10 +41,35 @@ class byte_decoder {
     public:
         void set_input_data(const unsigned char *input_data, size_t input_data_size);
         
-        //virtual ~byte_decoder() = default;
-    
-    
+        //virtual ~byte_decoder_interface() = default;
+        std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
 };
+
+
+
+// four bit byte etc
+class Concretebyte_decoder_interfaceA : public byte_decoder_interface
+{
+public:
+    std::string doAlgorithm(std::string data) const override
+    {
+        std::string out = data + " [a]";
+
+        return out;
+    }
+};
+
+// two bit byte etc
+class Concretebyte_decoder_interfaceB : public byte_decoder_interface
+{
+    std::string doAlgorithm(std::string data) const override
+    {
+        std::string out = data + " [b]";
+
+        return out;
+    }
+};
+
 
 
 #endif
