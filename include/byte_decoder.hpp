@@ -20,9 +20,13 @@
 
 class byte_decoder_interface // generic decoder interface/
 {
-public:
-    virtual ~byte_decoder_interface() = default;
-    virtual std::string doAlgorithm(std::string data) const = 0;
+    private:
+        unsigned int size_block_encoded; //
+        unsigned int size_block_decoded; //
+
+    public:
+        virtual ~byte_decoder_interface() = default;
+        virtual std::string doAlgorithm(std::string data) const = 0;
 };
 
 

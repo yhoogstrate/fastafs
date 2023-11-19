@@ -73,6 +73,9 @@ def write_benchmark_file(RESULTS_FILE, difference, TIMESTAMP, FASTAFS_REV, GIT_R
     with open(RESULTS_FILE, 'a') as fh:
         #print(difference)
         if(difference['diff']):
+            print("---------")
+            print(difference)
+            print("---------")
             raise Exception("ERROR - DIFFERENCE DETECTED")
             import sys
             sys.exit(1)

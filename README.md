@@ -99,6 +99,12 @@ make "$@" -j $(nproc)
 sudo make install
 ```
 
+To check if the build works as expected, you can run unit tests:
+```
+make check
+```
+
+
 
 If you have patches, changes or even cool new features you believe are worth contributing, please run `astyle` with the following command:
 

@@ -34,7 +34,7 @@ def main():
     GIT_REV = get_git_revision()
 
     if FASTAFS_REV.find(GIT_REV[0].replace('git-commit:','')) == -1:
-        raise Exception("Used FASTAFS version differs from CODEBASE - cross-check FASTAFS path and binary:\nbinary:       " + FASTAFS_REV + "\ngit revision:        " + GIT_REV[0].replace('git-commit:',''))
+        raise Exception("Used FASTAFS version differs from CODEBASE - please re-complile (or cross-check FASTAFS path and binary):\nbinary:       " + FASTAFS_REV + "\ngit revision:        " + GIT_REV[0].replace('git-commit:',''))
         import sys
         exit(1)
 
