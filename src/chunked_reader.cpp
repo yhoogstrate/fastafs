@@ -338,14 +338,27 @@ void ContextZstdSeekable::seek(off_t arg_offset)
 ContextZstdSeekable::~ContextZstdSeekable()
 {
     if(this->fh != nullptr) {
+        
         //ZSTD_seekable_free(this->fh_zstd->seekable);
-        fclose_orDie(this->fh->fin);
-
         //delete this->fh_zstd->seekable;
         //delete this->fh_zstd->fin;
 
+        fclose_orDie(this->fh->fin);
         delete this->fh;
+        
     }
+    
+    
+    if(this->seekable != nullptr) {
+        ZSTD_seekable_free(this->seekable);
+        //delete this->ZSTD_seekable;
+    }
+    
+    
+    //char* const buffOut = (char*) malloc_orDie(buffOutSize);
+    //ZSTD_seekable* const seekable = ZSTD_seekable_create(); //@todo -> in constructor, check if not NULL
+
+    
 
     //throw std::runtime_error("[ContextUncompressed::~ContextUncompressed] not implemented.\n");
 }
