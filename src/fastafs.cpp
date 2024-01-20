@@ -503,8 +503,13 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
     char chunk[chunksize + 2];
     chunk[chunksize] = '\0';
 
-    MD5_CTX ctx;
-    MD5_Init(&ctx);
+    EVP_MD_CTX *mdctx;
+    unsigned int digestLen = EVP_MD_size(EVP_md5());
+    MD5_CTX ctx; // old
+    
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+    MD5_Init(&ctx); // old
 
     //fh->clear();
 
@@ -526,6 +531,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         MD5_Update(&ctx, chunk, written);
+        EVP_DigestUpdate(mdctx, chunk, written);
     }
 
     if(remaining_bytes > 0) {
@@ -536,6 +542,7 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         MD5_Update(&ctx, chunk, written);
+        EVP_DigestUpdate(mdctx, chunk, written);
         chunk[remaining_bytes] = '\0';
     }
 
@@ -546,6 +553,14 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
 
     char md5_hash[32 + 1];
     md5_digest_to_hash(cur_md5_digest, md5_hash);
+
+    unsigned char *digest = (unsigned char *)OPENSSL_malloc(digestLen);
+    EVP_DigestFinal_ex(mdctx, digest, &digestLen);
+    EVP_MD_CTX_free(mdctx);
+
+    char md5_hash_openssl3[32 + 1];
+    md5_digest_to_hash(digest, md5_hash_openssl3);
+
 
     return std::string(md5_hash);
 }
