@@ -64,7 +64,9 @@ Required dependencies are:
 ```
 # debian + ubuntu like systems:
 
-sudo apt install git build-essential cmake libboost-dev libssl-dev libboost-test-dev libboost-system-dev libboost-filesystem-dev zlib1g-dev libzstd-dev libfuse-dev
+sudo apt install git build-essential cmake libboost-dev libssl-dev
+sudo apt install libboost-test-dev libboost-system-dev libboost-filesystem-dev
+sudo apt install zlib1g-dev libzstd-dev libfuse-dev
 git clone https://github.com/yhoogstrate/fastafs.git
 cd fastafs
 ```

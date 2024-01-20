@@ -20,33 +20,34 @@
 
 class byte_decoder_interface // generic decoder interface/
 {
-    private:
-        unsigned int size_block_encoded; //
-        unsigned int size_block_decoded; //
+private:
+    unsigned int size_block_encoded; //
+    unsigned int size_block_decoded; //
 
-    public:
-        virtual ~byte_decoder_interface() = default;
-        virtual std::string doAlgorithm(std::string data) const = 0;
+public:
+    virtual ~byte_decoder_interface() = default;
+    virtual std::string doAlgorithm(std::string data) const = 0;
 };
 
 
 
 
-class byte_decoder {
-    private:
-        size_t buffer_input_size; // set to 0
-        //unsigned char buffer_input_data[1024]; // bytes of raw decoded data
-        const unsigned char *buffer_input_data;
-    
-        size_t buffer_decoded_size; // set to 0
-        unsigned char buffer_decoded_data[1024]; // bytes of decoded data
-        unsigned char *buffer_decoded_data_i;
-    
-    public:
-        void set_input_data(const unsigned char *input_data, size_t input_data_size);
-        
-        //virtual ~byte_decoder_interface() = default;
-        std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
+class byte_decoder
+{
+private:
+    size_t buffer_input_size; // set to 0
+    //unsigned char buffer_input_data[1024]; // bytes of raw decoded data
+    const unsigned char *buffer_input_data;
+
+    size_t buffer_decoded_size; // set to 0
+    unsigned char buffer_decoded_data[1024]; // bytes of decoded data
+    unsigned char *buffer_decoded_data_i;
+
+public:
+    void set_input_data(const unsigned char *input_data, size_t input_data_size);
+
+    //virtual ~byte_decoder_interface() = default;
+    std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
 };
 
 
