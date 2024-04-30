@@ -456,21 +456,15 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     char chunk[chunksize + 2];
     chunk[chunksize] = '\0';
 
-    /*
-    OpenSSL_add_all_algorithms();
-    ERR_load_crypto_strings();
-    
-    EVP_MD_CTX *hashctx;
-    const EVP_MD *hashptr = EVP_get_digestbyname("SHA1");
-    if(hashptr == nullptr) {
-        exit(1);
-    }
-    EVP_MD_CTX_init(hashctx);
-    EVP_DigestInit_ex(hashctx, hashptr, NULL);
-    */
 
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
+
+    EVP_MD_CTX *mdctx;
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_sha1(), NULL);
+    
+
+    //SHA_CTX ctx;
+    //SHA1_Init(&ctx);
 
     //fh->clear();
 
@@ -486,8 +480,8 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
                                header_offset + (i * chunksize),
                                fh);
         
-        SHA1_Update(&ctx, chunk, chunksize);
-        //EVP_DigestUpdate(hashctx, chunk, chunksize);
+        //SHA1_Update(&ctx, chunk, chunksize);
+        EVP_DigestUpdate(mdctx, chunk, chunksize); // new
 
     }
 
@@ -495,21 +489,22 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     {
         this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
     
-        SHA1_Update(&ctx, chunk, remaining_bytes);
-        //EVP_DigestUpdate(hashctx, chunk, remaining_bytes);
+        //SHA1_Update(&ctx, chunk, remaining_bytes);
+        EVP_DigestUpdate(mdctx, chunk, remaining_bytes); // new
         
         //chunk[remaining_bytes] = '\0';
     }
 
     unsigned char cur_sha1_digest[SHA_DIGEST_LENGTH];
     
-    
-    SHA1_Final(cur_sha1_digest, &ctx);
-    /*
-    unsigned int outlen;
-    EVP_DigestFinal_ex(hashctx, cur_sha1_digest, &outlen);
-    //EVP_MD_CTX_cleanup(hashctx);
-    */
+
+    unsigned char *md5_digest;
+    unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
+    md5_digest = (unsigned char *)OPENSSL_malloc(md5_digest_len);
+    EVP_DigestFinal_ex(mdctx, cur_sha1_digest, &md5_digest_len);
+    EVP_MD_CTX_free(mdctx);
+        
+    //SHA1_Final(cur_sha1_digest, &ctx);
     //fh->clear(); // because gseek was done before
 
     char sha1_hash[41];
