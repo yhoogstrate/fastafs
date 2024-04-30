@@ -54,12 +54,7 @@ public:
 
     void set_input_data(const unsigned char *input_data, size_t input_data_size);
 
-
-    void decoder() {
-        printf("decoding ... to be implemented by interface\n");
-        printf(this->byte_decoder_interface_->doAlgorithm("ABC").c_str());
-        printf("\n");
-    };
+    void decode();
 
 };
 
@@ -68,38 +63,26 @@ public:
 // four bit byte etc
 class byte_decoder_interface_A : public byte_decoder_interface
 {
-public:
-    std::string doAlgorithm(std::string data) const override
-    {
-        std::string out = data + " [4b]";
 
-        return out;
-    }
+public:
+    std::string doAlgorithm(std::string data) const override;
 };
+
 
 // two bit byte etc
 class byte_decoder_interface_B : public byte_decoder_interface
 {
 public:
 
-    std::string doAlgorithm(std::string data) const override
-    {
-        std::string out = data + " [2b]";
-
-        return out;
-    }
+    std::string doAlgorithm(std::string data) const override;
 };
 
 // five bit byte etc
 class byte_decoder_interface_C : public byte_decoder_interface
 {
-public:
-    std::string doAlgorithm(std::string data) const override
-    {
-        std::string out = data + " [5b]";
 
-        return out;
-    }
+public:
+    std::string doAlgorithm(std::string data) const override;
 };
 
 
