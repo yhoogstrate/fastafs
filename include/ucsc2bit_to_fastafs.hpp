@@ -3,8 +3,7 @@
 #include <string.h>
 
 #include <vector>
-#include <openssl/md5.h> // old
-#include <openssl/evp.h> // new
+#include <openssl/evp.h>
 
 #include "config.hpp"
 #include "utils.hpp"
@@ -36,7 +35,7 @@ struct ucsc2bit_seq_header {
 struct ucsc2bit_seq_header_conversion_data {
     // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
     EVP_MD_CTX *mdctx;
-    MD5_CTX ctx; // needs to be initialized in a constructor, if possible
+    //MD5_CTX ctx; // needs to be initialized in a constructor, if possible
     unsigned char md5_digest[MD5_DIGEST_LENGTH];
 
     uint32_t N;// number of N (unknown) nucleotides (n - N = total 2bit compressed nucleotides)

@@ -9,7 +9,9 @@
 
 #include <openssl/sha.h>
 #include <openssl/md5.h> // old
-#include <openssl/evp.h> // new
+#include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 // SSL requests to ENA
 #include <sys/socket.h>
@@ -204,7 +206,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     uint32_t written = 0;
 
 
-    if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
+    if(written >= buffer_size)
+    { // requesting a buffer of size=0, should throw an exception?
         return written;
     }
 
@@ -212,7 +215,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
     size_t pos_limit = this->name.size() + 2;
-    if(pos < pos_limit) {
+    if(pos < pos_limit)
+    {
         const std::string header = ">" + this->name + "\n";
 
         const uint32_t tocopy = (uint32_t) std::min(pos_limit - pos, buffer_size); // size to be copied
@@ -220,7 +224,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
         written += (uint32_t) copied;
 
-        if(written >= buffer_size) {
+        if(written >= buffer_size)
+        {
             return written;
         }
 
@@ -451,6 +456,19 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     char chunk[chunksize + 2];
     chunk[chunksize] = '\0';
 
+    /*
+    OpenSSL_add_all_algorithms();
+    ERR_load_crypto_strings();
+    
+    EVP_MD_CTX *hashctx;
+    const EVP_MD *hashptr = EVP_get_digestbyname("SHA1");
+    if(hashptr == nullptr) {
+        exit(1);
+    }
+    EVP_MD_CTX_init(hashctx);
+    EVP_DigestInit_ex(hashctx, hashptr, NULL);
+    */
+
     SHA_CTX ctx;
     SHA1_Init(&ctx);
 
@@ -467,18 +485,31 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
                                chunksize,
                                header_offset + (i * chunksize),
                                fh);
+        
         SHA1_Update(&ctx, chunk, chunksize);
+        //EVP_DigestUpdate(hashctx, chunk, chunksize);
+
     }
 
-    if(remaining_bytes > 0) {
+    if(remaining_bytes > 0)
+    {
         this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
+    
         SHA1_Update(&ctx, chunk, remaining_bytes);
+        //EVP_DigestUpdate(hashctx, chunk, remaining_bytes);
+        
         //chunk[remaining_bytes] = '\0';
     }
 
-    //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
     unsigned char cur_sha1_digest[SHA_DIGEST_LENGTH];
+    
+    
     SHA1_Final(cur_sha1_digest, &ctx);
+    /*
+    unsigned int outlen;
+    EVP_DigestFinal_ex(hashctx, cur_sha1_digest, &outlen);
+    //EVP_MD_CTX_cleanup(hashctx);
+    */
     //fh->clear(); // because gseek was done before
 
     char sha1_hash[41];

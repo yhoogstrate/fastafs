@@ -1,7 +1,7 @@
 
 #include <vector>
 
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 
 #include "config.hpp"
 #include "utils.hpp"
@@ -50,7 +50,7 @@ public:
     uint32_t padding;
 
     // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
-    MD5_CTX ctx;
+    EVP_MD_CTX *mdctx;
     unsigned char md5_digest[MD5_DIGEST_LENGTH];
 
     std::vector<uint32_t> n_block_starts;
@@ -89,7 +89,9 @@ public:
             fprintf(stderr, "[fasta_to_fastafs::init] sequence name truncated to 255 charaters: %s\n", name.c_str());
             this->name = this->name.substr(0, 255);
         }
-        MD5_Init(&this->ctx);
+        
+        this->mdctx = EVP_MD_CTX_new();
+        EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
     }
 
     void flush();
