@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include <vector>
-#include <openssl/md5.h>
+#include <openssl/md5.h> // old
+#include <openssl/evp.h> // new
 
 #include "config.hpp"
 #include "utils.hpp"
@@ -34,6 +35,7 @@ struct ucsc2bit_seq_header {
 
 struct ucsc2bit_seq_header_conversion_data {
     // the followin should be member of a conversion struct, because they're not related to the original 2bit format:
+    EVP_MD_CTX *mdctx;
     MD5_CTX ctx; // needs to be initialized in a constructor, if possible
     unsigned char md5_digest[MD5_DIGEST_LENGTH];
 
@@ -43,7 +45,10 @@ struct ucsc2bit_seq_header_conversion_data {
 
     ucsc2bit_seq_header_conversion_data(): N(0)
     {
-        MD5_Init(&this->ctx);
+        this->mdctx = EVP_MD_CTX_new();
+        EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
+        
+        //MD5_Init(&this->ctx);
     }
 };
 

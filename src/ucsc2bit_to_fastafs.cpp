@@ -143,7 +143,8 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                     n_ahead = s->n_block_sizes[n_n];
                 }
                 if(n_ahead > 0) {// we are in an N block on an N base
-                    MD5_Update(&t->ctx, nn, 1);
+                    EVP_DigestUpdate(t->mdctx, nn, 1); // new
+                    //MD5_Update(&t->ctx, nn, 1);
                     n_ahead -= 1;
                     if(n_ahead == 0) {
                         n_n++;
@@ -159,22 +160,26 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                     case 'u':
                     case 'U':
                         t_out.set(twobit_byte::iterator_to_offset(k), 0);
-                        MD5_Update(&t->ctx, nt, 1);
+                        EVP_DigestUpdate(t->mdctx, nt, 1); // new
+                        //MD5_Update(&t->ctx, nt, 1);
                         break;
                     case 'c':
                     case 'C':
                         t_out.set(twobit_byte::iterator_to_offset(k), 1);
-                        MD5_Update(&t->ctx, nc, 1);
+                        EVP_DigestUpdate(t->mdctx, nc, 1); // new
+                        //MD5_Update(&t->ctx, nc, 1);
                         break;
                     case 'a':
                     case 'A':
                         t_out.set(twobit_byte::iterator_to_offset(k), 2);
-                        MD5_Update(&t->ctx, na, 1);
+                        EVP_DigestUpdate(t->mdctx, na, 1); // new
+                        //MD5_Update(&t->ctx, na, 1);
                         break;
                     case 'g':
                     case 'G':
                         t_out.set(twobit_byte::iterator_to_offset(k), 3);
-                        MD5_Update(&t->ctx, ng, 1);
+                        EVP_DigestUpdate(t->mdctx, ng, 1); // new
+                        //MD5_Update(&t->ctx, ng, 1);
                         break;
                     }
                     if(k % 4 == 3) {
@@ -190,7 +195,10 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                 // @todo hf_fastsfs << t_out.data
                 fh_fastafs.write((char *) & (t_out.data), (size_t) 1); // name size
             }
-            MD5_Final(t->md5_digest, &t->ctx);
+
+            unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
+            EVP_DigestFinal_ex(t->mdctx, t->md5_digest, &md5_digest_len);
+            //MD5_Final(t->md5_digest, &t->ctx);
 
             // write N blocks
             uint_to_fourbytes(buffer, s->n_blocks);
