@@ -49,21 +49,22 @@ private:
     std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
 
 public:
-    void set_input_data(const unsigned char *input_data, size_t input_data_size);
+    explicit byte_decoder(std::unique_ptr<byte_decoder_interface> &&strategy );
 
-    explicit byte_decoder(std::unique_ptr<byte_decoder_interface> &&strategy = {}) : byte_decoder_interface_(std::move(strategy))
-    {
-    }
 
     void set_strategy(std::unique_ptr<byte_decoder_interface> &&strategy)
     {
         byte_decoder_interface_ = std::move(strategy);
-    }
+    };
+
+    void set_input_data(const unsigned char *input_data, size_t input_data_size);
 
 
     void decoder() {
         printf("decoding ... to be implemented by interface\n");
-    }
+        printf(this->byte_decoder_interface_->doAlgorithm("ABC").c_str());
+        printf("\n");
+    };
 
 };
 
