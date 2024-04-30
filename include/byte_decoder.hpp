@@ -15,7 +15,7 @@
 
 
 // https://refactoring.guru/design-patterns/state/cpp/example
-// https://refactoring.guru/design-patterns/strategy/cpp/example
+// https://refactoring.guru/design-patterns/strategy/cpp/example [looks more like strategy]
 
 
 class byte_decoder_interface // generic decoder interface/
@@ -23,6 +23,8 @@ class byte_decoder_interface // generic decoder interface/
 private:
     unsigned int size_block_encoded; //
     unsigned int size_block_decoded; //
+
+    int block_size_1;
 
 public:
     virtual ~byte_decoder_interface() = default;
@@ -43,33 +45,62 @@ private:
     unsigned char buffer_decoded_data[1024]; // bytes of decoded data
     unsigned char *buffer_decoded_data_i;
 
+
+    std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
+
 public:
     void set_input_data(const unsigned char *input_data, size_t input_data_size);
 
-    //virtual ~byte_decoder_interface() = default;
-    std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
+    explicit byte_decoder(std::unique_ptr<byte_decoder_interface> &&strategy = {}) : byte_decoder_interface_(std::move(strategy))
+    {
+    }
+
+    void set_strategy(std::unique_ptr<byte_decoder_interface> &&strategy)
+    {
+        byte_decoder_interface_ = std::move(strategy);
+    }
+
+
+    void decoder() {
+        printf("decoding ... to be implemented by interface\n");
+    }
+
 };
 
 
 
 // four bit byte etc
-class Concretebyte_decoder_interfaceA : public byte_decoder_interface
+class byte_decoder_interface_A : public byte_decoder_interface
 {
 public:
     std::string doAlgorithm(std::string data) const override
     {
-        std::string out = data + " [a]";
+        std::string out = data + " [4b]";
 
         return out;
     }
 };
 
 // two bit byte etc
-class Concretebyte_decoder_interfaceB : public byte_decoder_interface
+class byte_decoder_interface_B : public byte_decoder_interface
 {
+public:
+
     std::string doAlgorithm(std::string data) const override
     {
-        std::string out = data + " [b]";
+        std::string out = data + " [2b]";
+
+        return out;
+    }
+};
+
+// five bit byte etc
+class byte_decoder_interface_C : public byte_decoder_interface
+{
+public:
+    std::string doAlgorithm(std::string data) const override
+    {
+        std::string out = data + " [5b]";
 
         return out;
     }
