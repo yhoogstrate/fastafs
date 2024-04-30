@@ -7,9 +7,6 @@
 #include <string.h>
 //#include <filesystem>
 
-#include <openssl/sha.h>
-#include <openssl/md5.h> // old
-#include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
@@ -206,8 +203,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     uint32_t written = 0;
 
 
-    if(written >= buffer_size)
-    { // requesting a buffer of size=0, should throw an exception?
+    if(written >= buffer_size) {
+        // requesting a buffer of size=0, should throw an exception?
         return written;
     }
 
@@ -215,8 +212,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
     size_t pos_limit = this->name.size() + 2;
-    if(pos < pos_limit)
-    {
+    if(pos < pos_limit) {
         const std::string header = ">" + this->name + "\n";
 
         const uint32_t tocopy = (uint32_t) std::min(pos_limit - pos, buffer_size); // size to be copied
@@ -224,8 +220,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
         written += (uint32_t) copied;
 
-        if(written >= buffer_size)
-        {
+        if(written >= buffer_size) {
             return written;
         }
 
@@ -461,7 +456,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     EVP_MD_CTX *mdctx;
     mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(mdctx, EVP_sha1(), NULL);
-    
+
 
     //SHA_CTX ctx;
     //SHA1_Init(&ctx);
@@ -479,31 +474,27 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
                                chunksize,
                                header_offset + (i * chunksize),
                                fh);
-        
+
         //SHA1_Update(&ctx, chunk, chunksize);
         EVP_DigestUpdate(mdctx, chunk, chunksize); // new
 
     }
 
-    if(remaining_bytes > 0)
-    {
+    if(remaining_bytes > 0) {
         this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
-    
+
         //SHA1_Update(&ctx, chunk, remaining_bytes);
         EVP_DigestUpdate(mdctx, chunk, remaining_bytes); // new
-        
+
         //chunk[remaining_bytes] = '\0';
     }
 
-    unsigned char cur_sha1_digest[SHA_DIGEST_LENGTH];
-    
 
-    unsigned char *md5_digest;
-    unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
-    md5_digest = (unsigned char *)OPENSSL_malloc(md5_digest_len);
-    EVP_DigestFinal_ex(mdctx, cur_sha1_digest, &md5_digest_len);
+    unsigned int sha1_digest_len = EVP_MD_size(EVP_md5());
+    unsigned char cur_sha1_digest[sha1_digest_len];
+    EVP_DigestFinal_ex(mdctx, cur_sha1_digest, &sha1_digest_len);
     EVP_MD_CTX_free(mdctx);
-        
+
     //SHA1_Final(cur_sha1_digest, &ctx);
     //fh->clear(); // because gseek was done before
 
@@ -556,7 +547,6 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         EVP_DigestUpdate(mdctx, chunk, written); // new
-        //MD5_Update(&ctx, chunk, written); // old
     }
 
     if(remaining_bytes > 0) {
@@ -567,26 +557,23 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         EVP_DigestUpdate(mdctx, chunk, written); // new
-        //MD5_Update(&ctx, chunk, written); // old
+
         chunk[remaining_bytes] = '\0';
     }
 
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
-    
-    
-    //unsigned char cur_md5_digest[MD5_DIGEST_LENGTH];
-    //MD5_Final(cur_md5_digest, &ctx);
-    
+
+
     //fh->clear(); // because gseek was done before
 
-    
+
     unsigned char *md5_digest;
     unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
     md5_digest = (unsigned char *)OPENSSL_malloc(md5_digest_len);
     EVP_DigestFinal_ex(mdctx, md5_digest, &md5_digest_len);
     EVP_MD_CTX_free(mdctx);
-    
-    char md5_hash[32 + 1]; 
+
+    char md5_hash[32 + 1];
     md5_digest_to_hash(md5_digest, md5_hash);
 
     return std::string(md5_hash);

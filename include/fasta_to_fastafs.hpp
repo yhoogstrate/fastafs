@@ -89,7 +89,7 @@ public:
             fprintf(stderr, "[fasta_to_fastafs::init] sequence name truncated to 255 charaters: %s\n", name.c_str());
             this->name = this->name.substr(0, 255);
         }
-        
+
         this->mdctx = EVP_MD_CTX_new();
         EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
     }

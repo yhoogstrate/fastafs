@@ -136,8 +136,7 @@ void fasta_to_fastafs_seq::finish_sequence(std::ofstream &fh_fastafs)
     // write checksum
     unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
     EVP_DigestFinal_ex(this->mdctx, this->md5_digest, &md5_digest_len);
-    //MD5_Final(this->md5_digest, &this->ctx);
-    
+
     fh_fastafs.write(reinterpret_cast<char *>(&this->md5_digest), (size_t) 16);
 
     // M blocks
@@ -279,15 +278,12 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
     std::string line;
     std::ifstream fh_fasta(fasta_file.c_str(), std::ios :: in | std::ios :: binary);
     std::ofstream fh_fastafs(fastafs_file.c_str(), std::ios :: out | std::ios :: binary);
-    
+
     s = nullptr;
-    
-    if(!fh_fasta.is_open() or !fh_fastafs.is_open())
-    {
+
+    if(!fh_fasta.is_open() or !fh_fastafs.is_open()) {
         throw std::invalid_argument("[fasta_to_fastafs:1] Could not open one of file: " + fasta_file + " | " + fastafs_file);
-    }
-    else
-    {
+    } else {
         fh_fastafs << FASTAFS_MAGIC;
         fh_fastafs << FASTAFS_VERSION;
 
@@ -312,8 +308,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
         if(s != nullptr) {
             bool running = getline(fh_fasta, line).good();
             while(running) {
-                if(line[0] == '>')
-                {
+                if(line[0] == '>') {
                     // more N-bytes than 2-bit bytes - 4bit is more efficient
                     if(auto_recompress_to_fourbit && s->current_dict == DICT_TWOBIT && s->N_bytes_used() > s->twobit_bytes_used()) {
                         fh_fasta.seekg(s->file_offset_in_fasta, std::ios::beg);

@@ -139,27 +139,26 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
                 }
 
                 // check if N
-                if(j == next_n)
-                { // new next block has opened
+                if(j == next_n) {
+                    // new next block has opened
                     n_ahead = s->n_block_sizes[n_n];
                 }
-                
-                if(n_ahead > 0)
-                {// we are in an N block on an N base
+
+                if(n_ahead > 0) {
+                    // we are in an N block on an N base
                     EVP_DigestUpdate(t->mdctx, nn, 1); // new
                     //MD5_Update(&t->ctx, nn, 1);
                     n_ahead -= 1;
                     if(n_ahead == 0) {
                         n_n++;
-                        
+
                         if(s->n_blocks > n_n) {
                             next_n = s->n_block_starts[n_n];
                             n_ahead = 0;
                         }
                     }
-                }
-                else
-                { // non-N char
+                } else {
+                    // non-N char
                     switch(decoded_in[j % 4]) {
                     case 't':
                     case 'T':
