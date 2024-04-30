@@ -63,9 +63,13 @@ public:
 // four bit byte etc
 class byte_decoder_interface_A : public byte_decoder_interface
 {
-
 public:
-    std::string doAlgorithm(std::string data) const override;
+    std::string doAlgorithm(std::string data) const override 
+    {
+            std::string out = data + " [4b]";
+
+    return out;
+    }
 };
 
 
@@ -73,19 +77,29 @@ public:
 class byte_decoder_interface_B : public byte_decoder_interface
 {
 public:
+    std::string doAlgorithm(std::string data) const override
+    {
+            std::string out = data + " [2b]";
 
-    std::string doAlgorithm(std::string data) const override;
+            return out;
+    }
 };
 
 // five bit byte etc
 class byte_decoder_interface_C : public byte_decoder_interface
 {
-
 public:
-    std::string doAlgorithm(std::string data) const override;
+    std::string doAlgorithm(std::string data) const override
+    {
+            std::string out = data + " [5b]";
+
+    return out;
+    }
 };
 
 
 
 #endif
+
+
 

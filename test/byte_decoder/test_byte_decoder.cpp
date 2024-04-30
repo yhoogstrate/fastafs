@@ -15,11 +15,9 @@ BOOST_AUTO_TEST_CASE(test_byte_decoder_test_001)
     byte_decoder b(std::make_unique<byte_decoder_interface_B>());
     b.set_input_data((const unsigned char*) aa.c_str(), aa.size());
 
-    b.decoder();
+    b.decode();
 
 }
-
-
 
 
 BOOST_AUTO_TEST_SUITE_END()

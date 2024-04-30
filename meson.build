@@ -63,23 +63,34 @@ openssl = dependency('openssl')
 zlib = dependency('zlib')
 zstd = dependency('libzstd')
 
-executable('fastafs', [src, './src/main.cpp'],
+
+libfastafs = library('libfastafs', [src],
+							version: project_version,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_cache', [src, './test/check/test_check.cpp'],
+executable('fastafs', ['./src/main.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_check', [src, './test/cache/test_cache.cpp'],
+executable('test_cache', ['./test/check/test_check.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_chunked_reader', [src, './test/chunked_reader/test_chunked_reader.cpp'],
+executable('test_check', ['./test/cache/test_cache.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_byte_decoder', [src, './test/byte_decoder/test_byte_decoder.cpp'],
+executable('test_chunked_reader', ['./test/chunked_reader/test_chunked_reader.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_byte_decoder', ['./test/byte_decoder/test_byte_decoder.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 

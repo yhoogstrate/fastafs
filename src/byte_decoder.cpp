@@ -43,31 +43,3 @@ void byte_decoder::decode()
 
 
 
-
-
-
-
-std::string byte_decoder_interface_A:: doAlgorithm(std::string data) const override
-{
-    std::string out = data + " [4b]";
-
-    return out;
-};
-
-
-std::string byte_decoder_interface_B::doAlgorithm(std::string data) const override
-{
-    std::string out = data + " [2b]";
-
-    return out;
-};
-
-
-
-std::string byte_decoder_interface_C::doAlgorithm(std::string data) const override
-{
-    std::string out = data + " [5b]";
-
-    return out;
-};
-
