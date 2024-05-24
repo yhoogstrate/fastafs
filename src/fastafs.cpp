@@ -698,7 +698,6 @@ void fastafs::load(std::string afilename)
             fh_in.read(memblock, 14);
             memblock[16] = '\0';
 
-
             // check magic
             for(i = 0 ; i < 4;  i++) {
                 if(memblock[i] != FASTAFS_MAGIC[i]) {
