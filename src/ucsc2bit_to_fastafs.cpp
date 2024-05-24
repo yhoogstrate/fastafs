@@ -203,7 +203,10 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
             unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
             EVP_DigestFinal_ex(t->mdctx, t->md5_digest, &md5_digest_len);
-            //MD5_Final(t->md5_digest, &t->ctx);
+            
+            EVP_MD_CTX_free(t->mdctx);
+
+            
 
             // write N blocks
             uint_to_fourbytes(buffer, s->n_blocks);
