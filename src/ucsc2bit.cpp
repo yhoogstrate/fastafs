@@ -308,6 +308,7 @@ void ucsc2bit::load(std::string afilename)
 
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(name);
+                delete[] name;
 
                 // file offset for seq-block
                 if(!file.read((char *) &memblock[0], 4)) {

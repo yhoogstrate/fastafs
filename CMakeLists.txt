@@ -9,7 +9,7 @@ project(fastafs)
 # Do this once in a while - find different compiler warnings
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.10.0")
+set(PROJECT_VERSION "1.11.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 

@@ -1,5 +1,12 @@
+2024-04-30
+
+   * v1.11.0
+   * Implements SHA1 and MD5 through OpenSSL's EVP interface as
+     old interface is deprecated as of OpenSSL 3.0
+
 2023-01-22
-   * v.10.0
+
+   * v1.10.0
    * Better ninja/meson support
    * Code clean-ups
    * Restructured the chunked_reader class and subclasses according to
