@@ -79,6 +79,16 @@ executable('test_cache', ['./test/check/test_check.cpp'],
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
+executable('test_flags', ['./test/flags/test_flags.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_database', ['./test/database/test_database.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
 executable('test_check', ['./test/cache/test_cache.cpp'],
 							link_with : libfastafs,
 							include_directories : incdir,
