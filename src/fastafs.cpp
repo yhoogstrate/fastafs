@@ -575,6 +575,8 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
 
     char md5_hash[32 + 1];
     md5_digest_to_hash(md5_digest, md5_hash);
+    
+    OPENSSL_free(md5_digest);
 
     return std::string(md5_hash);
 }
@@ -740,6 +742,7 @@ void fastafs::load(std::string afilename)
                 fh_in.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(reinterpret_cast<char*>(name));
+                delete[] name;
 
                 // set cursor and save sequence data position
                 fh_in.read(memblock, 4);

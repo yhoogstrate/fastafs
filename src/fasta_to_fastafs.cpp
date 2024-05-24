@@ -136,8 +136,13 @@ void fasta_to_fastafs_seq::finish_sequence(std::ofstream &fh_fastafs)
     // write checksum
     unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
     EVP_DigestFinal_ex(this->mdctx, this->md5_digest, &md5_digest_len);
+    EVP_MD_CTX_free(mdctx);
+    
 
     fh_fastafs.write(reinterpret_cast<char *>(&this->md5_digest), (size_t) 16);
+    
+    //OPENSSL_free(md5_digest);
+
 
     // M blocks
     uint_to_fourbytes(buffer, (uint32_t) this->m_block_starts.size());
