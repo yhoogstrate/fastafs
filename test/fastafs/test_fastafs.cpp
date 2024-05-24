@@ -403,6 +403,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 't');
+        
+        delete cache_p0;
+        delete[] buffer;
     }
     {
         ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
@@ -421,6 +424,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 't');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -440,6 +444,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'c');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -459,6 +464,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'g');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -478,6 +484,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 0);
         //BOOST_CHECK_EQUAL(buffer[0], '\n');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -499,6 +506,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -519,6 +527,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'C');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -538,6 +547,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -558,6 +568,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -577,6 +588,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -596,6 +608,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
+        delete cache_p0;
         delete[] buffer;
     }
     {
@@ -615,6 +628,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -636,6 +650,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -656,6 +671,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -677,6 +693,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'T');
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -698,6 +715,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'T');
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -718,6 +736,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 0);
         //BOOST_CHECK_EQUAL(buffer[0], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -745,6 +764,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[6], 'n');
         BOOST_CHECK_EQUAL(buffer[7], 'n');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -769,6 +789,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[2], 'n');
         BOOST_CHECK_EQUAL(buffer[3], 'n');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -793,6 +814,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         //BOOST_CHECK_EQUAL(buffer[2], 'T');
         //BOOST_CHECK_EQUAL(buffer[3], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -816,6 +838,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'C');
         BOOST_CHECK_EQUAL(buffer[1], 'T');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -875,6 +898,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -898,6 +922,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[0], 'T');
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
+        delete cache_p0;
         delete[] buffer;
     }
 
@@ -919,6 +944,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0); // small buffer size
         BOOST_CHECK_EQUAL(written, 0);
 
+        delete cache_p0;
         delete[] buffer;
     }
 }
