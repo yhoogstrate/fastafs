@@ -7,7 +7,6 @@
 #include <string.h>
 //#include <filesystem>
 
-#include <openssl/sha.h>
 #include <openssl/md5.h> // old
 #include <openssl/evp.h> // new
 
