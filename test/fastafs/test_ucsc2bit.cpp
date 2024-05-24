@@ -470,8 +470,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit_with_offset)
             fs.view_ucsc2bit_chunk(buffer, complen, file_offset);
             BOOST_CHECK_EQUAL_MESSAGE(reference.compare(file_offset, complen, std_string_nullbyte_safe(buffer, 0, complen), 0, complen), 0, "Failed during len=" << complen << " and file offset=" << file_offset);
         }
-
-        printf("\n");
     }
     //for(uint32_t i = 0; i < complen; i++) {
     //printf("ref[%i]: %u\t == buf[%i]: %u",i + file_offset,  (signed char) reference[i + file_offset], i, (signed char) buffer[i], (unsigned char) buffer[i]);
