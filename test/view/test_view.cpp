@@ -541,6 +541,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     delete cache_p1;
     delete cache_p4;
     delete cache_p5;
+    delete cache_p32;
     delete cache_p999;
 }
 
