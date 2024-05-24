@@ -345,6 +345,10 @@ ContextZstdSeekable::~ContextZstdSeekable()
         //delete this->fh_zstd->fin;
 
         fclose_orDie(this->fh->fin);
+        if(this->buffOut != nullptr)
+        {
+            free(this->buffOut);
+        }
         delete this->fh;
 
     }

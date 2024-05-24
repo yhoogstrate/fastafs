@@ -632,6 +632,8 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
         BOOST_CHECK(output.compare(uppercase) == 0);
     }
+    
+    delete cache_p10;
 }
 
 

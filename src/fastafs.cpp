@@ -204,7 +204,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     uint32_t written = 0;
 
 
-    if(written >= buffer_size) { // requesting a buffer of size=0, should throw an exception?
+    if(written >= buffer_size) {
+        // requesting a buffer of size=0, should throw an exception?
         return written;
     }
 
@@ -451,8 +452,15 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     char chunk[chunksize + 2];
     chunk[chunksize] = '\0';
 
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
+
+
+    EVP_MD_CTX *mdctx;
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, EVP_sha1(), NULL);
+
+
+    //SHA_CTX ctx;
+    //SHA1_Init(&ctx);
 
     //fh->clear();
 
@@ -467,18 +475,28 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
                                chunksize,
                                header_offset + (i * chunksize),
                                fh);
-        SHA1_Update(&ctx, chunk, chunksize);
+
+        //SHA1_Update(&ctx, chunk, chunksize);
+        EVP_DigestUpdate(mdctx, chunk, chunksize); // new
+
     }
 
     if(remaining_bytes > 0) {
         this->view_fasta_chunk(cache, chunk, remaining_bytes, header_offset + (n_iterations * chunksize), fh);
-        SHA1_Update(&ctx, chunk, remaining_bytes);
+
+        //SHA1_Update(&ctx, chunk, remaining_bytes);
+        EVP_DigestUpdate(mdctx, chunk, remaining_bytes); // new
+
         //chunk[remaining_bytes] = '\0';
     }
 
-    //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
-    unsigned char cur_sha1_digest[SHA_DIGEST_LENGTH];
-    SHA1_Final(cur_sha1_digest, &ctx);
+
+    unsigned int sha1_digest_len = EVP_MD_size(EVP_md5());
+    unsigned char cur_sha1_digest[sha1_digest_len];
+    EVP_DigestFinal_ex(mdctx, cur_sha1_digest, &sha1_digest_len);
+    EVP_MD_CTX_free(mdctx);
+
+    //SHA1_Final(cur_sha1_digest, &ctx);
     //fh->clear(); // because gseek was done before
 
     char sha1_hash[41];
@@ -530,7 +548,6 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         EVP_DigestUpdate(mdctx, chunk, written); // new
-        //MD5_Update(&ctx, chunk, written); // old
     }
 
     if(remaining_bytes > 0) {
@@ -541,27 +558,21 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         EVP_DigestUpdate(mdctx, chunk, written); // new
-        //MD5_Update(&ctx, chunk, written); // old
         chunk[remaining_bytes] = '\0';
     }
 
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
-    
-    
-    //unsigned char cur_md5_digest[MD5_DIGEST_LENGTH];
-    //MD5_Final(cur_md5_digest, &ctx);
-    
-    //fh->clear(); // because gseek was done before
 
-    
     unsigned char *md5_digest;
     unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
     md5_digest = (unsigned char *)OPENSSL_malloc(md5_digest_len);
     EVP_DigestFinal_ex(mdctx, md5_digest, &md5_digest_len);
     EVP_MD_CTX_free(mdctx);
-    
-    char md5_hash[32 + 1]; 
+
+    char md5_hash[32 + 1];
     md5_digest_to_hash(md5_digest, md5_hash);
+    
+    OPENSSL_free(md5_digest);
 
     return std::string(md5_hash);
 }
@@ -683,7 +694,6 @@ void fastafs::load(std::string afilename)
             fh_in.read(memblock, 14);
             memblock[16] = '\0';
 
-
             // check magic
             for(i = 0 ; i < 4;  i++) {
                 if(memblock[i] != FASTAFS_MAGIC[i]) {
@@ -727,6 +737,7 @@ void fastafs::load(std::string afilename)
                 fh_in.read(name, namesize);
                 name[(unsigned char) memblock[0]] = '\0';
                 s->name = std::string(reinterpret_cast<char*>(name));
+                delete[] name;
 
                 // set cursor and save sequence data position
                 fh_in.read(memblock, 4);
