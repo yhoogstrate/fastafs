@@ -60,7 +60,7 @@ public:
 
 
 
-// four bit byte etc
+// four bit byte etc: 
 class byte_decoder_interface_A : public byte_decoder_interface
 {
 public:
@@ -73,15 +73,24 @@ public:
 };
 
 
-// two bit byte etc
+/*
+ * two bit byte etc:
+ * "AAAA" => "\x10 \x10 \x10 \x10"
+ * "CAAA" => "\x01 \x10 \x10 \x10"
+ * "TAAA" => "\x00 \x10 \x10 \x10"
+ * "GAAA" => "\x11 \x10 \x10 \x10"
+ */
 class byte_decoder_interface_B : public byte_decoder_interface
 {
 public:
     std::string doAlgorithm(std::string data) const override
     {
-            std::string out = data + " [2b]";
+        const unsigned char hash_size_input = 4;
+        const unsigned char hash_size_output = 1;
+        
+        std::string out = data + " [2b]";
 
-            return out;
+        return out;
     }
 };
 
