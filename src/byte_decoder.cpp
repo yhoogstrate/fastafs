@@ -33,7 +33,8 @@ void byte_decoder::set_input_data(const unsigned char *input_data, size_t input_
 void byte_decoder::decode()
 {
     printf("decoding ... to be implemented by interface\n");
-    printf(this->byte_decoder_interface_->doAlgorithm("aaa").c_str());
+    std::string test("aaa");
+    printf(this->byte_decoder_interface_->doAlgorithm(this->buffer_input_data).c_str());
     printf("\n");
 }
 

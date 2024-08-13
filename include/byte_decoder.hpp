@@ -28,7 +28,7 @@ private:
 
 public:
     virtual ~byte_decoder_interface() = default;
-    virtual std::string doAlgorithm(std::string data) const = 0;
+    virtual std::string doAlgorithm(const unsigned char* data) const = 0;
 };
 
 
@@ -64,9 +64,11 @@ public:
 class byte_decoder_interface_A : public byte_decoder_interface
 {
 public:
-    std::string doAlgorithm(std::string data) const override 
+    std::string doAlgorithm(const unsigned char* data) const override 
     {
-            std::string out = data + " [4b]";
+            std::string out = "";
+            
+            out += " [4b]";
 
     return out;
     }
@@ -83,12 +85,18 @@ public:
 class byte_decoder_interface_B : public byte_decoder_interface
 {
 public:
-    std::string doAlgorithm(std::string data) const override
+    std::string doAlgorithm(const unsigned char* data) const override
     {
         const unsigned char hash_size_input = 4;
         const unsigned char hash_size_output = 1;
         
-        std::string out = data + " [2b]";
+        std::string out = "";
+        
+        for(int i = 0; i < 5; i++) {
+            out += data[i];
+        }
+        
+        out += " [2b]";
 
         return out;
     }
@@ -98,11 +106,13 @@ public:
 class byte_decoder_interface_C : public byte_decoder_interface
 {
 public:
-    std::string doAlgorithm(std::string data) const override
+    std::string doAlgorithm(const unsigned char* data) const override
     {
-            std::string out = data + " [5b]";
+            std::string out = "";
+            
+            out += " [5b]";
 
-    return out;
+            return out;
     }
 };
 
