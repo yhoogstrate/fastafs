@@ -37,3 +37,4 @@ analysis.txt
 compile_commands.json
 *.fastafs
 *.zst
+memory
