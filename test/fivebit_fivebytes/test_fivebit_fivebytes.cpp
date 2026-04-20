@@ -198,5 +198,60 @@ BOOST_AUTO_TEST_CASE(test_bytes_rounding)
 }
 
 
+BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_get_with_length)
+{
+    // FASTA-FS: F=5, A=0, S=18, T=19, A=0, -=27, F=5, S=18
+    unsigned char seq_comp[5] = {40, 37, 48, 108, 178};
+
+    fivebit_fivebytes f;
+    f.set_compressed(seq_comp);
+
+    char buf[8];
+
+    // Test valid lengths (1-7)
+    BOOST_CHECK_EQUAL(f.get(1, buf), 1);
+    BOOST_CHECK_EQUAL(buf[0], 'F');
+
+    BOOST_CHECK_EQUAL(f.get(2, buf), 2);
+    BOOST_CHECK_EQUAL(buf[0], 'F');
+    BOOST_CHECK_EQUAL(buf[1], 'A');
+
+    BOOST_CHECK_EQUAL(f.get(3, buf), 3);
+    BOOST_CHECK_EQUAL(buf[0], 'F');
+    BOOST_CHECK_EQUAL(buf[1], 'A');
+    BOOST_CHECK_EQUAL(buf[2], 'S');
+
+    BOOST_CHECK_EQUAL(f.get(7, buf), 7);
+    BOOST_CHECK_EQUAL(buf[0], 'F');
+    BOOST_CHECK_EQUAL(buf[1], 'A');
+    BOOST_CHECK_EQUAL(buf[2], 'S');
+    BOOST_CHECK_EQUAL(buf[3], 'T');
+    BOOST_CHECK_EQUAL(buf[4], 'A');
+    BOOST_CHECK_EQUAL(buf[5], '-');
+    BOOST_CHECK_EQUAL(buf[6], 'F');
+}
+
+
+#ifdef DEBUG
+BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes_get_with_invalid_length)
+{
+    unsigned char seq_comp[5] = {40, 37, 48, 108, 178};
+    fivebit_fivebytes f;
+    f.set_compressed(seq_comp);
+
+    char buf[8];
+
+    // Length 0 should throw
+    BOOST_CHECK_THROW(f.get(0, buf), std::invalid_argument);
+
+    // Length 8 should throw (use get() instead)
+    BOOST_CHECK_THROW(f.get(8, buf), std::invalid_argument);
+
+    // Length > 8 should throw
+    BOOST_CHECK_THROW(f.get(9, buf), std::invalid_argument);
+    BOOST_CHECK_THROW(f.get(255, buf), std::invalid_argument);
+}
+#endif
+
 
 BOOST_AUTO_TEST_SUITE_END()

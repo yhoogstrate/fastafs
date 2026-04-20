@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
     buffer[2] = '\0';
 
     // test: 00000000 00000000
-    buffer[0] = '\x0';
-    buffer[1] = '\x0';
+    buffer[0] = 0b00000000;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), false);
@@ -31,8 +31,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 
 
     // test: 10000000 00000000
-    buffer[0] = '\x80'; // worked with writing to file and checking with `xxd -b file` ~ this is binary equivalent to 10000000
-    buffer[1] = '\x0';
+    buffer[0] = 0b10000000;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), true);
@@ -40,16 +40,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 
 
     // test: 11111111 00000000
-    buffer[0] = '\xFF';
-    buffer[1] = '\x0';
+    buffer[0] = 0b11111111;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), true);
     BOOST_CHECK_EQUAL(f.is_incomplete(), false);
 
     // test: 00000001 00000000
-    buffer[0] = '\x01';
-    buffer[1] = '\x0';
+    buffer[0] = 0b00000001;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), false);
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 
 
     // re-test: 00000000 00000000
-    buffer[0] = '\x0';
-    buffer[1] = '\x0';
+    buffer[0] = 0b00000000;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), false);
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
     fs.set_iupec_nucleotide();
 
     bits = fs.get_bits();
-    BOOST_CHECK_EQUAL(bits[0], '\x58');// 1011000
+    BOOST_CHECK_EQUAL(bits[0], 0b01011000);// 01011000
     BOOST_CHECK_EQUAL(bits[1], '\0');
 
 }

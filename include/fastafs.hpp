@@ -31,27 +31,15 @@ struct ffs2f_init_seq {
 
     const uint32_t filesize;// with padding and newlines [fastafs_seq->fasta_filesize(cache->padding_arg)]
 
-    ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize):
-        padding(padding),
-        total_sequence_containing_lines(n_lines),
-        n_starts(n_blocks), n_ends(n_blocks),
-        m_starts(m_blocks), m_ends(m_blocks),
-        filesize(filesize)
-    {}
+    ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize);
 };
 
 struct ffs2f_init {
     const uint32_t padding_arg;// padding argument, 0 means no padding takes place and all nucleotides are written to one single line
     std::vector<ffs2f_init_seq *> sequences;
 
-    ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
-
-    ~ffs2f_init(void)
-    {
-        for(size_t i = 0; i < sequences.size(); i++) {
-            delete sequences[i];
-        }
-    }
+    ffs2f_init(size_t size, uint32_t padding_arg);
+    ~ffs2f_init(void);
 };
 
 

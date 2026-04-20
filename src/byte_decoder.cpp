@@ -39,6 +39,12 @@ size_t byte_decoder::decode(char *output, size_t output_size) const
 }
 
 
+void byte_decoder_interface_fivebit::decode_chunk(const unsigned char *input, char *output) const
+{
+    fivebit_fivebytes::decode(input, output);
+}
+
+
 std::string byte_decoder::decode() const
 {
     const size_t chunk_size = strategy_->bytes_per_chunk();

@@ -113,6 +113,40 @@ BOOST_AUTO_TEST_CASE(test_fourbit_static_offset_conversion_test)
 }
 
 
+BOOST_AUTO_TEST_CASE(test_fourbit_get_with_length)
+{
+    fourbit_byte t;
+    char input[2] = {'A', 'C'};
+    t.set(input);
+
+    char buf[2];
+
+    BOOST_CHECK(t.get(1, buf) == 1);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+
+    BOOST_CHECK(t.get(2, buf) == 2);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(buf[1], 'C');
+}
+
+
+#ifdef DEBUG
+BOOST_AUTO_TEST_CASE(test_fourbit_get_with_invalid_length)
+{
+    fourbit_byte t;
+    char input[2] = {'A', 'C'};
+    t.set(input);
+
+    char buf[2];
+
+    // Length 0 should throw
+    BOOST_CHECK_THROW(t.get(0, buf), std::invalid_argument);
+
+    // Length > 2 should throw
+    BOOST_CHECK_THROW(t.get(3, buf), std::invalid_argument);
+    BOOST_CHECK_THROW(t.get(255, buf), std::invalid_argument);
+}
+#endif
 
 
 BOOST_AUTO_TEST_SUITE_END()

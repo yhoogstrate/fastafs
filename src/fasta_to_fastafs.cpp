@@ -43,6 +43,29 @@ const static char nx[2] = "X";
 
 
 
+fasta_to_fastafs_seq::fasta_to_fastafs_seq(off_t fof_fasta, off_t fof_fastafs, const std::string &arg_name):
+    file_offset_in_fasta(fof_fasta),
+    file_offset_in_fastafs(fof_fastafs),
+    name(arg_name),
+    N(0),
+    n_actg(0),
+    previous_was_N(false),
+    in_m_block(false),
+    current_dict(DICT_TWOBIT),
+    has_T(false),
+    has_U(false),
+    twobit_data(ENCODE_HASH_TWOBIT_DNA) // not relevant for encoding, only for decoding
+{
+    if(name.size() > 255) {
+        fprintf(stderr, "[fasta_to_fastafs::init] sequence name truncated to 255 charaters: %s\n", name.c_str());
+        this->name = this->name.substr(0, 255);
+    }
+
+    this->mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
+}
+
+
 size_t fasta_to_fastafs_seq::N_bytes_used()
 {
     // just the number of n-blocks, not their actual size

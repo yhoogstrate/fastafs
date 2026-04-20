@@ -223,6 +223,7 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, __
 
 static int do_open(const char *path, struct fuse_file_info *fi)
 {
+    (void)path; // required by FUSE API, path validation is guaranteed by do_getattr
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
 #if DEBUG

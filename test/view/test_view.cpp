@@ -955,5 +955,116 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
 
 
 
+
+static void test_large_windowed(const std::string &test_name, int padding, bool allow_masking)
+{
+    std::string fasta_file   = "test/data/" + test_name + ".fa";
+    std::string fastafs_file = "tmp/"       + test_name + ".fastafs";
+
+    fasta_to_fastafs(fasta_file, fastafs_file, false);
+    fastafs fs = fastafs(test_name);
+    fs.load(fastafs_file);
+    BOOST_REQUIRE_EQUAL(fs.flags.is_complete(), true);
+
+    // read reference FASTA into string
+    std::ifstream fh_ref(fasta_file.c_str(), std::ios::binary);
+    BOOST_REQUIRE(fh_ref.is_open());
+    fh_ref.seekg(0, std::ios::end);
+    size_t file_size = (size_t) fh_ref.tellg();
+    fh_ref.seekg(0, std::ios::beg);
+    std::string full_file(file_size, '\0');
+    fh_ref.read(&full_file[0], (std::streamsize) file_size);
+    fh_ref.close();
+
+    char *buffer = new char[file_size + 1];
+    flush_buffer(buffer, file_size + 1, '?');
+
+    ffs2f_init* cache = fs.init_ffs2f((uint32_t) padding, allow_masking);
+
+    chunked_reader fhc = chunked_reader(fs.filename.c_str());
+    fhc.fopen(0);
+
+    // Sample key positions: boundaries at 0, around each READ_BUFFER_SIZE multiple, and near end.
+    // Buffer sizes span from single-byte up to 3x READ_BUFFER_SIZE to cross multiple boundaries.
+    const size_t B = (size_t) READ_BUFFER_SIZE;
+    const size_t n = full_file.size();
+    const size_t start_positions[] = {
+        0,
+        
+        B / 2,
+        
+        B - 1,
+        B,
+        B + 1,
+        
+        2 * B,
+        2 * B + 1,
+        
+        3 * B,
+        3 * B + 1,
+        
+        n / 2,
+        
+        n > B ? n - B : 0,
+        
+        n - 1,
+    };
+    const size_t buf_sizes[] = { 1, B, 2 * B, 3 * B };
+
+    uint32_t written;
+    std::string std_buffer;
+
+    for(size_t start : start_positions) {
+        if(start >= n) continue;
+        for(size_t buf_size : buf_sizes) {
+            std::string expected = full_file.substr(start, buf_size);
+            if(expected.empty()) continue;
+
+            flush_buffer(buffer, file_size + 1, '?');
+            written = fs.view_fasta_chunk(cache, buffer, buf_size, (off_t) start, fhc);
+            std_buffer = std::string(buffer, expected.size());
+
+            BOOST_CHECK_EQUAL_MESSAGE(written, expected.size(), "size mismatch start=" << start << " buf=" << buf_size);
+            BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(expected), 0, "content mismatch start=" << start << " buf=" << buf_size);
+        }
+    }
+
+    delete[] buffer;
+    delete cache;
+}
+
+
+BOOST_AUTO_TEST_CASE(test_chunked_viewing_dna_large)
+{
+    printf("test %i\n", ++test_i);
+    // test_012.fa: 2bit DNA, 16000 nt, ~4x READ_BUFFER_SIZE — covers 3+ buffer crossings
+    test_large_windowed("test_012", 60, false);
+}
+
+
+BOOST_AUTO_TEST_CASE(test_chunked_viewing_rna_large)
+{
+    printf("test %i\n", ++test_i);
+    // test_013.fa: 2bit RNA, 16000 nt, ~4x READ_BUFFER_SIZE — covers 3+ buffer crossings
+    test_large_windowed("test_013", 60, false);
+}
+
+
+BOOST_AUTO_TEST_CASE(test_chunked_viewing_iupac_large)
+{
+    printf("test %i\n", ++test_i);
+    // test_014.fa: 4bit IUPAC, 16000 chars, ~4x READ_BUFFER_SIZE — covers 3+ buffer crossings
+    test_large_windowed("test_014", 60, false);
+}
+
+
+BOOST_AUTO_TEST_CASE(test_chunked_viewing_protein_large)
+{
+    printf("test %i\n", ++test_i);
+    // test_015.fa: 5bit protein, 16000 chars, ~4x READ_BUFFER_SIZE — covers 3+ buffer crossings
+    test_large_windowed("test_015", 60, false);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 

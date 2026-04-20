@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <fstream>
 
@@ -121,6 +122,44 @@ char *fivebit_fivebytes::get(void)
     return (char *) this->data_decompressed;
 }
 
+
+/**
+ * @brief Decode into a provided buffer, returning the number of symbols written.
+ * @param length Number of symbols to decode (1-7). For all 8 symbols, use get() instead.
+ *        In DEBUG mode, values outside this range (including 8) throw.
+ * @param output Buffer to write decoded symbols to. Caller is responsible for ensuring it has at least 'length' bytes.
+ * @return Number of symbols written (same as length).
+**/
+size_t fivebit_fivebytes::get(unsigned char length, char *output)
+{
+#if DEBUG
+    if(length < 1 || length > 7) {
+        throw std::invalid_argument("fivebit_fivebytes::get(length, output) -> length must be 1-7, got " + std::to_string(length) + "; use get() for all 8 symbols\n");
+    }
+#endif //DEBUG
+
+    memcpy(output, this->data_decompressed, length);
+    return length;
+}
+
+
+
+
+// Encode 8 amino acids from a char buffer
+void fivebit_fivebytes::set(char *buffer)
+{
+    for(unsigned char i = 0; i < 8; i++) {
+        // Find index of character in alphabet
+        unsigned char idx = 0;
+        for(unsigned char j = 0; j < 28; j++) {
+            if(fivebit_alphabet[j] == buffer[i]) {
+                idx = j;
+                break;
+            }
+        }
+        this->set(i, idx);
+    }
+}
 
 
 
@@ -279,4 +318,30 @@ void fivebit_fivebytes::next(chunked_reader &r)
 {
     r.read(this->data_compressed, fivebit_fivebytes::bytes_per_chunk);
     this->unpack();
+}
+
+
+void fivebit_fivebytes::decode(const unsigned char *input, char *output)
+{
+    // Pack 5 bytes into a 40-bit integer, most-significant byte first.
+    // Layout: 00000111 11222223 33334444 45555566 66677777
+    //         symbol 0 starts at bit 39, each symbol is 5 bits wide.
+    const uint64_t bits = ((uint64_t)input[0] << 32)
+                        | ((uint64_t)input[1] << 24)
+                        | ((uint64_t)input[2] << 16)
+                        | ((uint64_t)input[3] <<  8)
+                        |  (uint64_t)input[4];
+
+    // Extract each 5-bit symbol by shifting to bit 0 and masking with 0b00011111.
+    // The mask is needed because uint64_t is 64 bits wide — after shifting, bits above
+    // position 4 may contain residue from neighbouring symbols. 0b00011111 zeroes bits
+    // 7,6,5 so the index stays within the valid alphabet range (0–27).
+    output[0] = fivebit_alphabet[(bits >> 35) & 0b00011111];
+    output[1] = fivebit_alphabet[(bits >> 30) & 0b00011111];
+    output[2] = fivebit_alphabet[(bits >> 25) & 0b00011111];
+    output[3] = fivebit_alphabet[(bits >> 20) & 0b00011111];
+    output[4] = fivebit_alphabet[(bits >> 15) & 0b00011111];
+    output[5] = fivebit_alphabet[(bits >> 10) & 0b00011111];
+    output[6] = fivebit_alphabet[(bits >>  5) & 0b00011111];
+    output[7] = fivebit_alphabet[(bits >>  0) & 0b00011111];
 }

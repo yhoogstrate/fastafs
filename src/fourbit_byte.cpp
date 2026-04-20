@@ -220,24 +220,21 @@ void fourbit_byte::set(char* buffer)
 }
 
 /**
- * @brief fully decodes a fourbit byte, not referencing to a hash but allocating a new char*,
- * slower than fourbit_byte::get(void) but capable of determining very ends
+ * @brief Decode into a provided buffer, returning the number of nucleotides written.
+ * @param length Number of nucleotides to decode (1-2). In DEBUG mode, values outside this range throw.
+ * @param output Buffer to write decoded nucleotides to. Caller is responsible for ensuring it has at least 'length' bytes.
+ * @return Number of nucleotides written (same as length).
 **/
-char *fourbit_byte::get(unsigned char length)
+size_t fourbit_byte::get(unsigned char length, char *output)
 {
 #if DEBUG
-    if(length > 2) {
-        throw std::invalid_argument("four_byte::get(unsigned char length) -> out of bound: " + std::to_string(length) + "\n");
+    if(length < 1 || length > 2) {
+        throw std::invalid_argument("fourbit_byte::get(length, output) -> length must be 1-2, got " + std::to_string(length) + "\n");
     }
 #endif //DEBUG
 
-    char *seq = new char[length + 1];
-    for(unsigned char i = 0; i < length; i++) { // length = 4: i = 0, 1, 2, 3
-        seq[i] = fourbit_byte::encode_hash[this->data][i];
-    }
-    seq[length] = '\0';
-
-    return seq;
+    memcpy(output, fourbit_byte::encode_hash[this->data], length);
+    return length;
 }
 
 
@@ -266,6 +263,12 @@ char *fourbit_byte::get()
 off_t fourbit_byte::nucleotides_to_compressed_fileoffset(size_t n_nucleotides)
 {
     return (off_t) n_nucleotides / fourbit_byte::nucleotides_per_byte;
+}
+
+
+void fourbit_byte::next(chunked_reader &r)
+{
+    r.read(&this->data, 1);
 }
 
 

@@ -44,6 +44,23 @@ static const std::string dict_m5 = "\tM5:";
 static const std::string dict_ur = "\tUR:fastafs:///";
 
 
+ffs2f_init_seq::ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize):
+    padding(padding),
+    total_sequence_containing_lines(n_lines),
+    n_starts(n_blocks), n_ends(n_blocks),
+    m_starts(m_blocks), m_ends(m_blocks),
+    filesize(filesize)
+{}
+
+ffs2f_init::ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
+
+ffs2f_init::~ffs2f_init(void)
+{
+    for(size_t i = 0; i < sequences.size(); i++) {
+        delete sequences[i];
+    }
+}
+
 fastafs_seq::fastafs_seq(): n(0)
 {
 }
@@ -228,8 +245,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 
     const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
-    size_t n_block = cache->n_starts.size();
-    size_t m_block = cache->m_starts.size();
+    size_t n_block = cache->n_starts.size() - 1;
+    size_t m_block = cache->m_starts.size() - 1;
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
@@ -490,7 +507,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     }
 
 
-    unsigned int sha1_digest_len = EVP_MD_size(EVP_md5());
+    unsigned int sha1_digest_len = EVP_MD_size(EVP_sha1());
     unsigned char cur_sha1_digest[sha1_digest_len];
     EVP_DigestFinal_ex(mdctx, cur_sha1_digest, &sha1_digest_len);
     EVP_MD_CTX_free(mdctx);

@@ -13,9 +13,10 @@ set(PROJECT_VERSION "1.11.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
-set(BUILD_DIR "bin")
-set(BUILD_TEST_DIR "${BUILD_DIR}/test")
-file(MAKE_DIRECTORY "${BUILD_DIR}")
+set(BUILD_TEST_DIR "${CMAKE_BINARY_DIR}/test")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include")
 file(MAKE_DIRECTORY "${BUILD_TEST_DIR}")
 
 # include the git commit SHA1
@@ -42,10 +43,7 @@ else()
 	set(DEBUG "false")
 endif()
 
-configure_file("include/config.hpp.in" "include/config.hpp")# implies building is done from project root
-#configure_file("include/config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/config.hpp")
-#configure_file("include/config.hpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/config.hpp")
-configure_file("include/config.hpp.in" "${BUILD_DIR}/include/config.hpp")
+configure_file("include/config.hpp.in" "${CMAKE_BINARY_DIR}/include/config.hpp")
 
 
 # ----------------------------------------------------------------------
@@ -81,7 +79,7 @@ add_custom_target(doc DEPENDS make_doc)
 
 
 add_subdirectory(src)
-include_directories("${BUILD_DIR}/include")
+include_directories("${CMAKE_BINARY_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
 
@@ -132,8 +130,8 @@ add_library(libfastafs SHARED
 					src/ucsc2bit.cpp
 					
                     src/byte_decoder.cpp
-                    
-					src/xbit_byte_encoder.cpp
+                    src/byte_encoder.cpp
+
 					src/twobit_byte.cpp
 					src/fourbit_byte.cpp
 					src/fivebit_fivebytes.cpp
@@ -156,7 +154,7 @@ target_include_directories(libfastafs PUBLIC dependencies/zstd-lib-common)
 target_include_directories(libfastafs PUBLIC dependencies/zstd-seekable-adapted)
 
 
-set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "lib")
+set_target_properties(libfastafs PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set_target_properties(libfastafs PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(libfastafs PROPERTIES SOVERSION 1)
 set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
@@ -173,12 +171,12 @@ set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
 
 
 add_executable(fastafs src/main.cpp)
-set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
+set_target_properties(fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 target_link_libraries(fastafs libfastafs)
 
 # mount-only binary, without all the other stuff 'mount.fastafs' [for fstab]
 add_executable(mount.fastafs src/main_mount.cpp)
-set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUILD_DIR}")
+set_target_properties(mount.fastafs PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 target_link_libraries(mount.fastafs libfastafs)
 
 
@@ -188,7 +186,6 @@ target_link_libraries(mount.fastafs libfastafs)
 
 #add_subdirectory(test)
 
-set(BUILD_TEST_DIR "${BUILD_DIR}/test")
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})					# 'make check' as alias for 'make test'
 
@@ -227,6 +224,11 @@ add_executable(test_byte_decoder test/byte_decoder/test_byte_decoder.cpp)
 add_test(test_byte_decoder ${BUILD_TEST_DIR}/test_byte_decoder)
 set_target_properties(test_byte_decoder PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
 target_link_libraries(test_byte_decoder libfastafs)
+
+add_executable(test_byte_encoder test/byte_encoder/test_byte_encoder.cpp)
+add_test(test_byte_encoder ${BUILD_TEST_DIR}/test_byte_encoder)
+set_target_properties(test_byte_encoder PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
+target_link_libraries(test_byte_encoder libfastafs)
 
 add_executable(test_fivebit_byte test/fivebit_fivebytes/test_fivebit_fivebytes.cpp)
 add_test(test_fivebit_byte ${BUILD_TEST_DIR}/test_fivebit_byte)
@@ -276,6 +278,16 @@ target_link_libraries(test_view libfastafs)
 
 #add_test(test_functional          "test/test_functional.py")
 
+set_tests_properties(
+    test_cache test_check test_chunked_reader test_database
+    test_fastafs_as_ucsc2bit test_fastafs
+    test_byte_decoder test_byte_encoder
+    test_fivebit_byte test_flags test_fourbit_byte
+    test_sequenceregion test_twobit_byte
+    test_ucsc2bit_as_fasta test_ucsc2bit_to_fastafs
+    test_utils test_view
+    PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+)
 
 find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'
 INCLUDE(Dart)

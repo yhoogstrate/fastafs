@@ -87,13 +87,7 @@ class byte_decoder_interface_fivebit : public byte_decoder_interface
 public:
     unsigned char bytes_per_chunk() const override { return 5; }
     unsigned char nucleotides_per_chunk() const override { return 8; }
-    void decode_chunk(const unsigned char *input, char *output) const override
-    {
-        fivebit_fivebytes chunk;
-        unsigned char compressed[5] = {input[0], input[1], input[2], input[3], input[4]};
-        chunk.set_compressed(compressed);
-        memcpy(output, chunk.data_decompressed, 8);
-    }
+    void decode_chunk(const unsigned char *input, char *output) const override;
 };
 
 
