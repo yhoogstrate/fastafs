@@ -68,21 +68,66 @@ for enc, pattern in encodings.items():
     print(f'  {path}: {os.path.getsize(path):,} bytes')
 PYEOF
 
-# ---------- convert to fastafs (plain and zstd) ----------
-echo "Converting to fastafs ..."
+
+# ---------- run cache benchmarks ----------
 for ENC in dna rna iupac protein; do
+    TSV="${BENCH_DIR}/${USER_NAME}-${MACHINE_ID}_cache_${ENC}.txt"
     FA="${TMP_DIR}/bench_${ENC}.fa"
 
-    FFS_PLAIN="${TMP_DIR}/bench_${ENC}_plain.fastafs"
-    ${FASTAFS} cache -f -o "${FFS_PLAIN}" "${FA}" 2>/dev/null
-    echo "  ${FFS_PLAIN}: $(du -sh "${FFS_PLAIN}" | cut -f1)"
+    if [ ! -f "${TSV}" ]; then
+        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
+            > "${TSV}"
+    fi
 
-    FFS_ZSTD="${TMP_DIR}/bench_${ENC}_zstd.fastafs"
-    ${FASTAFS} cache -o "${FFS_ZSTD}" "${FA}" 2>/dev/null
-    echo "  ${FFS_ZSTD}.zst: $(du -sh "${FFS_ZSTD}.zst" | cut -f1)"
+    for COMPRESSION in plain zstd; do
+        if [ "${COMPRESSION}" = "plain" ]; then
+            FFS_OUT="${TMP_DIR}/bench_${ENC}_plain.fastafs"
+            CACHE_FLAGS="-f -o ${FFS_OUT}"
+        else
+            FFS_OUT="${TMP_DIR}/bench_${ENC}_zstd.fastafs"
+            CACHE_FLAGS="-o ${FFS_OUT}"
+        fi
+
+        CMD="${FASTAFS} cache ${CACHE_FLAGS} ${FA}"
+        echo "Benchmarking cache ${ENC} (${COMPRESSION}) ..."
+
+        for RUN in 1 2 3; do
+            rm -f "${FFS_OUT}" "${FFS_OUT}.zst"
+            PERF_OUT=$(perf stat -e instructions,cycles \
+                sh -c "${CMD}" 2>&1)
+            INSTRUCTIONS=$(echo "$PERF_OUT" | grep instructions \
+                | awk '{gsub(/,/,""); print $1}')
+            CYCLES=$(echo "$PERF_OUT" | grep cycles \
+                | awk '{gsub(/,/,""); print $1}')
+            WALL=$(echo "$PERF_OUT" | grep 'seconds time elapsed' \
+                | awk '{print $1}')
+            USER_T=$(echo "$PERF_OUT" | grep 'seconds user' \
+                | awk '{print $1}')
+            SYS=$(echo "$PERF_OUT" | grep 'seconds sys' \
+                | awk '{print $1}')
+
+            if python3 -c "exit(0 if float('${USER_T}') > 0 else 1)" 2>/dev/null; then
+                NT_PER_SEC=$(python3 -c "print(int(${N_NUCLEOTIDES} / float('${USER_T}')))")
+            else
+                NT_PER_SEC="N/A"
+            fi
+
+            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "${TIMESTAMP}" "${FASTAFS_VERSION}" "${GIT_COMMIT}" \
+                "${INSTRUCTIONS}" "${CYCLES}" \
+                "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
+                "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_STATUS}" \
+                >> "${TSV}"
+
+            USER_T_R=$(printf "%.3f" "${USER_T}")
+            WALL_R=$(printf "%.3f" "${WALL}")
+            SYS_R=$(printf "%.3f" "${SYS}")
+            echo "  run ${RUN}: instrs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s"
+        done
+    done
 done
 
-# ---------- run benchmarks ----------
+# ---------- run view benchmarks ----------
 for ENC in dna rna iupac protein; do
     TSV="${BENCH_DIR}/${USER_NAME}-${MACHINE_ID}_view_${ENC}.txt"
 
@@ -133,11 +178,12 @@ for ENC in dna rna iupac protein; do
             USER_T_R=$(printf "%.3f" "${USER_T}")
             WALL_R=$(printf "%.3f" "${WALL}")
             SYS_R=$(printf "%.3f" "${SYS}")
-            echo "  run ${RUN}: intrucs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s  cycles=${CYCLES})"
+            echo "  run ${RUN}: instrs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s"
         done
     done
 done
 
 echo ""
-echo "Results appended to ${BENCH_DIR}/<machine>_view_<encoding>.txt"
-echo "Metric: nucleotides decoded per CPU-second (higher = faster)"
+echo "Results appended to ${BENCH_DIR}/<machine>_cache_<encoding>.txt  (cache)"
+echo "Results appended to ${BENCH_DIR}/<machine>_view_<encoding>.txt   (view)"
+echo "Metric: nucleotides per CPU-second (higher = faster)"
