@@ -1,8 +1,27 @@
 
 #include <string>
+#include <array>
 
 #include "config.hpp"
 #include "byte_encoder.hpp"
+
+
+// Lookup table: ASCII karakter (0-255) → 2-bit encoderingswaarde
+// T/U/N/n = 0, C = 1, A = 2, G = 3
+// DNA en RNA gebruiken dezelfde tabel omdat T en U beide naar 0 mappen
+static constexpr auto make_twobit_encode_table()
+{
+    std::array<unsigned char, 256> t = {};
+    t['A'] = t['a'] = 2;
+    t['C'] = t['c'] = 1;
+    t['G'] = t['g'] = 3;
+    t['T'] = t['t'] = 0;
+    t['U'] = t['u'] = 0;
+    t['N'] = t['n'] = 0;
+    return t;
+}
+
+static constexpr auto TWOBIT_ENCODE = make_twobit_encode_table();
 
 
 
@@ -47,21 +66,25 @@ size_t byte_encoder::encode(const char *input, size_t input_size) const
 
 void encoder_interface_twobit_dna::encode_chunk(const char *input, unsigned char *output) const
 {
-    // Convert 4 nucleotides to 1 byte using twobit encoding
-    // T=0, C=1, A=2, G=3 (2 bits each)
-    twobit_byte_dna t;
-    t.set((char*)input);
-    output[0] = t.data;
+    // T=0, C=1, A=2, G=3 (2 bits per nucleotide, 4 nucleotiden per byte)
+    output[0] = (unsigned char)(
+        (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
+        (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
+        (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
+        (TWOBIT_ENCODE[(unsigned char)input[3]])
+    );
 }
 
 
 void encoder_interface_twobit_rna::encode_chunk(const char *input, unsigned char *output) const
 {
-    // Convert 4 nucleotides to 1 byte using twobit encoding (RNA variant)
-    // U=0, C=1, A=2, G=3 (2 bits each)
-    twobit_byte_rna t;
-    t.set((char*)input);
-    output[0] = t.data;
+    // U=0, C=1, A=2, G=3 (2 bits per nucleotide, 4 nucleotiden per byte)
+    output[0] = (unsigned char)(
+        (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
+        (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
+        (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
+        (TWOBIT_ENCODE[(unsigned char)input[3]])
+    );
 }
 
 
