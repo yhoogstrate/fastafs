@@ -2,7 +2,9 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
+#include <stdexcept>
 #include <stdio.h>
 #include <string.h>
 //#include <filesystem>
@@ -211,6 +213,9 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     if(cache == nullptr) {
         throw std::runtime_error("Empty cache was provided\n");
     }
+    if(start_pos_in_fasta < 0) {
+        throw std::invalid_argument("view_fasta_chunk_generalized: negative start_pos_in_fasta\n");
+    }
 #endif //DEBUG
 
     buffer_size = std::min((size_t) READ_BUFFER_SIZE, buffer_size);
@@ -225,7 +230,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         return written;
     }
 
-    uint32_t pos = (uint32_t) start_pos_in_fasta;
+    size_t pos = (size_t) start_pos_in_fasta;
 
 
     size_t pos_limit = this->name.size() + 2;
@@ -244,6 +249,11 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         pos += (uint32_t) copied;
     }
 
+#if DEBUG
+    if((pos - pos_limit) > (size_t) std::numeric_limits<uint32_t>::max()) {
+        throw std::overflow_error("view_fasta_chunk_generalized: offset_from_sequence_line exceeds uint32_t\n");
+    }
+#endif
     const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
     size_t n_block = cache->n_starts.size() - 1;
     size_t m_block = cache->m_starts.size() - 1;

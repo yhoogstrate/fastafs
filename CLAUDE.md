@@ -10,6 +10,8 @@ FASTAFS is a C++17 toolkit for FUSE-based virtualisation of random-access compre
 
 The user runs all compilation and test commands themselves. Do not run `make`, `cmake`, `bash build-*.sh`, or any build/test commands — only edit source files.
 
+Working plans, analysis documents, and refactor notes go in `./tmp/CLAUDE/`.
+
 ## Build System
 
 Two out-of-source CMake builds are maintained in parallel. Always use these scripts, not in-source cmake.
