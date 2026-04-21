@@ -141,7 +141,7 @@ void fourbit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 // N's are treated as 0, for some weird reason
 void fourbit_byte::set(char* buffer)
 {
-    const std::array< unsigned char, 4> bit_offsets = {4, 0};
+    static constexpr std::array<unsigned char, 2> bit_offsets = {4, 0};
     for(unsigned char i = 0; i < 2; i++) {
         switch(buffer[i]) {
 

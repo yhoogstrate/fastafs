@@ -84,7 +84,7 @@ void twobit_byte::set(unsigned char bit_offset, unsigned char nucleotide)
 // this function seems specific for UCSC 2 bit format?! - if so, denote it like that
 void twobit_byte::set(char* buffer)
 {
-    const std::array< unsigned char, 4> bit_offsets = {6, 4, 2, 0};
+    static constexpr std::array<unsigned char, 4> bit_offsets = {6, 4, 2, 0};
     for(unsigned char i = 0; i < 4; i++) {
         switch(buffer[i]) {
         case 't':

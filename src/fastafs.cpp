@@ -281,7 +281,13 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 //    const char *chunk = t.encode_hash[0];// init
 //    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
-    char *chunk = (char *) t.encode_hash[1];// init
+    // chunk is always overwritten by t.next(fh) before first use; nullptr in debug to catch
+    // accidental early reads, dummy init in release to suppress -Wmaybe-uninitialized
+#if DEBUG
+    char *chunk = nullptr;
+#else
+    char *chunk = (char *) t.encode_hash[1];
+#endif
 
     if(bit_offset != 0) {
         t.next(fh);
