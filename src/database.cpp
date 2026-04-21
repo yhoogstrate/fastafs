@@ -1,18 +1,20 @@
 
-#include <stdio.h>
 #include <dirent.h>
-#include <sys/stat.h>
+#include <filesystem>
 #include <fstream>
+#include <pwd.h>
 #include <sstream>
+#include <stdexcept>
+#include <stdio.h>
 #include <string>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/types.h>
-#include <pwd.h>
+
 
 #include "database.hpp"
 #include "fastafs.hpp"
 #include "lsfastafs.hpp"
-
 
 
 const std::string database::get_default_dir()
@@ -31,29 +33,29 @@ const std::string database::get_default_dir()
 }
 
 
-
 void database::force_db_exists()
 {
-    DIR *dir = opendir(this->path.c_str());
-    if(dir) {
-        closedir(dir);
-    } else {
-        if(mkdir(this->path.c_str(), S_IRWXU) == 0) {
-        } else {
-            throw std::runtime_error("could not access and not create database as directory: " + path);
+    try {
+        // Maakt de directory aan als deze niet bestaat. 
+        // create_directories maakt indien nodig ook bovenliggende mappen (recursief).
+        // Als de map al bestaat, gebeurt er niets (veilig).
+        std::filesystem::create_directories(this->path);
+
+        // Gebruik een fstream met 'append' mode om te checken of het bestand bestaat
+        // of om het aan te maken zonder de inhoud te wissen.
+        std::ofstream file(this->idx, std::ios::app);
+        
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not access/create database file: " + this->idx);
         }
-    }
-    if(FILE *file = fopen(this->idx.c_str(), "r")) {
-        fclose(file);
-    } else {
-        if(FILE *file2 = fopen(this->idx.c_str(), "w")) {
-            fclose(file2);
-        } else {
-            throw std::runtime_error("could not access and not create database file: " + this->idx);
-        }
+        
+        // file sluit automatisch hier (RAII), geen fclose nodig.
+    } 
+    catch (const std::filesystem::filesystem_error& e) {
+        // Vangt specifieke OS-fouten op (bijv. permissie problemen)
+        throw std::runtime_error("Filesystem failure: " + std::string(e.what()));
     }
 }
-
 
 
 database::database(const std::string &path_arg) :
@@ -63,10 +65,12 @@ database::database(const std::string &path_arg) :
     this->load();
 }
 
+
 void database::load()
 {
     this->force_db_exists();
 }
+
 
 void database::list()
 {

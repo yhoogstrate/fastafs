@@ -13,6 +13,9 @@ set(PROJECT_VERSION "1.11.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(BUILD_TEST_DIR "${CMAKE_BINARY_DIR}/test")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
