@@ -333,12 +333,22 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             if(pos == cur_n_end) {
                 //if(pos == cache->n_ends[n_block]) {
                 n_block++;
+#if DEBUG
+                if(n_block >= cache->n_ends.size()) {
+                    throw std::out_of_range("n_block advanced past sentinel\n");
+                }
+#endif
                 cur_n_end = cache->n_ends[n_block];
                 cur_n_start = cache->n_starts[n_block];
             }
             if(pos == cur_m_end) {
                 //if(pos == cache->m_ends[m_block]) {
                 m_block++;
+#if DEBUG
+                if(m_block >= cache->m_ends.size()) {
+                    throw std::out_of_range("m_block advanced past sentinel\n");
+                }
+#endif
                 cur_m_end = cache->m_ends[m_block];
                 cur_m_start = cache->m_starts[m_block];
             }
