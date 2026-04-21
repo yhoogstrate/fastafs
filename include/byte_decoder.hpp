@@ -50,7 +50,8 @@ public:
     unsigned char nucleotides_per_chunk() const override { return 4; }
     void decode_chunk(const unsigned char *input, char *output) const override
     {
-        memcpy(output, ENCODE_HASH_TWOBIT_DNA[input[0]], 4);
+        uint32_t val = DECODE_TWOBIT_DNA_U32[input[0]];
+        memcpy(output, &val, sizeof(val));
     }
 };
 
@@ -63,7 +64,8 @@ public:
     unsigned char nucleotides_per_chunk() const override { return 4; }
     void decode_chunk(const unsigned char *input, char *output) const override
     {
-        memcpy(output, ENCODE_HASH_TWOBIT_RNA[input[0]], 4);
+        uint32_t val = DECODE_TWOBIT_RNA_U32[input[0]];
+        memcpy(output, &val, sizeof(val));
     }
 };
 

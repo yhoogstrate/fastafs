@@ -3,9 +3,37 @@
 #define TWOBIT_BYTE_HPP
 
 #include <array>
+#include <cstdint>
+#include <cstring>
 #include "config.hpp"
 
 #include "chunked_reader.hpp"
+
+
+// Genereer een uint32_t decode-tabel voor twobit op compilatietijd.
+// Elke entry bevat 4 opeenvolgende nucleotiden gepakt als little-endian uint32_t,
+// zodat memcpy(output, &val, 4) ze in de juiste volgorde schrijft op x86-64.
+// t_or_u = 'T' voor DNA, 'U' voor RNA.
+constexpr std::array<uint32_t, 256> make_twobit_decode_table(char t_or_u)
+{
+    std::array<uint32_t, 256> table = {};
+    const uint32_t nuc[4] = {
+        static_cast<uint32_t>(t_or_u),
+        static_cast<uint32_t>('C'),
+        static_cast<uint32_t>('A'),
+        static_cast<uint32_t>('G')
+    };
+    for(uint32_t i = 0; i < 256u; i++) {
+        table[i] = nuc[(i >> 6u) & 3u]
+                 | (nuc[(i >> 4u) & 3u] << 8u)
+                 | (nuc[(i >> 2u) & 3u] << 16u)
+                 | (nuc[i & 3u]         << 24u);
+    }
+    return table;
+}
+
+inline constexpr auto DECODE_TWOBIT_DNA_U32 = make_twobit_decode_table('T');
+inline constexpr auto DECODE_TWOBIT_RNA_U32 = make_twobit_decode_table('U');
 
 
 class twobit_byte
