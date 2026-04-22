@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <dirent.h>
 #include <filesystem>
 #include <fstream>
@@ -8,6 +9,7 @@
 #include <stdio.h>
 #include <string>
 #include <unistd.h>
+#include <unordered_set>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -82,15 +84,17 @@ void database::list()
     std::string version;
 
     while(std::getline(infile, line)) {
-        std::string fname = this->path + "/" + line + ".fastafs";
-        bool zstd_seek = false;
+        std::vector<std::string> candidates = {
+            this->path + "/" + line + ".fastafs",
+            this->path + "/" + line + ".fastafs.zst"
+        };
 
-        if(!file_exist(fname.c_str())) {
-            fname = this->path + "/" + line + ".fastafs.zst";
-            zstd_seek = true;
-        }
+        auto it = std::find_if(candidates.begin(), candidates.end(),
+                               [](const auto& c) { return file_exist(c); });
 
-        if(file_exist(fname.c_str())) {
+        if(it != candidates.end()) {
+            std::string fname = *it;
+            bool zstd_seek = fname.find(".zst") != std::string::npos;
             fastafs f = fastafs(line);
             f.load(fname);
 
@@ -106,7 +110,7 @@ void database::list()
             size_t n_mountpoints = fastafs_fuse_mounts.count(fname);
 
             if(n_mountpoints > 0) {
-                mountpoints == "";
+                mountpoints = "";
                 bool is_first = true;
 
                 auto it = fastafs_fuse_mounts.find(fname);
@@ -173,15 +177,48 @@ std::string database::get(char *fastafs_name_or_id)
 
     while(std::getline(infile, line, '\n')) {
         if(line.compare(fastafs_name_or_id) == 0) {
-            fname = this->path + "/" + line + ".fastafs";
-
-            if(!file_exist(fname.c_str())) {
-                fname = this->path + "/" + line + ".fastafs.zst";
+            std::vector<std::string> candidates = {
+                this->path + "/" + line + ".fastafs",
+                this->path + "/" + line + ".fastafs.zst"
+            };
+            auto it = std::find_if(candidates.begin(), candidates.end(),
+                                   [](const auto& c) { return file_exist(c); });
+            if(it != candidates.end()) {
+                fname = *it;
             }
-
         }
     }
 
     return fname;
+}
+
+
+void database::refresh()
+{
+    std::vector<std::string> lines;
+    std::unordered_set<std::string> seen;
+    std::ifstream infile(this->idx);
+    std::string line;
+
+    while(std::getline(infile, line)) {
+        auto [it, inserted] = seen.insert(line);
+        
+        if(inserted) {
+            std::vector<std::string> candidates = {
+                this->path + "/" + line + ".fastafs",
+                this->path + "/" + line + ".fastafs.zst"
+            };
+
+            auto it = std::find_if(candidates.begin(), candidates.end(),
+                                   [](const auto& c) { return file_exist(c); });
+            if(it != candidates.end()) {
+                lines.push_back(line);
+            }
+        }
+    }
+    infile.close();
+
+    std::ofstream out(this->idx, std::ios::trunc);
+    for(auto &l : lines) out << l << "\n";
 }
 

@@ -68,6 +68,14 @@ void usage_check(void)
     std::cout << std::endl;
 }
 
+void usage_list(void)
+{
+    std::cout << "usage: " << PACKAGE << " list [OPTION]...\n";
+    std::cout << "List FASTAFS entries in the local database\n\n";
+    std::cout << "  -r, --refresh        Remove missing or duplicate entries from database\n";
+    std::cout << "  -h, --help           Display this help and exit\n";
+}
+
 void usage_cache(void)
 {
     std::cout << "usage: " << PACKAGE << " cache <fastafs-id> <fasta file | ucsc TwoBit file>\n";
@@ -274,8 +282,21 @@ int main(int argc, char *argv[])
         } else if(strcmp(argv[1], "mount") == 0) {
             fuse(argc, argv);
         } else if(strcmp(argv[1], "list") == 0) {
+            bool do_refresh = false;
+            for(int i = 2; i < argc; i++) {
+                if(strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+                    usage_list();
+                    return 0;
+                } else if(strcmp(argv[i], "--refresh") == 0 || strcmp(argv[i], "-r") == 0) {
+                    do_refresh = true;
+                }
+            }
             database d = database(database::get_default_dir());
-            d.list();
+            if(do_refresh) {
+                d.refresh();
+            } else {
+                d.list();
+            }
         } else if(strcmp(argv[1], "ps") == 0) {
             std::unordered_multimap<std::string, std::pair<std::string, std::string> > fastafs_fuse_mounts = get_fastafs_processes();
 

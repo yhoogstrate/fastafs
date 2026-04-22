@@ -1,4 +1,5 @@
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <libgen.h>
@@ -319,11 +320,17 @@ uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
 
 bool file_exist(const char *fileName)
 {
-    //moe classical but slower implementation
+    //more classical but slower implementation
     //std::ifstream infile(fileName);
     //return infile.good();
 
     //following implementation should be faster
     struct stat buffer;
     return (stat(fileName, &buffer) == 0);
+}
+
+
+bool file_exist(const std::string& fileName)
+{
+    return std::filesystem::exists(fileName);
 }

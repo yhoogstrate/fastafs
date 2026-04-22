@@ -87,3 +87,28 @@ External: libssl/libcrypto (MD5), libfuse, zlib (CRC32), libboost (unit tests on
 - The `-B` flag in cmake must immediately precede the build directory path: `cmake -S . -B build-debug …`. A trailing `.` after the path is a bug.
 - Meson support exists (`meson.build`, `build-release-meson.sh`) but is secondary; prefer CMake.
 - `make tidy` runs `astyle` for code formatting via `tidy.sh`.
+
+## Code Style
+
+### Avoid `continue` and `break` — prefer structured control flow
+
+`continue` and `break` make loops harder to follow. Prefer positive logic and explicit scoping:
+
+**Avoid:**
+```cpp
+while(std::getline(infile, line)) {
+    if(some_condition) continue;  // guard clause—reads as "skip this"
+    // ... rest of processing
+}
+```
+
+**Prefer:**
+```cpp
+while(std::getline(infile, line)) {
+    if(some_condition) {  // positive logic—reads as "if true, do X"
+        // ... processing
+    }
+}
+```
+
+When `continue` is necessary (e.g., filtering in a long loop), be explicit about why. The same applies to `break` — use it only when the intent cannot be expressed as a loop condition or early return.
