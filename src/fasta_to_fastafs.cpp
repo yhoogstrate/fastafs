@@ -334,7 +334,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
         }
 
         if(s != nullptr) {
-            bool running = getline(fh_fasta, line).good();
+            bool running = (bool)getline(fh_fasta, line);
             while(running) {
                 if(line[0] == '>') {
                     // more N-bytes than 2-bit bytes - 4bit is more efficient
@@ -1349,7 +1349,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                     }
                 }
 
-                running = getline(fh_fasta, line).good();
+                running = (bool)getline(fh_fasta, line);
 
                 // if not running, recheck
                 if(!running) {
@@ -1363,7 +1363,10 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                         s->current_dict = DICT_FOURBIT;
 
                         //after re-opening file and setting the file pointer, read line again
-                        running = getline(fh_fasta, line).good();
+                        running = (bool)getline(fh_fasta, line);
+                        if(!running) {
+                            s->finish_sequence(fh_fastafs);
+                        }
                     } else {
                         s->finish_sequence(fh_fastafs);
                     }

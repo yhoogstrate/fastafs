@@ -93,8 +93,6 @@ include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd-lib-common")
 add_subdirectory("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
 include_directories("${CMAKE_SOURCE_DIR}/dependencies/zstd-seekable-adapted")
 
-add_definitions(-std=c++14)
-
 # Boost
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 if(NOT Boost_FOUND)
@@ -165,7 +163,7 @@ set_target_properties(libfastafs PROPERTIES OUTPUT_NAME fastafs)
 
 ##set_target_properties(libfastafs PROPERTIES HEADER_OUTPUT_DIRECTORY "include")
 ## great, this doesn't go automagically with an entire dir
-set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "include/config.hpp;include/chunked_reader.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
+set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER "${CMAKE_BINARY_DIR}/include/config.hpp;include/chunked_reader.hpp;include/database.hpp;include/fastafs.hpp;include/fasta_to_fastafs.hpp;include/flags.hpp;include/fourbit_byte.hpp;include/fuse.hpp;include/lsfastafs.hpp;include/sequence_region.hpp;include/twobit_byte.hpp;include/ucsc2bit.hpp;include/ucsc2bit_to_fastafs.hpp;include/utils.hpp")
 set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_DIRECTORY include)
 ##set_target_properties(libfastafs PROPERTIES PUBLIC_HEADER_OUTPUT_DIRECTORY "include")
 
@@ -278,8 +276,14 @@ add_test(test_view ${BUILD_TEST_DIR}/test_view)
 set_target_properties(test_view PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
 target_link_libraries(test_view libfastafs)
 
+add_executable(test_md5sums test/md5sums/test_md5sums.cpp)
+add_test(test_md5sums ${BUILD_TEST_DIR}/test_md5sums)
+set_target_properties(test_md5sums PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BUILD_TEST_DIR})
+target_link_libraries(test_md5sums libfastafs)
 
 #add_test(test_functional          "test/test_functional.py")
+
+set(TEST_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 set_tests_properties(
     test_cache test_check test_chunked_reader test_database
@@ -288,8 +292,8 @@ set_tests_properties(
     test_fivebit_byte test_flags test_fourbit_byte
     test_sequenceregion test_twobit_byte
     test_ucsc2bit_as_fasta test_ucsc2bit_to_fastafs
-    test_utils test_view
-    PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    test_utils test_view test_md5sums
+    PROPERTIES WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}"
 )
 
 find_program(CTEST_MEMORYCHECK_COMMAND NAMES valgrind)					# 'ctest -T memcheck'

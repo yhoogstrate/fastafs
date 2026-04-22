@@ -1003,4 +1003,20 @@ BOOST_AUTO_TEST_CASE(test_cache_protein2)
 
 
 
+BOOST_AUTO_TEST_CASE(test_cache_no_final_newline)
+{
+    // Edge case: FASTA file without final newline
+    size_t written = fasta_to_fastafs("test/data/md5_test_no_final_newline.fa",
+                                       "tmp/test_cache_no_final_newline.fastafs", false);
+    BOOST_REQUIRE(written > 0);
+
+    // Load and verify
+    fastafs f = fastafs("");
+    f.load("tmp/test_cache_no_final_newline.fastafs");
+
+    BOOST_REQUIRE_EQUAL(f.data.size(), 1);
+    BOOST_CHECK_EQUAL(f.data[0]->n, 60);  // 60 bases expected
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
