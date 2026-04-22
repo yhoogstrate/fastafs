@@ -37,8 +37,8 @@ analysis.txt
 compile_commands.json
 *.fastafs
 *.zst
-memory
+.claude/settings.local.json
+/tmp/
 /bin-debug
 /build-debug
 /build-release
-/tmp/CLAUDE/

@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FASTAFS is a C++17 toolkit for FUSE-based virtualisation of random-access compressed FASTA files. It stores sequences in a compact binary archive format and mounts a virtual directory exposing standard FASTA, FAI, DICT, and 2BIT files — all synthesised on the fly without decompression to disk.
 
+## Communication
+
+All conversations with Claude should be conducted in Dutch (Nederlands) unless explicitly asked to use a different language.
+
 ## Workflow
 
 The user runs all compilation and test commands themselves. Do not run `make`, `cmake`, `bash build-*.sh`, or any build/test commands — only edit source files.
