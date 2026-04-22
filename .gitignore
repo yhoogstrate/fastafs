@@ -36,3 +36,8 @@ analysis.txt
 compile_commands.json
 *.fastafs
 *.zst
+memory
+/bin-debug
+/build-debug
+/build-release
+/tmp/CLAUDE/

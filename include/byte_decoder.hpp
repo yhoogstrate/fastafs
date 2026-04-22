@@ -3,122 +3,97 @@
 #define BYTE_DECODER_HPP
 
 #include "config.hpp"
+#include "twobit_byte.hpp"
+#include "fourbit_byte.hpp"
+#include "fivebit_fivebytes.hpp"
 
-#include <array>
-#include <iostream>
-#include <fstream>
-
-#include <algorithm>
-#include <functional>
 #include <memory>
+#include <string>
+#include <cstring>
 
 
 
-// https://refactoring.guru/design-patterns/state/cpp/example
-// https://refactoring.guru/design-patterns/strategy/cpp/example [looks more like strategy]
-
-
-class byte_decoder_interface // generic decoder interface/
+class byte_decoder_interface
 {
-private:
-    unsigned int size_block_encoded; //
-    unsigned int size_block_decoded; //
-
-    int block_size_1;
-
 public:
     virtual ~byte_decoder_interface() = default;
-    virtual std::string doAlgorithm(const unsigned char* data) const = 0;
+    virtual unsigned char bytes_per_chunk() const = 0;
+    virtual unsigned char nucleotides_per_chunk() const = 0;
+    virtual void decode_chunk(const unsigned char *input, char *output) const = 0;
 };
-
 
 
 
 class byte_decoder
 {
 private:
-    size_t buffer_input_size; // set to 0
-    //unsigned char buffer_input_data[1024]; // bytes of raw decoded data
-    const unsigned char *buffer_input_data;
+    const unsigned char *buffer_input_data = nullptr;
+    size_t buffer_input_size = 0;
 
-    size_t buffer_decoded_size; // set to 0
-    unsigned char buffer_decoded_data[1024]; // bytes of decoded data
-    unsigned char *buffer_decoded_data_i;
-
-
-    std::unique_ptr<byte_decoder_interface> byte_decoder_interface_;
+    std::unique_ptr<byte_decoder_interface> strategy_;
 
 public:
     explicit byte_decoder(std::unique_ptr<byte_decoder_interface> &&strategy);
     void set_strategy(std::unique_ptr<byte_decoder_interface> &&strategy);
-
     void set_input_data(const unsigned char *input_data, size_t input_data_size);
 
-    void decode();
-
+    size_t decode(char *output, size_t output_size) const;
+    std::string decode() const;
 };
 
 
 
-// four bit byte etc: 
-class byte_decoder_interface_A : public byte_decoder_interface
+class byte_decoder_interface_twobit_dna : public byte_decoder_interface
 {
 public:
-    std::string doAlgorithm(const unsigned char* data) const override 
+    unsigned char bytes_per_chunk() const override { return 1; }
+    unsigned char nucleotides_per_chunk() const override { return 4; }
+    void decode_chunk(const unsigned char *input, char *output) const override
     {
-            std::string out = "";
-            
-            out += " [4b]";
-
-    return out;
+        uint32_t val = DECODE_TWOBIT_DNA_U32[input[0]];
+        memcpy(output, &val, sizeof(val));
     }
 };
 
 
-/*
- * two bit byte etc:
- * "AAAA" => "\x10 \x10 \x10 \x10"
- * "CAAA" => "\x01 \x10 \x10 \x10"
- * "TAAA" => "\x00 \x10 \x10 \x10"
- * "GAAA" => "\x11 \x10 \x10 \x10"
- */
-class byte_decoder_interface_B : public byte_decoder_interface
+
+class byte_decoder_interface_twobit_rna : public byte_decoder_interface
 {
 public:
-    std::string doAlgorithm(const unsigned char* data) const override
+    unsigned char bytes_per_chunk() const override { return 1; }
+    unsigned char nucleotides_per_chunk() const override { return 4; }
+    void decode_chunk(const unsigned char *input, char *output) const override
     {
-        const unsigned char hash_size_input = 4;
-        const unsigned char hash_size_output = 1;
-        
-        std::string out = "";
-        
-        for(int i = 0; i < 5; i++) {
-            out += data[i];
-        }
-        
-        out += " [2b]";
-
-        return out;
+        uint32_t val = DECODE_TWOBIT_RNA_U32[input[0]];
+        memcpy(output, &val, sizeof(val));
     }
 };
 
-// five bit byte etc
-class byte_decoder_interface_C : public byte_decoder_interface
+
+
+class byte_decoder_interface_fourbit : public byte_decoder_interface
 {
 public:
-    std::string doAlgorithm(const unsigned char* data) const override
+    unsigned char bytes_per_chunk() const override { return 1; }
+    unsigned char nucleotides_per_chunk() const override { return 2; }
+    void decode_chunk(const unsigned char *input, char *output) const override
     {
-            std::string out = "";
-            
-            out += " [5b]";
-
-            return out;
+        memcpy(output, fourbit_byte::encode_hash[input[0]], 2);
     }
+};
+
+
+
+class byte_decoder_interface_fivebit : public byte_decoder_interface
+{
+public:
+    unsigned char bytes_per_chunk() const override { return 5; }
+    unsigned char nucleotides_per_chunk() const override { return 8; }
+    void decode_chunk(const unsigned char *input, char *output) const override;
 };
 
 
 
 #endif
-
 
 

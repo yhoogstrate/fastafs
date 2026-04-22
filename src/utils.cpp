@@ -151,21 +151,13 @@ void md5_digest_to_hash(unsigned char *digest, char *hash)
 
 std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len)
 {
-    std::string s = "";
-    for(size_t i = pos; i < len; i++) {
-        s.push_back(ref[i]);
-    }
-    return s;
+    return std::string(ref + pos, len - pos);
 }
 
 
 std::string std_string_nullbyte_safe(char *ref, size_t len)
 {
-    std::string s = "";
-    for(size_t i = 0; i < len; i++) {
-        s.push_back(ref[i]);
-    }
-    return s;
+    return std::string(ref, len);
 }
 
 

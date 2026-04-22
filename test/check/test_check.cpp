@@ -20,13 +20,14 @@ BOOST_AUTO_TEST_CASE(test_file_integrity)
     fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs", false);
 
     // check computed file size
-    fastafs f = fastafs("");
-    f.load("tmp/test_cache_test.fastafs");
-    BOOST_REQUIRE_EQUAL(f.fastafs_filesize(), 403);
+    {
+        fastafs f = fastafs("");
+        f.load("tmp/test_cache_test.fastafs");
+        BOOST_REQUIRE_EQUAL(f.fastafs_filesize(), 403);
 
-    BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), true);
-    BOOST_CHECK_EQUAL(f.check_file_integrity(false), true);
-
+        BOOST_CHECK_EQUAL(f.check_sequence_integrity(false), true);
+        BOOST_CHECK_EQUAL(f.check_file_integrity(false), true);
+    }
     static const int i_min = 5;
     static const int i_max = 403 - 5 - 1 - 1;
 
