@@ -1,3 +1,11 @@
+2026-04-22
+
+   * v1.12.0
+   * Fixed EOF handling for FASTA files without final newline (corner case bug)
+   * Optimized MD5 checksum calculation (gaps excluded per CRAM spec)
+   * Reorganized test data files with improved organization
+   * Expanded test coverage with comprehensive edge case tests
+
 2024-04-30
 
    * v1.11.0
