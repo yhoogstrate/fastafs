@@ -22,6 +22,28 @@ BENCH_DIR=benchmarks
 
 mkdir -p "${TMP_DIR}"
 
+# ---------- valgrind helper function ----------
+run_valgrind_metrics() {
+    local cmd="$1"
+    local valgrind_out
+    valgrind_out=$(valgrind --leak-check=full -s $cmd 2>&1 | tail -50)
+
+    local total_allocs=0
+    local total_bytes=0
+    local definitely_lost=0
+
+    if [[ $valgrind_out =~ total\ heap\ usage:\ ([0-9,]+)\ allocs,\ [0-9,]+\ frees,\ ([0-9,]+)\ bytes ]]; then
+        total_allocs=$(echo "${BASH_REMATCH[1]}" | tr -d ',')
+        total_bytes=$(echo "${BASH_REMATCH[2]}" | tr -d ',')
+    fi
+
+    if [[ $valgrind_out =~ definitely\ lost:\ ([0-9,]+)\ bytes ]]; then
+        definitely_lost=$(echo "${BASH_REMATCH[1]}" | tr -d ',')
+    fi
+
+    echo "$total_allocs|$total_bytes|$definitely_lost"
+}
+
 # ---------- machine / version fingerprint ----------
 MACHINE_ID=$(cat /etc/machine-id 2>/dev/null || hostname | md5sum | cut -c1-32)
 USER_NAME=$(whoami)
@@ -75,7 +97,7 @@ for ENC in dna rna iupac protein; do
     FA="${TMP_DIR}/bench_${ENC}.fa"
 
     if [ ! -f "${TSV}" ]; then
-        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
+        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
             > "${TSV}"
     fi
 
@@ -112,17 +134,21 @@ for ENC in dna rna iupac protein; do
                 NT_PER_SEC="N/A"
             fi
 
-            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+            VG_METRICS=$(run_valgrind_metrics "${CMD}")
+            IFS='|' read -r TOTAL_ALLOCS TOTAL_BYTES DEFINITELY_LOST <<< "$VG_METRICS"
+
+            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
                 "${TIMESTAMP}" "${FASTAFS_VERSION}" "${GIT_COMMIT}" \
                 "${INSTRUCTIONS}" "${CYCLES}" \
                 "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
+                "${TOTAL_ALLOCS}" "${TOTAL_BYTES}" "${DEFINITELY_LOST}" \
                 "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_STATUS}" \
                 >> "${TSV}"
 
             USER_T_R=$(printf "%.3f" "${USER_T}")
             WALL_R=$(printf "%.3f" "${WALL}")
             SYS_R=$(printf "%.3f" "${SYS}")
-            echo "  run ${RUN}: instrs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s"
+            echo "  run ${RUN}: instrs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s  allocs=${TOTAL_ALLOCS}  bytes=${TOTAL_BYTES}  lost=${DEFINITELY_LOST}"
         done
     done
 done
@@ -133,7 +159,7 @@ for ENC in dna rna iupac protein; do
 
     # write TSV header if file is new
     if [ ! -f "${TSV}" ]; then
-        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
+        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
             > "${TSV}"
     fi
 
@@ -168,17 +194,21 @@ for ENC in dna rna iupac protein; do
                 NT_PER_SEC="N/A"
             fi
 
-            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+            VG_METRICS=$(run_valgrind_metrics "${CMD} > /dev/null")
+            IFS='|' read -r TOTAL_ALLOCS TOTAL_BYTES DEFINITELY_LOST <<< "$VG_METRICS"
+
+            printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
                 "${TIMESTAMP}" "${FASTAFS_VERSION}" "${GIT_COMMIT}" \
                 "${INSTRUCTIONS}" "${CYCLES}" \
                 "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
+                "${TOTAL_ALLOCS}" "${TOTAL_BYTES}" "${DEFINITELY_LOST}" \
                 "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_STATUS}" \
                 >> "${TSV}"
 
             USER_T_R=$(printf "%.3f" "${USER_T}")
             WALL_R=$(printf "%.3f" "${WALL}")
             SYS_R=$(printf "%.3f" "${SYS}")
-            echo "  run ${RUN}: instrs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s"
+            echo "  run ${RUN}: instrs=${INSTRUCTIONS}  ${NT_PER_SEC} nt/cpu-sec  user=${USER_T_R}s  wall=${WALL_R}s  sys=${SYS_R}s  allocs=${TOTAL_ALLOCS}  bytes=${TOTAL_BYTES}  lost=${DEFINITELY_LOST}"
         done
     done
 done
