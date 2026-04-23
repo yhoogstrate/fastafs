@@ -1,7 +1,7 @@
 # 🧬 FastaFS
 
 [![C++ Standard](https://img.shields.io/badge/C%2B%2B-17%2F20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL-2.0](https://img.shields.io/badge/License-GPL--2.0-blue.svg)](https://opensource.org/licenses/GPL-2.0)
 [![DOI](https://img.shields.io/badge/DOI-10.1186%2Fs12859--021--04455--3-blue.svg)](https://doi.org/10.1186/s12859-021-04455-3)
 
 **FastaFS lets you mount compressed FASTA archives as a virtual filesystem — enabling instant random access without preprocessing, indexing, or duplication.**
@@ -25,7 +25,7 @@ Working with large FASTA files is inefficient and error-prone:
 ## 🔥 Key Features
 
 - ⚡ **Near-native performance** – optimized C++ backend with minimal overhead  
-- 🧠 **No preprocessing required** – skip indexing and loading into memory  
+- 🧠 **No on-demand preprocessing required** – skip indexing and loading into memory  
 - 📂 **Works with existing tools** – use `grep`, `awk`, `samtools`, etc.  
 - 💾 **Efficient storage** – no duplicate FASTA files or temporary extraction  
 - 🔌 **Mount as a filesystem** – interact like regular files  
