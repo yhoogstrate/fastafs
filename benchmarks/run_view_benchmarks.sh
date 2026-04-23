@@ -26,7 +26,11 @@ mkdir -p "${TMP_DIR}"
 run_valgrind_metrics() {
     local cmd="$1"
     local valgrind_out
-    valgrind_out=$(valgrind --leak-check=full -s $cmd 2>&1 | tail -50)
+    #valgrind_out=$(valgrind --leak-check=full -s $cmd 2>&1 | tail -50)
+    #valgrind_out=$(valgrind --leak-check=full -s sh -c "$cmd" 2>&1 | tail -50)
+    valgrind_out=$(valgrind --leak-check=full -s $cmd 2>&1 | tail -10)
+
+    #echo "CMD: valgrind --leak-check=full -s "$cmd
 
     local total_allocs=0
     local total_bytes=0
@@ -35,6 +39,7 @@ run_valgrind_metrics() {
     if [[ $valgrind_out =~ total\ heap\ usage:\ ([0-9,]+)\ allocs,\ [0-9,]+\ frees,\ ([0-9,]+)\ bytes ]]; then
         total_allocs=$(echo "${BASH_REMATCH[1]}" | tr -d ',')
         total_bytes=$(echo "${BASH_REMATCH[2]}" | tr -d ',')
+        echo "DEBUG: ${BASH_REMATCH[0]}" >&2
     fi
 
     if [[ $valgrind_out =~ definitely\ lost:\ ([0-9,]+)\ bytes ]]; then
@@ -192,7 +197,8 @@ for ENC in dna rna iupac protein; do
                 NT_PER_SEC="N/A"
             fi
 
-            VG_METRICS=$(run_valgrind_metrics "${CMD} > /dev/null")
+            #VG_METRICS=$(run_valgrind_metrics "${CMD} > /dev/null")
+            VG_METRICS=$(run_valgrind_metrics "${CMD}")
             IFS='|' read -r TOTAL_ALLOCS TOTAL_BYTES DEFINITELY_LOST <<< "$VG_METRICS"
 
             printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
