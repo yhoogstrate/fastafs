@@ -41,3 +41,4 @@ compile_commands.json
 /bin-debug
 /build-debug
 /build-release
+tmp/database/
