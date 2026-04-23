@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
     buffer[2] = '\0';
 
     // test: 00000000 00000000
-    buffer[0] = '\x0';
-    buffer[1] = '\x0';
+    buffer[0] = 0b00000000;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), false);
@@ -31,8 +31,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 
 
     // test: 10000000 00000000
-    buffer[0] = '\x80'; // worked with writing to file and checking with `xxd -b file` ~ this is binary equivalent to 10000000
-    buffer[1] = '\x0';
+    buffer[0] = 0b10000000;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), true);
@@ -40,16 +40,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 
 
     // test: 11111111 00000000
-    buffer[0] = '\xFF';
-    buffer[1] = '\x0';
+    buffer[0] = 0b11111111;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), true);
     BOOST_CHECK_EQUAL(f.is_incomplete(), false);
 
     // test: 00000001 00000000
-    buffer[0] = '\x01';
-    buffer[1] = '\x0';
+    buffer[0] = 0b00000001;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), false);
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(test_fastafs_flags)
 
 
     // re-test: 00000000 00000000
-    buffer[0] = '\x0';
-    buffer[1] = '\x0';
+    buffer[0] = 0b00000000;
+    buffer[1] = 0b00000000;
     f.set(buffer);
 
     BOOST_CHECK_EQUAL(f.is_complete(), false);
@@ -93,51 +93,51 @@ BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
 
     fs.set_dna();
     fs.set_rna();
-    fs.set_iupec_nucleotide();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), true);
+    fs.set_iupac_nucleotide();
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), true);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
     fs.set_rna();
-    fs.set_iupec_nucleotide();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), true);
+    fs.set_iupac_nucleotide();
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), true);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
     fs.set_dna();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), false);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), true);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
     fs.set_dna();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), false);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), true);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), false);
     BOOST_CHECK_EQUAL(fs.is_dna(), true);
     BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
@@ -189,10 +189,10 @@ BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
 
     fs.set_complete();
     fs.set_circular();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
 
     bits = fs.get_bits();
-    BOOST_CHECK_EQUAL(bits[0], '\x58');// 1011000
+    BOOST_CHECK_EQUAL(bits[0], 0b01011000);// 01011000
     BOOST_CHECK_EQUAL(bits[1], '\0');
 
 }

@@ -1,4 +1,5 @@
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <libgen.h>
@@ -151,21 +152,13 @@ void md5_digest_to_hash(unsigned char *digest, char *hash)
 
 std::string std_string_nullbyte_safe(char *ref, size_t pos, size_t len)
 {
-    std::string s = "";
-    for(size_t i = pos; i < len; i++) {
-        s.push_back(ref[i]);
-    }
-    return s;
+    return std::string(ref + pos, len - pos);
 }
 
 
 std::string std_string_nullbyte_safe(char *ref, size_t len)
 {
-    std::string s = "";
-    for(size_t i = 0; i < len; i++) {
-        s.push_back(ref[i]);
-    }
-    return s;
+    return std::string(ref, len);
 }
 
 
@@ -327,11 +320,17 @@ uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
 
 bool file_exist(const char *fileName)
 {
-    //moe classical but slower implementation
+    //more classical but slower implementation
     //std::ifstream infile(fileName);
     //return infile.good();
 
     //following implementation should be faster
     struct stat buffer;
     return (stat(fileName, &buffer) == 0);
+}
+
+
+bool file_exist(const std::string& fileName)
+{
+    return std::filesystem::exists(fileName);
 }

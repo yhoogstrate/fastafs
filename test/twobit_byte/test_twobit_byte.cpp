@@ -125,6 +125,52 @@ BOOST_AUTO_TEST_CASE(test_twobit_static_offset_conversion_test)
 }
 
 
+BOOST_AUTO_TEST_CASE(test_twobit_get_with_length)
+{
+    twobit_byte_dna t;
+    char input[4] = {'A', 'A', 'A', 'A'};  // 0b10101010 = 170
+    t.set(input);
+
+    // Test valid lengths (1-4)
+    char buf[4];
+
+    BOOST_CHECK_EQUAL(t.get(1, buf), 1);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+
+    BOOST_CHECK_EQUAL(t.get(2, buf), 2);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(buf[1], 'A');
+
+    BOOST_CHECK_EQUAL(t.get(3, buf), 3);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(buf[1], 'A');
+    BOOST_CHECK_EQUAL(buf[2], 'A');
+
+    BOOST_CHECK_EQUAL(t.get(4, buf), 4);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(buf[1], 'A');
+    BOOST_CHECK_EQUAL(buf[2], 'A');
+    BOOST_CHECK_EQUAL(buf[3], 'A');
+}
+
+
+#ifdef DEBUG
+BOOST_AUTO_TEST_CASE(test_twobit_get_with_invalid_length)
+{
+    twobit_byte_dna t;
+    char input[4] = {'A', 'A', 'A', 'A'};
+    t.set(input);
+
+    char buf[4];
+
+    // Length 0 should throw
+    BOOST_CHECK_THROW(t.get(0, buf), std::invalid_argument);
+
+    // Length > 4 should throw
+    BOOST_CHECK_THROW(t.get(5, buf), std::invalid_argument);
+    BOOST_CHECK_THROW(t.get(255, buf), std::invalid_argument);
+}
+#endif
 
 
 BOOST_AUTO_TEST_SUITE_END()

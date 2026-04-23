@@ -2,13 +2,15 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
+#include <stdexcept>
 #include <stdio.h>
 #include <string.h>
 //#include <filesystem>
 
-#include <openssl/evp.h>
-#include <openssl/err.h>
+#include <openssl/md5.h> // old
+#include <openssl/evp.h> // new
 
 // SSL requests to ENA
 #include <sys/socket.h>
@@ -43,6 +45,23 @@ static const std::string dict_ln = "\tLN:";
 static const std::string dict_m5 = "\tM5:";
 static const std::string dict_ur = "\tUR:fastafs:///";
 
+
+ffs2f_init_seq::ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m_blocks, const uint32_t n_lines, const uint32_t filesize):
+    padding(padding),
+    total_sequence_containing_lines(n_lines),
+    n_starts(n_blocks), n_ends(n_blocks),
+    m_starts(m_blocks), m_ends(m_blocks),
+    filesize(filesize)
+{}
+
+ffs2f_init::ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
+
+ffs2f_init::~ffs2f_init(void)
+{
+    for(size_t i = 0; i < sequences.size(); i++) {
+        delete sequences[i];
+    }
+}
 
 fastafs_seq::fastafs_seq(): n(0)
 {
@@ -194,6 +213,9 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     if(cache == nullptr) {
         throw std::runtime_error("Empty cache was provided\n");
     }
+    if(start_pos_in_fasta < 0) {
+        throw std::invalid_argument("view_fasta_chunk_generalized: negative start_pos_in_fasta\n");
+    }
 #endif //DEBUG
 
     buffer_size = std::min((size_t) READ_BUFFER_SIZE, buffer_size);
@@ -208,7 +230,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         return written;
     }
 
-    uint32_t pos = (uint32_t) start_pos_in_fasta;
+    size_t pos = (size_t) start_pos_in_fasta;
 
 
     size_t pos_limit = this->name.size() + 2;
@@ -227,9 +249,14 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
         pos += (uint32_t) copied;
     }
 
+#if DEBUG
+    if((pos - pos_limit) > (size_t) std::numeric_limits<uint32_t>::max()) {
+        throw std::overflow_error("view_fasta_chunk_generalized: offset_from_sequence_line exceeds uint32_t\n");
+    }
+#endif
     const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
-    size_t n_block = cache->n_starts.size();
-    size_t m_block = cache->m_starts.size();
+    size_t n_block = cache->n_starts.size() - 1;
+    size_t m_block = cache->m_starts.size() - 1;
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
@@ -254,7 +281,13 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 //    const char *chunk = t.encode_hash[0];// init
 //    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
 
-    char *chunk = (char *) t.encode_hash[1];// init
+    // chunk is always overwritten by t.next(fh) before first use; nullptr in debug to catch
+    // accidental early reads, dummy init in release to suppress -Wmaybe-uninitialized
+#if DEBUG
+    char *chunk = nullptr;
+#else
+    char *chunk = (char *) t.encode_hash[1];
+#endif
 
     if(bit_offset != 0) {
         t.next(fh);
@@ -306,12 +339,22 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             if(pos == cur_n_end) {
                 //if(pos == cache->n_ends[n_block]) {
                 n_block++;
+#if DEBUG
+                if(n_block >= cache->n_ends.size()) {
+                    throw std::out_of_range("n_block advanced past sentinel\n");
+                }
+#endif
                 cur_n_end = cache->n_ends[n_block];
                 cur_n_start = cache->n_starts[n_block];
             }
             if(pos == cur_m_end) {
                 //if(pos == cache->m_ends[m_block]) {
                 m_block++;
+#if DEBUG
+                if(m_block >= cache->m_ends.size()) {
+                    throw std::out_of_range("m_block advanced past sentinel\n");
+                }
+#endif
                 cur_m_end = cache->m_ends[m_block];
                 cur_m_start = cache->m_starts[m_block];
             }
@@ -490,7 +533,7 @@ std::string fastafs_seq::sha1(ffs2f_init_seq* cache, chunked_reader &fh)
     }
 
 
-    unsigned int sha1_digest_len = EVP_MD_size(EVP_md5());
+    unsigned int sha1_digest_len = EVP_MD_size(EVP_sha1());
     unsigned char cur_sha1_digest[sha1_digest_len];
     EVP_DigestFinal_ex(mdctx, cur_sha1_digest, &sha1_digest_len);
     EVP_MD_CTX_free(mdctx);
@@ -557,15 +600,10 @@ std::string fastafs_seq::md5(ffs2f_init_seq* cache, chunked_reader &fh)
         }
 
         EVP_DigestUpdate(mdctx, chunk, written); // new
-
         chunk[remaining_bytes] = '\0';
     }
 
     //printf(" (%i * %i) + %i =  %i  = %i\n", n_iterations , chunksize, remaining_bytes , (n_iterations * chunksize) + remaining_bytes , this->n);
-
-
-    //fh->clear(); // because gseek was done before
-
 
     unsigned char *md5_digest;
     unsigned int md5_digest_len = EVP_MD_size(EVP_md5());

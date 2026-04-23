@@ -30,7 +30,7 @@ configuration_inc = include_directories('include')
 src = [
 './dependencies/zstd-lib-common/xxhash.cpp',
 './dependencies/zstd-seekable-adapted/zstdseek_compress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_decompress.cpp', './dependencies/zstd-seekable-adapted/zstdseek_utils.cpp',
-'./src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', './src/xbit_byte_encoder.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp',
+'./src/chunked_reader.cpp', './src/database.cpp', './src/fastafs.cpp', './src/fasta_to_fastafs.cpp', 'src/byte_decoder.cpp', './src/xbit_byte_encoder.cpp', './src/fivebit_fivebytes.cpp', './src/flags.cpp', './src/fourbit_byte.cpp', './src/fuse.cpp', './src/sequence_region.cpp', './src/twobit_byte.cpp', './src/ucsc2bit.cpp', './src/ucsc2bit_to_fastafs.cpp', './src/utils.cpp', './src/lsfastafs.cpp',
 ]
  
 # src__test_check = [
@@ -63,19 +63,44 @@ openssl = dependency('openssl')
 zlib = dependency('zlib')
 zstd = dependency('libzstd')
 
-executable('fastafs', [src, './src/main.cpp'],
+
+libfastafs = library('libfastafs', [src],
+							version: project_version,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_cache', [src, './test/check/test_check.cpp'],
+executable('fastafs', ['./src/main.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_check', [src, './test/cache/test_cache.cpp'],
+executable('test_cache', ['./test/check/test_check.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 
-executable('test_chunked_reader', [src, './test/chunked_reader/test_chunked_reader.cpp'],
+executable('test_flags', ['./test/flags/test_flags.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_database', ['./test/database/test_database.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_check', ['./test/cache/test_cache.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_chunked_reader', ['./test/chunked_reader/test_chunked_reader.cpp'],
+							link_with : libfastafs,
+							include_directories : incdir,
+							dependencies: [crypto, openssl, fuse, zlib, zstd])
+
+executable('test_byte_decoder', ['./test/byte_decoder/test_byte_decoder.cpp'],
+							link_with : libfastafs,
 							include_directories : incdir,
 							dependencies: [crypto, openssl, fuse, zlib, zstd])
 

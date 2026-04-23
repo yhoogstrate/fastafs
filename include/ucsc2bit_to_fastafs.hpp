@@ -28,8 +28,7 @@ struct ucsc2bit_seq_header {
     std::vector<uint32_t> m_block_starts;
     std::vector<uint32_t> m_block_sizes;
 
-    ucsc2bit_seq_header():
-        name_size(0), name(nullptr), n_blocks(0) { }
+    ucsc2bit_seq_header();
 };
 
 struct ucsc2bit_seq_header_conversion_data {
@@ -41,13 +40,7 @@ struct ucsc2bit_seq_header_conversion_data {
 
     off_t file_offset_dna_in_ucsc2bit; // file positions where sequence data blocks start
 
-    ucsc2bit_seq_header_conversion_data(): N(0)
-    {
-        this->mdctx = EVP_MD_CTX_new();
-        EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
-
-        //MD5_Init(&this->ctx);
-    }
+    ucsc2bit_seq_header_conversion_data();
 };
 
 

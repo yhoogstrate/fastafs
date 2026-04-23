@@ -23,5 +23,6 @@ public:
     std::string add(char *);
     void load();// reads path + "/" + info.txt, only containing N
     void list();// 'ls'
+    void refresh();
     std::string get(char *);
 };

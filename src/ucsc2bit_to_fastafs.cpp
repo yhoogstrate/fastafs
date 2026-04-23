@@ -10,6 +10,16 @@
 
 
 
+ucsc2bit_seq_header::ucsc2bit_seq_header():
+    name_size(0), name(nullptr), n_blocks(0) {}
+
+ucsc2bit_seq_header_conversion_data::ucsc2bit_seq_header_conversion_data(): N(0)
+{
+    this->mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
+}
+
+
 /*
  * ucsc2bit_to_fastafs - creates a FASTAFS_FILE with contents identical to an UCSC 2bit file
  *

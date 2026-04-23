@@ -1,18 +1,22 @@
 
-#include <stdio.h>
+#include <algorithm>
 #include <dirent.h>
-#include <sys/stat.h>
+#include <filesystem>
 #include <fstream>
+#include <pwd.h>
 #include <sstream>
+#include <stdexcept>
+#include <stdio.h>
 #include <string>
 #include <unistd.h>
+#include <unordered_set>
+#include <sys/stat.h>
 #include <sys/types.h>
-#include <pwd.h>
+
 
 #include "database.hpp"
 #include "fastafs.hpp"
 #include "lsfastafs.hpp"
-
 
 
 const std::string database::get_default_dir()
@@ -31,29 +35,29 @@ const std::string database::get_default_dir()
 }
 
 
-
 void database::force_db_exists()
 {
-    DIR *dir = opendir(this->path.c_str());
-    if(dir) {
-        closedir(dir);
-    } else {
-        if(mkdir(this->path.c_str(), S_IRWXU) == 0) {
-        } else {
-            throw std::runtime_error("could not access and not create database as directory: " + path);
+    try {
+        // Maakt de directory aan als deze niet bestaat. 
+        // create_directories maakt indien nodig ook bovenliggende mappen (recursief).
+        // Als de map al bestaat, gebeurt er niets (veilig).
+        std::filesystem::create_directories(this->path);
+
+        // Gebruik een fstream met 'append' mode om te checken of het bestand bestaat
+        // of om het aan te maken zonder de inhoud te wissen.
+        std::ofstream file(this->idx, std::ios::app);
+        
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not access/create database file: " + this->idx);
         }
-    }
-    if(FILE *file = fopen(this->idx.c_str(), "r")) {
-        fclose(file);
-    } else {
-        if(FILE *file2 = fopen(this->idx.c_str(), "w")) {
-            fclose(file2);
-        } else {
-            throw std::runtime_error("could not access and not create database file: " + this->idx);
-        }
+        
+        // file sluit automatisch hier (RAII), geen fclose nodig.
+    } 
+    catch (const std::filesystem::filesystem_error& e) {
+        // Vangt specifieke OS-fouten op (bijv. permissie problemen)
+        throw std::runtime_error("Filesystem failure: " + std::string(e.what()));
     }
 }
-
 
 
 database::database(const std::string &path_arg) :
@@ -63,10 +67,12 @@ database::database(const std::string &path_arg) :
     this->load();
 }
 
+
 void database::load()
 {
     this->force_db_exists();
 }
+
 
 void database::list()
 {
@@ -78,15 +84,17 @@ void database::list()
     std::string version;
 
     while(std::getline(infile, line)) {
-        std::string fname = this->path + "/" + line + ".fastafs";
-        bool zstd_seek = false;
+        std::vector<std::string> candidates = {
+            this->path + "/" + line + ".fastafs",
+            this->path + "/" + line + ".fastafs.zst"
+        };
 
-        if(!file_exist(fname.c_str())) {
-            fname = this->path + "/" + line + ".fastafs.zst";
-            zstd_seek = true;
-        }
+        auto it = std::find_if(candidates.begin(), candidates.end(),
+                               [](const auto& c) { return file_exist(c); });
 
-        if(file_exist(fname.c_str())) {
+        if(it != candidates.end()) {
+            std::string fname = *it;
+            bool zstd_seek = fname.find(".zst") != std::string::npos;
             fastafs f = fastafs(line);
             f.load(fname);
 
@@ -102,7 +110,7 @@ void database::list()
             size_t n_mountpoints = fastafs_fuse_mounts.count(fname);
 
             if(n_mountpoints > 0) {
-                mountpoints == "";
+                mountpoints = "";
                 bool is_first = true;
 
                 auto it = fastafs_fuse_mounts.find(fname);
@@ -169,15 +177,48 @@ std::string database::get(char *fastafs_name_or_id)
 
     while(std::getline(infile, line, '\n')) {
         if(line.compare(fastafs_name_or_id) == 0) {
-            fname = this->path + "/" + line + ".fastafs";
-
-            if(!file_exist(fname.c_str())) {
-                fname = this->path + "/" + line + ".fastafs.zst";
+            std::vector<std::string> candidates = {
+                this->path + "/" + line + ".fastafs",
+                this->path + "/" + line + ".fastafs.zst"
+            };
+            auto it = std::find_if(candidates.begin(), candidates.end(),
+                                   [](const auto& c) { return file_exist(c); });
+            if(it != candidates.end()) {
+                fname = *it;
             }
-
         }
     }
 
     return fname;
+}
+
+
+void database::refresh()
+{
+    std::vector<std::string> lines;
+    std::unordered_set<std::string> seen;
+    std::ifstream infile(this->idx);
+    std::string line;
+
+    while(std::getline(infile, line)) {
+        auto [it, inserted] = seen.insert(line);
+        
+        if(inserted) {
+            std::vector<std::string> candidates = {
+                this->path + "/" + line + ".fastafs",
+                this->path + "/" + line + ".fastafs.zst"
+            };
+
+            auto it = std::find_if(candidates.begin(), candidates.end(),
+                                   [](const auto& c) { return file_exist(c); });
+            if(it != candidates.end()) {
+                lines.push_back(line);
+            }
+        }
+    }
+    infile.close();
+
+    std::ofstream out(this->idx, std::ios::trunc);
+    for(auto &l : lines) out << l << "\n";
 }
 

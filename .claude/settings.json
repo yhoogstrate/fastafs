@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(make *)",
+      "Bash(cmake *)",
+      "Bash(bash build-*)",
+      "Bash(ctest *)"
+    ]
+  }
+}

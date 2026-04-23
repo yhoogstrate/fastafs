@@ -70,6 +70,7 @@ char * chunked_reader::get_buffer()
 
 
 //@todo remove and use typeid only
+//@todo switch?
 compression_type chunked_reader::get_filetype()
 {
     if(this->typeid_state() == typeid(ContextUncompressed)) {
@@ -260,45 +261,26 @@ ContextUncompressed::~ContextUncompressed()
 
 size_t ContextZstdSeekable::cache_buffer()
 {
-    //size_t written = ZSTD_seekable_decompressFile_orDie(this->fh_zstd, this->file_i,  this->buffer, this->file_i + READ_BUFFER_SIZE);
-    //this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
+    const size_t offset = this->context->get_file_i();
+    const size_t len = std::min(
+        (size_t) READ_BUFFER_SIZE,
+        offset < this->maxFileSize ? this->maxFileSize - offset : (size_t) 0
+    );
 
-    // figure out the location in the decompressed file
+    if(len == 0) {
+        return 0;
+    }
 
-    size_t written = ZSTD_seekable_decompressFile_orDie(
-                         this->fh,
-                         this->context->get_file_i(), //this->context->file_i,
+    size_t written = ZSTD_seekable_decompress(
+                         this->seekable,
                          this->context->get_buffer(),
-                         this->context->tell() + READ_BUFFER_SIZE //this->context->file_i + READ_BUFFER_SIZE
+                         len,
+                         (unsigned long long) offset
                      );
 
-
-    //printf("written = %i\n", written);
-    //printf("{{%s}}\n",  this->context->get_buffer());
-
-    /*
-    {
-    #if DEBUG
-        if(this->fh->tellg() == -1)
-        {
-            throw std::runtime_error("ContextUncompressed::cache_buffer\n");
-        }
-    #endif //DEBUG
-
-        this->fh->read(this->context->get_buffer(), READ_BUFFER_SIZE);
-
-        size_t s = (size_t) this->fh->gcount();
-
-        if(this->fh->eof()) {
-            this->fh->clear();
-            this->fh->seekg(0, std::ios::end);
-        }
-
-        return s;
+    if(ZSTD_isError(written)) {
+        throw std::runtime_error(std::string("[ContextZstdSeekable::cache_buffer] ") + ZSTD_getErrorName(written));
     }
-    */
-
-    //throw std::runtime_error("[ContextZstdSeekable::cache_buffer] not implemented.\n");
 
     return written;
 }
@@ -330,9 +312,10 @@ void ContextZstdSeekable::fopen(off_t start_pos)
     }
 }
 
-void ContextZstdSeekable::seek(off_t arg_offset)
+void ContextZstdSeekable::seek(off_t /*arg_offset*/)
 {
-    fseek_orDie(fh->fin, arg_offset, SEEK_SET);
+    // decompressed offset is tracked in context->file_i; ZSTD_seekable_decompress
+    // uses that offset directly and handles internal seeking via the seekable's src callbacks
 }
 
 ContextZstdSeekable::~ContextZstdSeekable()
@@ -344,10 +327,6 @@ ContextZstdSeekable::~ContextZstdSeekable()
         //delete this->fh_zstd->fin;
 
         fclose_orDie(this->fh->fin);
-        if(this->buffOut != nullptr)
-        {
-            free(this->buffOut);
-        }
         delete this->fh;
 
     }

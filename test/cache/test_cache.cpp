@@ -20,11 +20,7 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
 {
     twobit_byte b = twobit_byte(ENCODE_HASH_TWOBIT_DNA);
 
-    char *seq1;
-    char *seq2;
-    char *seq3;
-    char *seq4;
-
+    char buf[4];
     const char *seq;// don't dereference, pointer to static two_bit property
 
     // test 00 00 00 00 -> 00000000 -> 0
@@ -34,22 +30,20 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_T);
     BOOST_CHECK_EQUAL(b.data, 0);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    BOOST_CHECK_EQUAL(buf[0], 'T');
+
+    b.get(2, buf);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TT", 2), 0);
+
+    b.get(3, buf);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TTT", 3), 0);
+
+    b.get(4, buf);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TTTT", 4), 0);
+
     seq = b.get();
-
-    BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "TT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "TTT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "TTTT"), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
 
 
     // test 00 00 11 00 -> 00001100 -> 8+4 -> 12
@@ -59,22 +53,20 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_T);
     BOOST_CHECK_EQUAL(b.data, 12);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    BOOST_CHECK_EQUAL(buf[0], 'T');
+
+    b.get(2, buf);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TT", 2), 0);
+
+    b.get(3, buf);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TTG", 3), 0);
+
+    b.get(4, buf);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TTGT", 4), 0);
+
     seq = b.get();
-
-    BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "TT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "TTG"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "TTGT"), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "TTGT"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
 
 
     // test 00 11 00 00 -> 00110000 -> 16+32 -> 48
@@ -84,23 +76,17 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_T);
     BOOST_CHECK_EQUAL(b.data, 48);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    b.get(2, buf);
+    b.get(3, buf);
+    b.get(4, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "TG"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "TGT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "TGTT"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'T');
+    BOOST_CHECK_EQUAL(strncmp(buf, "TG", 2), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TGT", 3), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TGTT", 4), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "TGTT"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
-
 
     // test 11 00 00 00 -> 11000000 -> 64+128 -> 192
     b.set(6, NUCLEOTIDE_G);
@@ -109,23 +95,17 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_T);
     BOOST_CHECK_EQUAL(b.data, 192);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    b.get(2, buf);
+    b.get(3, buf);
+    b.get(4, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "G"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "GT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "GTT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "GTTT"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'G');
+    BOOST_CHECK_EQUAL(strncmp(buf, "GT", 2), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "GTT", 3), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "GTTT", 4), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "GTTT"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
-
 
     // test 10 01 01 10 -> 10010110 -> 2 + 4 + 16 + 128 -> 150
     b.set(6, NUCLEOTIDE_A);
@@ -134,23 +114,17 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_A);
     BOOST_CHECK_EQUAL(b.data, 150);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    b.get(2, buf);
+    b.get(3, buf);
+    b.get(4, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "A"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "AC"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "ACC"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "ACCA"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(strncmp(buf, "AC", 2), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "ACC", 3), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "ACCA", 4), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "ACCA"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
-
 
     // test 11 11 11 11 -> 11111111 -> 255
     b.set(6, NUCLEOTIDE_G);
@@ -159,23 +133,17 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_G);
     BOOST_CHECK_EQUAL(b.data, 255);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    b.get(2, buf);
+    b.get(3, buf);
+    b.get(4, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "G"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "GG"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "GGG"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "GGGG"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'G');
+    BOOST_CHECK_EQUAL(strncmp(buf, "GG", 2), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "GGG", 3), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "GGGG", 4), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "GGGG"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
-
 
     // test 00 00 00 00 -> 00000000 -> 0
     b.set(6, NUCLEOTIDE_T);
@@ -184,23 +152,17 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     b.set(0, NUCLEOTIDE_T);
     BOOST_CHECK_EQUAL(b.data, 0);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
-    seq3 = b.get(3);
-    seq4 = b.get(4);
+    b.get(1, buf);
+    b.get(2, buf);
+    b.get(3, buf);
+    b.get(4, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "T"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "TT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq3, "TTT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq4, "TTTT"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-    delete[] seq3;
-    delete[] seq4;
-}
+    BOOST_CHECK_EQUAL(buf[0], 'T');
+    BOOST_CHECK_EQUAL(strncmp(buf, "TT", 2), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TTT", 3), 0);
+    BOOST_CHECK_EQUAL(strncmp(buf, "TTTT", 4), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);}
 
 
 
@@ -612,13 +574,12 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
 
     const size_t padding = 10;
     ffs2f_init* cache_p10 = f.init_ffs2f(padding, true); // mixed case
-
     {
         // upper case test
         const uint32_t write_size = 32;
         char buffer2[write_size + 1] = "";
         buffer2[32] = '\0';
-        uint32_t written = 0;
+        written = 0;
         uint32_t w = 0;
         std::string output = "";
 
@@ -644,9 +605,7 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
 {
     fourbit_byte b = fourbit_byte();
 
-    char *seq1;
-    char *seq2;
-
+    char buf[2];
     const char *seq;// don't dereference, pointer to static four_bit property
 
     // test 0000 0000 -> 00000000 -> 0
@@ -654,99 +613,75 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
     b.set(0, 0);
     BOOST_CHECK_EQUAL(b.data, 0);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
+    b.get(1, buf);
+    b.get(2, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "A"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "AA"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(strncmp(buf, "AA", 2), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "AA"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-
     // test 11 10  11 11 -> 00001100 -> 239
     b.set(4, 14); // V: 14
     b.set(0, 15); // N: 15
     BOOST_CHECK_EQUAL(b.data, 239);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
+    b.get(1, buf);
+    b.get(2, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "V"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "VN"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-
+    BOOST_CHECK_EQUAL(buf[0], 'V');
+    BOOST_CHECK_EQUAL(strncmp(buf, "VN", 2), 0);
     // GT: 0010 0011
     b.set(4, 2); // G
     b.set(0, 3); // T
     BOOST_CHECK_EQUAL(b.data, 35);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
+    b.get(1, buf);
+    b.get(2, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "G"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "GT"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'G');
+    BOOST_CHECK_EQUAL(strncmp(buf, "GT", 2), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "GT"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-
 
     // set to UR (0100 0101)
     b.set(4, 4);
     b.set(0, 5);
     BOOST_CHECK_EQUAL(b.data, 69);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
+    b.get(1, buf);
+    b.get(2, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "U"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "UR"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'U');
+    BOOST_CHECK_EQUAL(strncmp(buf, "UR", 2), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "UR"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-
 
     // set to AN (0000 1111)
     b.set(4, 0);
     b.set(0, 15);
     BOOST_CHECK_EQUAL(b.data, 15);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
+    b.get(1, buf);
+    b.get(2, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "A"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "AN"), 0);
+    BOOST_CHECK_EQUAL(buf[0], 'A');
+    BOOST_CHECK_EQUAL(strncmp(buf, "AN", 2), 0);
     BOOST_CHECK_EQUAL(strcmp(seq, "AN"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-
 
     // set to NA (1111 0000)
     b.set(4, 15);
     b.set(0, 0);
     BOOST_CHECK_EQUAL(b.data, 240);
 
-    seq1 = b.get(1);
-    seq2 = b.get(2);
+    b.get(1, buf);
+    b.get(2, buf);
     seq = b.get();
 
-    BOOST_CHECK_EQUAL(strcmp(seq1, "N"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq2, "NA"), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq, "NA"), 0);
-
-    delete[] seq1;
-    delete[] seq2;
-}
+    BOOST_CHECK_EQUAL(buf[0], 'N');
+    BOOST_CHECK_EQUAL(strncmp(buf, "NA", 2), 0);
+    BOOST_CHECK_EQUAL(strcmp(seq, "NA"), 0);}
 
 
 
@@ -1066,6 +1001,22 @@ BOOST_AUTO_TEST_CASE(test_cache_protein2)
 
 }
 
+
+
+BOOST_AUTO_TEST_CASE(test_cache_no_final_newline)
+{
+    // Edge case: FASTA file without final newline
+    size_t written = fasta_to_fastafs("test/data/md5_test_no_final_newline.fa",
+                                       "tmp/test_cache_no_final_newline.fastafs", false);
+    BOOST_REQUIRE(written > 0);
+
+    // Load and verify
+    fastafs f = fastafs("");
+    f.load("tmp/test_cache_no_final_newline.fastafs");
+
+    BOOST_REQUIRE_EQUAL(f.data.size(), 1);
+    BOOST_CHECK_EQUAL(f.data[0]->n, 60);  // 60 bases expected
+}
 
 
 BOOST_AUTO_TEST_SUITE_END()

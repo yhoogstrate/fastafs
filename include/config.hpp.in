@@ -25,7 +25,7 @@
 #define PACKAGE_VERSION "@PROJECT_VERSION@"
 
 /* Build type (release/debug) */
-#define DEBUG @DEBUG@
+#cmakedefine01 DEBUG
 
 /* Git commit SHA1 */
 #define GIT_SHA1_STRING "@GIT_SHA1_STRING@"
