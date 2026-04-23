@@ -9,12 +9,15 @@ authors:
   - given-names: Youri
     family-names: Hoogstrate
     affiliation: Erasmus MC
+    orcid: "https://orcid.org/0000-0003-2166-0676"
   - given-names: Guido W.
     family-names: Jenster
     affiliation: Erasmus MC
+    orcid: "https://orcid.org/0000-0002-8658-2552"
   - given-names: Harmen J. G.
     family-names: van de Werken
     affiliation: Erasmus MC
+    orcid: "https://orcid.org/0000-0002-9794-1477"
 keywords:
   - FASTA
   - FASTAFS
