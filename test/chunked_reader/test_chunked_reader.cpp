@@ -665,5 +665,69 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader_old__new_style)
 }
 
 
+BOOST_AUTO_TEST_CASE(test_chunked_reader__zstd_multi_frame)
+{
+    // Compress with a small frame size (256 bytes) so the 1593-byte test_007.fastafs
+    // spans multiple frames (~7), exercising ZSTD_seekable_decompress across frame boundaries.
+    const unsigned SMALL_FRAME_SIZE = 256;
+
+    std::string test_name = "test_007";
+    std::string fasta_file = "test/data/" + test_name + ".fa";
+    std::string fastafs_file = "tmp/" + test_name + ".fastafs";
+    std::string fastafs_file_zstd = "tmp/" + test_name + "_multiframe.fastafs.zst";
+
+    fasta_to_fastafs(fasta_file, fastafs_file, false);
+    ZSTD_seekable_compressFile_orDie((const char*) fastafs_file.c_str(),
+                                     (const char*) fastafs_file_zstd.c_str(),
+                                     (int) ZSTD_COMPRESSION_QUALIITY,
+                                     SMALL_FRAME_SIZE);
+
+    {
+        std::ifstream f(fastafs_file, std::ios::ate | std::ios::binary);
+        BOOST_CHECK_GT((size_t) f.tellg(), (size_t) SMALL_FRAME_SIZE);
+    }
+
+    unsigned char buf1[READ_BUFFER_SIZE + 1];
+    unsigned char buf2[READ_BUFFER_SIZE + 1];
+    size_t w1, w2;
+
+    chunked_reader c1(fastafs_file.c_str());
+    c1.fopen(0);
+    chunked_reader c2(fastafs_file_zstd.c_str());
+    c2.fopen(0);
+
+    BOOST_CHECK(c1.typeid_state() == typeid(ContextUncompressed));
+    BOOST_CHECK(c2.typeid_state() == typeid(ContextZstdSeekable));
+
+    // sequential reads crossing frame boundaries
+    for(int i = 0; i < 8; i++) {
+        flush_buffer(buf1, READ_BUFFER_SIZE + 1, '\0');
+        flush_buffer(buf2, READ_BUFFER_SIZE + 1, '\0');
+        w1 = c1.read(buf1, 200);
+        w2 = c2.read(buf2, 200);
+        BOOST_CHECK_EQUAL(w1, w2);
+        BOOST_CHECK_EQUAL(
+            std::string(reinterpret_cast<char *>(buf1), w1),
+            std::string(reinterpret_cast<char *>(buf2), w2)
+        );
+    }
+
+    // seeks across frame boundaries
+    for(size_t offset : {(size_t)0, (size_t)128, (size_t)256, (size_t)512, (size_t)768, (size_t)1024, (size_t)1280}) {
+        flush_buffer(buf1, READ_BUFFER_SIZE + 1, '\0');
+        flush_buffer(buf2, READ_BUFFER_SIZE + 1, '\0');
+        c1.seek(offset);
+        c2.seek(offset);
+        w1 = c1.read(buf1, 200);
+        w2 = c2.read(buf2, 200);
+        BOOST_CHECK_EQUAL(w1, w2);
+        BOOST_CHECK_EQUAL(
+            std::string(reinterpret_cast<char *>(buf1), w1),
+            std::string(reinterpret_cast<char *>(buf2), w2)
+        );
+    }
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
