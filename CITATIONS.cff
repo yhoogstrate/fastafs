@@ -1,0 +1,25 @@
+title: 'FASTAFS: file system virtualisation of random access compressed FASTA files'
+abstract: 'This repository contains the source code of the paper FASTAFS: file system virtualisation of random access compressed FASTA files by Youri Hoogstrate, Guido W. Jenster and Harmen J. G. van de Werken, from BMC Bioinformatics'
+doi: 10.1186/s12859-021-04455-3
+repository-code: https://github.com/yhoogstrate/fastafs/
+version: 1.0.0
+date-released: 2021-10-31
+message: If you use this software in your work, please cite it using the following metadata.
+authors:
+  - given-names: Youri
+    family-names: Hoogstrate
+    affiliation: Erasmus MC
+  - given-names: Guido W.
+    family-names: Jenster
+    affiliation: Erasmus MC
+  - given-names: Harmen J. G.
+    family-names: van de Werken
+    affiliation: Erasmus MC
+keywords:
+  - FASTA
+  - FASTAFS
+  - FUSE
+  - Random access
+  - Virtualisation
+  - Zstd
+cff-version: 1.2.0
