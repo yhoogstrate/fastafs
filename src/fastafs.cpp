@@ -232,7 +232,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
     size_t pos = (size_t) start_pos_in_fasta;
 
-
+    // kijkt of een stuk van de header naar de buffer gekopieerd moet worden
     size_t pos_limit = this->name.size() + 2;
     if(pos < pos_limit) {
         const std::string header = ">" + this->name + "\n";
