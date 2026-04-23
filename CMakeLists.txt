@@ -9,7 +9,7 @@ project(fastafs)
 # Do this once in a while - find different compiler warnings
 #set(CMAKE_CXX_COMPILER             "clang++")
 
-set(PROJECT_VERSION "1.12.0")
+set(PROJECT_VERSION "1.13.0")
 set(PACKAGE_URL "https://github.com/yhoogstrate/fastafs")
 set(PACKAGE_BUGREPORT "${PACKAGE_URL}/issues")
 
@@ -57,7 +57,7 @@ find_program(ASTYLE astyle)
 
 add_custom_command(
 				OUTPUT  make_tidy
-				COMMAND bash tidy.sh
+				COMMAND bash scripts/tidy.sh
 			)
 
 add_custom_target(tidy DEPENDS make_tidy )
