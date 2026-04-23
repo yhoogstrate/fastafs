@@ -93,51 +93,51 @@ BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
 
     fs.set_dna();
     fs.set_rna();
-    fs.set_iupec_nucleotide();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), true);
+    fs.set_iupac_nucleotide();
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), true);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
     fs.set_rna();
-    fs.set_iupec_nucleotide();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), true);
+    fs.set_iupac_nucleotide();
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), true);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
     fs.set_dna();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), false);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), true);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
     fs.set_dna();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), false);
     BOOST_CHECK_EQUAL(fs.is_dna(), false);
     BOOST_CHECK_EQUAL(fs.is_rna(), true);
 
 
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
     fs.set_rna();
     fs.set_dna();
-    BOOST_CHECK_EQUAL(fs.is_iupec_nucleotide(), false);
+    BOOST_CHECK_EQUAL(fs.is_iupac_nucleotide(), false);
     BOOST_CHECK_EQUAL(fs.is_dna(), true);
     BOOST_CHECK_EQUAL(fs.is_rna(), false);
 
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_sequence_flags)
 
     fs.set_complete();
     fs.set_circular();
-    fs.set_iupec_nucleotide();
+    fs.set_iupac_nucleotide();
 
     bits = fs.get_bits();
     BOOST_CHECK_EQUAL(bits[0], 0b01011000);// 01011000

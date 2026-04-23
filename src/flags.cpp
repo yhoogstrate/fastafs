@@ -1,5 +1,6 @@
 
 
+
 #include <stdlib.h>
 #include <stdexcept>
 
@@ -25,7 +26,7 @@ void twobit_flag::set(unsigned char *data)
 
 
 // https://www.learncpp.com/cpp-tutorial/bit-manipulation-with-bitwise-operators-and-bit-masks/
-bool twobit_flag::get_flag(unsigned char bit)
+bool twobit_flag::get_flag(unsigned char bit) const
 {
 #if DEBUG
     if(bit >= 16) {
@@ -33,7 +34,7 @@ bool twobit_flag::get_flag(unsigned char bit)
     }
 #endif //DEBUG
 
-    return (this->bits[bit / 8] & bitmasks[bit]);
+    return (this->bits[bit / 8] & bitmasks[bit]) != 0;
 }
 
 
@@ -66,18 +67,13 @@ std::array<unsigned char, 2> &twobit_flag::get_bits(void)
     return this->bits;
 }
 
-
-
-
-bool fastafs_flags::is_complete()
+const std::array<unsigned char, 2> &twobit_flag::get_bits(void) const
 {
-    return this->get_flag(FASTAFS_BITFLAG_COMPLETE);
+    return this->bits;
 }
 
-bool fastafs_flags::is_incomplete()
-{
-    return !this->is_complete();
-}
+
+
 
 void fastafs_flags::set_complete()
 {
@@ -88,68 +84,6 @@ void fastafs_flags::set_incomplete()
 {
     this->set_flag(FASTAFS_BITFLAG_COMPLETE, false);
 }
-
-
-
-
-// alphabet: 'ACTG' + 'N'
-bool fastafs_sequence_flags::is_dna()
-{
-    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
-            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
-}
-
-// alphabet: 'ACUG' + 'N'
-bool fastafs_sequence_flags::is_rna()
-{
-    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
-            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == false);
-}
-
-// alphabet: 'ACGTURYKMSWBDHVN' + '-'
-bool fastafs_sequence_flags::is_iupec_nucleotide()
-{
-    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == false &&
-            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
-}
-
-bool fastafs_sequence_flags::is_protein()
-{
-    return (this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1) == true &&
-            this->get_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2) == true);
-}
-
-
-bool fastafs_sequence_flags::is_complete()
-{
-    return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_COMPLETE);
-}
-
-bool fastafs_sequence_flags::is_incomplete()
-{
-    return !this->is_complete();
-}
-
-bool fastafs_sequence_flags::is_circular()
-{
-    return this->get_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR);
-}
-
-bool fastafs_sequence_flags::is_linear()
-{
-    return !this->is_circular();
-}
-
-bool fastafs_sequence_flags::is_twobit()
-{
-    return (this->is_dna() | this->is_rna());
-}
-
-bool fastafs_sequence_flags::is_fourbit()
-{
-    return this->is_iupec_nucleotide();
-}
-
 
 
 
@@ -166,7 +100,7 @@ void fastafs_sequence_flags::set_rna()
     this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, false);
 }
 
-void fastafs_sequence_flags::set_iupec_nucleotide()
+void fastafs_sequence_flags::set_iupac_nucleotide()
 {
     this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_1, false); // 0,1
     this->set_flag(FASTAFS_SEQUENCE_BITFLAG_SEQUENCE_TYPE_2, true);
@@ -198,5 +132,3 @@ void fastafs_sequence_flags::set_circular()
 {
     this->set_flag(FASTAFS_SEQUENCE_BITFLAG_CIRCULAR, true);
 }
-
-

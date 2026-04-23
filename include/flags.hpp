@@ -41,26 +41,26 @@ constexpr std::array<unsigned char, 16> bitmasks = {
 
 class twobit_flag
 {
-private:
+protected:
     std::array<unsigned char, 2> bits; // 00000000 00000000
 
-protected:
     twobit_flag();
 
     void set_flag(unsigned char, bool);// counting flag from bit 0(!)
-    bool get_flag(unsigned char);
+    bool get_flag(unsigned char) const;
 
 public:
     void set(unsigned char *);
-    std::array<unsigned char, 2> &get_bits(void); // get bit 0 or bit 1 - needed for exporting flags to file(s)
+    std::array<unsigned char, 2> &get_bits(void);
+    const std::array<unsigned char, 2> &get_bits(void) const;
 };
 
 
 class fastafs_flags : public twobit_flag
 {
 public:
-    bool is_complete();
-    bool is_incomplete();
+    bool is_complete() const   { return (bits[0] & 0x80) != 0; }
+    bool is_incomplete() const { return !is_complete(); }
 
     void set_complete();
     void set_incomplete();
@@ -70,27 +70,27 @@ public:
 
 class fastafs_sequence_flags : public twobit_flag
 {
-
 public:
-    bool is_dna(); // alphabet: 'ACTG' + 'N'
-    bool is_rna(); // alphabet: 'ACUG' + 'N'
-    bool is_iupec_nucleotide(); // alphabet: 'ACGTURYKMSWBDHVN' + '-'
-    bool is_protein(); // alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWYZX*-'
+    // bit 7 = TYPE_1 (0x80), bit 6 = TYPE_2 (0x40)
+    bool is_dna() const              { return (bits[0] & 0xC0) == 0x00; } // alphabet: 'ACTG' + 'N'
+    bool is_rna() const              { return (bits[0] & 0xC0) == 0x80; } // alphabet: 'ACUG' + 'N'
+    bool is_iupac_nucleotide() const { return (bits[0] & 0xC0) == 0x40; } // alphabet: 'ACGTURYKMSWBDHVN' + '-'
+    bool is_protein() const          { return (bits[0] & 0xC0) == 0xC0; } // alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWYZX*-'
 
-    bool is_complete();
-    bool is_incomplete(); // is not complete
+    bool is_complete() const   { return (bits[0] & 0x10) != 0; }
+    bool is_incomplete() const { return !is_complete(); }
 
-    bool is_circular();
-    bool is_linear(); // is not circular
+    bool is_circular() const { return (bits[0] & 0x08) != 0; }
+    bool is_linear() const   { return !is_circular(); }
 
-    bool is_twobit();
-    bool is_fourbit();
+    bool is_twobit() const  { return (bits[0] & 0x40) == 0; }
+    bool is_fourbit() const { return (bits[0] & 0xC0) == 0x40; }
 
 
     // set by entity
     void set_dna();
     void set_rna();
-    void set_iupec_nucleotide();
+    void set_iupac_nucleotide();
     void set_protein();
 
     void set_complete();

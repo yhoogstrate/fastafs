@@ -1397,7 +1397,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                 fsf.set_dna();
             }
         } else if(s->current_dict == DICT_FOURBIT) {
-            fsf.set_iupec_nucleotide();
+            fsf.set_iupac_nucleotide();
         } else {
             fsf.set_protein(); // set protein
         }
