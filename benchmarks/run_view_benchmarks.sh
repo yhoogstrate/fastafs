@@ -49,8 +49,6 @@ MACHINE_ID=$(cat /etc/machine-id 2>/dev/null || hostname | md5sum | cut -c1-32)
 USER_NAME=$(whoami)
 GIT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
 FASTAFS_VERSION=$(${FASTAFS} --version 2>&1 | head -1 || echo "unknown")
-GIT_STATUS=$(git status --porcelain -b 2>/dev/null \
-    | tr '\n' '|' | sed 's/ /_/g' | sed 's/|$//' || echo "unknown")
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S.%6N')
 
 # ---------- generate large FASTA files on-the-fly ----------
@@ -97,7 +95,7 @@ for ENC in dna rna iupac protein; do
     FA="${TMP_DIR}/bench_${ENC}.fa"
 
     if [ ! -f "${TSV}" ]; then
-        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
+        printf 'timestamp\tfastafs-version\tinstructions\tcycles\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-commit\n' \
             > "${TSV}"
     fi
 
@@ -138,11 +136,11 @@ for ENC in dna rna iupac protein; do
             IFS='|' read -r TOTAL_ALLOCS TOTAL_BYTES DEFINITELY_LOST <<< "$VG_METRICS"
 
             printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-                "${TIMESTAMP}" "${FASTAFS_VERSION}" "${GIT_COMMIT}" \
+                "${TIMESTAMP}" "${FASTAFS_VERSION}" \
                 "${INSTRUCTIONS}" "${CYCLES}" \
-                "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
                 "${TOTAL_ALLOCS}" "${TOTAL_BYTES}" "${DEFINITELY_LOST}" \
-                "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_STATUS}" \
+                "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
+                "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_COMMIT}" \
                 >> "${TSV}"
 
             USER_T_R=$(printf "%.3f" "${USER_T}")
@@ -159,7 +157,7 @@ for ENC in dna rna iupac protein; do
 
     # write TSV header if file is new
     if [ ! -f "${TSV}" ]; then
-        printf 'timestamp\tfastafs-version\tgit-commit\tinstructions\tcycles\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-mod-status\n' \
+        printf 'timestamp\tfastafs-version\tinstructions\tcycles\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-commit\n' \
             > "${TSV}"
     fi
 
@@ -198,11 +196,11 @@ for ENC in dna rna iupac protein; do
             IFS='|' read -r TOTAL_ALLOCS TOTAL_BYTES DEFINITELY_LOST <<< "$VG_METRICS"
 
             printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-                "${TIMESTAMP}" "${FASTAFS_VERSION}" "${GIT_COMMIT}" \
+                "${TIMESTAMP}" "${FASTAFS_VERSION}" \
                 "${INSTRUCTIONS}" "${CYCLES}" \
-                "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
                 "${TOTAL_ALLOCS}" "${TOTAL_BYTES}" "${DEFINITELY_LOST}" \
-                "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_STATUS}" \
+                "${NT_PER_SEC}" "${WALL}" "${USER_T}" "${SYS}" \
+                "${N_NUCLEOTIDES}" "${ENC}" "${COMPRESSION}" "${CMD}" "${RUN}" "${GIT_COMMIT}" \
                 >> "${TSV}"
 
             USER_T_R=$(printf "%.3f" "${USER_T}")
