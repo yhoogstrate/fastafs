@@ -17,6 +17,9 @@ set -euo pipefail
 FASTAFS=./build-release/bin/fastafs
 N_NUCLEOTIDES=10000000   # 10M nt per encoding type
 LINE_WIDTH=60
+N_BLOCKS_N=64            # pure N-blocks (uppercase N / '-' / '?') per sequence type
+N_BLOCKS_M=64            # pure M-blocks (lowercase nt, not n) for DNA/RNA
+N_BLOCKS_OVERLAP=32      # overlap blocks (lowercase n) for DNA/RNA
 TMP_DIR=tmp/benchmark
 BENCH_DIR=benchmarks
 
@@ -60,31 +63,80 @@ TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S.%6N')
 echo "Generating ${N_NUCLEOTIDES} nt FASTA files in ${TMP_DIR}/ ..."
 
 python3 - <<PYEOF
-import os, sys
+import os, random
 
-n   = ${N_NUCLEOTIDES}
-lw  = ${LINE_WIDTH}
-tmp = '${TMP_DIR}'
+n                = ${N_NUCLEOTIDES}
+lw               = ${LINE_WIDTH}
+n_blocks_N       = ${N_BLOCKS_N}
+n_blocks_M       = ${N_BLOCKS_M}
+n_blocks_overlap = ${N_BLOCKS_OVERLAP}
+tmp              = '${TMP_DIR}'
 
-encodings = {
-    'dna':     'ACGT' * (lw // 4),                      # 60 chars
-    'rna':     'ACGU' * (lw // 4),                      # 60 chars, U -> twobit_rna
-    'iupac':   'NBKAHMDCUWGSYVTRHGWV' * (lw // 20),     # 60 chars, 4bit IUPAC
-    'protein': 'ACDEFGHIKLMNPQRSTVWY' * (lw // 20),     # 60 chars, E -> fivebit
+base_patterns = {
+    'dna':     ('ACGT'                * lw)[:lw],  # twobit DNA
+    'rna':     ('ACGU'                * lw)[:lw],  # twobit RNA
+    'iupac':   ('BKAHMDCUWGSYVTRHGWV' * lw)[:lw],  # 4bit IUPAC, no N in base pattern
+    'protein': ('ACDEFGHIKLMPQRSTVWY' * lw)[:lw],  # fivebit, no N in base pattern
 }
 
-N_STRETCH = 'N' * lw + '\n' + 'N' * lw
+def make_blocks_dna_rna(enc, n_N, n_M, n_overlap):
+    # Returns list of variable-length strings, shuffled so N/M/overlap are
+    # interspersed. Each block becomes one FASTA line of its own length.
+    # n_N pure uppercase-N blocks, n_M pure lowercase-nt blocks,
+    # n_overlap lowercase-n blocks (counted as both N-block and M-block).
+    rng  = random.Random(42)
+    base = 'acgt' if enc == 'dna' else 'acgu'
+    blocks = []
+    for _ in range(n_N):
+        size = rng.randint(30, 300)
+        blocks.append('N' * size)
+    for _ in range(n_M):
+        size = rng.randint(30, 300)
+        blocks.append(''.join(rng.choice(base) for _ in range(size)))
+    for _ in range(n_overlap):
+        size = rng.randint(30, 300)
+        blocks.append('n' * size)
+    rng.shuffle(blocks)
+    return blocks
 
-for enc, pattern in encodings.items():
-    full_lines  = n // lw
-    remainder   = n  % lw
+def make_blocks_other(enc, n_N, n_M):
+    # IUPAC: 64 variable-size '-' N-blocks + 64 variable-size lowercase IUPAC M-blocks.
+    # protein: 64 variable-size '?' N-blocks + 64 variable-size lowercase protein M-blocks.
+    # No overlap: '-' and '?' have no lowercase equivalent.
+    rng = random.Random(42)
+    if enc == 'iupac':
+        n_fill  = '-'
+        m_chars = 'bkahmdcuwgsyvtrhgwv'
+    else:  # protein
+        n_fill  = '?'
+        m_chars = 'acdefghiklmpqrstvwy'
+    blocks = []
+    for _ in range(n_N):
+        size = rng.randint(30, 300)
+        blocks.append(n_fill * size)
+    for _ in range(n_M):
+        size = rng.randint(30, 300)
+        blocks.append(''.join(rng.choice(m_chars) for _ in range(size)))
+    rng.shuffle(blocks)
+    return blocks
+
+for enc, pattern in base_patterns.items():
+    full_lines = n // lw
+    remainder  = n  % lw
     lines = [pattern] * full_lines
     if remainder:
         lines.append(pattern[:remainder])
+
+    n_lines_orig = len(lines)
     if enc in ('dna', 'rna'):
-        n_lines = len(lines)
-        for pos in reversed([1/4, 2/4, 3/4]):
-            lines.insert(int(n_lines * pos), N_STRETCH)
+        blocks = make_blocks_dna_rna(enc, n_blocks_N, n_blocks_M, n_blocks_overlap)
+    else:
+        blocks = make_blocks_other(enc, n_blocks_N, n_blocks_M)
+    nb = len(blocks)
+    for i, block_line in enumerate(reversed(blocks)):
+        pos = int(n_lines_orig * (nb - i) / (nb + 1))
+        lines[pos:pos] = [block_line]
+
     body = '\n'.join(lines)
     content = f'>{enc}-benchmark\n{body}\n'
     path = os.path.join(tmp, f'bench_{enc}.fa')

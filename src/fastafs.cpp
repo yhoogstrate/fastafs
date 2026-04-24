@@ -668,25 +668,22 @@ uint32_t fastafs_seq::n_padding(uint32_t offset, uint32_t position_until, uint32
 //@brief finds the number of N's BEFORE pos, and returns whether POS is N
 bool fastafs_seq::get_n_offset(uint32_t pos, uint32_t *num_Ns)
 {
-    *num_Ns = 0;
-
-    for(uint32_t n_block = 0; n_block < this->n_starts.size(); ++n_block) {
-        if(this->n_starts[n_block] > pos) {
-            return false;
-        } else {
-
-            // als einde kleiner is dan pos, tel verschil op
-            if(this->n_ends[n_block] < pos) {
-                *num_Ns += (this->n_ends[n_block] - this->n_starts[n_block]) + 1;
-            }
-
-            // pos is within N block
-            else if(this->n_ends[n_block] >= pos) {
-                *num_Ns += (pos - this->n_starts[n_block]);// if pos is N and would be included: + 1
-
-                return true;
-            }
+    if(this->n_cumulative.empty()) {
+        this->n_cumulative.resize(this->n_ends.size() + 1, 0);
+        for(size_t i = 0; i < this->n_ends.size(); i++) {
+            this->n_cumulative[i + 1] = this->n_cumulative[i] + (this->n_ends[i] - this->n_starts[i] + 1);
         }
+    }
+
+    // binary search: first block where n_ends[j] >= pos
+    auto it = std::lower_bound(this->n_ends.begin(), this->n_ends.end(), pos);
+    size_t j = (size_t)(it - this->n_ends.begin());
+
+    *num_Ns = this->n_cumulative[j];
+
+    if(j < this->n_starts.size() && this->n_starts[j] <= pos) {
+        *num_Ns += pos - this->n_starts[j];
+        return true;
     }
 
     return false;
@@ -808,6 +805,7 @@ void fastafs::load(std::string afilename)
 
                     s->n_starts.resize(N_blocks);
                     s->n_ends.resize(N_blocks);
+                    s->n_cumulative.resize(N_blocks + 1, 0);
                     for(j = 0; j < s->n_starts.size(); j++) {
                         fh_in.read(memblock, 4);
                         s->n_starts[j] = fourbytes_to_uint(memblock, 0);
@@ -816,6 +814,7 @@ void fastafs::load(std::string afilename)
                         fh_in.read(memblock, 4);
                         s->n_ends[j] = fourbytes_to_uint(memblock, 0);
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
+                        s->n_cumulative[j + 1] = s->n_cumulative[j] + (s->n_ends[j] - s->n_starts[j] + 1);
                     }
 
                     // MD5-checksum - only if sequence is complete

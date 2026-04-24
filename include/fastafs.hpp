@@ -53,6 +53,7 @@ public:
     uint32_t n;// number nucleotides
     std::vector<uint32_t> n_starts;// start positions (nucleotide positions; 0-based)
     std::vector<uint32_t> n_ends;// end positions (nucleotide positions; 0-based)
+    std::vector<uint32_t> n_cumulative;// n_cumulative[i] = total N's in blocks [0, i)
     fastafs_sequence_flags flags;
 
     std::vector<uint32_t> m_starts;// start positions (nucleotide positions; 0-based)
