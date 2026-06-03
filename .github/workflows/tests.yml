@@ -30,27 +30,5 @@ jobs:
     - name: Build (debug)
       run: bash build-debug.sh
 
-    - name: Run tests and capture output
-      run: |
-        mkdir -p build-debug/test-output
-        failed_tests=0
-        for test in build-debug/test/test_*; do
-          if [ -f "$test" ]; then
-            testname=$(basename "$test")
-            echo "Running: $testname"
-            if "$test" 2>&1 | tee "build-debug/test-output/$testname.log"; then
-              echo "✓ $testname passed"
-            else
-              echo "✗ $testname failed"
-              failed_tests=$((failed_tests + 1))
-            fi
-          fi
-        done
-        exit $failed_tests
-
-    - name: Upload test logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs
-        path: build-debug/test-output/
+    - name: Run tests
+      run: ctest --test-dir build-debug -VV --output-on-failure

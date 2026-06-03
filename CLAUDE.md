@@ -39,7 +39,10 @@ When modifying `include/config.hpp.in`, CMake regenerates `build-*/include/confi
 ## Running Tests
 
 ```bash
-# All tests
+# All tests (recommended)
+ctest --test-dir build-debug -VV --output-on-failure
+
+# All tests (alternative)
 make -C build-debug test
 
 # Single test binary

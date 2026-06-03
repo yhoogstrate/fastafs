@@ -41,9 +41,9 @@ Working with large FASTA files is inefficient and error-prone:
 git clone https://github.com/yhoogstrate/fastafs.git
 cd fastafs
 
-# Build
+# Build & test
 ./build-release.sh
-make check
+make -C build-release check
 
 # Cache + mount
 ./fastafs cache reference ./reference.fa
@@ -53,6 +53,25 @@ make check
 ls /mnt/genome
 head /mnt/genome/chr1.fa
 ```
+
+---
+
+## 🧪 Running Tests
+
+After building, run tests with:
+
+```bash
+# Recommended: simple and direct
+make -C build-release check
+
+# With verbose output and failure details
+ctest --test-dir build-release -VV --output-on-failure
+
+# Single test by name
+ctest --test-dir build-release -R test_byte_decoder
+```
+
+All tests must be run from the repository root. Tests are Boost.Test binaries linked against `libfastafs`.
 
 ---
 
