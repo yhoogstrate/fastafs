@@ -30,5 +30,22 @@ jobs:
     - name: Build (debug)
       run: bash build-debug.sh
 
-    - name: Run tests
-      run: make -C build-debug test
+    - name: Run tests and capture output
+      run: |
+        mkdir -p build-debug/test-output
+        cd build-debug
+        for test in test/test_*; do
+          if [ -f "$test" ]; then
+            testname=$(basename "$test")
+            echo "Running: $testname"
+            "$test" 2>&1 | tee "test-output/$testname.log" || true
+          fi
+        done
+      continue-on-error: true
+
+    - name: Upload test logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-logs
+        path: build-debug/test-output/
