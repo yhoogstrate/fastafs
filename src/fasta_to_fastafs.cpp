@@ -79,7 +79,8 @@ size_t fasta_to_fastafs_seq::twobit_bytes_used()
     //printf("n_actg: (%i + 3) / 4 = %i\n", n_actg, (n_actg + 3) / 4);
 
     //return (size_t)((this->n_actg + (twobit_byte::nucleotides_per_byte - 1)) / twobit_byte::nucleotides_per_byte);
-    return twobit_byte::nucleotides_to_compressed_offset(this->n_actg);
+    // compressed offset is a byte count and never negative; off_t -> size_t is safe here
+    return (size_t) twobit_byte::nucleotides_to_compressed_offset(this->n_actg);
 
 }
 
@@ -1436,9 +1437,12 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
     uint32_t crc32c = file_crc32(fastafs_file, 4, written);
     unsigned char byte_enc[5] = "\x00\x00\x00\x00";
     uint_to_fourbytes(byte_enc, (uint32_t) crc32c);
-    std::ofstream fh_fastafs2(fastafs_file.c_str(), std::ios::out | std::ios::binary | std::ios::app);
+    // in|out (not app, not bare out): open without truncating so seekp() actually
+    // controls the write position. With std::ios::app every write is forced to EOF
+    // (seekp is ignored); bare std::ios::out would truncate the file to 0 bytes.
+    std::ofstream fh_fastafs2(fastafs_file.c_str(), std::ios::in | std::ios::out | std::ios::binary);
     if(fh_fastafs2.is_open()) {
-        fh_fastafs2.seekp(written, std::ios::beg); // don't blindly because of possible race conditions?
+        fh_fastafs2.seekp(written, std::ios::beg); // write the CRC32 at the explicit offset, not blindly at EOF
         fh_fastafs2.write(reinterpret_cast<char *>(&byte_enc), (size_t) 4);
         fh_fastafs2.flush();
 

@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(test_file_integrity)
         char buffer[400];
 
         std::string tmp_file = "tmp/test_cache_test_" + std::to_string(i) + ".fastafs";
-        std::ifstream fh_fastafs_in("tmp/test_cache_test.fastafs", std::ios::out | std::ios::binary);
+        std::ifstream fh_fastafs_in("tmp/test_cache_test.fastafs", std::ios::in | std::ios::binary);
         std::ofstream fh_fastafs_out(tmp_file, std::ios::out | std::ios::binary);
 
         fh_fastafs_in.read(buffer, i);
