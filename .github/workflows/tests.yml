@@ -33,13 +33,12 @@ jobs:
     - name: Run tests and capture output
       run: |
         mkdir -p build-debug/test-output
-        cd build-debug
         failed_tests=0
-        for test in test/test_*; do
+        for test in build-debug/test/test_*; do
           if [ -f "$test" ]; then
             testname=$(basename "$test")
             echo "Running: $testname"
-            if "$test" 2>&1 | tee "test-output/$testname.log"; then
+            if "$test" 2>&1 | tee "build-debug/test-output/$testname.log"; then
               echo "✓ $testname passed"
             else
               echo "✗ $testname failed"
