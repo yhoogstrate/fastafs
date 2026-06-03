@@ -6,6 +6,7 @@
 #include "../test_helper.hpp"
 
 #include "database.hpp"
+#include "fasta_to_fastafs.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -66,10 +67,16 @@ BOOST_AUTO_TEST_CASE(test_refresh_removes_orphans)
     std::filesystem::create_directories(tmpdir);
 
     database d(tmpdir);
-    d.add((char*)"valid_entry");
-    d.add((char*)"orphan_entry");
 
-    // Verwijder het bestand van orphan_entry
+    // Maak voor beide entries een echte .fastafs aan uit een test-FASTA,
+    // zodat refresh() ze in eerste instantie als geldig beschouwt.
+    std::string valid_fname = d.add((char*)"valid_entry");
+    fasta_to_fastafs("test/data/test.fa", valid_fname, false);
+
+    std::string orphan_fname = d.add((char*)"orphan_entry");
+    fasta_to_fastafs("test/data/test.fa", orphan_fname, false);
+
+    // Verwijder het bestand van orphan_entry (valid_entry blijft staan)
     std::filesystem::remove(tmpdir + "/orphan_entry.fastafs");
     std::filesystem::remove(tmpdir + "/orphan_entry.fastafs.zst");
 
@@ -93,7 +100,11 @@ BOOST_AUTO_TEST_CASE(test_refresh_deduplicates)
     std::filesystem::create_directories(tmpdir);
 
     database d(tmpdir);
-    d.add((char*)"entry1");
+
+    // Maak een echte .fastafs aan zodat entry1 de orphan-check overleeft
+    // en we puur de deduplicatie testen.
+    std::string entry1_fname = d.add((char*)"entry1");
+    fasta_to_fastafs("test/data/test.fa", entry1_fname, false);
 
     // Voeg handmatig duplicaten toe aan index
     std::ofstream indexfile(tmpdir + "/index", std::ios::app);
