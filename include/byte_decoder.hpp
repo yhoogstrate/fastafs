@@ -46,8 +46,14 @@ public:
 class byte_decoder_interface_twobit_dna : public byte_decoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 1; }
-    unsigned char nucleotides_per_chunk() const override { return 4; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 1;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 4;
+    }
     void decode_chunk(const unsigned char *input, char *output) const override
     {
         uint32_t val = DECODE_TWOBIT_DNA_U32[input[0]];
@@ -60,8 +66,14 @@ public:
 class byte_decoder_interface_twobit_rna : public byte_decoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 1; }
-    unsigned char nucleotides_per_chunk() const override { return 4; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 1;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 4;
+    }
     void decode_chunk(const unsigned char *input, char *output) const override
     {
         uint32_t val = DECODE_TWOBIT_RNA_U32[input[0]];
@@ -74,8 +86,14 @@ public:
 class byte_decoder_interface_fourbit : public byte_decoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 1; }
-    unsigned char nucleotides_per_chunk() const override { return 2; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 1;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 2;
+    }
     void decode_chunk(const unsigned char *input, char *output) const override
     {
         memcpy(output, fourbit_byte::encode_hash[input[0]], 2);
@@ -87,8 +105,14 @@ public:
 class byte_decoder_interface_fivebit : public byte_decoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 5; }
-    unsigned char nucleotides_per_chunk() const override { return 8; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 5;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 8;
+    }
     void decode_chunk(const unsigned char *input, char *output) const override;
 };
 

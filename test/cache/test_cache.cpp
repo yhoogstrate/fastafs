@@ -161,7 +161,8 @@ BOOST_AUTO_TEST_CASE(test_equality_twobit_byte)
     BOOST_CHECK_EQUAL(strncmp(buf, "TT", 2), 0);
     BOOST_CHECK_EQUAL(strncmp(buf, "TTT", 3), 0);
     BOOST_CHECK_EQUAL(strncmp(buf, "TTTT", 4), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);}
+    BOOST_CHECK_EQUAL(strcmp(seq, "TTTT"), 0);
+}
 
 
 
@@ -299,17 +300,17 @@ BOOST_AUTO_TEST_CASE(test_cache)
 
         std::streampos size = file.tellg();
         BOOST_REQUIRE_EQUAL(size, (std::streampos) 403);
-        
+
         printf("Checking MD5sum");
         BOOST_REQUIRE_EQUAL(file_md5("tmp/test_cache_test.fastafs"), "7abdf9e7a319ebe1ea12a242b3165005");
-        
+
         char *buffer = new char[size];
         BOOST_REQUIRE(buffer != nullptr);
 
         file.seekg(0, std::ios::beg);
         file.read(buffer, size);
         file.close();
-        
+
         for(unsigned int i = 0; i < size; i++) {
             BOOST_CHECK_EQUAL(buffer[i], reference[i]);
             /*
@@ -598,7 +599,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         //std::string uppercase = ">seq.1[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.2[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.3[IUPEC]\nNNDV\n>seq.4[ACTG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.5[ACUG]\nACTAGCTACG\nATCGAGTCAG\nACATGCTN\n>seq.6[IUPEC]\nYHVA----BH\nUYVK\n";
         BOOST_CHECK(output.compare(uppercase) == 0);
     }
-    
+
     delete cache_p10;
 }
 
@@ -686,7 +687,8 @@ BOOST_AUTO_TEST_CASE(test_equality_fourbit_byte)
 
     BOOST_CHECK_EQUAL(buf[0], 'N');
     BOOST_CHECK_EQUAL(strncmp(buf, "NA", 2), 0);
-    BOOST_CHECK_EQUAL(strcmp(seq, "NA"), 0);}
+    BOOST_CHECK_EQUAL(strcmp(seq, "NA"), 0);
+}
 
 
 
@@ -1016,7 +1018,7 @@ BOOST_AUTO_TEST_CASE(test_cache_no_final_newline)
 {
     // Edge case: FASTA file without final newline
     size_t written = fasta_to_fastafs("test/data/md5_test_no_final_newline.fa",
-                                       "tmp/test_cache_no_final_newline.fastafs", false);
+                                      "tmp/test_cache_no_final_newline.fastafs", false);
     BOOST_REQUIRE(written > 0);
 
     // Load and verify

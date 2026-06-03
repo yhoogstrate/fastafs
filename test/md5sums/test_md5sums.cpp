@@ -43,10 +43,10 @@ void test_fasta_file(const std::string& input_fasta, const std::vector<std::stri
     chunked_reader file = chunked_reader(fs.filename.c_str());
     file.fopen(0);
 
-    for (size_t i = 0; i < fs.data.size(); i++) {
+    for(size_t i = 0; i < fs.data.size(); i++) {
         std::string actual = fs.data[i]->md5(cache->sequences[i], file);
         BOOST_CHECK_MESSAGE(actual == expected_md5s[i],
-            "Sequence " << i << " MD5 mismatch: got '" << actual << "' expected '" << expected_md5s[i] << "'");
+                            "Sequence " << i << " MD5 mismatch: got '" << actual << "' expected '" << expected_md5s[i] << "'");
     }
 
     delete cache;
@@ -115,15 +115,17 @@ BOOST_AUTO_TEST_CASE(test_md5_protein_with_gap)
 // Multi-sequence tests
 BOOST_AUTO_TEST_CASE(test_md5_multiple_dna)
 {
-    test_fasta_file("test/data/md5_test_multiple_dna.fa", {"cae822e1fe221decd462986babd41f91", 
-        "5725e2de858089c362acc2f9bc30e431", 
-        "eed143a270737191167432866d5e6b94"});
+    test_fasta_file("test/data/md5_test_multiple_dna.fa", {"cae822e1fe221decd462986babd41f91",
+                    "5725e2de858089c362acc2f9bc30e431",
+                    "eed143a270737191167432866d5e6b94"
+                                                          });
 }
 
 BOOST_AUTO_TEST_CASE(test_md5_mixed_types)
 {
-    test_fasta_file("test/data/md5_test_mixed_types.fa", {"cae822e1fe221decd462986babd41f91", 
-        "638ef73a7502450731f6bfb2c2dd8747"});
+    test_fasta_file("test/data/md5_test_mixed_types.fa", {"cae822e1fe221decd462986babd41f91",
+                    "638ef73a7502450731f6bfb2c2dd8747"
+                                                         });
 }
 
 // Edge cases
@@ -150,7 +152,8 @@ BOOST_AUTO_TEST_CASE(test_md5_exact_line_boundary_60nt)
 BOOST_AUTO_TEST_CASE(test_md5_short_sequence)
 {
     test_fasta_file("test/data/md5_test_short_sequence.fa", {"7fc56270e7a70fa81a5935b72eacbe29",
-         "4144e097d2fa7a491cec2a7a4322f2bc", "33f786e15eb427ffd3edec16cfdc0cd2"});
+                    "4144e097d2fa7a491cec2a7a4322f2bc", "33f786e15eb427ffd3edec16cfdc0cd2"
+                                                            });
 }
 
 // Newline diversity tests

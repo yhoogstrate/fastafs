@@ -31,7 +31,9 @@ size_t byte_decoder::decode(char *output, size_t output_size) const
     const unsigned char nuc_per_chunk = strategy_->nucleotides_per_chunk();
     size_t written = 0;
     for(size_t i = 0; i + chunk_size <= buffer_input_size; i += chunk_size) {
-        if(written + nuc_per_chunk > output_size) break;
+        if(written + nuc_per_chunk > output_size) {
+            break;
+        }
         strategy_->decode_chunk(buffer_input_data + i, output + written);
         written += nuc_per_chunk;
     }

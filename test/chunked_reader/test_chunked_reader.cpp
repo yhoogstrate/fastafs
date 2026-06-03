@@ -705,7 +705,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__zstd_multi_frame)
     }
 
     // seeks across frame boundaries
-    for(off_t offset : {(off_t)0, (off_t)128, (off_t)256, (off_t)512, (off_t)768, (off_t)1024, (off_t)1280}) {
+    for(off_t offset : {
+            (off_t)0, (off_t)128, (off_t)256, (off_t)512, (off_t)768, (off_t)1024, (off_t)1280
+        }) {
         flush_buffer(buf1, READ_BUFFER_SIZE + 1, '\0');
         flush_buffer(buf2, READ_BUFFER_SIZE + 1, '\0');
         c1.seek(offset);

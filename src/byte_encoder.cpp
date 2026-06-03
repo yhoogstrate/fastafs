@@ -56,7 +56,9 @@ size_t byte_encoder::encode(const char *input, size_t input_size) const
 #endif
 
     for(size_t i = 0; i + nuc_per_chunk <= input_size; i += nuc_per_chunk) {
-        if(written + bytes_per_chunk > buffer_output_size) break;
+        if(written + bytes_per_chunk > buffer_output_size) {
+            break;
+        }
         strategy_->encode_chunk(input + i, buffer_output_data + written);
         written += bytes_per_chunk;
     }
@@ -68,11 +70,11 @@ void encoder_interface_twobit_dna::encode_chunk(const char *input, unsigned char
 {
     // T=0, C=1, A=2, G=3 (2 bits per nucleotide, 4 nucleotiden per byte)
     output[0] = (unsigned char)(
-        (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
-        (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
-        (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
-        (TWOBIT_ENCODE[(unsigned char)input[3]])
-    );
+                    (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
+                    (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
+                    (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
+                    (TWOBIT_ENCODE[(unsigned char)input[3]])
+                );
 }
 
 
@@ -80,11 +82,11 @@ void encoder_interface_twobit_rna::encode_chunk(const char *input, unsigned char
 {
     // U=0, C=1, A=2, G=3 (2 bits per nucleotide, 4 nucleotiden per byte)
     output[0] = (unsigned char)(
-        (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
-        (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
-        (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
-        (TWOBIT_ENCODE[(unsigned char)input[3]])
-    );
+                    (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
+                    (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
+                    (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
+                    (TWOBIT_ENCODE[(unsigned char)input[3]])
+                );
 }
 
 

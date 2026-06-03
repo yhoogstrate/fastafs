@@ -24,5 +24,5 @@ public:
     void load();// reads path + "/" + info.txt, only containing N
     void list();// 'ls'
     void refresh();
-    std::string get(char *);
+    std::string get(const char *);
 };

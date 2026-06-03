@@ -884,7 +884,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
 
     fh.seekg(0, std::ios::end);
     BOOST_REQUIRE_EQUAL(fh.tellg(), std::streampos(2108));
-    
+
 
     fh.seekg(0, std::ios::beg);
     fh.read(buffer, 2108);
@@ -981,23 +981,23 @@ static void test_large_windowed(const std::string &test_name, int padding, bool 
     const size_t n = full_file.size();
     const size_t start_positions[] = {
         0,
-        
+
         B / 2,
-        
+
         B - 1,
         B,
         B + 1,
-        
+
         2 * B,
         2 * B + 1,
-        
+
         3 * B,
         3 * B + 1,
-        
+
         n / 2,
-        
+
         n > B ? n - B : 0,
-        
+
         n - 1,
     };
     const size_t buf_sizes[] = { 1, B, 2 * B, 3 * B };
@@ -1006,10 +1006,14 @@ static void test_large_windowed(const std::string &test_name, int padding, bool 
     std::string std_buffer;
 
     for(size_t start : start_positions) {
-        if(start >= n) continue;
+        if(start >= n) {
+            continue;
+        }
         for(size_t buf_size : buf_sizes) {
             std::string expected = full_file.substr(start, buf_size);
-            if(expected.empty()) continue;
+            if(expected.empty()) {
+                continue;
+            }
 
             flush_buffer(buffer, file_size + 1, '?');
             written = fs.view_fasta_chunk(cache, buffer, buf_size, (off_t) start, fhc);

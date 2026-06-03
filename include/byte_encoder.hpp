@@ -44,8 +44,14 @@ public:
 class encoder_interface_twobit_dna : public encoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 1; }
-    unsigned char nucleotides_per_chunk() const override { return 4; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 1;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 4;
+    }
     void encode_chunk(const char *input, unsigned char *output) const override;
 };
 
@@ -54,8 +60,14 @@ public:
 class encoder_interface_twobit_rna : public encoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 1; }
-    unsigned char nucleotides_per_chunk() const override { return 4; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 1;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 4;
+    }
     void encode_chunk(const char *input, unsigned char *output) const override;
 };
 
@@ -64,8 +76,14 @@ public:
 class encoder_interface_fourbit : public encoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 1; }
-    unsigned char nucleotides_per_chunk() const override { return 2; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 1;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 2;
+    }
     void encode_chunk(const char *input, unsigned char *output) const override;
 };
 
@@ -74,8 +92,14 @@ public:
 class encoder_interface_fivebit : public encoder_interface
 {
 public:
-    unsigned char bytes_per_chunk() const override { return 5; }
-    unsigned char nucleotides_per_chunk() const override { return 8; }
+    unsigned char bytes_per_chunk() const override
+    {
+        return 5;
+    }
+    unsigned char nucleotides_per_chunk() const override
+    {
+        return 8;
+    }
     void encode_chunk(const char *input, unsigned char *output) const override;
 };
 

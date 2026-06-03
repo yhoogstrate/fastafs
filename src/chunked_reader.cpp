@@ -263,9 +263,9 @@ size_t ContextZstdSeekable::cache_buffer()
 {
     const size_t offset = this->context->get_file_i();
     const size_t len = std::min(
-        (size_t) READ_BUFFER_SIZE,
-        offset < this->maxFileSize ? this->maxFileSize - offset : (size_t) 0
-    );
+                           (size_t) READ_BUFFER_SIZE,
+                           offset < this->maxFileSize ? this->maxFileSize - offset : (size_t) 0
+                       );
 
     if(len == 0) {
         return 0;

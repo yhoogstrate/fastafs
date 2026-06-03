@@ -327,10 +327,10 @@ void fivebit_fivebytes::decode(const unsigned char *input, char *output)
     // Layout: 00000111 11222223 33334444 45555566 66677777
     //         symbol 0 starts at bit 39, each symbol is 5 bits wide.
     const uint64_t bits = ((uint64_t)input[0] << 32)
-                        | ((uint64_t)input[1] << 24)
-                        | ((uint64_t)input[2] << 16)
-                        | ((uint64_t)input[3] <<  8)
-                        |  (uint64_t)input[4];
+                          | ((uint64_t)input[1] << 24)
+                          | ((uint64_t)input[2] << 16)
+                          | ((uint64_t)input[3] <<  8)
+                          | (uint64_t)input[4];
 
     // Extract each 5-bit symbol by shifting to bit 0 and masking with 0b00011111.
     // The mask is needed because uint64_t is 64 bits wide — after shifting, bits above

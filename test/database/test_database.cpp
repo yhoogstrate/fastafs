@@ -83,11 +83,11 @@ BOOST_AUTO_TEST_CASE(test_refresh_removes_orphans)
     d.refresh();
 
     // Na refresh: orphan_entry mag niet meer in index
-    std::string result = d.get((char*)"orphan_entry");
+    std::string result = d.get("orphan_entry");
     BOOST_CHECK_EQUAL(result, "");
 
     // valid_entry moet nog bestaan
-    BOOST_CHECK(d.get((char*)"valid_entry").size() > 0);
+    BOOST_CHECK(d.get("valid_entry").size() > 0);
 
     std::filesystem::remove_all(tmpdir);
 }
@@ -119,7 +119,9 @@ BOOST_AUTO_TEST_CASE(test_refresh_deduplicates)
     std::string line;
     int count = 0;
     while(std::getline(infile, line)) {
-        if(line == "entry1") count++;
+        if(line == "entry1") {
+            count++;
+        }
     }
     infile.close();
 
