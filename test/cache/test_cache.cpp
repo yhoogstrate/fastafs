@@ -298,6 +298,8 @@ BOOST_AUTO_TEST_CASE(test_cache)
         BOOST_REQUIRE(file.is_open());
 
         std::streampos size = file.tellg();
+        BOOST_REQUIRE_EQUAL(size, (std::streampos) 403);
+        
         char *buffer = new char[size];
         BOOST_REQUIRE(buffer != nullptr);
 
@@ -548,7 +550,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
     char * buffer;
     size = file.tellg();
     BOOST_CHECK_EQUAL(reference.size(), 376);
-    BOOST_CHECK_EQUAL(size, 376);
+    BOOST_REQUIRE_EQUAL(size, (std::streampos) 376);
     buffer = new char [size];
 
     file.seekg(0, std::ios::beg);
@@ -735,6 +737,7 @@ BOOST_AUTO_TEST_CASE(test_cache_004)
     std::streampos size;
     char * buffer;
     size = file.tellg();
+    BOOST_REQUIRE_EQUAL(size, (std::streampos) 125);
     buffer = new char [size];
 
     file.seekg(0, std::ios::beg);
@@ -837,6 +840,7 @@ BOOST_AUTO_TEST_CASE(test_cache_test_high_N_freq)
     std::streampos size;
     char * buffer;
     size = file.tellg();
+    BOOST_REQUIRE_EQUAL(size, (std::streampos) reference.size());
     buffer = new char [size];
 
     file.seekg(0, std::ios::beg);
@@ -911,6 +915,7 @@ BOOST_AUTO_TEST_CASE(test_cache_protein)
     std::streampos size;
     char * buffer;
     size = file.tellg();
+    BOOST_REQUIRE_EQUAL(size, (std::streampos) 94);
     buffer = new char [size];
 
     file.seekg(0, std::ios::beg);
@@ -977,6 +982,7 @@ BOOST_AUTO_TEST_CASE(test_cache_protein2)
     std::streampos size;
     char * buffer;
     size = file.tellg();
+    BOOST_REQUIRE_EQUAL(size, (std::streampos) 100);
     buffer = new char [size];
 
     file.seekg(0, std::ios::beg);
