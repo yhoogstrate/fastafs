@@ -34,14 +34,20 @@ jobs:
       run: |
         mkdir -p build-debug/test-output
         cd build-debug
+        failed_tests=0
         for test in test/test_*; do
           if [ -f "$test" ]; then
             testname=$(basename "$test")
             echo "Running: $testname"
-            "$test" 2>&1 | tee "test-output/$testname.log" || true
+            if "$test" 2>&1 | tee "test-output/$testname.log"; then
+              echo "✓ $testname passed"
+            else
+              echo "✗ $testname failed"
+              failed_tests=$((failed_tests + 1))
+            fi
           fi
         done
-      continue-on-error: true
+        exit $failed_tests
 
     - name: Upload test logs
       if: always()
