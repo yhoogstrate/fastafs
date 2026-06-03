@@ -1,9 +1,3 @@
-*.2bit
-benchmark
-*.fa
-*.fasta
-*.fastafs
-/mnt
-*.txt
-*.x
-*.zst
+# Ignore all files in tmp directory except this .gitignore
+*
+!.gitignore
