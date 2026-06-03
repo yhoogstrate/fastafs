@@ -1,3 +1,6 @@
+#include <cstdint>
+#include <string>
+#include <cstddef>
 
 uint32_t fourbytes_to_uint(unsigned char *, unsigned char);
 uint32_t fourbytes_to_uint_ucsc2bit(unsigned char *, unsigned char);
