@@ -718,6 +718,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__zstd_multi_frame)
             std::string(reinterpret_cast<char *>(buf2), w2)
         );
     }
+
+    std::filesystem::remove(fastafs_file);
+    std::filesystem::remove(fastafs_file_zstd);
 }
 
 
