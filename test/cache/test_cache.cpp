@@ -300,12 +300,16 @@ BOOST_AUTO_TEST_CASE(test_cache)
         std::streampos size = file.tellg();
         BOOST_REQUIRE_EQUAL(size, (std::streampos) 403);
         
+        printf("Checking MD5sum");
+        BOOST_REQUIRE_EQUAL(file_md5("tmp/test_cache_test.fastafs"), "7abdf9e7a319ebe1ea12a242b3165005");
+        
         char *buffer = new char[size];
         BOOST_REQUIRE(buffer != nullptr);
 
         file.seekg(0, std::ios::beg);
         file.read(buffer, size);
         file.close();
+        
         for(unsigned int i = 0; i < size; i++) {
             BOOST_CHECK_EQUAL(buffer[i], reference[i]);
             /*

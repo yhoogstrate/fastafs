@@ -18,6 +18,17 @@ BOOST_AUTO_TEST_CASE(test_file_integrity)
 {
     fasta_to_fastafs("test/data/test.fa", "tmp/test_cache_test.fastafs", false);
 
+    // verify the generated file is byte-identical to the known-good local result
+    // (exact size and MD5) before any byte-surgery below
+    {
+        std::ifstream fh_size("tmp/test_cache_test.fastafs", std::ios::in | std::ios::binary | std::ios::ate);
+        BOOST_REQUIRE(fh_size.is_open());
+        BOOST_REQUIRE_EQUAL(fh_size.tellg(), (std::streampos) 403);
+
+        printf("Checking MD5sum");
+        BOOST_REQUIRE_EQUAL(file_md5("tmp/test_cache_test.fastafs"), "7abdf9e7a319ebe1ea12a242b3165005");
+    }
+
     // check computed file size
     {
         fastafs f = fastafs("");

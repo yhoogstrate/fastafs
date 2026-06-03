@@ -4,6 +4,8 @@
 #include <iostream>
 #include <libgen.h>
 #include <string.h>
+#include <climits>
+#include <cstdlib>
 
 #include <openssl/sha.h>
 #include <openssl/md5.h>
@@ -274,10 +276,14 @@ std::string basename_cpp(std::string fn)
 // https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::canonical(filename)
 std::string realpath_cpp(std::string fn)
 {
-    char buf[1024];
-    realpath(fn.c_str(), buf);
+    // realpath() requires the destination buffer to hold at least PATH_MAX bytes;
+    // a smaller buffer triggers glibc's _FORTIFY_SOURCE check (__realpath_chk -> abort).
+    char buf[PATH_MAX];
+    if(realpath(fn.c_str(), buf) != nullptr) {
+        return std::string(buf);
+    }
 
-    return std::string(buf);
+    return fn;
 }
 
 
