@@ -127,6 +127,7 @@ is:
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
@@ -136,8 +137,7 @@ is:
 
 using namespace std::literals; // https://stackoverflow.com/questions/48255276/why-does-stdstring-x00-report-length-of-0
 
-
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 BOOST_AUTO_TEST_CASE(init)
 {
@@ -151,6 +151,7 @@ BOOST_AUTO_TEST_CASE(init)
  */
 BOOST_AUTO_TEST_CASE(test_fastafs_view_chunked_2bit)
 {
+    ensure_tmp_directory();
     // 1: create FASTAFS file
     std::string fastafs_file = "tmp/test.fastafs";
     fasta_to_fastafs("test/data/test.fa", fastafs_file, false);

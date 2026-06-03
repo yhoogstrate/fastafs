@@ -3,6 +3,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "utils.hpp"
 #include "fasta_to_fastafs.hpp"
@@ -12,11 +13,12 @@
 #include <vector>
 
 
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 
 BOOST_AUTO_TEST_CASE(test_ucsc2bit_to_fasta)
 {
+    ensure_tmp_directory();
     std::string fastafs_file = "tmp/test.fastafs";
     std::string fastafs_file2 = "tmp/test.regenerated.fastafs";
     std::string ucsc2bit_file = "tmp/test.2bit";

@@ -8,6 +8,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
@@ -17,16 +18,7 @@
 
 
 
-void flush_buffer(unsigned char *buffer, size_t n, unsigned char fill)
-{
-    for(size_t i = 0; i < n; i++) {
-        buffer[i] = fill;
-    }
-}
-
-
-
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 
 

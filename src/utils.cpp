@@ -334,3 +334,17 @@ bool file_exist(const std::string& fileName)
 {
     return std::filesystem::exists(fileName);
 }
+
+void flush_buffer(char *buffer, size_t n, char fill)
+{
+    for(size_t i = 0; i < n; i++) {
+        buffer[i] = fill;
+    }
+}
+
+void flush_buffer(unsigned char *buffer, size_t n, unsigned char fill)
+{
+    for(size_t i = 0; i < n; i++) {
+        buffer[i] = fill;
+    }
+}

@@ -32,4 +32,6 @@ uint32_t file_crc32(const std::string &, off_t, size_t);
 bool file_exist(const char *);
 bool file_exist(const std::string&);
 
+void flush_buffer(char *buffer, size_t n, char fill);
+void flush_buffer(unsigned char *buffer, size_t n, unsigned char fill);
 

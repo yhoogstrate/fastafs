@@ -7,6 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
@@ -14,15 +15,7 @@
 #include "zstd_seekable_utils.hpp"
 
 
-void flush_buffer(char *buffer, size_t n, char fill)
-{
-    for(size_t i = 0; i < n; i++) {
-        buffer[i] = fill;
-    }
-}
-
-
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 static int test_i = 0;
 
@@ -888,12 +881,10 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     std::ifstream fh(fasta_file.c_str());
     BOOST_REQUIRE(fh.is_open());
 
-    size_t size;
 
     fh.seekg(0, std::ios::end);
-    size = fh.tellg();
-
-    BOOST_REQUIRE_EQUAL(size, 2108);
+    BOOST_REQUIRE_EQUAL(fh.tellg(), std::streampos(2108));
+    
 
     fh.seekg(0, std::ios::beg);
     fh.read(buffer, 2108);

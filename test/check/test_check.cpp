@@ -3,12 +3,11 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "fasta_to_fastafs.hpp"
 
-
-
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 /**
  * @brief

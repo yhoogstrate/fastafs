@@ -6,23 +6,15 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "fasta_to_fastafs.hpp"
 #include "fastafs.hpp"
 
 
 
-// @todo to utils?
-void flush_buffer(char *buffer, size_t n, char fill)
-{
-    for(size_t i = 0; i < n; i++) {
-        buffer[i] = fill;
-    }
-}
 
-
-
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 BOOST_AUTO_TEST_CASE(init)
 {
@@ -66,6 +58,7 @@ void test_fasta_file(const std::string& input_fasta, const std::vector<std::stri
 // Encoding type tests
 BOOST_AUTO_TEST_CASE(test_md5_dna_uppercase)
 {
+    ensure_tmp_directory();
     test_fasta_file("test/data/md5_test_dna_uppercase.fa", {"e78473afbfa729df9baf1e3fd9f24244"});
 }
 

@@ -3,14 +3,14 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "config.hpp"
+#include "../test_helper.hpp"
 
 #include "database.hpp"
 
 #include <filesystem>
 #include <fstream>
 
-
-BOOST_AUTO_TEST_SUITE(Testing)
+BOOST_AUTO_TEST_SUITE(Testing, *boost::unit_test::fixture<TestFixture>())
 
 
 BOOST_AUTO_TEST_CASE(test_database__01)
