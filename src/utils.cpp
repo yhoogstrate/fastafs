@@ -257,16 +257,12 @@ std::string basename_cpp(std::string fn)
 {
     char* ts = strdup(fn.c_str());
 
-    //char* dir = dirname(ts1);
+    // basename() may return a pointer into ts (or a static buffer), so copy out
+    // before freeing. free() matches strdup()'s malloc (not delete[]).
     char* filename = basename(ts);
-    //std::string filenamepp = std::string(filename);
-
-    //printf("basename: [%s]\n", filename);
-    //std::cout << "basenamepp: |" << filenamepp << "|\n";
-
     std::string filename_cpp = std::string(filename);
-    //delete[] ts;
-    //delete[] filename; // deleting these affects the std::string somehow
+
+    free(ts);
 
     return filename_cpp;
 }
@@ -274,6 +270,12 @@ std::string basename_cpp(std::string fn)
 
 // https://www.linuxquestions.org/questions/programming-9/how-to-get-the-full-path-of-a-file-in-c-841046/
 // https://stackoverflow.com/questions/38456127/what-is-the-value-of-cplusplus-for-c17 - THEN use std::filesystem::canonical(filename)
+// PATH_MAX is not guaranteed to be defined on every platform; fall back to the
+// common Linux value so the realpath() destination buffer is always large enough.
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 std::string realpath_cpp(std::string fn)
 {
     // realpath() requires the destination buffer to hold at least PATH_MAX bytes;
@@ -283,6 +285,8 @@ std::string realpath_cpp(std::string fn)
         return std::string(buf);
     }
 
+    // realpath() failed (e.g. path does not exist yet, ENAMETOOLONG, symlink loop):
+    // fall back to the input path rather than reading an uninitialised buffer.
     return fn;
 }
 
@@ -293,7 +297,7 @@ uint32_t file_crc32(const std::string &fname, off_t start, size_t len)
 {
     uLong crc = crc32(0L, Z_NULL, 0);
 
-    std::ifstream fh_fastafs_crc(fname.c_str(), std::ios::out | std::ios::binary);
+    std::ifstream fh_fastafs_crc(fname.c_str(), std::ios::in | std::ios::binary);
     if(fh_fastafs_crc.is_open()) {
         fh_fastafs_crc.seekg(start, std::ios::beg);// skip magic number, this must be ok otherwise the toolkit won't use the file anyway
 
