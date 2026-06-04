@@ -7,6 +7,11 @@
 #include "fivebit_fivebytes.hpp"
 
 
+static std::string uchar_to_str(const unsigned char *arr, size_t from, size_t to)
+{
+    return std::string(reinterpret_cast<const char *>(arr + from), to - from + 1);
+}
+
 BOOST_AUTO_TEST_SUITE(Testing)
 
 
@@ -149,7 +154,7 @@ BOOST_AUTO_TEST_CASE(test_fivebit_fivebytes__dict_conversions)
 
         // verify
         for(size_t j = 0 ; j < 8; j ++) {
-            BOOST_CHECK_EQUAL_MESSAGE(dict[i][j], f.data_decompressed[j], dict[i] + " => " + std::string(1, f.data_decompressed[0]) + std::string(1, f.data_decompressed[1]) + std::string(1, f.data_decompressed[2]) + std::string(1, f.data_decompressed[3]) + std::string(1, f.data_decompressed[4]) + std::string(1, f.data_decompressed[5]) + std::string(1, f.data_decompressed[6]) + std::string(1, f.data_decompressed[7]) + "   (" + std::to_string(j) + ": " + std::string(1, dict[i][j]) + " => " +  std::string(1, f.data_decompressed[j]) + ")");
+            BOOST_CHECK_EQUAL_MESSAGE(dict[i][j], f.data_decompressed[j], dict[i] + " => " + uchar_to_str(f.data_decompressed, 0, 7) + "   (" + std::to_string(j) + ": " + std::string(1, dict[i][j]) + " => " + uchar_to_str(f.data_decompressed, j, j) + ")");
         }
 
         /* printing for debugging purpose
