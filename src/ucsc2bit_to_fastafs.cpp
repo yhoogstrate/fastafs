@@ -213,10 +213,10 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
             unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
             EVP_DigestFinal_ex(t->mdctx, t->md5_digest, &md5_digest_len);
-            
+
             EVP_MD_CTX_free(t->mdctx);
 
-            
+
 
             // write N blocks
             uint_to_fourbytes(buffer, s->n_blocks);
@@ -305,9 +305,13 @@ size_t ucsc2bit_to_fastafs(std::string ucsc2bit_file, std::string fastafs_file)
 
 
 
-    size_t written = fh_fastafs.tellp();
+    std::streamoff pos = fh_fastafs.tellp();
     fh_fastafs.close();
 
-    return written;
+    if(pos < 0) {
+        throw std::runtime_error("tellp() failed");
+    }
+
+    return static_cast<size_t>(pos);
 }
 

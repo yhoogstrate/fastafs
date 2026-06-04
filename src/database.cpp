@@ -38,7 +38,7 @@ const std::string database::get_default_dir()
 void database::force_db_exists()
 {
     try {
-        // Maakt de directory aan als deze niet bestaat. 
+        // Maakt de directory aan als deze niet bestaat.
         // create_directories maakt indien nodig ook bovenliggende mappen (recursief).
         // Als de map al bestaat, gebeurt er niets (veilig).
         std::filesystem::create_directories(this->path);
@@ -46,14 +46,13 @@ void database::force_db_exists()
         // Gebruik een fstream met 'append' mode om te checken of het bestand bestaat
         // of om het aan te maken zonder de inhoud te wissen.
         std::ofstream file(this->idx, std::ios::app);
-        
-        if (!file.is_open()) {
+
+        if(!file.is_open()) {
             throw std::runtime_error("Could not access/create database file: " + this->idx);
         }
-        
+
         // file sluit automatisch hier (RAII), geen fclose nodig.
-    } 
-    catch (const std::filesystem::filesystem_error& e) {
+    } catch(const std::filesystem::filesystem_error& e) {
         // Vangt specifieke OS-fouten op (bijv. permissie problemen)
         throw std::runtime_error("Filesystem failure: " + std::string(e.what()));
     }
@@ -90,7 +89,9 @@ void database::list()
         };
 
         auto it = std::find_if(candidates.begin(), candidates.end(),
-                               [](const auto& c) { return file_exist(c); });
+        [](const auto & c) {
+            return file_exist(c);
+        });
 
         if(it != candidates.end()) {
             std::string fname = *it;
@@ -169,7 +170,7 @@ std::string database::add(char *name)
 /**
  * @brief searches for a filename that corresponds to the uid
  */
-std::string database::get(char *fastafs_name_or_id)
+std::string database::get(const char *fastafs_name_or_id)
 {
     std::string fname = "";
     std::ifstream infile(this->idx);
@@ -182,7 +183,9 @@ std::string database::get(char *fastafs_name_or_id)
                 this->path + "/" + line + ".fastafs.zst"
             };
             auto it = std::find_if(candidates.begin(), candidates.end(),
-                                   [](const auto& c) { return file_exist(c); });
+            [](const auto & c) {
+                return file_exist(c);
+            });
             if(it != candidates.end()) {
                 fname = *it;
             }
@@ -202,7 +205,7 @@ void database::refresh()
 
     while(std::getline(infile, line)) {
         auto [it, inserted] = seen.insert(line);
-        
+
         if(inserted) {
             std::vector<std::string> candidates = {
                 this->path + "/" + line + ".fastafs",
@@ -210,7 +213,9 @@ void database::refresh()
             };
 
             auto it = std::find_if(candidates.begin(), candidates.end(),
-                                   [](const auto& c) { return file_exist(c); });
+            [](const auto & c) {
+                return file_exist(c);
+            });
             if(it != candidates.end()) {
                 lines.push_back(line);
             }
@@ -219,6 +224,8 @@ void database::refresh()
     infile.close();
 
     std::ofstream out(this->idx, std::ios::trunc);
-    for(auto &l : lines) out << l << "\n";
+    for(auto &l : lines) {
+        out << l << "\n";
+    }
 }
 

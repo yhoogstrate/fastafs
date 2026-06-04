@@ -218,29 +218,53 @@ BOOST_AUTO_TEST_CASE(test_byte_decoder_fourbit_ported)
     fourbit_byte encoder;
     byte_decoder b(std::make_unique<byte_decoder_interface_fourbit>());
 
-    char seq1[] = "AC";  encoder.set(seq1);  BOOST_CHECK_EQUAL(encoder.data, 0b00000001);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "AC");
+    char seq1[] = "AC";
+    encoder.set(seq1);
+    BOOST_CHECK_EQUAL(encoder.data, 0b00000001);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "AC");
 
-    char seq2[] = "GT";  encoder.set(seq2);  BOOST_CHECK_EQUAL(encoder.data, 0b00100011);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "GT");
+    char seq2[] = "GT";
+    encoder.set(seq2);
+    BOOST_CHECK_EQUAL(encoder.data, 0b00100011);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "GT");
 
-    char seq3[] = "UR";  encoder.set(seq3);  BOOST_CHECK_EQUAL(encoder.data, 0b01000101);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "UR");
+    char seq3[] = "UR";
+    encoder.set(seq3);
+    BOOST_CHECK_EQUAL(encoder.data, 0b01000101);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "UR");
 
-    char seq4[] = "YK";  encoder.set(seq4);  BOOST_CHECK_EQUAL(encoder.data, 0b01100111);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "YK");
+    char seq4[] = "YK";
+    encoder.set(seq4);
+    BOOST_CHECK_EQUAL(encoder.data, 0b01100111);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "YK");
 
-    char seq5[] = "MS";  encoder.set(seq5);  BOOST_CHECK_EQUAL(encoder.data, 0b10001001);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "MS");
+    char seq5[] = "MS";
+    encoder.set(seq5);
+    BOOST_CHECK_EQUAL(encoder.data, 0b10001001);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "MS");
 
-    char seq6[] = "WB";  encoder.set(seq6);  BOOST_CHECK_EQUAL(encoder.data, 0b10101011);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "WB");
+    char seq6[] = "WB";
+    encoder.set(seq6);
+    BOOST_CHECK_EQUAL(encoder.data, 0b10101011);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "WB");
 
-    char seq7[] = "DH";  encoder.set(seq7);  BOOST_CHECK_EQUAL(encoder.data, 0b11001101);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "DH");
+    char seq7[] = "DH";
+    encoder.set(seq7);
+    BOOST_CHECK_EQUAL(encoder.data, 0b11001101);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "DH");
 
-    char seq8[] = "VN";  encoder.set(seq8);  BOOST_CHECK_EQUAL(encoder.data, 0b11101111);
-    b.set_input_data(&encoder.data, 1);      BOOST_CHECK_EQUAL(b.decode(), "VN");
+    char seq8[] = "VN";
+    encoder.set(seq8);
+    BOOST_CHECK_EQUAL(encoder.data, 0b11101111);
+    b.set_input_data(&encoder.data, 1);
+    BOOST_CHECK_EQUAL(b.decode(), "VN");
 }
 
 
@@ -351,13 +375,34 @@ BOOST_AUTO_TEST_CASE(test_byte_decoder_fivebit_multiple_chunks)
 BOOST_AUTO_TEST_CASE(test_byte_decoder_fivebit_dict)
 {
     char hash[256] = {};
-    hash['A']=0;  hash['B']=1;  hash['C']=2;  hash['D']=3;
-    hash['E']=4;  hash['F']=5;  hash['G']=6;  hash['H']=7;
-    hash['I']=8;  hash['J']=9;  hash['K']=10; hash['L']=11;
-    hash['M']=12; hash['N']=13; hash['O']=14; hash['P']=15;
-    hash['Q']=16; hash['R']=17; hash['S']=18; hash['T']=19;
-    hash['U']=20; hash['V']=21; hash['W']=22; hash['Y']=23;
-    hash['Z']=24; hash['X']=25; hash['*']=26; hash['-']=27;
+    hash['A'] = 0;
+    hash['B'] = 1;
+    hash['C'] = 2;
+    hash['D'] = 3;
+    hash['E'] = 4;
+    hash['F'] = 5;
+    hash['G'] = 6;
+    hash['H'] = 7;
+    hash['I'] = 8;
+    hash['J'] = 9;
+    hash['K'] = 10;
+    hash['L'] = 11;
+    hash['M'] = 12;
+    hash['N'] = 13;
+    hash['O'] = 14;
+    hash['P'] = 15;
+    hash['Q'] = 16;
+    hash['R'] = 17;
+    hash['S'] = 18;
+    hash['T'] = 19;
+    hash['U'] = 20;
+    hash['V'] = 21;
+    hash['W'] = 22;
+    hash['Y'] = 23;
+    hash['Z'] = 24;
+    hash['X'] = 25;
+    hash['*'] = 26;
+    hash['-'] = 27;
 
     const std::vector<std::string> dict = {
         "FASTA-FS", "FRATSAST", "UCTFXJNH", "CGLWQNSI", "*OLS*DEN", "LAGD*PYE",
@@ -409,7 +454,7 @@ BOOST_AUTO_TEST_CASE(test_byte_decoder_fivebit_dict)
         const std::string decoded = b.decode();
 
         BOOST_CHECK_EQUAL_MESSAGE(decoded, seq,
-            "round-trip failed for: " + seq + " -> got: " + decoded);
+                                  "round-trip failed for: " + seq + " -> got: " + decoded);
     }
 }
 

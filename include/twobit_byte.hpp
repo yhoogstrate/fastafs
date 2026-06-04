@@ -25,9 +25,9 @@ constexpr std::array<uint32_t, 256> make_twobit_decode_table(char t_or_u)
     };
     for(uint32_t i = 0; i < 256u; i++) {
         table[i] = nuc[(i >> 6u) & 3u]
-                 | (nuc[(i >> 4u) & 3u] << 8u)
-                 | (nuc[(i >> 2u) & 3u] << 16u)
-                 | (nuc[i & 3u]         << 24u);
+                   | (nuc[(i >> 4u) & 3u] << 8u)
+                   | (nuc[(i >> 2u) & 3u] << 16u)
+                   | (nuc[i & 3u]         << 24u);
     }
     return table;
 }

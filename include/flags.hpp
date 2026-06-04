@@ -59,8 +59,14 @@ public:
 class fastafs_flags : public twobit_flag
 {
 public:
-    bool is_complete() const   { return (bits[0] & 0x80) != 0; }
-    bool is_incomplete() const { return !is_complete(); }
+    bool is_complete() const
+    {
+        return (bits[0] & 0x80) != 0;
+    }
+    bool is_incomplete() const
+    {
+        return !is_complete();
+    }
 
     void set_complete();
     void set_incomplete();
@@ -72,19 +78,49 @@ class fastafs_sequence_flags : public twobit_flag
 {
 public:
     // bit 7 = TYPE_1 (0x80), bit 6 = TYPE_2 (0x40)
-    bool is_dna() const              { return (bits[0] & 0xC0) == 0x00; } // alphabet: 'ACTG' + 'N'
-    bool is_rna() const              { return (bits[0] & 0xC0) == 0x80; } // alphabet: 'ACUG' + 'N'
-    bool is_iupac_nucleotide() const { return (bits[0] & 0xC0) == 0x40; } // alphabet: 'ACGTURYKMSWBDHVN' + '-'
-    bool is_protein() const          { return (bits[0] & 0xC0) == 0xC0; } // alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWYZX*-'
+    bool is_dna() const
+    {
+        return (bits[0] & 0xC0) == 0x00;    // alphabet: 'ACTG' + 'N'
+    }
+    bool is_rna() const
+    {
+        return (bits[0] & 0xC0) == 0x80;    // alphabet: 'ACUG' + 'N'
+    }
+    bool is_iupac_nucleotide() const
+    {
+        return (bits[0] & 0xC0) == 0x40;    // alphabet: 'ACGTURYKMSWBDHVN' + '-'
+    }
+    bool is_protein() const
+    {
+        return (bits[0] & 0xC0) == 0xC0;    // alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWYZX*-'
+    }
 
-    bool is_complete() const   { return (bits[0] & 0x10) != 0; }
-    bool is_incomplete() const { return !is_complete(); }
+    bool is_complete() const
+    {
+        return (bits[0] & 0x10) != 0;
+    }
+    bool is_incomplete() const
+    {
+        return !is_complete();
+    }
 
-    bool is_circular() const { return (bits[0] & 0x08) != 0; }
-    bool is_linear() const   { return !is_circular(); }
+    bool is_circular() const
+    {
+        return (bits[0] & 0x08) != 0;
+    }
+    bool is_linear() const
+    {
+        return !is_circular();
+    }
 
-    bool is_twobit() const  { return (bits[0] & 0x40) == 0; }
-    bool is_fourbit() const { return (bits[0] & 0xC0) == 0x40; }
+    bool is_twobit() const
+    {
+        return (bits[0] & 0x40) == 0;
+    }
+    bool is_fourbit() const
+    {
+        return (bits[0] & 0xC0) == 0x40;
+    }
 
 
     // set by entity

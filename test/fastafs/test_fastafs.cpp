@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 't');
-        
+
         delete cache_p0;
         delete[] buffer;
     }
