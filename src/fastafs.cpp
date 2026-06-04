@@ -1230,16 +1230,32 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
         twobit_byte_dna t;
         pos_limit += full_twobits;
 
-        while(pos < pos_limit) {
-            //printf("%i - %i  = %i  ||  %i\n",pos_limit,pos, (full_twobits - (pos_limit - pos)) * 4, j);
-            //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), 4, &file);
-            sequence->view_fasta_chunk(cache->sequences[i], n_seq, 4, sequence->name.size() + 2 + ((full_twobits - (pos_limit - pos)) * 4), file);
-            t.set(n_seq);
-            buffer[written++] = t.data;
-            pos++;
-            if(written >= buffer_size) {
-                delete cache;
-                return written;
+        // Stream the nucleotides in large blocks instead of fetching 4 at a
+        // time: view_fasta_chunk sets up its file position / N-M-block state
+        // once per call, so a per-byte call re-seeks and re-scans the blocks
+        // for every single output byte. Fetching READ_BUFFER_SIZE nucleotides
+        // at once turns that into a sequential streaming pass.
+        if(pos < pos_limit) {
+            const off_t fasta_seq_start = (off_t)(sequence->name.size() + 2);// skip ">name\n"
+            char nt_buffer[READ_BUFFER_SIZE + 1];
+
+            while(pos < pos_limit) {
+                const uint32_t byte_index = full_twobits - (uint32_t)(pos_limit - pos);// first 2bit-byte still to write
+                const uint32_t bytes_remaining = full_twobits - byte_index;
+
+                // a block holds whole 2bit bytes, so request a multiple of 4 nucleotides
+                const uint32_t bytes_this_block = std::min(bytes_remaining, (uint32_t)(READ_BUFFER_SIZE / 4));
+                const uint32_t got = sequence->view_fasta_chunk(cache->sequences[i], nt_buffer, bytes_this_block * 4, fasta_seq_start + (off_t) byte_index * 4, file);
+
+                for(uint32_t b = 0; b < got / 4; b++) {
+                    t.set(nt_buffer + b * 4);
+                    buffer[written++] = t.data;
+                    pos++;
+                    if(written >= buffer_size) {
+                        delete cache;
+                        return written;
+                    }
+                }
             }
         }
 
