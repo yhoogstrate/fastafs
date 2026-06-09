@@ -1,5 +1,11 @@
 2026-06-09
 
+    * v1.15.0
+    * Improved `fastafs cache` performance: batching MD5 digest updates reduces
+      CPU cycles by ~50% on average
+
+2026-06-09
+
     * v1.14.0
     * Added FUSE mount benchmark suite (benchmarks/run_mount_format_benchmarks.py):
       tests all encodings (dna/rna/iupac/protein), plain and zstd compression,

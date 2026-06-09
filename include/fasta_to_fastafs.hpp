@@ -53,6 +53,17 @@ public:
     EVP_MD_CTX *mdctx;
     unsigned char md5_digest[MD5_DIGEST_LENGTH];
 
+    char    md5_buf[64];
+    uint8_t md5_buf_len;
+
+    inline void md5_stage(char c) {
+        md5_buf[md5_buf_len++] = c;
+        if(md5_buf_len == 64) {
+            EVP_DigestUpdate(mdctx, md5_buf, 64);
+            md5_buf_len = 0;
+        }
+    }
+
     std::vector<uint32_t> n_block_starts;
     std::vector<uint32_t> n_block_ends;
 

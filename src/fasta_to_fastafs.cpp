@@ -11,35 +11,6 @@
 
 
 
-const static char na[2] = "A";
-const static char nc[2] = "C";
-const static char ng[2] = "G";
-const static char nt[2] = "T";
-const static char nu[2] = "U";
-
-const static char nn[2] = "N";
-
-const static char nr[2] = "R";
-const static char ny[2] = "Y";
-const static char nk[2] = "K";
-const static char nm[2] = "M";
-const static char ns[2] = "S";
-const static char nw[2] = "W";
-const static char nb[2] = "B";
-const static char nd[2] = "D";
-const static char nh[2] = "H";
-const static char nv[2] = "V";
-
-const static char ne[2] = "E";
-const static char nf[2] = "F";
-const static char ni[2] = "I";
-const static char nj[2] = "J";
-const static char nl[2] = "L";
-const static char no[2] = "O";
-const static char np[2] = "P";
-const static char nq[2] = "Q";
-const static char nz[2] = "Z";
-const static char nx[2] = "X";
 
 
 
@@ -63,6 +34,7 @@ fasta_to_fastafs_seq::fasta_to_fastafs_seq(off_t fof_fasta, off_t fof_fastafs, c
 
     this->mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
+    this->md5_buf_len = 0;
 }
 
 
@@ -159,6 +131,10 @@ void fasta_to_fastafs_seq::finish_sequence(std::ofstream &fh_fastafs)
 
     // write checksum
     unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
+    if(this->md5_buf_len > 0) {
+        EVP_DigestUpdate(this->mdctx, this->md5_buf, this->md5_buf_len);
+        this->md5_buf_len = 0;
+    }
     EVP_DigestFinal_ex(this->mdctx, this->md5_digest, &md5_digest_len);
     EVP_MD_CTX_free(mdctx);
 
@@ -290,6 +266,7 @@ void fasta_to_fastafs_seq::flush()
     this->has_U = false;
 
     EVP_DigestInit_ex(this->mdctx, EVP_md5(), NULL);
+    this->md5_buf_len = 0;
 }
 
 
@@ -374,7 +351,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nu, 1);// this needs to be pu in add_unknownucleotide
+                                s->md5_stage('U');// this needs to be pu in add_unknownucleotide
                                 break;
                             case 'u':// lower case = m block
                                 if(s->has_T) {
@@ -388,7 +365,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nu, 1);// this needs to be pu in add_unknownucleotide
+                                s->md5_stage('U');// this needs to be pu in add_unknownucleotide
                                 break;
                             case 'T':
                                 if(s->has_U) {
@@ -402,7 +379,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nt, 1);// this needs to be pu in add_unknownucleotide
+                                s->md5_stage('T');// this needs to be pu in add_unknownucleotide
                                 break;
                             case 't':
                                 if(s->has_U) {
@@ -416,7 +393,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_T, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nt, 1);// this needs to be pu in add_unknownucleotide
+                                s->md5_stage('T');// this needs to be pu in add_unknownucleotide
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
@@ -425,7 +402,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_C, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nc, 1);
+                                s->md5_stage('C');
                                 break;
                             case 'c':
                                 if(!s->in_m_block) {
@@ -434,7 +411,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_C, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nc, 1);
+                                s->md5_stage('C');
                                 break;
                             case 'A':
                                 if(s->in_m_block) {
@@ -444,7 +421,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_A, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, na, 1);
+                                s->md5_stage('A');
                                 break;
                             case 'a':
                                 if(!s->in_m_block) {
@@ -453,7 +430,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_A, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, na, 1);
+                                s->md5_stage('A');
                                 break;
                             case 'G':
                                 if(s->in_m_block) {
@@ -462,7 +439,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_G, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ng, 1);
+                                s->md5_stage('G');
                                 break;
                             case 'g':
                                 if(!s->in_m_block) {
@@ -471,7 +448,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->twobit_add(NUCLEOTIDE_G, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ng, 1);
+                                s->md5_stage('G');
                                 break;
                             case 'N':
                                 if(s->in_m_block) {
@@ -480,7 +457,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->add_unknown();
-                                EVP_DigestUpdate(s->mdctx, nn, 1);
+                                s->md5_stage('N');
                                 break;
                             case 'n':
                                 if(!s->in_m_block) {
@@ -489,7 +466,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->add_unknown();
-                                EVP_DigestUpdate(s->mdctx, nn, 1);
+                                s->md5_stage('N');
                                 break;
                             case 'r':
                             case 'R':
@@ -546,7 +523,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(0, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, na, 1);
+                                s->md5_stage('A');
                                 break;
                             case 'a':
                                 if(!s->in_m_block) {
@@ -555,7 +532,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(0, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, na, 1);
+                                s->md5_stage('A');
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
@@ -564,7 +541,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(1, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nc, 1);
+                                s->md5_stage('C');
                                 break;
                             case 'c':
                                 if(!s->in_m_block) {
@@ -573,7 +550,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(1, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nc, 1);
+                                s->md5_stage('C');
                                 break;
                             case 'G':
                                 if(s->in_m_block) {
@@ -582,7 +559,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(2, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ng, 1);
+                                s->md5_stage('G');
                                 break;
                             case 'g':
                                 if(!s->in_m_block) {
@@ -591,7 +568,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(2, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ng, 1);
+                                s->md5_stage('G');
                                 break;
                             case 'T':
                                 if(s->in_m_block) {
@@ -600,7 +577,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(3, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nt, 1);
+                                s->md5_stage('T');
                                 break;
                             case 't':
                                 if(!s->in_m_block) {
@@ -609,7 +586,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(3, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nt, 1);
+                                s->md5_stage('T');
                                 break;
                             case 'U':
                                 if(s->in_m_block) {
@@ -618,7 +595,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(4, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nu, 1);
+                                s->md5_stage('U');
                                 break;
                             case 'u':
                                 if(!s->in_m_block) {
@@ -627,7 +604,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(4, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nu, 1);
+                                s->md5_stage('U');
                                 break;
 
                             case 'R':
@@ -637,7 +614,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(5, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nr, 1);
+                                s->md5_stage('R');
                                 break;
                             case 'r':
                                 if(!s->in_m_block) {
@@ -646,7 +623,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(5, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nr, 1);
+                                s->md5_stage('R');
                                 break;
                             case 'Y':
                                 if(s->in_m_block) {
@@ -655,7 +632,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(6, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ny, 1);
+                                s->md5_stage('Y');
                                 break;
                             case 'y':
                                 if(!s->in_m_block) {
@@ -664,7 +641,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(6, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ny, 1);
+                                s->md5_stage('Y');
                                 break;
                             case 'K':
                                 if(s->in_m_block) {
@@ -673,7 +650,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(7, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nk, 1);
+                                s->md5_stage('K');
                                 break;
                             case 'k':
                                 if(!s->in_m_block) {
@@ -682,7 +659,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(7, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nk, 1);
+                                s->md5_stage('K');
                                 break;
                             case 'M':
                                 if(s->in_m_block) {
@@ -691,7 +668,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(8, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nm, 1);
+                                s->md5_stage('M');
                                 break;
                             case 'm':
                                 if(!s->in_m_block) {
@@ -700,7 +677,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(8, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nm, 1);
+                                s->md5_stage('M');
                                 break;
                             case 'S':
                                 if(s->in_m_block) {
@@ -709,7 +686,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(9, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ns, 1);
+                                s->md5_stage('S');
                                 break;
                             case 's':
                                 if(!s->in_m_block) {
@@ -718,7 +695,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(9, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ns, 1);
+                                s->md5_stage('S');
                                 break;
                             case 'W':
                                 if(s->in_m_block) {
@@ -727,7 +704,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(10, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nw, 1);
+                                s->md5_stage('W');
                                 break;
                             case 'w':
                                 if(!s->in_m_block) {
@@ -736,7 +713,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(10, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nw, 1);
+                                s->md5_stage('W');
                                 break;
                             case 'B':
                                 if(s->in_m_block) {
@@ -745,7 +722,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(11, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nb, 1);
+                                s->md5_stage('B');
                                 break;
                             case 'b':
                                 if(!s->in_m_block) {
@@ -754,7 +731,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(11, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nb, 1);
+                                s->md5_stage('B');
                                 break;
                             case 'D':
                                 if(s->in_m_block) {
@@ -763,7 +740,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(12, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nd, 1);
+                                s->md5_stage('D');
                                 break;
                             case 'd':
                                 if(!s->in_m_block) {
@@ -772,7 +749,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(12, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nd, 1);
+                                s->md5_stage('D');
                                 break;
                             case 'H':
                                 if(s->in_m_block) {
@@ -781,7 +758,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(13, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nh, 1);
+                                s->md5_stage('H');
                                 break;
                             case 'h':
                                 if(!s->in_m_block) {
@@ -790,7 +767,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(13, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nh, 1);
+                                s->md5_stage('H');
                                 break;
                             case 'V':
                                 if(s->in_m_block) {
@@ -799,7 +776,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(14, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nv, 1);
+                                s->md5_stage('V');
                                 break;
                             case 'v':
                                 if(!s->in_m_block) {
@@ -808,7 +785,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(14, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nv, 1);
+                                s->md5_stage('V');
                                 break;
                             case 'N':
                                 if(s->in_m_block) {
@@ -817,7 +794,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(15, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nn, 1);
+                                s->md5_stage('N');
                                 break;
                             case 'n':
                                 if(!s->in_m_block) {
@@ -826,7 +803,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fourbit_add(15, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nn, 1);
+                                s->md5_stage('N');
                                 break;
                             case '-':
                                 s->add_unknown();
@@ -866,7 +843,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(0, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, na, 1);
+                                s->md5_stage('A');
                                 break;
                             case 'a':
                                 if(!s->in_m_block) {
@@ -875,7 +852,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(0, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, na, 1);
+                                s->md5_stage('A');
                                 break;
                             case 'B':
                                 if(s->in_m_block) {
@@ -884,7 +861,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(1, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nb, 1);
+                                s->md5_stage('B');
                                 break;
                             case 'b':
                                 if(!s->in_m_block) {
@@ -893,7 +870,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(1, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nb, 1);
+                                s->md5_stage('B');
                                 break;
                             case 'C':
                                 if(s->in_m_block) {
@@ -902,7 +879,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(2, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nc, 1);
+                                s->md5_stage('C');
                                 break;
                             case 'c':
                                 if(!s->in_m_block) {
@@ -911,7 +888,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(2, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nc, 1);
+                                s->md5_stage('C');
                                 break;
                             case 'D':
                                 if(s->in_m_block) {
@@ -920,7 +897,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(3, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nd, 1);
+                                s->md5_stage('D');
                                 break;
                             case 'd':
                                 if(!s->in_m_block) {
@@ -929,7 +906,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(3, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nd, 1);
+                                s->md5_stage('D');
                                 break;
                             case 'E':
                                 if(s->in_m_block) {
@@ -938,7 +915,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(4, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ne, 1);
+                                s->md5_stage('E');
                                 break;
                             case 'e':
                                 if(!s->in_m_block) {
@@ -947,7 +924,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(4, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ne, 1);
+                                s->md5_stage('E');
                                 break;
                             case 'F':
                                 if(s->in_m_block) {
@@ -956,7 +933,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(5, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nf, 1);
+                                s->md5_stage('F');
                                 break;
                             case 'f':
                                 if(!s->in_m_block) {
@@ -965,7 +942,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(5, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nf, 1);
+                                s->md5_stage('F');
                                 break;
                             case 'G'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -974,7 +951,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(6, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ng, 1);
+                                s->md5_stage('G');
                                 break;
                             case 'g':
                                 if(!s->in_m_block) {
@@ -983,7 +960,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(6, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ng, 1);
+                                s->md5_stage('G');
                                 break;
                             case 'H'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -992,7 +969,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(7, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nh, 1);
+                                s->md5_stage('H');
                                 break;
                             case 'h':
                                 if(!s->in_m_block) {
@@ -1001,7 +978,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(7, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nh, 1);
+                                s->md5_stage('H');
                                 break;
                             case 'I'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1010,7 +987,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(8, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ni, 1);
+                                s->md5_stage('I');
                                 break;
                             case 'i':
                                 if(!s->in_m_block) {
@@ -1019,7 +996,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(8, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ni, 1);
+                                s->md5_stage('I');
                                 break;
                             case 'J'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1028,7 +1005,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(9, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nj, 1);
+                                s->md5_stage('J');
                                 break;
                             case 'j':
                                 if(!s->in_m_block) {
@@ -1037,7 +1014,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(9, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nj, 1);
+                                s->md5_stage('J');
                                 break;
                             case 'K'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1046,7 +1023,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(10, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nk, 1);
+                                s->md5_stage('K');
                                 break;
                             case 'k':
                                 if(!s->in_m_block) {
@@ -1055,7 +1032,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(10, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nk, 1);
+                                s->md5_stage('K');
                                 break;
                             case 'L'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1064,7 +1041,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(11, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nl, 1);
+                                s->md5_stage('L');
                                 break;
                             case 'l':
                                 if(!s->in_m_block) {
@@ -1073,7 +1050,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(11, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nl, 1);
+                                s->md5_stage('L');
                                 break;
                             case 'M'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1082,7 +1059,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(12, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nm, 1);
+                                s->md5_stage('M');
                                 break;
                             case 'm':
                                 if(!s->in_m_block) {
@@ -1091,7 +1068,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(12, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nm, 1);
+                                s->md5_stage('M');
                                 break;
                             case 'N'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                             case fivebit_fivebytes::n_fill_unmasked:
@@ -1101,7 +1078,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(13, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nn, 1);
+                                s->md5_stage('N');
                                 break;
                             case 'n':
                                 if(!s->in_m_block) {
@@ -1110,7 +1087,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(13, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nn, 1);
+                                s->md5_stage('N');
                                 break;
                             case 'O'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1119,7 +1096,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(14, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, no, 1);
+                                s->md5_stage('O');
                                 break;
                             case 'o':
                                 if(!s->in_m_block) {
@@ -1128,7 +1105,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(14, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, no, 1);
+                                s->md5_stage('O');
                                 break;
                             case 'P'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1137,7 +1114,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(15, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, np, 1);
+                                s->md5_stage('P');
                                 break;
                             case 'p':
                                 if(!s->in_m_block) {
@@ -1146,7 +1123,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(15, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, np, 1);
+                                s->md5_stage('P');
                                 break;
                             case 'Q'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1155,7 +1132,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(16, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nq, 1);
+                                s->md5_stage('Q');
                                 break;
                             case 'q':
                                 if(!s->in_m_block) {
@@ -1164,7 +1141,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(16, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nq, 1);
+                                s->md5_stage('Q');
                                 break;
                             case 'R'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1173,7 +1150,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(17, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nr, 1);
+                                s->md5_stage('R');
                                 break;
                             case 'r':
                                 if(!s->in_m_block) {
@@ -1182,7 +1159,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(17, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nr, 1);
+                                s->md5_stage('R');
                                 break;
                             case 'S'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1191,7 +1168,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(18, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ns, 1);
+                                s->md5_stage('S');
                                 break;
                             case 's':
                                 if(!s->in_m_block) {
@@ -1200,7 +1177,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(18, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ns, 1);
+                                s->md5_stage('S');
                                 break;
                             case 'T'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
                                 if(s->in_m_block) {
@@ -1209,7 +1186,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(19, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nt, 1);
+                                s->md5_stage('T');
                                 break;
                             case 't':
                                 if(!s->in_m_block) {
@@ -1218,7 +1195,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(19, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nt, 1);
+                                s->md5_stage('T');
                                 break;
                             case 'U':
                                 if(s->in_m_block) {
@@ -1227,7 +1204,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(20, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nu, 1);
+                                s->md5_stage('U');
                                 break;
                             case 'u':
                                 if(!s->in_m_block) {
@@ -1236,7 +1213,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(20, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nu, 1);
+                                s->md5_stage('U');
                                 break;
                             case 'V':
                                 if(s->in_m_block) {
@@ -1245,7 +1222,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(21, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nv, 1);
+                                s->md5_stage('V');
                                 break;
                             case 'v':
                                 if(!s->in_m_block) {
@@ -1254,7 +1231,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(21, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nv, 1);
+                                s->md5_stage('V');
                                 break;
 
                             case 'W'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
@@ -1264,7 +1241,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(22, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nw, 1);
+                                s->md5_stage('W');
                                 break;
                             case 'w':
                                 if(!s->in_m_block) {
@@ -1273,7 +1250,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(22, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nw, 1);
+                                s->md5_stage('W');
                                 break;
 
                             case 'Y':
@@ -1283,7 +1260,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(23, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ny, 1);
+                                s->md5_stage('Y');
                                 break;
                             case 'y':
                                 if(!s->in_m_block) {
@@ -1292,7 +1269,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(23, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, ny, 1);
+                                s->md5_stage('Y');
                                 break;
                             case 'Z':
                                 if(s->in_m_block) {
@@ -1301,7 +1278,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(24, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nz, 1);
+                                s->md5_stage('Z');
                                 break;
                             case 'z':
                                 if(!s->in_m_block) {
@@ -1310,7 +1287,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(24, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nz, 1);
+                                s->md5_stage('Z');
                                 break;
                             case 'X':
                                 if(s->in_m_block) {
@@ -1319,7 +1296,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(25, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nx, 1);
+                                s->md5_stage('X');
                                 break;
                             case 'x':
                                 if(!s->in_m_block) {
@@ -1328,7 +1305,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 }
 
                                 s->fivebit_add(25, fh_fastafs);
-                                EVP_DigestUpdate(s->mdctx, nx, 1);
+                                s->md5_stage('X');
                                 break;
 
                             case '*':
