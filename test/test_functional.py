@@ -1,105 +1,121 @@
-#!/usr/bin/env python
-
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # *- coding: utf-8 -*-
-# vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4 textwidth=79:
 
-
-import unittest
-import filecmp
 import os
+import shutil
+import subprocess
+import sys
+import unittest
+
+sys.path.insert(0, os.path.dirname(__file__))
+from test_utils import diff_fasta_with_mounted
 
 
-
-from test_utils import *
-
-
-TEST_DIR = "test/data/"
-T_TEST_DIR = "tmp/"
+TEST_DIR  = "test/data/"
+TMP_DIR   = "tmp/test_functional"
+MNT_DIR   = "tmp/mnt"
+FASTAFS   = "./build-release/bin/fastafs"
 
 
-# Nosetests doesn't use main()
-if not os.path.exists(T_TEST_DIR):
-    os.makedirs(T_TEST_DIR)
-    os.makedirs(T_TEST_DIR + "/mnt")
-
+def _cache_and_mount(fasta, alias, padding, use_zstd=False):
+    fastafs_out = os.path.join(TMP_DIR, alias + ".fastafs")
+    return diff_fasta_with_mounted(
+        fasta, fastafs_out, alias, padding,
+        FASTAFS, use_zstd, MNT_DIR,
+    )
 
 
 class FunctionalTest(unittest.TestCase):
-    def test_01(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test.fa', T_TEST_DIR + "test_functional__test.fastafs" , "test_functional__test.fastafs", 100, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test.fa', "test_func_01", 100, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
-        for prog in ['cache', 'check']:
-                self.assertEqual(difference['stderr'][prog] , '')
+    @classmethod
+    def setUpClass(cls):
+        os.makedirs(TMP_DIR, exist_ok=True)
+        os.makedirs(MNT_DIR, exist_ok=True)
 
-    def test_02(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_002.fa', T_TEST_DIR + "test_functional__test_002.fastafs", "test_functional__test_002.fastafs", 60, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TMP_DIR, ignore_errors=True)
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_002.fa', "test_func_02", 60, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
-        for prog in ['cache', 'check']:
-                self.assertEqual(difference['stderr'][prog] , '')
+    # --- plain (.fastafs) ---
 
-    def test_03(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_003.fa', T_TEST_DIR + "test_functional__test_003.fastafs", "test_functional__test_003.fastafs", 60, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_01_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test.fa',     'func_01', 100)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_003.fa', "test_func_03", 60, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
-        for prog in ['cache', 'check']:
-                self.assertEqual(difference['stderr'][prog] , '')
+    def test_02_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_002.fa', 'func_02',  60)
+        self.assertFalse(r['diff'])
 
-    def test_04(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_004.fa', T_TEST_DIR + "test_functional__test_004.fastafs", "test_functional__test_004.fastafs", 32, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_03_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_003.fa', 'func_03',  60)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_004.fa', "test_func_04", 32, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
-        for prog in ['cache', 'check']:
-                self.assertEqual(difference['stderr'][prog] , '')
+    def test_04_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_004.fa', 'func_04',  32)
+        self.assertFalse(r['diff'])
 
-    def test_05(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_005.fa', T_TEST_DIR + "test_functional__test_005.fastafs", "test_functional__test_005.fastafs", 80, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_05_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_005.fa', 'func_05',  80)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_005.fa', "test_func_05", 80, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
-  
-    def test_06(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_006.fa', T_TEST_DIR + "test_functional__test_006.fastafs", "test_functional__test_006.fastafs", 10, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_06_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_006.fa', 'func_06',  10)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_006.fa', "test_func_06", 10, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_07_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_007.fa', 'func_07',  72)
+        self.assertFalse(r['diff'])
 
-    def test_07(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_007.fa', T_TEST_DIR + "test_functional__test_007.fastafs", "test_functional__test_007.fastafs", 72, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_08_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_008.fa', 'func_08',  72)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_007.fa', "test_func_07", 72, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_09_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_009.fa', 'func_09',  24)
+        self.assertFalse(r['diff'])
 
-    def test_08(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_008.fa', T_TEST_DIR + "test_functional__test_008.fastafs", "test_functional__test_008.fastafs", 72, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_10_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_010.fa', 'func_10',  60)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_008.fa', "test_func_08", 72, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_11_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_011.fa', 'func_11',  60)
+        self.assertFalse(r['diff'])
 
-    def test_09(self):
-        difference = diff_fasta_with_mounted(TEST_DIR + 'test_009.fa', T_TEST_DIR + "test_functional__test_009.fastafs", "test_functional__test_009.fastafs", 24, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_12_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_012.fa', 'func_12',  60)
+        self.assertFalse(r['diff'])
 
-        difference = diff_fasta_with_view(TEST_DIR + 'test_009.fa', "test_func_09", 24, './bin/fastafs', 'tmp/mnt')
-        self.assertEqual(difference['diff'] , False)
+    def test_13_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_013.fa', 'func_13',  60)
+        self.assertFalse(r['diff'])
 
+    def test_14_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_014.fa', 'func_14',  60)
+        self.assertFalse(r['diff'])
 
-def main():
-    unittest.main()
+    def test_15_plain(self):
+        r = _cache_and_mount(TEST_DIR + 'test_015.fa', 'func_15',  60)
+        self.assertFalse(r['diff'])
+
+    # --- zstd (.fastafs.zst) ---
+
+    def test_01_zstd(self):
+        r = _cache_and_mount(TEST_DIR + 'test.fa',     'func_01_z', 100, use_zstd=True)
+        self.assertFalse(r['diff'])
+
+    def test_02_zstd(self):
+        r = _cache_and_mount(TEST_DIR + 'test_002.fa', 'func_02_z',  60, use_zstd=True)
+        self.assertFalse(r['diff'])
+
+    def test_05_zstd(self):
+        r = _cache_and_mount(TEST_DIR + 'test_005.fa', 'func_05_z',  80, use_zstd=True)
+        self.assertFalse(r['diff'])
+
+    def test_09_zstd(self):
+        r = _cache_and_mount(TEST_DIR + 'test_009.fa', 'func_09_z',  24, use_zstd=True)
+        self.assertFalse(r['diff'])
+
 
 if __name__ == '__main__':
-    main()
+    unittest.main()

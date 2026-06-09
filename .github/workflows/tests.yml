@@ -23,12 +23,30 @@ jobs:
           cmake \
           libboost-all-dev \
           libfuse-dev \
+          fuse \
           libssl-dev \
           zlib1g-dev \
-          pkg-config
+          pkg-config \
+          python3 \
+          python3-pip \
+          linux-tools-generic \
+          linux-tools-$(uname -r) || true
+        pip3 install tqdm
 
     - name: Build (debug)
       run: bash build-debug.sh
 
     - name: Run tests
       run: ctest --test-dir build-debug -VV --output-on-failure
+
+    - name: Build (release)
+      run: bash build-release.sh
+
+    - name: Allow FUSE and perf
+      run: |
+        sudo chmod 666 /dev/fuse
+        sudo sh -c 'echo -1 > /proc/sys/kernel/perf_event_paranoid' || true
+        sudo adduser "$USER" fuse || true
+
+    - name: Run functional tests
+      run: python3 -m pytest test/test_functional.py -v
