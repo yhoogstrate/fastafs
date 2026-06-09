@@ -781,9 +781,16 @@ void fuse(int argc, char *argv[])
 
     if(ffi->f == nullptr && ffi->u2b == nullptr) { // no fastafs was loaded
         print_fuse_help();
+        delete ffi;
         exit(0);
     } else {
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
+
+        delete ffi->cache;
+        delete ffi->cache_p0;
+        delete ffi->f;
+        delete ffi->u2b;
+        delete ffi;
     }
     //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
 

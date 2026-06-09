@@ -26,11 +26,10 @@
   * { box-sizing: border-box; }
   body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
          margin: 0; color: var(--fg); background: var(--bg); }
-  header { padding: 18px 24px; background:#fff; border-bottom:1px solid var(--line); }
-  h1 { font-size: 19px; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: 13px; }
+  header { padding: 7px 24px; background:#fff; border-bottom:1px solid var(--line); }
+  h1 { font-size: 19px; margin: 0; }
   .controls { display:flex; flex-wrap:wrap; gap:18px; align-items:center;
-              padding: 14px 24px; background:#fff; border-bottom:1px solid var(--line);
+              padding: 7px 24px; background:#fff; border-bottom:1px solid var(--line);
               position: sticky; top:0; z-index: 5; }
   .tabs { display:flex; gap:6px; }
   .tab { padding:7px 14px; border:1px solid var(--line); border-radius:7px;
@@ -39,7 +38,7 @@
   label.ctl { font-size:13px; color:var(--muted); display:flex; gap:7px; align-items:center; }
   select { font-size:13px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; }
   #charts { display:grid; grid-template-columns: repeat(2, 1fr);
-            gap:18px; padding:20px 24px; }
+            gap:8px; padding:10px 24px; }
   .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 12px 8px; }
   .card h3 { margin:2px 4px 8px; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:#374151; }
   svg.chart { width:100%; height:auto; display:block; }
@@ -62,7 +61,6 @@
 <body>
 <header>
   <h1>fastafs benchmark-rapport</h1>
-  <div class="sub" id="sub">Bestanden inlezen…</div>
 </header>
 
 <div class="controls" id="controls" style="display:none">
@@ -72,7 +70,7 @@
 </div>
 
 <div id="charts"></div>
-<footer id="foot"></footer>
+<footer id="foot"><span id="sub">Bestanden inlezen…</span></footer>
 
 <script>
 /* ---------------- configuratie ---------------- */
@@ -85,7 +83,7 @@ const TYPE_LABEL = {
   view:  'View (decode naar FASTA)',
   mount: 'Mount (FUSE-read van virtuele bestanden)',
 };
-const PRIORITY_METRICS = ['instructions', 'total_allocs'];
+const PRIORITY_METRICS = ['instructions', 'total-bytes'];
 const DEFAULT_METRIC = { cache:'instructions', view:'instructions', mount:'instructions' };
 
 const PALETTE = ['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#0891b2','#db2777','#65a30d'];
@@ -259,7 +257,7 @@ function seriesStyle(name){
 }
 
 function buildSVG(cd, metric){
-  const W=560,H=220, ml=64,mr=18,mt=14,mb=52, pw=W-ml-mr, ph=H-mt-mb;
+  const W=560,H=202, ml=64,mr=18,mt=14,mb=38, pw=W-ml-mr, ph=H-mt-mb;
   const S=cd.sessions, N=S.length;
   const names = Object.keys(cd.series).filter(n =>
       cd.series[n][metric] && cd.series[n][metric].some(v => v!==null)).sort();
@@ -269,8 +267,10 @@ function buildSVG(cd, metric){
   if(ys.length===0) return '<div class="nodata">geen data voor deze metric</div>';
 
   let ymin=Math.min(...ys), ymax=Math.max(...ys);
+  const allNonNeg = ymin >= 0;
   if(ymin===ymax){ const d = ymin===0 ? 1 : Math.abs(ymin)*0.1; ymin-=d; ymax+=d; }
   else { const pad=(ymax-ymin)*0.08; ymin-=pad; ymax+=pad; }
+  if(allNonNeg) ymin = Math.max(0, ymin);
 
   const xpos = i => N<=1 ? ml+pw/2 : ml + pw*i/(N-1);
   const ypos = v => mt + ph*(1-(v-ymin)/(ymax-ymin));
@@ -300,11 +300,11 @@ function buildSVG(cd, metric){
       d += (pen?'L':'M') + xpos(i).toFixed(1) + ' ' + ypos(v).toFixed(1) + ' ';
       pen=true;
     }
-    p.push(`<path d="${d}" fill="none" stroke="${st.color}" stroke-width="1.2"${st.dash?` stroke-dasharray="${st.dash}"`:''}/>`);
+    p.push(`<path d="${d}" fill="none" stroke="${st.color}" stroke-width="1.2" opacity="0.5"${st.dash?` stroke-dasharray="${st.dash}"`:''}/>`);
     for(let i=0;i<N;i++){
       const v=arr[i]; if(v===null) continue;
       const tip=`#${S[i].i}  ${S[i].ts}\n${S[i].version}\n${n}\n${metric} = ${v}`;
-      p.push(`<circle cx="${xpos(i).toFixed(1)}" cy="${ypos(v).toFixed(1)}" r="3" fill="${st.color}"><title>${esc(tip)}</title></circle>`);
+      p.push(`<circle cx="${xpos(i).toFixed(1)}" cy="${ypos(v).toFixed(1)}" r="3" fill="${st.color}" opacity="0.5"><title>${esc(tip)}</title></circle>`);
     }
   });
 

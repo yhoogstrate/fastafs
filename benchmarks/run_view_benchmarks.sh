@@ -152,7 +152,7 @@ for ENC in dna rna iupac protein; do
     FA="${TMP_DIR}/bench_${ENC}.fa"
 
     if [ ! -f "${TSV}" ]; then
-        printf 'timestamp\tfastafs-version\tinstructions\tcycles\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-commit\n' \
+        printf 'timestamp\tfastafs-version\tinstructions\tcycles\ttotal-allocs\ttotal_bytes\tdefinitely_lost\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-commit\n' \
             > "${TSV}"
     fi
 
@@ -214,7 +214,7 @@ for ENC in dna rna iupac protein; do
 
     # write TSV header if file is new
     if [ ! -f "${TSV}" ]; then
-        printf 'timestamp\tfastafs-version\tinstructions\tcycles\ttotal_allocs\ttotal_bytes\tdefinitely_lost\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-commit\n' \
+        printf 'timestamp\tfastafs-version\tinstructions\tcycles\ttotal-allocs\ttotal_bytes\tdefinitely_lost\tnt_per_cpu_sec\twall_time\tuser_time\tsys_time\tnucleotides\tencoding\tcompression\tcmd\trun\tgit-commit\n' \
             > "${TSV}"
     fi
 

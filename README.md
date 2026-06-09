@@ -225,6 +225,31 @@ mount.fastafs#/path/to/file.fastafs /mnt/fastafs fuse auto,allow_other 0 0
 
 ---
 
+## 📊 Benchmarks
+
+Performance results can be viewed interactively via the built-in web report.
+Start the local server from the repository root:
+
+```bash
+python3 benchmarks/serve_report.py
+```
+
+This opens `http://localhost:8000/report.html` in your browser — an interactive
+dashboard showing throughput, instruction counts, memory usage and valgrind
+heap metrics across benchmark sessions, for all encodings and file types.
+
+To run the benchmarks themselves (requires a release build):
+
+```bash
+# View / cache benchmarks
+bash benchmarks/run_view_benchmarks.sh
+
+# FUSE mount benchmarks
+python3 benchmarks/run_mount_format_benchmarks.py
+```
+
+---
+
 ## 📚 Citation
 
 If you use FastaFS in your research, please cite:

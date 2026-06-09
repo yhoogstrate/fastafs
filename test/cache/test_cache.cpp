@@ -1030,4 +1030,15 @@ BOOST_AUTO_TEST_CASE(test_cache_no_final_newline)
 }
 
 
+BOOST_AUTO_TEST_CASE(test_cache_protein_nblock)
+{
+    // Protein sequences use '?' as N-block fill character; the fivebit encoder
+    // must accept '?' without throwing.
+    BOOST_CHECK_NO_THROW(
+        fasta_to_fastafs("test/data/test_protein_nblock.fa",
+                         "tmp/test_protein_nblock.fastafs", false)
+    );
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()

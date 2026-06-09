@@ -1,3 +1,24 @@
+2026-06-09
+
+    * v1.14.0
+    * Added FUSE mount benchmark suite (benchmarks/run_mount_format_benchmarks.py):
+      tests all encodings (dna/rna/iupac/protein), plain and zstd compression,
+      forward/backward/random access patterns, and all virtual file types
+      (fa, 2bit, dict, fai); records throughput, peak RSS and valgrind heap metrics
+    * Added web-based benchmark report (benchmarks/report.html +
+      benchmarks/serve_report.py): interactive SVG line charts grouped by
+      benchmark session, served locally without a build/compile step
+    * Fixed segfault in FUSE mount of plain (uncompressed) archives: do_open()
+      did not call fopen() on chunked_reader objects before the first seek,
+      causing a null-pointer dereference in ContextUncompressed::seek()
+    * Added null guard to ContextUncompressed::seek() so an unopened reader
+      throws a descriptive runtime_error instead of segfaulting
+    * Fixed protein encoder rejecting '?' (N-block fill character): added
+      case fivebit_fivebytes::n_fill_unmasked to the fivebit switch, mapping
+      it to code 13 (N) consistent with the decoder
+    * Improved invalid-character error message in fasta_to_fastafs: now prints
+      the offending character and its hex value
+
 2026-04-23
 
     * v1.13.0

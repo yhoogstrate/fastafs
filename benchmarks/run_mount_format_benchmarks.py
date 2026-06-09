@@ -348,7 +348,7 @@ HEADER = [
     'bytes-read-by-client', 'elapsed-s', 'throughput-MB-s',
     'instructions', 'cycles', 'wall-s', 'user-s', 'sys-s',
     'peak-rss-kb',
-    'total-bytes', 'definitely-lost-bytes',
+    'total-allocs', 'total-bytes', 'definitely-lost-bytes',
 ]
 
 def ensure_tsv(path):
@@ -447,7 +447,7 @@ def run_one(ffs_path, mnt_dir, enc, compression, file_type, pattern,
                 perf['instructions'], perf['cycles'],
                 f'{perf["wall"]:.6f}', f'{perf["user"]:.6f}', f'{perf["sys"]:.6f}',
                 peak_rss,
-                vg['bytes'], vg['lost'],
+                vg['allocs'], vg['bytes'], vg['lost'],
             ])
         elif virtual_file is None:
             print(f'  OVERGESLAGEN: *{suffix} niet gevonden in {mnt_dir} (mount mislukt?)')

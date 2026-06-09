@@ -1094,6 +1094,7 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                                 EVP_DigestUpdate(s->mdctx, nm, 1);
                                 break;
                             case 'N'://ABCDEFGHIJKLMNOPQRSTUVWYZX*-
+                            case fivebit_fivebytes::n_fill_unmasked:
                                 if(s->in_m_block) {
                                     s->m_block_ends.push_back(s->N + s->n_actg - 1);
                                     s->in_m_block = false;
@@ -1341,11 +1342,14 @@ size_t fasta_to_fastafs(const std::string &fasta_file, const std::string &fastaf
                             // @todo case for those only in protein seq
 
                             default:
-                                throw std::runtime_error("[fasta_to_x_fastafs] invalid chars in FASTA file");
+                                const unsigned char bad = (unsigned char)*it;
+                                const char hex[] = "0123456789abcdef";
+                                throw std::runtime_error(
+                                    std::string("[fasta_to_x_fastafs] invalid chars in FASTA file: '")
+                                    + (char)bad + "' (0x"
+                                    + hex[bad >> 4] + hex[bad & 0xf] + ")");
                                 break;
                             }
-
-
                         }
                     }
                 }
