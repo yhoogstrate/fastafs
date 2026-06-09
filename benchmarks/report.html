@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fastafs benchmark-rapport</title>
+<!--
+  Statische rapportpagina: leest de benchmark-TSV's (*.txt) in deze map zélf in
+  en tekent lijngrafieken over opeenvolgende benchmark-sessies. Geen build/compile.
+
+  Openen via de meegeleverde server (vanuit de repo-root):
+      python3 benchmarks/serve_report.py
+      -> http://localhost:8000/report.html
+
+  De server genereert /files.json dynamisch; er is geen apart manifest nodig.
+
+  Ontwerp:
+   - x-as = benchmark-sessie op datum, als iteratieve index (1,2,3,...); echte
+     timestamp + git-commit in de tooltip per punt. Runs binnen een sessie -> gemiddeld.
+   - plain vs zstd samen in één grafiek (zstd gestreept) voor directe vergelijking.
+   - per encoding (dna/rna/iupac/protein) een eigen grafiek.
+   - mount: extra file-type-keuze; kleur = leespatroon, streepjes = compressie.
+-->
+<style>
+  :root { --fg:#1f2933; --muted:#6b7280; --line:#e5e7eb; --bg:#f8fafc; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         margin: 0; color: var(--fg); background: var(--bg); }
+  header { padding: 18px 24px; background:#fff; border-bottom:1px solid var(--line); }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .controls { display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+              padding: 14px 24px; background:#fff; border-bottom:1px solid var(--line);
+              position: sticky; top:0; z-index: 5; }
+  .tabs { display:flex; gap:6px; }
+  .tab { padding:7px 14px; border:1px solid var(--line); border-radius:7px;
+         background:#fff; cursor:pointer; font-size:13px; }
+  .tab.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+  label.ctl { font-size:13px; color:var(--muted); display:flex; gap:7px; align-items:center; }
+  select { font-size:13px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+  #charts { display:grid; grid-template-columns: repeat(2, 1fr);
+            gap:18px; padding:20px 24px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 12px 8px; }
+  .card h3 { margin:2px 4px 8px; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:#374151; }
+  svg.chart { width:100%; height:auto; display:block; }
+  .grid  { stroke:#eef2f6; stroke-width:1; }
+  .gridx { stroke:#f3f4f6; stroke-width:1; }
+  text.yt { fill:var(--muted); font-size:10px; text-anchor:end; }
+  text.xt { fill:var(--muted); font-size:10px; text-anchor:middle; }
+  text.axl{ fill:#9aa3af; font-size:10px; text-anchor:middle; }
+  .legend { display:flex; flex-wrap:wrap; gap:10px 16px; padding:8px 6px 4px; }
+  .lg { display:flex; align-items:center; gap:6px; font-size:11.5px; color:#374151; }
+  .lg svg { width:26px; height:10px; }
+  .nodata { color:var(--muted); font-size:13px; padding:24px; text-align:center; }
+  .msg { margin:40px 24px; padding:18px 22px; background:#fff; border:1px solid var(--line);
+         border-radius:10px; font-size:14px; line-height:1.5; }
+  .msg code { background:#f3f4f6; padding:2px 6px; border-radius:4px; }
+  footer { color:var(--muted); font-size:12px; padding:10px 24px 30px; }
+  circle:hover { r:5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>fastafs benchmark-rapport</h1>
+  <div class="sub" id="sub">Bestanden inlezen…</div>
+</header>
+
+<div class="controls" id="controls" style="display:none">
+  <div class="tabs" id="tabs"></div>
+  <label class="ctl">metric <select id="metric"></select></label>
+  <label class="ctl" id="facetWrap" style="display:none">file-type <select id="facet"></select></label>
+</div>
+
+<div id="charts"></div>
+<footer id="foot"></footer>
+
+<script>
+/* ---------------- configuratie ---------------- */
+const EXCLUDE = new Set(['timestamp','fastafs-version','git-commit','encoding','compression',
+                         'file-type','pattern','read_pattern','cmd','run']);
+const ENC_ORDER       = ['dna','rna','iupac','protein'];
+const FILE_TYPE_ORDER = ['fa','2bit','dict','fai'];
+const TYPE_LABEL = {
+  cache: 'Cache (FASTA → fastafs ingest)',
+  view:  'View (decode naar FASTA)',
+  mount: 'Mount (FUSE-read van virtuele bestanden)',
+};
+const PRIORITY_METRICS = ['instructions', 'total_allocs'];
+const DEFAULT_METRIC = { cache:'instructions', view:'instructions', mount:'instructions' };
+
+const PALETTE = ['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#0891b2','#db2777','#65a30d'];
+const PAT = { forward:0, backward:1, random:2, reopen:3 };
+
+const state = { type:null, metric:null, facet:null };
+let DATA = {};
+
+/* ---------------- helpers ---------------- */
+function pf(s){ const v=parseFloat(String(s).replace(/,/g,'')); return Number.isFinite(v)?v:null; }
+function round4(v){ return Math.round(v*1e4)/1e4; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(v){
+  if(v===null||v===undefined) return '';
+  const a=Math.abs(v);
+  if(a>=1e9) return (v/1e9).toFixed(2)+'G';
+  if(a>=1e6) return (v/1e6).toFixed(2)+'M';
+  if(a>=1e3) return (v/1e3).toFixed(2)+'k';
+  if(a===0)  return '0';
+  if(a>=1)   return (Math.round(v*100)/100).toString();
+  return v.toPrecision(3);
+}
+
+/* ---------------- inlezen & parsen ---------------- */
+function parseTSV(text){
+  const lines = text.split(/\r?\n/).filter(l => l.length > 0);
+  if(!lines.length) return { fieldnames:[], rows:[] };
+  const fieldnames = lines[0].split('\t');
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const cells = lines[i].split('\t');
+    const o = {};
+    fieldnames.forEach((fn, j) => o[fn] = cells[j]);
+    rows.push(o);
+  }
+  return { fieldnames, rows };
+}
+
+function classify(fieldnames, rows){
+  const f = new Set(fieldnames);
+  if(['encoding','compression','file-type','pattern'].every(k => f.has(k))) return 'mount';
+  if(f.has('nt_per_cpu_sec')){
+    const cmd = rows.length ? (rows[0]['cmd'] || '') : '';
+    return cmd.includes('view') ? 'view' : 'cache';
+  }
+  return null;
+}
+
+function detectMetrics(rows, fieldnames){
+  const out = [];
+  for(const col of fieldnames){
+    if(EXCLUDE.has(col)) continue;
+    const nn = [];
+    for(const r of rows){ const v = pf(r[col]); if(v!==null) nn.push(v); }
+    if(nn.length === 0) continue;
+    let constant = true;
+    for(const v of nn){ if(v !== nn[0]){ constant = false; break; } }
+    if(constant) continue;
+    out.push(col);
+  }
+  // prioriteitsmetrics bovenaan, daarna de rest in oorspronkelijke volgorde
+  const prio = PRIORITY_METRICS.filter(m => out.includes(m));
+  const rest = out.filter(m => !PRIORITY_METRICS.includes(m));
+  return [...prio, ...rest];
+}
+
+function seriesName(type, r){
+  if(type === 'mount') return (r['compression']||'?') + '/' + (r['pattern']||'?');
+  return r['compression'] || '?';
+}
+
+function buildType(type, rows, fieldnames){
+  const facetDim = type === 'mount' ? 'file-type' : null;
+  const metrics  = detectMetrics(rows, fieldnames);
+
+  const tree    = {};   // facet -> enc -> ts -> series -> metric -> [vals]
+  const versions = {};  // "facet|enc" -> ts -> fastafs-version
+
+  for(const r of rows){
+    const facet = facetDim ? (r[facetDim] || '_all') : '_all';
+    const enc   = r['encoding'] || '?';
+    const ts    = r['timestamp'] || '';
+    const s     = seriesName(type, r);
+    (versions[facet+'|'+enc] ||= {})[ts] = r['fastafs-version'] || '';
+    for(const m of metrics){
+      const v = pf(r[m]); if(v===null) continue;
+      ((((( tree[facet] ||= {} )[enc] ||= {} )[ts] ||= {} )[s] ||= {} )[m] ||= []).push(v);
+    }
+  }
+
+  const charts = {};
+  for(const facet in tree){
+    charts[facet] = {};
+    for(const enc in tree[facet]){
+      const byTs = tree[facet][enc];
+      const tsSorted = Object.keys(byTs).sort();
+      const sessions = tsSorted.map((ts,i) =>
+        ({ i:i+1, ts, version: (versions[facet+'|'+enc]||{})[ts] || '' }));
+      const snameSet = new Set();
+      tsSorted.forEach(ts => Object.keys(byTs[ts]).forEach(s => snameSet.add(s)));
+      const series = {};
+      for(const s of [...snameSet].sort()){
+        series[s] = {};
+        for(const m of metrics){
+          series[s][m] = tsSorted.map(ts => {
+            const vals = (byTs[ts][s] || {})[m] || [];
+            return vals.length ? round4(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+          });
+        }
+      }
+      charts[facet][enc] = { sessions, series };
+    }
+  }
+
+  const encPresent = new Set();
+  for(const f in charts) for(const e in charts[f]) encPresent.add(e);
+  const charts_order = ENC_ORDER.filter(e => encPresent.has(e))
+        .concat([...encPresent].filter(e => !ENC_ORDER.includes(e)).sort());
+
+  let facets;
+  if(facetDim) facets = FILE_TYPE_ORDER.filter(f => f in charts)
+        .concat(Object.keys(charts).filter(f => !FILE_TYPE_ORDER.includes(f)).sort());
+  else facets = ['_all'];
+
+  let dm = DEFAULT_METRIC[type];
+  if(!metrics.includes(dm)) dm = metrics[0] || null;
+
+  return { label:TYPE_LABEL[type]||type, facet_label: facetDim?'file-type':null,
+           facets, charts_order, metrics, default_metric:dm, charts };
+}
+
+async function listTxt(){
+  const res = await fetch('./files.json');
+  if(!res.ok) throw new Error('files.json (HTTP ' + res.status + ')');
+  const data = await res.json();
+  if(!Array.isArray(data)) throw new Error('files.json is geen array');
+  return data.filter(f => typeof f === 'string' && f.endsWith('.txt'));
+}
+
+async function loadAll(){
+  const files = await listTxt();
+  if(!files.length) throw new Error('Nog geen benchmark-resultaten gevonden.');
+
+  const byType = {}, byFields = {};
+  let okFiles = 0;
+  for(const name of files){
+    let text;
+    try { const r = await fetch('./' + encodeURIComponent(name)); if(!r.ok) continue; text = await r.text(); }
+    catch(e){ continue; }
+    const { fieldnames, rows } = parseTSV(text);
+    const t = classify(fieldnames, rows);
+    if(!t || !rows.length) continue;
+    (byType[t] ||= []).push(...rows);
+    if(!byFields[t] || fieldnames.length > byFields[t].length) byFields[t] = fieldnames;
+    okFiles++;
+  }
+
+  const data = {};
+  for(const t of ['mount','view','cache'])
+    if(byType[t]) data[t] = buildType(t, byType[t], byFields[t]);
+  return { data, okFiles, total: files.length };
+}
+
+/* ---------------- tekenen ---------------- */
+function seriesStyle(name){
+  if(name.includes('/')){                          // mount: "compressie/patroon"
+    const [comp, pat] = name.split('/');
+    return { color: PALETTE[(PAT[pat] ?? 0)], dash: comp==='zstd' ? '6,4' : null };
+  }
+  return { color: name==='zstd' ? PALETTE[3] : PALETTE[0], dash: name==='zstd' ? '6,4' : null };
+}
+
+function buildSVG(cd, metric){
+  const W=560,H=220, ml=64,mr=18,mt=14,mb=52, pw=W-ml-mr, ph=H-mt-mb;
+  const S=cd.sessions, N=S.length;
+  const names = Object.keys(cd.series).filter(n =>
+      cd.series[n][metric] && cd.series[n][metric].some(v => v!==null)).sort();
+
+  let ys=[];
+  names.forEach(n => cd.series[n][metric].forEach(v => { if(v!==null) ys.push(v); }));
+  if(ys.length===0) return '<div class="nodata">geen data voor deze metric</div>';
+
+  let ymin=Math.min(...ys), ymax=Math.max(...ys);
+  if(ymin===ymax){ const d = ymin===0 ? 1 : Math.abs(ymin)*0.1; ymin-=d; ymax+=d; }
+  else { const pad=(ymax-ymin)*0.08; ymin-=pad; ymax+=pad; }
+
+  const xpos = i => N<=1 ? ml+pw/2 : ml + pw*i/(N-1);
+  const ypos = v => mt + ph*(1-(v-ymin)/(ymax-ymin));
+
+  let p=[];
+  const T=5;
+  for(let t=0;t<=T;t++){
+    const yy=mt+ph*t/T, val=ymax-(ymax-ymin)*t/T;
+    p.push(`<line x1="${ml}" y1="${yy}" x2="${ml+pw}" y2="${yy}" class="grid"/>`);
+    p.push(`<text x="${ml-8}" y="${yy+3.5}" class="yt">${fmt(val)}</text>`);
+  }
+  const step=Math.max(1,Math.ceil(N/15));
+  for(let i=0;i<N;i++){
+    if(i%step!==0 && i!==N-1) continue;
+    const xx=xpos(i);
+    p.push(`<line x1="${xx}" y1="${mt}" x2="${xx}" y2="${mt+ph}" class="gridx"/>`);
+    p.push(`<text x="${xx}" y="${mt+ph+18}" class="xt">${S[i].i}</text>`);
+  }
+  p.push(`<text x="${ml+pw/2}" y="${H-6}" class="axl">sessie (op datum) →</text>`);
+
+  names.forEach(n => {
+    const st=seriesStyle(n), arr=cd.series[n][metric];
+    let d='', pen=false;
+    for(let i=0;i<N;i++){
+      const v=arr[i];
+      if(v===null){ pen=false; continue; }
+      d += (pen?'L':'M') + xpos(i).toFixed(1) + ' ' + ypos(v).toFixed(1) + ' ';
+      pen=true;
+    }
+    p.push(`<path d="${d}" fill="none" stroke="${st.color}" stroke-width="1.2"${st.dash?` stroke-dasharray="${st.dash}"`:''}/>`);
+    for(let i=0;i<N;i++){
+      const v=arr[i]; if(v===null) continue;
+      const tip=`#${S[i].i}  ${S[i].ts}\n${S[i].version}\n${n}\n${metric} = ${v}`;
+      p.push(`<circle cx="${xpos(i).toFixed(1)}" cy="${ypos(v).toFixed(1)}" r="3" fill="${st.color}"><title>${esc(tip)}</title></circle>`);
+    }
+  });
+
+  const legend = names.map(n => {
+    const st=seriesStyle(n);
+    return `<span class="lg"><svg viewBox="0 0 26 10"><line x1="0" y1="5" x2="26" y2="5" stroke="${st.color}" stroke-width="1.2"${st.dash?` stroke-dasharray="${st.dash}"`:''}/></svg>${esc(n)}</span>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart">${p.join('')}</svg><div class="legend">${legend}</div>`;
+}
+
+function render(){
+  const td=DATA[state.type];
+  const facetData=td.charts[state.facet] || {};
+  const grid=document.getElementById('charts');
+  grid.innerHTML='';
+  let any=false;
+  td.charts_order.forEach(enc => {
+    const cd=facetData[enc];
+    if(!cd) return;
+    any=true;
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`<h3>${esc(enc)}</h3>`+buildSVG(cd, state.metric);
+    grid.appendChild(card);
+  });
+  if(!any) grid.innerHTML='<p class="nodata">Geen data voor deze selectie.</p>';
+}
+
+function buildControls(){
+  const td=DATA[state.type];
+  const ms=document.getElementById('metric');
+  ms.innerHTML = td.metrics.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+  state.metric = td.default_metric || td.metrics[0];
+  ms.value = state.metric;
+
+  const fw=document.getElementById('facetWrap');
+  const fs=document.getElementById('facet');
+  if(td.facet_label){
+    fw.style.display='';
+    fs.innerHTML = td.facets.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
+    state.facet = td.facets[0];
+    fs.value = state.facet;
+  } else {
+    fw.style.display='none';
+    state.facet = '_all';
+  }
+}
+
+function selectTab(type){
+  state.type=type;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.type===type));
+  buildControls();
+  render();
+}
+
+function showMessage(html){
+  document.getElementById('charts').innerHTML = `<div class="msg">${html}</div>`;
+}
+
+/* ---------------- init ---------------- */
+async function init(){
+  let result;
+  try {
+    result = await loadAll();
+  } catch(e){
+    document.getElementById('sub').textContent = 'Kon bestanden niet inlezen.';
+    showMessage(
+      `<b>Kon de benchmark-bestanden niet lezen.</b><br><br>` +
+      `<span style="color:#6b7280">Detail: ${esc(e.message)}</span><br><br>` +
+      `Start de server vanuit de repo-root:<br>` +
+      `<code>python3 benchmarks/serve_report.py</code>`);
+    return;
+  }
+
+  DATA = result.data;
+  const types = Object.keys(DATA);
+  document.getElementById('sub').textContent =
+    `x-as = benchmark-sessie op datum (1,2,3…); hover voor timestamp/commit/waarde. ` +
+    `${result.okFiles}/${result.total} bestanden ingelezen.`;
+
+  if(!types.length){ showMessage('Geen herkende benchmark-data (cache/view/mount) gevonden.'); return; }
+
+  document.getElementById('controls').style.display='';
+  const tabs=document.getElementById('tabs');
+  tabs.innerHTML = types.map(t =>
+      `<button class="tab" data-type="${t}" title="${esc(DATA[t].label)}">${t}</button>`).join('');
+  tabs.querySelectorAll('.tab').forEach(b => b.onclick = () => selectTab(b.dataset.type));
+  document.getElementById('metric').onchange = e => { state.metric=e.target.value; render(); };
+  document.getElementById('facet').onchange  = e => { state.facet =e.target.value; render(); };
+
+  selectTab(types[0]);
+}
+init();
+</script>
+</body>
+</html>

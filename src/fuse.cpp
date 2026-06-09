@@ -251,6 +251,12 @@ static int do_open(const char *path, struct fuse_file_info *fi)
         //printf("sem init... \n");
         sem_init(&(ft->crs[ft->thread_i].sem), 0, 1);
         //printf("sem init done... \n");
+
+        // Open the underlying file handle before any seek/read. view_fasta_chunk_generalized
+        // calls fh.seek() directly (no implicit fopen), so an unopened reader dereferences a
+        // nullptr ifstream in ContextUncompressed::seek() -> segfault for plain archives.
+        // (ContextZstdSeekable::seek() is a no-op, which masked this for compressed archives.)
+        ft->crs[ft->thread_i].cr->fopen(0);
     }
     ft->thread_i = 0;
 

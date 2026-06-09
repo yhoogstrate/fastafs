@@ -235,7 +235,9 @@ size_t ContextUncompressed::cache_buffer()
 
 void ContextUncompressed::seek(off_t arg_offset)
 {
-    if(!this->fh->is_open()) {
+    // fh is nullptr until fopen() has been called; check it before dereferencing,
+    // otherwise seek() on a constructed-but-unopened reader segfaults inside is_open().
+    if(this->fh == nullptr || !this->fh->is_open()) {
         throw std::runtime_error("[ContextUncompressed::seek] unexpected closed filehandle found.\n");
     }
 

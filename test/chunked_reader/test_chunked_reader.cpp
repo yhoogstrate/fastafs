@@ -726,5 +726,27 @@ BOOST_AUTO_TEST_CASE(test_chunked_reader__zstd_multi_frame)
 }
 
 
+// Regression test for the FUSE plain-mount segfault: fuse.cpp do_open() constructed
+// chunked_reader objects but never called fopen() on them, while view_fasta_chunk_generalized
+// issues fh.seek() directly. For an uncompressed archive that seek dereferenced a nullptr
+// ifstream (ContextUncompressed::seek -> is_open()) and crashed the FUSE daemon. The zstd
+// path masked it because ContextZstdSeekable::seek() is a no-op. seek() on a constructed-but-
+// unopened reader must now fail loudly with an exception instead of segfaulting.
+BOOST_AUTO_TEST_CASE(test_chunked_reader__seek_before_fopen_throws)
+{
+    std::string fastafs_file = "tmp/test_seek_before_fopen.fastafs";
+    fasta_to_fastafs("test/data/test.fa", fastafs_file, false);
+
+    // uncompressed reader, constructed but deliberately NOT fopen()'d (as do_open did)
+    chunked_reader c(fastafs_file.c_str());
+    BOOST_CHECK(c.typeid_state() == typeid(ContextUncompressed));
+
+    // used to segfault; must now throw cleanly
+    BOOST_CHECK_THROW(c.seek(0), std::runtime_error);
+
+    std::filesystem::remove(fastafs_file);
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
