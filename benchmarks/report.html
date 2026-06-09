@@ -215,8 +215,8 @@ function buildType(type, rows, fieldnames){
            facets, charts_order, metrics, default_metric:dm, charts };
 }
 
-async function listTxt(){
-  const res = await fetch('./files.json');
+async function listTxt(bust){
+  const res = await fetch('./files.json' + bust);
   if(!res.ok) throw new Error('files.json (HTTP ' + res.status + ')');
   const data = await res.json();
   if(!Array.isArray(data)) throw new Error('files.json is geen array');
@@ -224,14 +224,15 @@ async function listTxt(){
 }
 
 async function loadAll(){
-  const files = await listTxt();
+  const bust = '?_=' + Date.now();
+  const files = await listTxt(bust);
   if(!files.length) throw new Error('Nog geen benchmark-resultaten gevonden.');
 
   const byType = {}, byFields = {};
   let okFiles = 0;
   for(const name of files){
     let text;
-    try { const r = await fetch('./' + encodeURIComponent(name)); if(!r.ok) continue; text = await r.text(); }
+    try { const r = await fetch('./' + encodeURIComponent(name) + bust); if(!r.ok) continue; text = await r.text(); }
     catch(e){ continue; }
     const { fieldnames, rows } = parseTSV(text);
     const t = classify(fieldnames, rows);

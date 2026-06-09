@@ -42,6 +42,19 @@
 - TODO: exacte foutmelding van `ls` vastleggen (errno) en herleiden naar de
   betreffende FUSE-callback; daarna een minimale reproductie toevoegen.
 
+## `.2bit` mount van fourbit/fivebit sequences geeft stille datacorruptie
+- `view_ucsc2bit_chunk()` en `ucsc2bit_filesize()` controleren niet of een sequence
+  daadwerkelijk twobit-gecodeerd is. Bij een archief met IUPAC (fourbit) of proteïne
+  (fivebit) sequences decodeert `view_fasta_chunk()` de karakters correct terug naar
+  IUPAC/aminozuur-tekens, maar `twobit_byte::set(char*)` kent alleen `A, C, G, T, U, N`.
+- **Debug build**: `throw std::invalid_argument` bij het eerste onbekende karakter → crash.
+- **Release build**: de `default:`-tak zit achter `#if DEBUG`; onbekende karakters worden
+  stilzwijgend genegeerd en de betreffende bits blijven ongedefinieerd → garbage output.
+- Fix: guard toevoegen die controleert of alle sequences `is_twobit()` zijn, ofwel in
+  `ucsc2bit_filesize()` / `view_ucsc2bit_chunk()`, ofwel al bij het mounten in `fuse.cpp`
+  (parse_args). Overwegen: foutmelding bij `fastafs mount`, of IUPAC/proteïne-sequences
+  uitsluiten van de `.2bit` virtualfile.
+
 ## `database::add` naar `const char *` (`include/database.hpp:23`)
 - `add(char *)` muteert de pointer niet; net als `get` kan het `const char *` worden.
 - Dan vervallen de `(char*)`-casts in `test/database/test_database.cpp`

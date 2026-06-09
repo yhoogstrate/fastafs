@@ -34,7 +34,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
-        if self.path in ('/files.json', '/files.json?'):
+        if self.path.split('?')[0] == '/files.json':
             files = sorted(p.name for p in BENCH_DIR.glob('*.txt'))
             body  = json.dumps(files, indent=2).encode()
             self.send_response(200)
