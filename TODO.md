@@ -55,6 +55,64 @@
   (parse_args). Overwegen: foutmelding bij `fastafs mount`, of IUPAC/proteïne-sequences
   uitsluiten van de `.2bit` virtualfile.
 
+## Perf: volledige index wordt per 2bit-read herbouwd (`view_ucsc2bit_chunk`)
+- `fastafs::view_ucsc2bit_chunk()` (`src/fastafs.cpp:1032`) roept halverwege
+  `this->init_ffs2f(0, false)` aan (`src/fastafs.cpp:1131`) en doet aan het eind — en
+  bij elk van de ~12 vroege returns — weer `delete cache;`.
+- `init_ffs2f()` bouwt de **complete index van het hele archief** opnieuw op: per
+  sequence een `ffs2f_init_seq` met vectoren van `n_blocks + 1` en `m_blocks + 1`
+  elementen, waarbij elke blokgrens van nucleotide- naar FASTA-bestandspositie wordt
+  omgerekend (`src/fastafs.cpp:130-149`). Dat is een allocatie plus een volledige pass
+  over alle N/M-blokken van het genoom — **per read-call** van 4KB (debug) of 256KB
+  (release). Bij een soft-masked hg38 (miljoenen M-blokken) is dat tientallen MB
+  alloceren, vullen en weggooien, voor elke read.
+- Raakt twee paden:
+  - FUSE: `do_read()` op het virtuele `.2bit` (`src/fuse.cpp:345`).
+  - CLI: `fastafs view -2` loopt in `src/main.cpp:236-241` per chunk → herbouwt de
+    index per chunk.
+- De FUSE-instance heeft al twee kant-en-klare caches liggen (`ffi->cache` en
+  `ffi->cache_p0`, gebouwd bij mount in `src/fuse.cpp:731-732`), maar
+  `view_ucsc2bit_chunk` kan er niet bij: het is een `fastafs`-methode zonder
+  cache-parameter.
+- **Fix**: de index één keer bouwen en bewaren, bijv. als lui geïnitialiseerd lid van
+  `fastafs` (`ffs2f_init *cache_ucsc2bit`, vrijgegeven in de destructor), zodat zowel
+  FUSE als de CLI-lus hem hergebruiken. Kleine, lokale wijziging: de `init_ffs2f`-aanroep
+  vervangen en de `delete cache;`-regels laten vallen. Let op de interactie met het
+  `init_ffs2f`-geheugenlek hierboven.
+- **Blijft daarna staan** (tweede laag, meer werk): `view_ucsc2bit_chunk` loopt bij elke
+  read nog steeds vanaf byte 0 door de headerstructuur. De `for`-lussen over
+  `n_starts`/`m_starts` (`src/fastafs.cpp:1160`, `1198`) draaien altijd volledig door om
+  `pos_limit` op te tellen, ook als er niets geschreven wordt → O(alle blokken) per read.
+  Vraagt een offset-tabel per sequence zodat je direct naar het juiste blok springt; pas
+  zinvol als de `init_ffs2f`-aanroep eruit is.
+
+## Perf: faidx en dict worden per read/stat opnieuw opgebouwd
+- `fastafs::view_faidx_chunk()` (`src/fastafs.cpp:1584`) roept `get_faidx(padding)` aan,
+  dat bij **elke** read de volledige faidx-string opnieuw opbouwt: een lus over alle
+  sequences met string-concatenatie en `std::to_string` per regel
+  (`src/fastafs.cpp:1540`). Er wordt vervolgens een venster van `buffer_size` bytes
+  uitgekopieerd en de rest weggegooid.
+- `get_faidx()` opent bovendien een `std::ifstream` op het archief die alleen wordt
+  gebruikt om te checken of het bestand te openen is, en direct weer wordt gesloten —
+  een open/close-syscallpaar per read, zonder dat er iets uit gelezen wordt.
+- Hetzelfde gebeurt in `do_getattr` (`src/fuse.cpp:138` en `160`): daar wordt de hele
+  faidx opgebouwd puur om `.size()` op te vragen. Elke `stat()` op het virtuele
+  `.fa.fai`-bestand betaalt de volledige opbouw.
+- `fastafs::view_dict_chunk()` (`src/fastafs.cpp:1311`) heeft dezelfde twee problemen:
+  een ongebruikte `ifstream` open/close per read, plus per read een lus over alle
+  sequences met `md5_digest_to_hash()` en `std::to_string()` — ook voor de sequences die
+  buiten het gevraagde venster vallen.
+- Beide bestanden zijn volledig bepaald door het archief plus `padding`, en veranderen
+  nooit tijdens een mount.
+- **Fix**: de faidx- en dict-inhoud één keer als `std::string` opbouwen (bij mount, of
+  lui bij eerste gebruik, gecached in het `fastafs`-object of in de `fuse_instance`) en
+  per read alleen nog `.copy(buffer, n, offset)` doen. `do_getattr` gebruikt dan de
+  `.size()` van diezelfde gecachede string. De ongebruikte `ifstream`-opens kunnen weg.
+- Idem voor `ucsc2bit::get_faidx()` / `ucsc2bit::view_faidx_chunk()`
+  (`src/ucsc2bit.cpp:448`, `477`), die exact hetzelfde patroon volgen.
+- Zie ook het `view_faidx_chunk`-item bovenaan dit bestand: de EOF-underflow-guard kan
+  in dezelfde beurt mee.
+
 ## `database::add` naar `const char *` (`include/database.hpp:23`)
 - `add(char *)` muteert de pointer niet; net als `get` kan het `const char *` worden.
 - Dan vervallen de `(char*)`-casts in `test/database/test_database.cpp`

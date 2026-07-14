@@ -187,6 +187,20 @@ uint32_t fastafs_seq::view_fasta_chunk(
 
 
 /*
+ * Finds the block `pos` falls in, or - if pos sits between two blocks - the next
+ * one up. `ends` is ascending and its last entry is a sentinel past the end of the
+ * sequence, so lower_bound always lands inside the vector; the clamp only guards a
+ * pos beyond that sentinel (a read past EOF).
+ */
+static inline size_t find_block(const std::vector<uint32_t> &ends, size_t pos)
+{
+    const size_t i = (size_t)(std::lower_bound(ends.begin(), ends.end(), (uint32_t) pos) - ends.begin());
+    return std::min(i, ends.size() - 1);
+}
+
+
+
+/*
  * fastafs_seq::view_fasta_chunk -
  *
  * @padding = number of spaces?
@@ -255,8 +269,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 #endif
     const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
-    size_t n_block = cache->n_starts.size() - 1;
-    size_t m_block = cache->m_starts.size() - 1;
+    size_t n_block = find_block(cache->n_ends, pos);
+    size_t m_block = find_block(cache->m_ends, pos);
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
     const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
@@ -292,12 +306,6 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     if(bit_offset != 0) {
         t.next(fh);
         chunk = t.get();
-    }
-    while(n_block > 0 and pos <= cache->n_ends[n_block - 1]) { // iterate back
-        n_block--;
-    }
-    while(m_block > 0 and pos <= cache->m_ends[m_block - 1]) { // iterate back
-        m_block--;
     }
 
     uint32_t cur_n_end = cache->n_ends[n_block];
