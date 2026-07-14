@@ -5,6 +5,7 @@
 
 
 
+#include <memory>
 #include <vector>
 
 #include <openssl/sha.h>
@@ -36,17 +37,16 @@ struct ffs2f_init_seq {
 
 struct ffs2f_init {
     const uint32_t padding_arg;// padding argument, 0 means no padding takes place and all nucleotides are written to one single line
-    std::vector<ffs2f_init_seq *> sequences;
+    std::vector<std::unique_ptr<ffs2f_init_seq>> sequences;
 
     ffs2f_init(size_t size, uint32_t padding_arg);
-    ~ffs2f_init(void);
 };
 
 
 class fastafs_seq
 {
 public:
-    ffs2f_init_seq* init_ffs2f_seq(uint32_t, bool);
+    std::unique_ptr<ffs2f_init_seq> init_ffs2f_seq(uint32_t, bool);
 
     std::string name;//may not exceed 255 chars in current datatype
     uint32_t data_position;// file offset to start reading sequence data
@@ -95,16 +95,15 @@ class fastafs
 {
 
 public:
-    ffs2f_init* init_ffs2f(uint32_t, bool);
+    std::unique_ptr<ffs2f_init> init_ffs2f(uint32_t, bool);
 
     explicit fastafs(std::string);
-    ~fastafs();
 
     std::string name;
     std::string filename;
     compression_type filetype;
 
-    std::vector<fastafs_seq*> data;
+    std::vector<std::unique_ptr<fastafs_seq>> data;
     uint32_t crc32f;// crc32 as found in fastafs file
 
     fastafs_flags flags;

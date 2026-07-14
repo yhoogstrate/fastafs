@@ -194,14 +194,14 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     std::string std_buffer;
 
     // init caches
-    ffs2f_init* cache_p1 = fs.init_ffs2f(1, false);
-    ffs2f_init* cache_p4 = fs.init_ffs2f(4, false);
-    ffs2f_init* cache_p5 = fs.init_ffs2f(5, false);
-    ffs2f_init* cache_p999 = fs.init_ffs2f(999, false);
+    auto cache_p1 = fs.init_ffs2f(1, false);
+    auto cache_p4 = fs.init_ffs2f(4, false);
+    auto cache_p5 = fs.init_ffs2f(5, false);
+    auto cache_p999 = fs.init_ffs2f(999, false);
 
     // padding: 4
 
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 999 - longer than longest seq
-    written = fs.view_fasta_chunk(cache_p999, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p999.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTTCCCCAAAAGGGG >chr2 ACTGACTGNNNNACTG >chr3.1 ACTGACTGAAAAC >chr3.2 ACTGACTGAAAACC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 5 - see if 2bit works
-    written = fs.view_fasta_chunk(cache_p5, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p5.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTTC CCCAA AAGGG G >chr2 ACTGA CTGNN NNACT G >chr3.1 ACTGA CTGAA AAC >chr3.2 ACTGA CTGAA AACC >chr3.3 ACTGA CTGAA AACCC >chr4 ACTGN NNN >chr5 NNACT G
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 1
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 1);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 1);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 2
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 2);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 2);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 3
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 3);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 3);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 4
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 4);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 4);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 5
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 5);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 5);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 6
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 6);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 6);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 7
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 7);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 7);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 8
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 8);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 8);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 9
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 9);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 9);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -318,7 +318,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 10
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 10);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 10);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
     //XXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 100);
 
-        written = fs.view_fasta_chunk(cache_p4, buffer, 100, offset, fhc);
+        written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, offset, fhc);
         std_buffer = std::string(buffer, substr_file.size());
 
         BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset);
@@ -344,10 +344,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing)
 
     delete[] buffer;
 
-    delete cache_p1;
-    delete cache_p4;
-    delete cache_p5;
-    delete cache_p999;
 }
 
 
@@ -365,7 +361,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     fastafs fs = fastafs(test_name);
     fs.load(fastafs_file);
 
-    ffs2f_init* cache_p100 = fs.init_ffs2f(100, false);
+    auto cache_p100 = fs.init_ffs2f(100, false);
 
     char *buffer = new char[100];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 100, '?');
@@ -381,7 +377,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
     //[>] [c] [h] [r] [3] [.] [1] [\n] [A] [C] [T] [G] [A] [C] [T] [G] [A] [A] [A] [A] [C] [\n]
     BOOST_CHECK_EQUAL(fs.data[2]->fasta_filesize(100), 22);
 
-    written = fs.data[2]->view_fasta_chunk(cache_p100->sequences[2], buffer, 100, 0, fh);
+    written = fs.data[2]->view_fasta_chunk(cache_p100->sequences[2].get(), buffer, 100, 0, fh);
     BOOST_CHECK_EQUAL(written, 22);
 
     std::string std_buffer = std::string(buffer, written);
@@ -392,7 +388,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_sub)
 
     delete[] buffer;
 
-    delete cache_p100;
 }
 
 
@@ -417,74 +412,74 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     char *buffer = new char[200];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 200, '?');
 
-    ffs2f_init* cache_p1 = fs.init_ffs2f(1, true);
-    ffs2f_init* cache_p4 = fs.init_ffs2f(4, true);
-    ffs2f_init* cache_p5 = fs.init_ffs2f(5, true);
-    ffs2f_init* cache_p32 = fs.init_ffs2f(32, true);// allow masking = T
-    ffs2f_init* cache_p999 = fs.init_ffs2f(999, true);
+    auto cache_p1 = fs.init_ffs2f(1, true);
+    auto cache_p4 = fs.init_ffs2f(4, true);
+    auto cache_p5 = fs.init_ffs2f(5, true);
+    auto cache_p32 = fs.init_ffs2f(32, true);// allow masking = T
+    auto cache_p999 = fs.init_ffs2f(999, true);
 
     std::string std_buffer;
     uint32_t written;
 
 
     // padding = 32, offset = 0
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 0);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 98);
     std_buffer = std::string(buffer, 98);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 1
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 1);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 1);
     BOOST_CHECK_EQUAL(written, 97);
     std_buffer = std::string(buffer, 97);
     BOOST_CHECK_EQUAL(std_buffer.compare("IUPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 2
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 2);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 2);
     BOOST_CHECK_EQUAL(written, 96);
     std_buffer = std::string(buffer, 96);
     BOOST_CHECK_EQUAL(std_buffer.compare("UPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 5
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 5);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 5);
     BOOST_CHECK_EQUAL(written, 93);
     std_buffer = std::string(buffer, 93);
     BOOST_CHECK_EQUAL(std_buffer.compare("C\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 6
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 6);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 6);
     BOOST_CHECK_EQUAL(written, 92);
     std_buffer = std::string(buffer, 92);
     BOOST_CHECK_EQUAL(std_buffer.compare("\nNBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 7
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 7);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 7);
     BOOST_CHECK_EQUAL(written, 91);
     std_buffer = std::string(buffer, 91);
     BOOST_CHECK_EQUAL(std_buffer.compare("NBKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 8
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 8);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 8);
     BOOST_CHECK_EQUAL(written, 90);
     std_buffer = std::string(buffer, 90);
     BOOST_CHECK_EQUAL(std_buffer.compare("BKAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 9
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 9);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 9);
     BOOST_CHECK_EQUAL(written, 89);
     std_buffer = std::string(buffer, 89);
     BOOST_CHECK_EQUAL(std_buffer.compare("KAHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 32, offset = 10
-    written = fs.view_fasta_chunk(cache_p32, buffer, 200, 10);
+    written = fs.view_fasta_chunk(cache_p32.get(), buffer, 200, 10);
     BOOST_CHECK_EQUAL(written, 88);
     std_buffer = std::string(buffer, 88);
     BOOST_CHECK_EQUAL(std_buffer.compare("AHMDCUWGSYVTRHGWVUMTBSDN-----\n-----BGYADNHSMUTRCKWVsbhvdnrtgyc\nmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
@@ -492,21 +487,21 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 
 
     // padding = 1, offset = 0
-    written = fs.view_fasta_chunk(cache_p1, buffer, 200, 0);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 183);
     std_buffer = std::string(buffer, 183);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nN\nB\nK\nA\nH\nM\nD\nC\nU\nW\nG\nS\nY\nV\nT\nR\nH\nG\nW\nV\nU\nM\nT\nB\nS\nD\nN\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\nB\nG\nY\nA\nD\nN\nH\nS\nM\nU\nT\nR\nC\nK\nW\nV\ns\nb\nh\nv\nd\nn\nr\nt\ng\ny\nc\nm\nk\nw\nu\na\nA\nV\nT\nS\nD\nK\nN\nB\n-\n-\n-\nU\nG\nW\nM\nH\nY\nR\nC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 5, offset = 0
-    written = fs.view_fasta_chunk(cache_p5, buffer, 200, 0);
+    written = fs.view_fasta_chunk(cache_p5.get(), buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 113);
     std_buffer = std::string(buffer, 113);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nNBKAH\nMDCUW\nGSYVT\nRHGWV\nUMTBS\nDN---\n-----\n--BGY\nADNHS\nMUTRC\nKWVsb\nhvdnr\ntgycm\nkwuaA\nVTSDK\nNB---\nUGWMH\nYRC\n"), 0);
     flush_buffer(buffer, 200, '?');
 
     // padding = 999, offset = 0
-    written = fs.view_fasta_chunk(cache_p999, buffer, 200, 0);
+    written = fs.view_fasta_chunk(cache_p999.get(), buffer, 200, 0);
     BOOST_CHECK_EQUAL(written, 96);
     std_buffer = std::string(buffer, 96);
     BOOST_CHECK_EQUAL(std_buffer.compare(">IUPAC\nNBKAHMDCUWGSYVTRHGWVUMTBSDN----------BGYADNHSMUTRCKWVsbhvdnrtgycmkwuaAVTSDKNB---UGWMHYRC\n"), 0);
@@ -520,7 +515,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 200);
 
-        written = fs.view_fasta_chunk(cache_p4, buffer, 200, offset, fhc);
+        written = fs.view_fasta_chunk(cache_p4.get(), buffer, 200, offset, fhc);
         std_buffer = std::string(buffer, substr_file.size());
 
         BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset);
@@ -531,11 +526,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_fourbit)
 
     delete[] buffer;
 
-    delete cache_p1;
-    delete cache_p4;
-    delete cache_p5;
-    delete cache_p32;
-    delete cache_p999;
 }
 
 
@@ -563,14 +553,13 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen)
     char *buffer = new char[8192 + 1];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 8192, '?');
 
-    ffs2f_init* cache_p0 = fs.init_ffs2f(8192 + 2, true);
+    auto cache_p0 = fs.init_ffs2f(8192 + 2, true);
 
-    uint32_t written = fs.view_fasta_chunk(cache_p0, buffer, 8192, 0);
+    uint32_t written = fs.view_fasta_chunk(cache_p0.get(), buffer, 8192, 0);
 
     BOOST_CHECK_EQUAL(written, 6115);
 
     delete[] buffer;
-    delete cache_p0;
 
 #else
     // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
@@ -604,14 +593,13 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen_lim)
     char *buffer = new char[8192 + 1];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 8192, '?');
 
-    ffs2f_init* cache_p0 = fs.init_ffs2f(8192 + 2, true);
+    auto cache_p0 = fs.init_ffs2f(8192 + 2, true);
 
-    uint32_t written = fs.view_fasta_chunk(cache_p0, buffer, 4096, 0);
+    uint32_t written = fs.view_fasta_chunk(cache_p0.get(), buffer, 4096, 0);
 
     BOOST_CHECK_EQUAL(written, 4096);
 
     delete[] buffer;
-    delete cache_p0;
 
 #else
     // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
@@ -646,9 +634,9 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
     char *buffer = new char[8192 + 1];// buffer needs to be c buffer because of the fuse layer
     flush_buffer(buffer, 8192, '?');
 
-    ffs2f_init* cache_p72 = fs.init_ffs2f(72, true);
+    auto cache_p72 = fs.init_ffs2f(72, true);
 
-    size_t written = fs.view_fasta_chunk(cache_p72, buffer, 8192, 0);
+    size_t written = fs.view_fasta_chunk(cache_p72.get(), buffer, 8192, 0);
 
     std::string ref = ">len-limit\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC\n>len-limit2\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\nGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG\n";
     for(size_t i = 0; i < std::max((size_t) written, (size_t) 4987); i++) {
@@ -660,7 +648,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_buffermaxlen2)
     BOOST_CHECK_EQUAL(written, 4987); // split over two sequences, buffer size can be exceeded
 
     delete[] buffer;
-    delete cache_p72;
 
 #else
     // for this test a small buffer size is needed, only used for debugging - therefore always test with debug on
@@ -703,14 +690,14 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     std::string std_buffer;
 
     // init caches
-    ffs2f_init* cache_p1 = fs.init_ffs2f(1, false);
-    ffs2f_init* cache_p4 = fs.init_ffs2f(4, false);
-    ffs2f_init* cache_p5 = fs.init_ffs2f(5, false);
-    ffs2f_init* cache_p999 = fs.init_ffs2f(999, false);
+    auto cache_p1 = fs.init_ffs2f(1, false);
+    auto cache_p4 = fs.init_ffs2f(4, false);
+    auto cache_p5 = fs.init_ffs2f(5, false);
+    auto cache_p999 = fs.init_ffs2f(999, false);
 
     // padding: 4
 
-    size_t written = fs.view_fasta_chunk(cache_p4, buffer, 100, 0);
+    size_t written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG
@@ -719,7 +706,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 999 - longer than longest seq
-    written = fs.view_fasta_chunk(cache_p999, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p999.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTTCCCCAAAAGGGG >chr2 ACTGACTGNNNNACTG >chr3.1 ACTGACTGAAAAC >chr3.2 ACTGACTGAAAACC >chr3.3 ACTGACTGAAAACCC >chr4 ACTGNNNN >chr5 NNACTG
@@ -728,7 +715,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 5 - see if 2bit works
-    written = fs.view_fasta_chunk(cache_p5, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p5.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTTC CCCAA AAGGG G >chr2 ACTGA CTGNN NNACT G >chr3.1 ACTGA CTGAA AAC >chr3.2 ACTGA CTGAA AACC >chr3.3 ACTGA CTGAA AACCC >chr4 ACTGN NNN >chr5 NNACT G
@@ -737,7 +724,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 0);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 0);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -746,7 +733,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 1
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 1);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 1);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -755,7 +742,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 2
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 2);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 2);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -764,7 +751,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 3
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 3);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 3);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -773,7 +760,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 4
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 4);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 4);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -782,7 +769,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 1, offset 5
-    written = fs.view_fasta_chunk(cache_p1, buffer, 100, 5);
+    written = fs.view_fasta_chunk(cache_p1.get(), buffer, 100, 5);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 T T T T C C C C A A A A G G G G >chr2 A C T G A C T G N N N N A C T G >chr3.1 A C T G A C T G A A A A C >chr3.2 A C T G A C T G A A A A C C >chr3.3 A C T G A C T G A A A A C C C >chr4 A C T G N N N N >chr5 N N A C T G
@@ -791,7 +778,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 6
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 6);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 6);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -800,7 +787,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 7
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 7);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 7);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -809,7 +796,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 8
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 8);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 8);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -818,7 +805,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 9
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 9);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 9);
     BOOST_CHECK_EQUAL(written, 100);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
@@ -827,7 +814,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     flush_buffer(buffer, 100, '?');
 
     // padding: 4, offset: 10
-    written = fs.view_fasta_chunk(cache_p4, buffer, 100, 10);
+    written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, 10);
     std_buffer = std::string(buffer, 100);
     //>chr1 TTTT CCCC AAAA GGGG >chr2 ACTG ACTG NNNN ACTG >chr3.1 ACTG ACTG AAAA C >chr3.2 ACTG ACTG AAAA CC >chr3.3 ACTG ACTG AAAA CCC >chr4 ACTG NNNN >chr5 NNAC TG
     //XXXXXXXXXX----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|----.----|
@@ -840,7 +827,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
     for(uint32_t offset = 0; offset < 62; ++offset) {
         std::string substr_file = full_file.substr(offset, 100);
 
-        written = fs.view_fasta_chunk(cache_p4, buffer, 100, offset);
+        written = fs.view_fasta_chunk(cache_p4.get(), buffer, 100, offset);
         std_buffer = std::string(buffer, substr_file.size());
 
         BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << offset);
@@ -851,10 +838,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing_zstd)
 
     delete[] buffer;
 
-    delete cache_p1;
-    delete cache_p4;
-    delete cache_p5;
-    delete cache_p999;
 }
 
 
@@ -894,7 +877,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     BOOST_REQUIRE_EQUAL(full_file.size(), 2108);
 
     flush_buffer(buffer, 2110, '?');
-    ffs2f_init* cache = fs.init_ffs2f(60, true);
+    auto cache = fs.init_ffs2f(60, true);
 
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
     fhc.fopen(0);
@@ -919,7 +902,7 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
         for(uint32_t buffer_len = (uint32_t) full_file.size() - start_pos; buffer_len > 0; buffer_len--) {
             std::string substr_file = std::string(full_file, start_pos, buffer_len);
 
-            written = fs.view_fasta_chunk(cache, buffer, buffer_len, start_pos, fhc);
+            written = fs.view_fasta_chunk(cache.get(), buffer, buffer_len, start_pos, fhc);
             std_buffer = std::string(buffer, substr_file.size());
             BOOST_CHECK_EQUAL_MESSAGE(written, substr_file.size(), "Difference in size for size=" << substr_file.size() << " [found=" << written << "] for offset=" << start_pos << " and of length: " << buffer_len);
             BOOST_CHECK_EQUAL_MESSAGE(std_buffer.compare(substr_file), 0, "Difference in content for offset=" << start_pos << " and of length: " << buffer_len);
@@ -940,7 +923,6 @@ BOOST_AUTO_TEST_CASE(test_chunked_viewing2)
     }
 
     delete[] buffer;
-    delete cache;
 }
 
 
@@ -970,7 +952,7 @@ static void test_large_windowed(const std::string &test_name, int padding, bool 
     char *buffer = new char[file_size + 1];
     flush_buffer(buffer, file_size + 1, '?');
 
-    ffs2f_init* cache = fs.init_ffs2f((uint32_t) padding, allow_masking);
+    auto cache = fs.init_ffs2f((uint32_t) padding, allow_masking);
 
     chunked_reader fhc = chunked_reader(fs.filename.c_str());
     fhc.fopen(0);
@@ -1016,7 +998,7 @@ static void test_large_windowed(const std::string &test_name, int padding, bool 
             }
 
             flush_buffer(buffer, file_size + 1, '?');
-            written = fs.view_fasta_chunk(cache, buffer, buf_size, (off_t) start, fhc);
+            written = fs.view_fasta_chunk(cache.get(), buffer, buf_size, (off_t) start, fhc);
             std_buffer = std::string(buffer, expected.size());
 
             BOOST_CHECK_EQUAL_MESSAGE(written, expected.size(), "size mismatch start=" << start << " buf=" << buf_size);
@@ -1025,7 +1007,6 @@ static void test_large_windowed(const std::string &test_name, int padding, bool 
     }
 
     delete[] buffer;
-    delete cache;
 }
 
 

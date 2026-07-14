@@ -51,8 +51,8 @@ struct file_threads {
 struct fuse_instance {
     //fastasfs
     fastafs *f;
-    ffs2f_init *cache;
-    ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
+    std::unique_ptr<ffs2f_init> cache;
+    std::unique_ptr<ffs2f_init> cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
 
@@ -338,7 +338,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
 
         if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
-            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset, *ft->crs[cur_file_thread].cr);
+            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache.get(), buffer, size, offset, *ft->crs[cur_file_thread].cr);
         } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
@@ -346,7 +346,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
-            written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
+            written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0.get(), (strchr(path, '/') + 5), buffer, size, offset);
         }
     } else {
         if(ffi->u2b != nullptr) {
@@ -440,9 +440,6 @@ void do_destroy(void *pd)
 
     if(ffi->f != nullptr) {
         delete ffi->f;
-    }
-    if(ffi->cache != nullptr) {
-        delete ffi->cache;
     }
     if(ffi->u2b != nullptr) {
         delete ffi->u2b;
@@ -786,8 +783,6 @@ void fuse(int argc, char *argv[])
     } else {
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
 
-        delete ffi->cache;
-        delete ffi->cache_p0;
         delete ffi->f;
         delete ffi->u2b;
         delete ffi;

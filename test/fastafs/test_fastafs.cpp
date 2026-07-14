@@ -44,18 +44,18 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     chunked_reader file = chunked_reader(fs.filename.c_str());
     file.fopen(0);
 
-    ffs2f_init* cache_p40 = fs.init_ffs2f(40, true);
-    ffs2f_init* cache_p23 = fs.init_ffs2f(23, true);
+    auto cache_p40 = fs.init_ffs2f(40, true);
+    auto cache_p23 = fs.init_ffs2f(23, true);
 
     // then: check returncodes:
     uint32_t ret;
     char chunk[4];
     for(uint32_t i = 0; i < 23; i++) {
-        ret = fs.data[0]->view_fasta_chunk(cache_p40->sequences[0], chunk, 1, i, file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p40->sequences[0].get(), chunk, 1, i, file);
         BOOST_CHECK_EQUAL(ret, 1);
     }
     for(uint32_t i = 23; i < 23 + 5; i++) {
-        ret = fs.data[0]->view_fasta_chunk(cache_p40->sequences[0], chunk, 1, i, file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p40->sequences[0].get(), chunk, 1, i, file);
         BOOST_CHECK_EQUAL(ret, 0);
     }
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
 
     std::string ref = ">chr1\nttttccccaaaagggg\n";
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk(cache_p23->sequences[0], chunk, 1, i, file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p23->sequences[0].get(), chunk, 1, i, file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
@@ -74,8 +74,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size)
     BOOST_CHECK_EQUAL(chunk[2], '\1');
     BOOST_CHECK_EQUAL(chunk[3], '\2');
 
-    delete cache_p40;
-    delete cache_p23;
 }
 
 
@@ -94,7 +92,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     BOOST_CHECK_EQUAL(fs.data[0]->fasta_filesize(fs.data[0]->n), 23);
     chunked_reader file = chunked_reader(fs.filename.c_str());
     file.fopen(0);
-    ffs2f_init* cache_p0 = fs.init_ffs2f(0, true);
+    auto cache_p0 = fs.init_ffs2f(0, true);
 
     // then: check returncodes:
     uint32_t ret;
@@ -103,17 +101,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0)
     std::string ref = ">chr1\nttttccccaaaagggg\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0].get(), chunk, 1, i, file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
 
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), file);
+    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0].get(), chunk, 1, ref.size(), file);
     BOOST_CHECK_EQUAL(ret, 0);
 
-    delete cache_p0;
 }
 
 
@@ -135,7 +132,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     chunked_reader file = chunked_reader(fs.filename.c_str());
     file.fopen(0);
 
-    ffs2f_init* cache_p0 = fs.init_ffs2f(0, false); // no masking; everything must be uppercase
+    auto cache_p0 = fs.init_ffs2f(0, false); // no masking; everything must be uppercase
 
     // then: check returncodes:
     uint32_t ret;
@@ -143,16 +140,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_fastafile_size_padding_0__no_masking)
     std::string ref = ">chr1\nTTTTCCCCAAAAGGGG\n";
 
     for(uint32_t i = 0; i < ref.size(); i++) {
-        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, i, file);
+        ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0].get(), chunk, 1, i, file);
         BOOST_CHECK_EQUAL(chunk[0], ref[i]); // test for '>'
         BOOST_CHECK_EQUAL(ret, 1);
     }
 
     // check if out of bound query returns 0
-    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0], chunk, 1, ref.size(), file);
+    ret = fs.data[0]->view_fasta_chunk(cache_p0->sequences[0].get(), chunk, 1, ref.size(), file);
     BOOST_CHECK_EQUAL(ret, 0);
 
-    delete cache_p0;
 }
 
 
@@ -164,16 +160,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_sha1)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
-    ffs2f_init* cache_p0 = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
+    auto cache_p0 = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
     BOOST_REQUIRE(fs.data.size() > 0);
 
     chunked_reader file = chunked_reader(fs.filename.c_str());
     file.fopen(0);
 
-    //fs.data[0]->sha1(cache_p0->sequences[0], &file);
-    BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache_p0->sequences[0], file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
+    //fs.data[0]->sha1(cache_p0->sequences[0].get(), &file);
+    BOOST_CHECK_EQUAL(fs.data[0]->sha1(cache_p0->sequences[0].get(), file), "2c0cae1d4e272b3ba63e7dd7e3c0efe62f2aaa2f");
 
-    delete cache_p0;
 }
 
 
@@ -185,21 +180,20 @@ BOOST_AUTO_TEST_CASE(test_fastafs_seq_md5)
     fastafs fs = fastafs("test");
     fs.load(fastafs_file);
 
-    ffs2f_init* cache = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
+    auto cache = fs.init_ffs2f(0, false); // allow masking = false, alles moet in capital / upper case
     BOOST_REQUIRE(fs.data.size() > 0);
 
     chunked_reader file = chunked_reader(fs.filename.c_str());
     file.fopen(0);
 
-    BOOST_CHECK_EQUAL(fs.data[0]->md5(cache->sequences[0], file), "75255c6d90778999ad3643a2e69d4344");
-    BOOST_CHECK_EQUAL(fs.data[1]->md5(cache->sequences[1], file), "8b5673724a9965c29a1d76fe7031ac8a");
-    BOOST_CHECK_EQUAL(fs.data[2]->md5(cache->sequences[2], file), "61deba32ec4c3576e3998fa2d4b87288");
-    BOOST_CHECK_EQUAL(fs.data[3]->md5(cache->sequences[3], file), "99b90560f23c1bda2871a6c93fd6a240");
-    BOOST_CHECK_EQUAL(fs.data[4]->md5(cache->sequences[4], file), "3625afdfbeb43765b85f612e0acb4739");
-    BOOST_CHECK_EQUAL(fs.data[5]->md5(cache->sequences[5], file), "bd8c080ed25ba8a454d9434cb8d14a68");
-    BOOST_CHECK_EQUAL(fs.data[6]->md5(cache->sequences[6], file), "980ef3a1cd80afec959dcf852d026246");
+    BOOST_CHECK_EQUAL(fs.data[0]->md5(cache->sequences[0].get(), file), "75255c6d90778999ad3643a2e69d4344");
+    BOOST_CHECK_EQUAL(fs.data[1]->md5(cache->sequences[1].get(), file), "8b5673724a9965c29a1d76fe7031ac8a");
+    BOOST_CHECK_EQUAL(fs.data[2]->md5(cache->sequences[2].get(), file), "61deba32ec4c3576e3998fa2d4b87288");
+    BOOST_CHECK_EQUAL(fs.data[3]->md5(cache->sequences[3].get(), file), "99b90560f23c1bda2871a6c93fd6a240");
+    BOOST_CHECK_EQUAL(fs.data[4]->md5(cache->sequences[4].get(), file), "3625afdfbeb43765b85f612e0acb4739");
+    BOOST_CHECK_EQUAL(fs.data[5]->md5(cache->sequences[5].get(), file), "bd8c080ed25ba8a454d9434cb8d14a68");
+    BOOST_CHECK_EQUAL(fs.data[6]->md5(cache->sequences[6].get(), file), "980ef3a1cd80afec959dcf852d026246");
 
-    delete cache;
 }
 
 
@@ -378,7 +372,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
 
     BOOST_REQUIRE(fs.data.size() > 0);
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:0";
 
         size_t written;
@@ -390,15 +384,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 't');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:3";
 
         size_t written;
@@ -410,15 +403,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 't');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:4";
 
         size_t written;
@@ -430,15 +422,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'c');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:15";
 
         size_t written;
@@ -450,15 +441,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'g');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr1:16";
 
         size_t written;
@@ -470,17 +460,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 0);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 0);
         //BOOST_CHECK_EQUAL(buffer[0], '\n');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:0";
 
         size_t written;
@@ -492,16 +481,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:1";
 
         size_t written;
@@ -513,15 +501,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'C');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:7";
 
         size_t written;
@@ -533,16 +520,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:8";
 
         size_t written;
@@ -554,15 +540,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:9";
 
         size_t written;
@@ -574,15 +559,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:10";
 
         size_t written;
@@ -594,15 +578,14 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
-        delete cache_p0;
         delete[] buffer;
     }
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:11";
 
         size_t written;
@@ -614,16 +597,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:12";
 
         size_t written;
@@ -636,16 +618,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 1);
 
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:15";
 
         size_t written;
@@ -657,16 +638,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 1);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 1);
         BOOST_CHECK_EQUAL(buffer[0], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:14-15";
 
         size_t written;
@@ -678,17 +658,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 2);
         BOOST_CHECK_EQUAL(buffer[0], 'T');
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:14-99999";
 
         size_t written;
@@ -700,17 +679,16 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 2);
         BOOST_CHECK_EQUAL(buffer[0], 'T');
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr2:16";
 
         size_t written;
@@ -722,16 +700,15 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 0);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 0);
         //BOOST_CHECK_EQUAL(buffer[0], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr4";
 
         size_t written;
@@ -743,7 +720,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 8);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 8);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
         BOOST_CHECK_EQUAL(buffer[1], 'C');
@@ -754,13 +731,12 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(buffer[6], 'n');
         BOOST_CHECK_EQUAL(buffer[7], 'n');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr4:4-";
 
         size_t written;
@@ -772,20 +748,19 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 4);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(buffer[0], 'n');
         BOOST_CHECK_EQUAL(buffer[1], 'n');
         BOOST_CHECK_EQUAL(buffer[2], 'n');
         BOOST_CHECK_EQUAL(buffer[3], 'n');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr4:-1";// from left to 1: <0,1]
 
         size_t written;
@@ -797,20 +772,19 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 2);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 2);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
         BOOST_CHECK_EQUAL(buffer[1], 'C');
         //BOOST_CHECK_EQUAL(buffer[2], 'T');
         //BOOST_CHECK_EQUAL(buffer[3], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr3.1:1-2";
 
         size_t written;
@@ -823,19 +797,18 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 2);
 
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0);
         BOOST_CHECK_EQUAL(written, 2);
         BOOST_CHECK_EQUAL(buffer[0], 'C');
         BOOST_CHECK_EQUAL(buffer[1], 'T');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr3.3";
 
         size_t written;
@@ -848,7 +821,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 15);
 
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 0); // small buffer size
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, 4, 0); // small buffer size
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
         BOOST_CHECK_EQUAL(buffer[1], 'C');
@@ -858,7 +831,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 4); // small buffer size
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, 4, 4); // small buffer size
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(buffer[0], 'A');
         BOOST_CHECK_EQUAL(buffer[1], 'C');
@@ -869,7 +842,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 15);
 
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 8); // small buffer size
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, 4, 8); // small buffer size
         BOOST_CHECK_EQUAL(written, 4);
         BOOST_CHECK_EQUAL(buffer[0], 'a');
         BOOST_CHECK_EQUAL(buffer[1], 'a');
@@ -879,7 +852,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, 4, 12); // small buffer size
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, 4, 12); // small buffer size
         BOOST_CHECK_EQUAL(written, 3);
         BOOST_CHECK_EQUAL(buffer[0], 'c');
         BOOST_CHECK_EQUAL(buffer[1], 'c');
@@ -888,13 +861,12 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 15);
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chr5:2-5";
 
         size_t written;
@@ -907,18 +879,17 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         BOOST_CHECK_EQUAL(written, 4);
 
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 2); // small buffer size
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 2); // small buffer size
         BOOST_CHECK_EQUAL(written, 2);
         BOOST_CHECK_EQUAL(buffer[0], 'T');
         BOOST_CHECK_EQUAL(buffer[1], 'G');
 
-        delete cache_p0;
         delete[] buffer;
     }
 
 
     {
-        ffs2f_init* cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
+        auto cache_p0 = fs.init_ffs2f(0, true); // @ padding 0 as it reflects actual plain sequence
         const char arg[] = "/seq/chrDOESNOTEXIST";
 
         size_t written;
@@ -931,10 +902,9 @@ BOOST_AUTO_TEST_CASE(test_fastafs__sequence_virtualization)
         written = fs.view_sequence_region_size((strchr(arg, '/') + 5));
         BOOST_CHECK_EQUAL(written, 0);
 
-        written = fs.view_sequence_region(cache_p0, (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0); // small buffer size
+        written = fs.view_sequence_region(cache_p0.get(), (strchr(arg, '/') + 5), buffer, READ_BUFFER_SIZE, 0); // small buffer size
         BOOST_CHECK_EQUAL(written, 0);
 
-        delete cache_p0;
         delete[] buffer;
     }
 }
@@ -960,7 +930,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
 
         BOOST_REQUIRE(fs.data.size() > 0);
 
-        ffs2f_init* cache_p40 = fs.init_ffs2f(40, true); // equals original fasta
+        auto cache_p40 = fs.init_ffs2f(40, true); // equals original fasta
 
 
         const int READ_BUFFER_SIZE_F = 4096 ; // make sure it is large enough, error occurrsed with buf len=4096
@@ -970,7 +940,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
         // test the first read
         chunked_reader fh1 = chunked_reader(fs.filename.c_str());
         flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
-        ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 0, fh1);
+        ret = fs.view_fasta_chunk(cache_p40.get(), buffer, 4096, 0, fh1);
         //printf("[%i]\n", ret);
         buffer[4096] = '\0';
         //printf("[%s]\n", buffer);
@@ -978,7 +948,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
 
         // test the first read
         flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
-        ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 0);
+        ret = fs.view_fasta_chunk(cache_p40.get(), buffer, 4096, 0);
         //printf("[%i]\n", ret);
         buffer[4096] = '\0';
         //printf("[%s]\n", buffer);
@@ -990,7 +960,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
         // test the first read
         //chunked_reader fh2 = chunked_reader(fs.filename.c_str());
         flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
-        ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 20480, fh1);
+        ret = fs.view_fasta_chunk(cache_p40.get(), buffer, 4096, 20480, fh1);
         //printf("[%i]\n", ret);
         buffer[4096] = '\0';
         //printf("[%s]\n", buffer);
@@ -998,7 +968,7 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
 
         // test the first read
         flush_buffer(buffer, READ_BUFFER_SIZE_F + 1, '\0');
-        ret = fs.view_fasta_chunk(cache_p40, buffer, 4096, 20480);
+        ret = fs.view_fasta_chunk(cache_p40.get(), buffer, 4096, 20480);
         //printf("[%i]\n", ret);
         buffer[4096] = '\0';
         //printf("[%s]\n", buffer);
@@ -1006,7 +976,6 @@ BOOST_AUTO_TEST_CASE(test_fastafs__failing_example)
 
 
 
-        delete cache_p40;
         delete[] buffer;
         *
         */

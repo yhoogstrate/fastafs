@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <stdio.h>
@@ -56,13 +57,6 @@ ffs2f_init_seq::ffs2f_init_seq(const uint32_t padding, size_t n_blocks, size_t m
 
 ffs2f_init::ffs2f_init(size_t size, uint32_t padding_arg): padding_arg(padding_arg), sequences(size) {}
 
-ffs2f_init::~ffs2f_init(void)
-{
-    for(size_t i = 0; i < sequences.size(); i++) {
-        delete sequences[i];
-    }
-}
-
 fastafs_seq::fastafs_seq(): n(0)
 {
 }
@@ -102,7 +96,7 @@ void fastafs_seq::view_fasta(ffs2f_init_seq* cache, chunked_reader &fh)
 
 
 
-ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool allow_masking)
+std::unique_ptr<ffs2f_init_seq> fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool allow_masking)
 {
     uint32_t padding = padding_arg;
     if(padding_arg == 0) { // for writing all sequences to one single line after the header
@@ -114,12 +108,12 @@ ffs2f_init_seq* fastafs_seq::init_ffs2f_seq(const uint32_t padding_arg, bool all
 
     // this can go into the constructor
     const uint32_t total_sequence_containing_lines = (this->n + padding - 1) / padding;// calculate total number of full nucleotide lines
-    ffs2f_init_seq* data;
+    std::unique_ptr<ffs2f_init_seq> data;
 
     if(allow_masking) {
-        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines, this->fasta_filesize(padding));
+        data = std::make_unique<ffs2f_init_seq>(padding, this->n_starts.size() + 1,  this->m_starts.size() + 1, total_sequence_containing_lines, this->fasta_filesize(padding));
     } else {
-        data = new ffs2f_init_seq(padding, this->n_starts.size() + 1,  1, total_sequence_containing_lines, this->fasta_filesize(padding));
+        data = std::make_unique<ffs2f_init_seq>(padding, this->n_starts.size() + 1,  1, total_sequence_containing_lines, this->fasta_filesize(padding));
     }
 
     uint32_t fasta_header_size = (uint32_t) this->name.size() + 2;
@@ -704,30 +698,23 @@ fastafs::fastafs(std::string arg_name) :
 {
 }
 
-fastafs::~fastafs()
-{
-    for(uint32_t i = 0; i < this->data.size(); i++) {
-        delete this->data[i];
-    }
-}
-
 void fastafs::load(std::string afilename)
 {
     std::streampos size;
-    unsigned char *memblock;
+    std::unique_ptr<unsigned char[]> memblock;
 
     chunked_reader fh_in = chunked_reader(afilename.c_str());
     {
         fh_in.fopen(0);
         this->filetype = fh_in.get_filetype();
 
-        memblock = new unsigned char [20 + 1]; //sha1 is 20b
+        memblock = std::make_unique<unsigned char[]>(20 + 1); //sha1 is 20b
         // if a user can't compile this line, please replace it with C's
         // 'realpath' function and delete/free afterwards and send a PR
         //this->filename = std::filesystem::canonical(afilename);// this path must be absolute because if stuff gets send to FUSE, paths are relative to the FUSE process and probably systemd initialization
         this->filename = realpath_cpp(afilename);
 
-        size = (size_t) fh_in.read(memblock, 16);
+        size = (size_t) fh_in.read(memblock.get(), 16);
 
         if(size < 16) {
             //file.close();
@@ -738,7 +725,7 @@ void fastafs::load(std::string afilename)
             uint32_t i;
 
             // HEADER
-            fh_in.read(memblock, 14);
+            fh_in.read(memblock.get(), 14);
             memblock[16] = '\0';
 
             // check magic
@@ -762,20 +749,20 @@ void fastafs::load(std::string afilename)
 
             // INDEX
             fh_in.seek(file_cursor);
-            fh_in.read(memblock, 4);
-            this->data.resize(fourbytes_to_uint(memblock, 0));//n_seq becomes this->data.size()
+            fh_in.read(memblock.get(), 4);
+            this->data.resize(fourbytes_to_uint(memblock.get(), 0));//n_seq becomes this->data.size()
 
             size_t j;
-            fastafs_seq *s;
+            std::unique_ptr<fastafs_seq> s;
             for(i = 0; i < this->data.size(); i ++) {
-                s = new fastafs_seq;
+                s = std::make_unique<fastafs_seq>();
 
                 // flag
-                fh_in.read(memblock, 2);
-                s->flags.set(memblock);// should be initialized during construction of this class
+                fh_in.read(memblock.get(), 2);
+                s->flags.set(memblock.get());// should be initialized during construction of this class
 
                 // name length
-                fh_in.read(memblock, 1);
+                fh_in.read(memblock.get(), 1);
 
                 // name
                 size_t namesize = (unsigned char) memblock[0]; // cast to something that is large enough (> 128)
@@ -787,16 +774,16 @@ void fastafs::load(std::string afilename)
                 delete[] name;
 
                 // set cursor and save sequence data position
-                fh_in.read(memblock, 4);
+                fh_in.read(memblock.get(), 4);
                 file_cursor = fh_in.tell();
 
-                s->data_position = fourbytes_to_uint(memblock, 0);
+                s->data_position = fourbytes_to_uint(memblock.get(), 0);
                 fh_in.seek((uint32_t) s->data_position);
                 {
                     // sequence stuff
                     // n compressed nucleotides
-                    fh_in.read(memblock, 4);
-                    s->n = fourbytes_to_uint(memblock, 0);
+                    fh_in.read(memblock.get(), 4);
+                    s->n = fourbytes_to_uint(memblock.get(), 0);
 
                     // skip nucleotides
                     if(s->flags.is_twobit()) { // there fit 4 twobits in a byte, thus divide by 4,
@@ -808,61 +795,59 @@ void fastafs::load(std::string afilename)
                     }
 
                     // N-blocks (and update this->n instantly)
-                    fh_in.read(memblock, 4);
-                    uint32_t N_blocks = fourbytes_to_uint(memblock, 0);
+                    fh_in.read(memblock.get(), 4);
+                    uint32_t N_blocks = fourbytes_to_uint(memblock.get(), 0);
 
                     s->n_starts.resize(N_blocks);
                     s->n_ends.resize(N_blocks);
                     s->n_cumulative.resize(N_blocks + 1, 0);
                     for(j = 0; j < s->n_starts.size(); j++) {
-                        fh_in.read(memblock, 4);
-                        s->n_starts[j] = fourbytes_to_uint(memblock, 0);
+                        fh_in.read(memblock.get(), 4);
+                        s->n_starts[j] = fourbytes_to_uint(memblock.get(), 0);
                     }
                     for(j = 0; j < s->n_ends.size(); j++) {
-                        fh_in.read(memblock, 4);
-                        s->n_ends[j] = fourbytes_to_uint(memblock, 0);
+                        fh_in.read(memblock.get(), 4);
+                        s->n_ends[j] = fourbytes_to_uint(memblock.get(), 0);
                         s->n += s->n_ends[j] - s->n_starts[j] + 1;
                         s->n_cumulative[j + 1] = s->n_cumulative[j] + (s->n_ends[j] - s->n_starts[j] + 1);
                     }
 
                     // MD5-checksum - only if sequence is complete
                     if(s->flags.is_complete()) {
-                        fh_in.read(memblock, 16);
+                        fh_in.read(memblock.get(), 16);
                         for(int j = 0; j < 16 ; j++) {
                             s->md5_digest[j] = memblock[j];
                         }
                     }
 
                     // M-blocks
-                    fh_in.read(memblock, 4);
-                    uint32_t M_blocks = fourbytes_to_uint(memblock, 0);
+                    fh_in.read(memblock.get(), 4);
+                    uint32_t M_blocks = fourbytes_to_uint(memblock.get(), 0);
                     s->m_starts.resize(M_blocks);
                     s->m_ends.resize(M_blocks);
                     for(j = 0; j < s->m_starts.size(); j++) {
-                        fh_in.read(memblock, 4);
-                        s->m_starts[j] = fourbytes_to_uint(memblock, 0);
+                        fh_in.read(memblock.get(), 4);
+                        s->m_starts[j] = fourbytes_to_uint(memblock.get(), 0);
                     }
                     for(j = 0; j < s->m_ends.size(); j++) {
-                        fh_in.read(memblock, 4);
-                        s->m_ends[j] = fourbytes_to_uint(memblock, 0);
+                        fh_in.read(memblock.get(), 4);
+                        s->m_ends[j] = fourbytes_to_uint(memblock.get(), 0);
                     }
                 }
 
                 fh_in.seek(file_cursor);
-                this->data[i] = s;
+                this->data[i] = std::move(s);
             }
 
             // metadata section - empty for now
-            fh_in.read(memblock, 1);
+            fh_in.read(memblock.get(), 1);
 
             // crc32 checksum - may be missing because fastafs::load is also used before fastafs::get_crc32 is ran to obtain the checksum
-            if(fh_in.read(memblock, 4) == 4) {
-                this->crc32f = fourbytes_to_uint(memblock, 0);
+            if(fh_in.read(memblock.get(), 4) == 4) {
+                this->crc32f = fourbytes_to_uint(memblock.get(), 0);
             } else {
                 //printf("crc32 checksum missing\n");
             }
-
-            delete[] memblock;
         }
     }
 }
@@ -880,7 +865,7 @@ void fastafs::view_fasta(ffs2f_init* cache)
     fh.fopen(0);
 
     for(uint32_t i = 0; i < this->data.size(); i++) {
-        this->data[i]->view_fasta(cache->sequences[i], fh);
+        this->data[i]->view_fasta(cache->sequences[i].get(), fh);
     }
 
     //   file.close();
@@ -890,9 +875,9 @@ void fastafs::view_fasta(ffs2f_init* cache)
 
 
 
-ffs2f_init* fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
+std::unique_ptr<ffs2f_init> fastafs::init_ffs2f(uint32_t padding, bool allow_masking)
 {
-    ffs2f_init *ddata = new ffs2f_init(this->data.size(), padding);
+    auto ddata = std::make_unique<ffs2f_init>(this->data.size(), padding);
 
     for(size_t i = 0; i < this->data.size(); i++) {
         ddata->sequences[i] = this->data[i]->init_ffs2f_seq(padding, allow_masking);
@@ -950,7 +935,7 @@ uint32_t fastafs::view_sequence_region(ffs2f_init* cache, const char *seq_region
     // 02 : check if 'chr' is equals this->data[i].name
     for(size_t i = 0; i < this->data.size(); i++) {
         if(sr.get_seq_name().compare(this->data[i]->name) == 0) {
-            return this->data[i]->view_sequence_region(cache->sequences[i], &sr, buffer,  buffer_size, file_offset, fh);
+            return this->data[i]->view_sequence_region(cache->sequences[i].get(), &sr, buffer,  buffer_size, file_offset, fh);
         }
     }
     //}
@@ -993,12 +978,12 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
     fastafs_seq *seq;
 
     while(i < data.size()) {
-        seq = this->data[i];
+        seq = this->data[i].get();
         const uint32_t filesize = cache->sequences[i]->filesize;
 
         if(pos < filesize) {
             const uint32_t written_seq = seq->view_fasta_chunk(
-                                             cache->sequences[i],
+                                             cache->sequences[i].get(),
                                              &buffer[written],
                                              std::min((uint32_t) buffer_size - written, filesize),
                                              pos,
@@ -1084,7 +1069,7 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
     fastafs_seq *sequence;
     size_t i;
     for(i = 0; i < this->data.size(); i++) {
-        sequence = this->data[i];
+        sequence = this->data[i].get();
 
         // single byte can be written, as the while loop has returned true
         pos_limit += 1;
@@ -1128,9 +1113,9 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
         }
     }
 
-    ffs2f_init* cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
+    auto cache = this->init_ffs2f(0, false); // false, no masking needed, always upper-case is fine in this case
     for(i = 0; i < this->data.size(); i++) {
-        sequence = this->data[i];
+        sequence = this->data[i].get();
 
         // number nucleotides
         uint_to_fourbytes_ucsc2bit(n_seq, sequence->n);
@@ -1139,7 +1124,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             buffer[written++] = n_seq[4 - (pos_limit - pos)];
             pos++;
             if(written >= buffer_size) {
-                delete cache;
                 return written;
             }
         }
@@ -1151,7 +1135,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             buffer[written++] = n_seq[4 - (pos_limit - pos)];
             pos++;
             if(written >= buffer_size) {
-                delete cache;
                 return written;
             }
         }
@@ -1164,7 +1147,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
                 if(written >= buffer_size) {
-                    delete cache;
                     return written;
                 }
             }
@@ -1175,7 +1157,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 buffer[written++] = n_seq[4 - (pos_limit - pos)];
                 pos++;
                 if(written >= buffer_size) {
-                    delete cache;
                     return written;
                 }
             }
@@ -1189,7 +1170,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             pos++;
 
             if(written >= buffer_size) {
-                delete cache;
                 return written;
             }
         }
@@ -1203,7 +1183,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 pos++;
 
                 if(written >= buffer_size) {
-                    delete cache;
                     return written;
                 }
             }
@@ -1215,7 +1194,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
                 pos++;
 
                 if(written >= buffer_size) {
-                    delete cache;
                     return written;
                 }
             }
@@ -1228,7 +1206,6 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             pos++;
 
             if(written >= buffer_size) {
-                delete cache;
                 return written;
             }
         }
@@ -1253,14 +1230,13 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
 
                 // a block holds whole 2bit bytes, so request a multiple of 4 nucleotides
                 const uint32_t bytes_this_block = std::min(bytes_remaining, (uint32_t)(READ_BUFFER_SIZE / 4));
-                const uint32_t got = sequence->view_fasta_chunk(cache->sequences[i], nt_buffer, bytes_this_block * 4, fasta_seq_start + (off_t) byte_index * 4, file);
+                const uint32_t got = sequence->view_fasta_chunk(cache->sequences[i].get(), nt_buffer, bytes_this_block * 4, fasta_seq_start + (off_t) byte_index * 4, file);
 
                 for(uint32_t b = 0; b < got / 4; b++) {
                     t.set(nt_buffer + b * 4);
                     buffer[written++] = t.data;
                     pos++;
                     if(written >= buffer_size) {
-                        delete cache;
                         return written;
                     }
                 }
@@ -1277,18 +1253,16 @@ uint32_t fastafs::view_ucsc2bit_chunk(char *buffer, size_t buffer_size, off_t fi
             if(pos < pos_limit) {
                 //printf("%i - %i  = %i  ||  %i      ::    %i  == %i \n",pos_limit,pos, full_twobits * 4, j, sequence->n - (full_twobits * 4),  sequence->n - j);
                 //sequence->view_fasta_chunk(0, n_seq, sequence->name.size() + 2 + full_twobits * 4, sequence->n - (full_twobits * 4), &file);
-                sequence->view_fasta_chunk(cache->sequences[i], n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, file);
+                sequence->view_fasta_chunk(cache->sequences[i].get(), n_seq, sequence->n - (full_twobits * 4), sequence->name.size() + 2 + full_twobits * 4, file);
                 t.set(n_seq);
                 buffer[written++] = t.data;
                 pos++;
                 if(written >= buffer_size) {
-                    delete cache;
                     return written;
                 }
             }
         }
     }
-    delete cache;
     //file.close();
     //} else {
     //   throw std::runtime_error("[fastafs::view_fasta_chunk] could not load fastafs: " + this->filename);
@@ -1339,7 +1313,7 @@ size_t fastafs::view_dict_chunk(char *buffer, size_t buffer_size, off_t file_off
             }
 
             // sequence name
-            sequence = this->data[i];
+            sequence = this->data[i].get();
             pos_limit += (uint32_t) sequence->name.size();
             while(pos < pos_limit) {
                 buffer[written++] = sequence->name[sequence->name.size() - (pos_limit - pos)];
@@ -1497,7 +1471,7 @@ size_t fastafs::ucsc2bit_filesize(void)
     fastafs_seq *sequence;
 
     for(size_t i = 0; i < this->data.size(); i++) {
-        sequence = this->data[i];
+        sequence = this->data[i].get();
         nn += 1; // namesize
         nn += 4; // offset in file
         nn += 4;// dna size
@@ -1825,7 +1799,7 @@ bool fastafs::check_sequence_integrity(bool verbose)
     md5_hash[32] = '\0';
     std::string old_hash;
 
-    ffs2f_init* cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
+    auto cache = this->init_ffs2f(0, false);// do not use masking, this checksum requires capital / upper case nucleotides
 
     chunked_reader file = chunked_reader(this->filename.c_str());
     file.fopen(0);
@@ -1835,7 +1809,7 @@ bool fastafs::check_sequence_integrity(bool verbose)
         md5_digest_to_hash(this->data[i]->md5_digest, md5_hash);
         old_hash = std::string(md5_hash);
 
-        std::string new_hash = this->data[i]->md5(cache->sequences[i], file);
+        std::string new_hash = this->data[i]->md5(cache->sequences[i].get(), file);
         if(old_hash.compare(new_hash) == 0) {
             if(verbose) {
                 printf("OK\t%s\n", this->data[i]->name.c_str());
@@ -1853,7 +1827,6 @@ bool fastafs::check_sequence_integrity(bool verbose)
     //    throw std::runtime_error("[fastafs::check_sequence_integrity] could not load fastafs: " + this->filename);
     //}
 
-    delete cache;
 
     return retcode;
 }
