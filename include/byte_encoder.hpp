@@ -9,6 +9,21 @@
 
 #include <memory>
 #include <cstring>
+#include <array>
+
+inline constexpr auto make_twobit_encode_table()
+{
+    std::array<unsigned char, 256> t = {};
+    t['A'] = t['a'] = 2;
+    t['C'] = t['c'] = 1;
+    t['G'] = t['g'] = 3;
+    t['T'] = t['t'] = 0;
+    t['U'] = t['u'] = 0;
+    t['N'] = t['n'] = 0;
+    return t;
+}
+
+inline constexpr auto TWOBIT_ENCODE = make_twobit_encode_table();
 
 
 
@@ -52,7 +67,15 @@ public:
     {
         return 4;
     }
-    void encode_chunk(const char *input, unsigned char *output) const override;
+    void encode_chunk(const char *input, unsigned char *output) const override
+    {
+        output[0] = (unsigned char)(
+                        (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
+                        (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
+                        (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
+                        (TWOBIT_ENCODE[(unsigned char)input[3]])
+                    );
+    }
 };
 
 
@@ -68,7 +91,15 @@ public:
     {
         return 4;
     }
-    void encode_chunk(const char *input, unsigned char *output) const override;
+    void encode_chunk(const char *input, unsigned char *output) const override
+    {
+        output[0] = (unsigned char)(
+                        (TWOBIT_ENCODE[(unsigned char)input[0]] << 6) |
+                        (TWOBIT_ENCODE[(unsigned char)input[1]] << 4) |
+                        (TWOBIT_ENCODE[(unsigned char)input[2]] << 2) |
+                        (TWOBIT_ENCODE[(unsigned char)input[3]])
+                    );
+    }
 };
 
 
@@ -84,7 +115,12 @@ public:
     {
         return 2;
     }
-    void encode_chunk(const char *input, unsigned char *output) const override;
+    void encode_chunk(const char *input, unsigned char *output) const override
+    {
+        fourbit_byte f;
+        f.set((char*)input);
+        output[0] = f.data;
+    }
 };
 
 
@@ -100,7 +136,12 @@ public:
     {
         return 8;
     }
-    void encode_chunk(const char *input, unsigned char *output) const override;
+    void encode_chunk(const char *input, unsigned char *output) const override
+    {
+        fivebit_fivebytes f;
+        f.set((char*)input);
+        memcpy(output, f.data_compressed, 5);
+    }
 };
 
 
