@@ -37,6 +37,7 @@
 struct file_thread_info {
     chunked_reader *cr;
     sem_t sem;
+    ffs2f_cursor cursor; // resume state for sequential reads on this reader (see fastafs.hpp)
 };
 
 int MAX_FILE_THREADS = 4;
@@ -51,8 +52,8 @@ struct file_threads {
 struct fuse_instance {
     //fastasfs
     fastafs *f;
-    ffs2f_init *cache;
-    ffs2f_init *cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
+    std::unique_ptr<ffs2f_init> cache;
+    std::unique_ptr<ffs2f_init> cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
 
@@ -296,11 +297,27 @@ static int do_release(const char *path, struct fuse_file_info *fi)
 // threaded implementation of libfuse?
 // https://libfuse.github.io/doxygen/poll_8c.html
 
+// Pick the reader whose cached cursor continues exactly at this offset, so a sequential
+// read resumes without re-seeking or re-initialising the block/chunk state. Falls back to
+// round-robin when no reader matches. This is only a hint: the authoritative resume check
+// happens inside view_fasta_chunk_generalized under the reader's semaphore, so a mismatch
+// (e.g. from a concurrent update) simply yields a cache-miss, never wrong data.
+static int select_file_thread(file_threads *ft, off_t offset)
+{
+    for(int k = 0; k < MAX_FILE_THREADS; k++) {
+        if(ft->crs[(size_t) k].cursor.valid and ft->crs[(size_t) k].cursor.global_next_pos == (size_t) offset) {
+            return k;
+        }
+    }
+
+    return ft->thread_i++ % MAX_FILE_THREADS;
+}
+
 // test file error reads at: do_read(s=4096, off=20480):
 static int do_read(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     file_threads *ft = (file_threads*) fi->fh;
-    int cur_file_thread = ft->thread_i++ % MAX_FILE_THREADS;
+    int cur_file_thread = select_file_thread(ft, offset);
     sem_wait(&ft->crs[cur_file_thread].sem);
 
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
@@ -324,7 +341,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
 #endif
 
         if(strcmp(path, ffi->path_fasta.c_str()) == 0) {
-            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset, *ft->crs[cur_file_thread].cr);
+            written = (signed int) ffi->f->view_fasta_chunk(ffi->cache.get(), buffer, size, offset, *ft->crs[cur_file_thread].cr, &ft->crs[cur_file_thread].cursor);
         } else if(strcmp(path, ffi->path_faidx.c_str()) == 0) {
             written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
         } else if(strcmp(path, ffi->path_2bit.c_str()) == 0) {
@@ -332,7 +349,7 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         } else if(strcmp(path, ffi->path_dict.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
-            written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
+            written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0.get(), (strchr(path, '/') + 5), buffer, size, offset);
         }
     } else {
         if(ffi->u2b != nullptr) {
@@ -423,9 +440,6 @@ void do_destroy(void *pd)
 
     if(ffi->f != nullptr) {
         delete ffi->f;
-    }
-    if(ffi->cache != nullptr) {
-        delete ffi->cache;
     }
     if(ffi->u2b != nullptr) {
         delete ffi->u2b;
@@ -777,8 +791,6 @@ void fuse(int argc, char *argv[])
     } else {
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
 
-        delete ffi->cache;
-        delete ffi->cache_p0;
         delete ffi->f;
         delete ffi->u2b;
         delete ffi;

@@ -5,6 +5,7 @@
 
 
 
+#include <memory>
 #include <vector>
 
 #include <openssl/sha.h>
@@ -36,17 +37,41 @@ struct ffs2f_init_seq {
 
 struct ffs2f_init {
     const uint32_t padding_arg;// padding argument, 0 means no padding takes place and all nucleotides are written to one single line
-    std::vector<ffs2f_init_seq *> sequences;
+    std::vector<std::unique_ptr<ffs2f_init_seq>> sequences;
 
     ffs2f_init(size_t size, uint32_t padding_arg);
-    ~ffs2f_init(void);
+};
+
+
+class fastafs_seq;
+
+/*
+ * Resume state for sequential FASTA reads, persisted per open file handle. When a read
+ * continues exactly where the previous one stopped, view_fasta_chunk_generalized can
+ * restore this state and skip the N/M-block searches, the get_n_offset() lookup, the
+ * file seek and the chunk re-priming it would otherwise redo from scratch. The reader's
+ * file position is already correct, so the seek - the costly part for zstd-seekable
+ * archives, which discards the decompression context - is avoided entirely.
+ *
+ * seq + next_pos are the authoritative hit key (checked under the per-reader semaphore);
+ * global_next_pos is only a hint for the reader-affinity dispatch in fuse.cpp do_read().
+ */
+struct ffs2f_cursor {
+    bool valid = false;
+    const fastafs_seq* seq = nullptr;   // identity guard: state is only valid for this sequence
+    size_t next_pos = 0;                // seq-local fasta byte offset the state resumes at
+    size_t global_next_pos = 0;         // whole-file byte offset, used only for reader-affinity dispatch
+    size_t n_block = 0;
+    size_t m_block = 0;
+    unsigned char bit_offset = 0;
+    char chunk[8] = {};                 // decoded current chunk (max nucleotides_per_chunk == 8)
 };
 
 
 class fastafs_seq
 {
 public:
-    ffs2f_init_seq* init_ffs2f_seq(uint32_t, bool);
+    std::unique_ptr<ffs2f_init_seq> init_ffs2f_seq(uint32_t, bool);
 
     std::string name;//may not exceed 255 chars in current datatype
     uint32_t data_position;// file offset to start reading sequence data
@@ -70,8 +95,8 @@ public:
 
     size_t view_sequence_region_size(sequence_region*);
     uint32_t view_sequence_region(ffs2f_init_seq*, sequence_region*, char *, size_t, off_t, chunked_reader &);
-    uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
-    template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &);
+    uint32_t view_fasta_chunk(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &, ffs2f_cursor* = nullptr);
+    template <class T> uint32_t view_fasta_chunk_generalized(ffs2f_init_seq*, char *, size_t, off_t, chunked_reader &, ffs2f_cursor* = nullptr);
 
     std::string sha1(ffs2f_init_seq*, chunked_reader &);// sha1 works 'fine' but is, like md5, sensitive to length extension hacks and should actually not be used for identifiers.
     std::string md5(ffs2f_init_seq*, chunked_reader &);// md5 works 'fine' but is, like sha1, sensitive to length extension hacks and should actually not be used for identifiers.
@@ -95,16 +120,15 @@ class fastafs
 {
 
 public:
-    ffs2f_init* init_ffs2f(uint32_t, bool);
+    std::unique_ptr<ffs2f_init> init_ffs2f(uint32_t, bool);
 
     explicit fastafs(std::string);
-    ~fastafs();
 
     std::string name;
     std::string filename;
     compression_type filetype;
 
-    std::vector<fastafs_seq*> data;
+    std::vector<std::unique_ptr<fastafs_seq>> data;
     uint32_t crc32f;// crc32 as found in fastafs file
 
     fastafs_flags flags;
@@ -118,7 +142,7 @@ public:
 
     size_t view_sequence_region_size(const char *); // read stuff like "chr1:123-456" into the buffer
     uint32_t view_sequence_region(ffs2f_init*, const char *, char*, size_t, off_t); // read stuff like "chr1:123-456" into the buffer
-    uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t, chunked_reader &);
+    uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t, chunked_reader &, ffs2f_cursor* = nullptr);
     uint32_t view_fasta_chunk(ffs2f_init*, char*, size_t, off_t);
     uint32_t view_faidx_chunk(uint32_t, char *, size_t, off_t);
     uint32_t view_ucsc2bit_chunk(char *, size_t, off_t);

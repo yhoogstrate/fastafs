@@ -75,14 +75,23 @@
 <script>
 /* ---------------- configuratie ---------------- */
 const EXCLUDE = new Set(['timestamp','fastafs-version','git-commit','encoding','compression',
-                         'file-type','pattern','read_pattern','cmd','run']);
+                         'file-type','pattern','read_pattern','cmd','run','threading']);
 const ENC_ORDER       = ['dna','rna','iupac','protein'];
 const FILE_TYPE_ORDER = ['fa','2bit','dict','fai'];
 const TYPE_LABEL = {
   cache: 'Cache (FASTA → fastafs ingest)',
   view:  'View (decode naar FASTA)',
   mount: 'Mount (FUSE-read van virtuele bestanden)',
+  mount_threaded:   'Mount [threaded] — FUSE-read, multi-threaded',
+  mount_unthreaded: 'Mount [unthreaded] — FUSE-read, single-threaded (mount -s)',
 };
+// Korte knop-labels; vallen terug op de type-key zelf (view/cache/mount).
+const TAB_LABEL = {
+  mount_threaded:   'mount [threaded]',
+  mount_unthreaded: 'mount [unthreaded]',
+};
+// Alle mount-varianten (threaded/unthreaded/legacy) delen dezelfde facet/serie-logica.
+function isMount(type){ return typeof type === 'string' && type.startsWith('mount'); }
 const PRIORITY_METRICS = ['instructions', 'total-bytes'];
 const DEFAULT_METRIC = { cache:'instructions', view:'instructions', mount:'instructions' };
 
@@ -124,7 +133,14 @@ function parseTSV(text){
 
 function classify(fieldnames, rows){
   const f = new Set(fieldnames);
-  if(['encoding','compression','file-type','pattern'].every(k => f.has(k))) return 'mount';
+  if(['encoding','compression','file-type','pattern'].every(k => f.has(k))){
+    // Split mount naar aparte types op basis van de 'threading'-kolom; oude
+    // bestanden zonder die kolom vallen terug op het generieke 'mount'.
+    const thr = rows.length ? (rows[0]['threading'] || '') : '';
+    if(thr === 'unthreaded') return 'mount_unthreaded';
+    if(thr === 'threaded')   return 'mount_threaded';
+    return 'mount';
+  }
   if(f.has('nt_per_cpu_sec')){
     const cmd = rows.length ? (rows[0]['cmd'] || '') : '';
     return cmd.includes('view') ? 'view' : 'cache';
@@ -151,12 +167,12 @@ function detectMetrics(rows, fieldnames){
 }
 
 function seriesName(type, r){
-  if(type === 'mount') return (r['compression']||'?') + '/' + (r['pattern']||'?');
+  if(isMount(type)) return (r['compression']||'?') + '/' + (r['pattern']||'?');
   return r['compression'] || '?';
 }
 
 function buildType(type, rows, fieldnames){
-  const facetDim = type === 'mount' ? 'file-type' : null;
+  const facetDim = isMount(type) ? 'file-type' : null;
   const metrics  = detectMetrics(rows, fieldnames);
 
   const tree    = {};   // facet -> enc -> ts -> series -> metric -> [vals]
@@ -208,7 +224,7 @@ function buildType(type, rows, fieldnames){
         .concat(Object.keys(charts).filter(f => !FILE_TYPE_ORDER.includes(f)).sort());
   else facets = ['_all'];
 
-  let dm = DEFAULT_METRIC[type];
+  let dm = DEFAULT_METRIC[type] || (isMount(type) ? 'instructions' : null);
   if(!metrics.includes(dm)) dm = metrics[0] || null;
 
   return { label:TYPE_LABEL[type]||type, facet_label: facetDim?'file-type':null,
@@ -243,7 +259,7 @@ async function loadAll(){
   }
 
   const data = {};
-  for(const t of ['mount','view','cache'])
+  for(const t of ['mount_unthreaded','mount_threaded','mount','view','cache'])
     if(byType[t]) data[t] = buildType(t, byType[t], byFields[t]);
   return { data, okFiles, total: files.length };
 }
@@ -392,7 +408,7 @@ async function init(){
   document.getElementById('controls').style.display='';
   const tabs=document.getElementById('tabs');
   tabs.innerHTML = types.map(t =>
-      `<button class="tab" data-type="${t}" title="${esc(DATA[t].label)}">${t}</button>`).join('');
+      `<button class="tab" data-type="${t}" title="${esc(DATA[t].label)}">${esc(TAB_LABEL[t] || t)}</button>`).join('');
   tabs.querySelectorAll('.tab').forEach(b => b.onclick = () => selectTab(b.dataset.type));
   document.getElementById('metric').onchange = e => { state.metric=e.target.value; render(); };
   document.getElementById('facet').onchange  = e => { state.facet =e.target.value; render(); };

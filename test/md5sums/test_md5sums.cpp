@@ -36,7 +36,7 @@ void test_fasta_file(const std::string& input_fasta, const std::vector<std::stri
     fastafs fs = fastafs(basename);
     fs.load(fastafs_file);
 
-    ffs2f_init* cache = fs.init_ffs2f(0, false);
+    auto cache = fs.init_ffs2f(0, false);
     BOOST_REQUIRE(fs.data.size() > 0);
     BOOST_REQUIRE_EQUAL(fs.data.size(), expected_md5s.size());
 
@@ -44,12 +44,11 @@ void test_fasta_file(const std::string& input_fasta, const std::vector<std::stri
     file.fopen(0);
 
     for(size_t i = 0; i < fs.data.size(); i++) {
-        std::string actual = fs.data[i]->md5(cache->sequences[i], file);
+        std::string actual = fs.data[i]->md5(cache->sequences[i].get(), file);
         BOOST_CHECK_MESSAGE(actual == expected_md5s[i],
                             "Sequence " << i << " MD5 mismatch: got '" << actual << "' expected '" << expected_md5s[i] << "'");
     }
 
-    delete cache;
 }
 
 

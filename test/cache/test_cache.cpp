@@ -356,8 +356,8 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     f2.load("tmp/test_cache_test.fastafs");
 
     const uint32_t padding = 60;
-    ffs2f_init* cache_p60_uc = f2.init_ffs2f(padding, false); // upper case
-    ffs2f_init* cache_p60_mc = f2.init_ffs2f(padding, true); // mixed case
+    auto cache_p60_uc = f2.init_ffs2f(padding, false); // upper case
+    auto cache_p60_mc = f2.init_ffs2f(padding, true); // mixed case
 
     // upper case test
     const uint32_t write_size = 32;
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     std::string output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk(cache_p60_uc, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60_uc.get(), buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk(cache_p60_mc, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60_mc.get(), buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -392,8 +392,6 @@ BOOST_AUTO_TEST_CASE(test_cache_forwards_backwards)
     // check case insensitive; without masking included
     BOOST_CHECK(output.compare(mixedcase) == 0);
 
-    delete cache_p60_uc;
-    delete cache_p60_mc;
 }
 
 
@@ -416,7 +414,7 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
     f2.load("tmp/test_cache_test_003.fastafs");
 
     const uint32_t padding = 60;
-    ffs2f_init* cache_p60 = f2.init_ffs2f(padding, false);
+    auto cache_p60 = f2.init_ffs2f(padding, false);
 
     const uint32_t write_size = 32;
     char buffer[write_size + 1] = "";
@@ -426,7 +424,7 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
     std::string output = "";
 
     while(written < f2.fasta_filesize(padding)) {
-        w = f2.view_fasta_chunk(cache_p60, buffer, write_size, written);
+        w = f2.view_fasta_chunk(cache_p60.get(), buffer, write_size, written);
         output.append(buffer, w);
         written += w;
     }
@@ -434,7 +432,6 @@ BOOST_AUTO_TEST_CASE(test_cache_with_newlines)
     std::string uppercase = ">seq1\nTCCCTTGCNNAGGGNTGTNTTTNTNTANNNGTNGGAGACCNGANTAAAGTCACACCACAT\nCACGNNNTCAGCCTNAAACGGCGNATTAAGTGATCCTANCAACGATCTATCCGNANACAC\nAAATANGTTGACCTCGCGTCNNAGGCACCCGNNANAAGNANGCGCCGCACGGGNNGGNGN\nTACTAACGTCNNNCGCATGTNAGATGGACCNGTNNGCNANTTACCGNNCATACNCCNNNC\nCNAGAATTTCGTATNANAACNCAATTANGGTGGTCCGNNNGGTGNCAACCCTACCTTANA\nTNGGAACATATTNTAGGNCNCGNAATAAANGAGAGTAGNCCCANCTCANGANNACNNGGA\nCTCGCAGCCCNTTNAGCANNCAGCGGCGCNNTGGNTNGTTCTCANTNNNTNCAGGCGTNC\nGAAACTCGTGANNANAGACNGGTTGCNNCGNNANGNTNAGCCTCNTCGNAGCAGTTNTTA\nCGGTNCAACTNTAAGCCAGGTCANCAGTCNNN\n>seq2\nNNAATCATNCGAGNCTATNATANNAGNACNCTGTAGACCNNATACTNNATCAANNNTCTG\nTCANTNCNCAGNCNGGNGNNTTGNTNNATNGANGACTACGGTGCAGTTCGGTTGTGCGCC\nNCNNGATCTNTNNTACCGCGANCCCGGTNGNTGCTNCGATANTCANAACAGCAGAGANNG\nTTGNACAAATTTCTAGGNAACTTNCCCCCTACAANAGNNCGTACNNCNGTCTNAGTCACT\nANGCNCTGCNAAANGCGGCGATTCTTACNNGTNTCCGCGGGNTNNGTTCTCCACACTANA\nNCCNTATCNGACTANTATCATTNNCAANGAGTTAAGNCCAATNTACGCAAGTNAATTNNG\nAACGCCNCNACACCNTNGGANAGCNTGTTNTCACGNGTGACGCNNTGNATTNTATGCTTN\nAGAGTTANGCGGNCNGCGTCTGTGNTCGNGGGNCNTATAGGCGNCNNTGGCNGCCCCGTT\nNAGNNCTNGNNANTCNTGGNAGCCNGCGGTNN\n>seq3\nANTNANNNCNCNCNTNCNGNANTNNNGNTNGNNNANANANGNTNCNNNTNCNCNANCNTN\nTNNNGNTNGNTNNNANTNGNTNANNNTNCNANNNCNTNTNTNGNGNGNCNNNNNCNCNAN\nNNTNANNNANNNANTNCNGNCNANGNGNCNANTNANANANANNNTNANTNCNGNANANNN\nTNTNCNTNANCNGNNNNNANANGNCNNNGNANCNCNNNCNANNNTNTNANCNNNGNANNN\nANTNNNCNTNTNTNGNANGNCNTNGNANNNANTNGNGNTNTNNNGNANANTNGNCNTNCN\nGNGNTNGNCNGNGNANANNNANTNNNANGNGNGNTNCNGNGNANGNANANTNGNANANTN\nCNTNANCNTNCNTNCNTNANCNTNTNGNANGNGNGNNNCNTNANTNCNCNANTNCNGNCN\nNNTNANGNANTNCNCNCNANGNCNCNANGNGNGNGNCNCNANTNTNNNANANCNTNGNGN\nGNANTNANGNTNGNNNGNTNANGNNNANCNAN\n>seq4\nNTNGNTNGNGNTNCNANGNTNCNTNCNANCNGNNNANGNANGNGNTNTNGNNNCNCNTNN\nNNNANANTNCNANTNGNGNTNCNGNTNCNGNCNNNGNGNANANANNNTNGNNNGNNNANT\nNTNANTNTNNNCNCNANCNTNTNNNANTNTNANCNGNANNNNNCNGNANTNANCNGNGNG\nNTNGNTNTNGNNNANCNCNGNANCNNNCNNNTNCNTNTNGNCNANGNCNNNNNANCNANC\nNNNANCNANCNGNGNCNANGNNNGNTNCNANGNCNNNCNCNTNTNNNANCNCNNNANANN\nNTNCNGNTNNNCNCNCNTNCNNNCNNNGNANTNANCNNNCNTNTNCNANGNCNANCNTNC\nNNNNNCNANTNNNGNANGNCNNNANNNNNCNANANCNANCNNNTNCNANTNNNTNNNNNT\nNCNTNANCNTNGNGNCNTNCNNNCNTNANNNGNCNGNTNGNANTNGNTNNNNNNNGNNNG\nNTNCNNNNNANANGNANTNGNGNTNTNGNNNA\n";
     BOOST_CHECK(output.compare(uppercase) == 0);
 
-    delete cache_p60;
 }
 
 
@@ -579,7 +576,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
     BOOST_CHECK_EQUAL(f.fastafs_filesize(), 376);
 
     const size_t padding = 10;
-    ffs2f_init* cache_p10 = f.init_ffs2f(padding, true); // mixed case
+    auto cache_p10 = f.init_ffs2f(padding, true); // mixed case
     {
         // upper case test
         const uint32_t write_size = 32;
@@ -590,7 +587,7 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         std::string output = "";
 
         while(written < f.fasta_filesize(padding)) {
-            w = f.view_fasta_chunk(cache_p10, buffer2, write_size, written);
+            w = f.view_fasta_chunk(cache_p10.get(), buffer2, write_size, written);
             output.append(buffer2, w);
             written += w;
         }
@@ -600,7 +597,6 @@ BOOST_AUTO_TEST_CASE(test_cache_hybrid)
         BOOST_CHECK(output.compare(uppercase) == 0);
     }
 
-    delete cache_p10;
 }
 
 

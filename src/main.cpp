@@ -241,10 +241,8 @@ int main(int argc, char *argv[])
                             written = f->view_ucsc2bit_chunk(buffer, READ_BUFFER_SIZE, offset);
                         }
                     } else {
-                        ffs2f_init* cache = f->init_ffs2f(padding, allow_masking);
-                        f->view_fasta(cache);//@todo make argument parsing
-
-                        delete cache;
+                        auto cache = f->init_ffs2f(padding, allow_masking);
+                        f->view_fasta(cache.get());//@todo make argument parsing
                     }
                 } else {
                     usage_view();
