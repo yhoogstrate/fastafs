@@ -51,14 +51,14 @@ struct file_threads {
 
 struct fuse_instance {
     //fastasfs
-    fastafs *f;
+    std::unique_ptr<fastafs> f;
     std::unique_ptr<ffs2f_init> cache;
     std::unique_ptr<ffs2f_init> cache_p0;// cache with padding of 0; used by API '/seq/chr1:123:456'
 
     bool from_fastafs; // if false, from 2bit
 
     // ucsc2bit
-    ucsc2bit *u2b;
+    std::unique_ptr<ucsc2bit> u2b;
 
     // generic
     uint32_t padding;
@@ -436,22 +436,10 @@ static int do_utimens(const char *path, const struct timespec ts[2]) // seems it
 
 void do_destroy(void *pd)
 {
-    fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
-
-    if(ffi->f != nullptr) {
-        delete ffi->f;
-    }
-    if(ffi->u2b != nullptr) {
-        delete ffi->u2b;
-    }
-
-    // for
-    //if(ffi->cr != nullptr) {
-    //delete ffi->cr;
-    //}
-
-
-    delete ffi;
+    (void) pd;
+    // Ownership of the fuse_instance (and its f / u2b / cache unique_ptr members) lives in
+    // fuse(), which deletes ffi after fuse_main() returns. Freeing here as well would
+    // double-free, so this teardown callback intentionally frees nothing.
 
     /*
     //fastasfs
@@ -723,7 +711,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
                 }
             }
 
-            fi->f = new fastafs(name);
+            fi->f = std::make_unique<fastafs>(name);
             fi->f->load(fname);
             fi->cache = fi->f->init_ffs2f(fi->padding, fi->allow_masking);
             fi->cache_p0 = fi->f->init_ffs2f(0, true);// allow mixed case
@@ -736,7 +724,7 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
             //std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
-            fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
+            fi->u2b = std::make_unique<ucsc2bit>(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
             fi->u2b->load(std::string(argv[mount_target_arg]));
 
             fi->path_fasta = "/" + fi->u2b->name + ".fa";
@@ -791,9 +779,7 @@ void fuse(int argc, char *argv[])
     } else {
         fuse_main(ffi->argc_fuse, argv2, &operations, ffi);
 
-        delete ffi->f;
-        delete ffi->u2b;
-        delete ffi;
+        delete ffi;// unique_ptr members f / u2b / cache worden hiermee vrijgegeven
     }
     //http://www.maastaar.net/fuse/linux/filesystem/c/2016/05/21/writing-a-simple-filesystem-using-fuse/
 
