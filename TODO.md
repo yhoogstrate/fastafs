@@ -113,6 +113,24 @@
 - Zie ook het `view_faidx_chunk`-item bovenaan dit bestand: de EOF-underflow-guard kan
   in dezelfde beurt mee.
 
+## `get_fastafs_processes` opschoning (`src/lsfastafs.cpp`)
+- De NULL-`FILE*`-deref bij een mislukte `fopen("/proc/mounts")` is al gefixt
+  (guard + `return out;`). Resterende punten:
+- **`do`/`while`-lus met `fscanf` is fragiel** (`src/lsfastafs.cpp:50-80`): bij een
+  misvormde regel kan `fscanf` een waarde teruggeven die noch `6` noch `EOF` is zonder
+  het probleemtoken te consumeren → risico op een blijvende lus. Herschrijven naar een
+  `while`-conditie op `== 6` / stoppen op `EOF`, met positieve logica — conform de
+  stijlgids in CLAUDE.md (die dit `do/while`-`fscanf`-patroon expliciet afraadt).
+- **xattr-buffers niet expliciet ge-null-termineerd** (`src/lsfastafs.cpp:68-73`):
+  `getxattr` zet geen afsluitende `\0`. Werkt nu alleen omdat de fuse-kant zelf een
+  trailing null meeschrijft (`do_getxattr` retourneert `len+1`). Een sequentienaam mag
+  tot 255 tekens zijn; met null erbij (256) > de meegegeven grootte 255 → truncatie
+  zonder null → `std::string(char*)` leest voorbij de buffer. Fix: `sizeof(buf)` meegeven
+  én zelf termineren op de door `getxattr` geretourneerde lengte.
+- **Dode code**: `dict_fn` (`src/lsfastafs.cpp:67`) wordt berekend maar nergens gebruikt.
+- **Klein**: de build-comment op regel 14 (`g++ ... src/lsfastafs.cpp`) klopt niet meer;
+  de vertaaleenheid hangt af van `utils`/`config`.
+
 ## `database::add` naar `const char *` (`include/database.hpp:23`)
 - `add(char *)` muteert de pointer niet; net als `get` kan het `const char *` worden.
 - Dan vervallen de `(char*)`-casts in `test/database/test_database.cpp`

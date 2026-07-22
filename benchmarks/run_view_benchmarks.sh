@@ -15,6 +15,7 @@
 set -euo pipefail
 
 FASTAFS=./build-release/bin/fastafs
+echo "fastafs binary: $(readlink -f "$FASTAFS" || echo "$FASTAFS")"
 N_NUCLEOTIDES=10000000   # 10M nt per encoding type
 LINE_WIDTH=60
 N_BLOCKS_N=64            # pure N-blocks (uppercase N / '-' / '?') per sequence type

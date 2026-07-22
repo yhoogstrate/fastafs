@@ -459,6 +459,7 @@ def run_one(ffs_path, mnt_dir, enc, compression, file_type, pattern,
 # ---------- main ----------
 
 def main():
+    print(f'fastafs binary: {os.path.realpath(FASTAFS)}')
     print('Testdata voorbereiden ...')
     ensure_test_data()
 
