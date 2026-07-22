@@ -155,7 +155,8 @@ uint32_t fastafs_seq::view_fasta_chunk(
     size_t buffer_size,
     off_t start_pos_in_fasta,
 
-    chunked_reader &fh)
+    chunked_reader &fh,
+    ffs2f_cursor* cursor)
 {
     uint32_t written_iter;
     uint32_t written = 0;
@@ -163,14 +164,14 @@ uint32_t fastafs_seq::view_fasta_chunk(
     do {
         if(this->flags.is_twobit()) {
             if(this->flags.is_dna()) {
-                written_iter = this->view_fasta_chunk_generalized<twobit_byte_dna>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh);
+                written_iter = this->view_fasta_chunk_generalized<twobit_byte_dna>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh, cursor);
             } else {
-                written_iter = this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh);
+                written_iter = this->view_fasta_chunk_generalized<twobit_byte_rna>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh, cursor);
             }
         } else if(this->flags.is_fourbit()) {
-            written_iter = this->view_fasta_chunk_generalized<fourbit_byte>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh);
+            written_iter = this->view_fasta_chunk_generalized<fourbit_byte>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh, cursor);
         } else {
-            written_iter = this->view_fasta_chunk_generalized<fivebit_fivebytes>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh);
+            written_iter = this->view_fasta_chunk_generalized<fivebit_fivebytes>(cache, buffer + written, buffer_size - written, start_pos_in_fasta + written, fh, cursor);
         }
         written += written_iter;
     } while((written_iter > 0) and (written < buffer_size));
@@ -215,7 +216,8 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     size_t buffer_size,
     off_t start_pos_in_fasta,
 
-    chunked_reader &fh)
+    chunked_reader &fh,
+    ffs2f_cursor* cursor)
 {
 #if DEBUG
     if(cache == nullptr) {
@@ -230,6 +232,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
 
     T t = T();// nice way of having this templated object on stack :)
+    char resume_chunk[8];// holds the decoded chunk restored from the cursor on a sequential-continuation hit
     uint32_t written = 0;
 
 
@@ -263,44 +266,80 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
     }
 #endif
     const uint32_t offset_from_sequence_line = (uint32_t)(pos - pos_limit);
-    size_t n_block = find_block(cache->n_ends, pos);
-    size_t m_block = find_block(cache->m_ends, pos);
     uint32_t newlines_passed = offset_from_sequence_line / (cache->padding + 1);// number of newlines passed (within the sequence part)
-    const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
-    // calculate file position for next twobit
-    // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
-    uint32_t n_passed = 0;
-    this->get_n_offset(nucleotide_pos, &n_passed);
-    uint32_t compressed_nucleotide_offset = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
-    fh.seek((uint32_t) this->data_position + 4 + T::nucleotides_to_compressed_fileoffset(compressed_nucleotide_offset));
-    unsigned char bit_offset = compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
+    size_t n_block;
+    size_t m_block;
+    unsigned char bit_offset;
+    char *chunk;
 
-    /*
-     0  0  0  0  1  1  1  1 << desired offset from starting point
-     A  C  T  G  A  C  T  G
-    *
+    // Sequential-continuation hit: this read starts exactly where the previous one on
+    // this file handle stopped, so restore the cached state and skip the block searches,
+    // the get_n_offset() lookup, the file seek and the chunk re-prime. The reader's file
+    // position is already where we need it. seq + next_pos is the authoritative key here;
+    // it is (re)checked under the per-reader semaphore, so a stale hint cannot corrupt data.
+    const bool resume = (cursor != nullptr) and cursor->valid and (cursor->seq == this) and (cursor->next_pos == pos);
 
-    handigste is om file pointer naar de byte ervoor te zetten
-    vervolgens wanneer bit_offset gelijk is aan nul, lees je de volgende byte
-    * nooit out of bound
+    if(resume) {
+        n_block = cursor->n_block;
+        m_block = cursor->m_block;
+        bit_offset = cursor->bit_offset;
+        memcpy(resume_chunk, cursor->chunk, sizeof(resume_chunk));
+        chunk = resume_chunk;
+    } else {
+        n_block = find_block(cache->n_ends, pos);
+        m_block = find_block(cache->m_ends, pos);
 
-    */
-//    const char *chunk = t.encode_hash[0];// init
-//    unsigned char bit_offset = (nucleotide_pos - n_passed) % t.nucleotides_per_byte;// twobit -> 4, fourbit: -> 2
+        const uint32_t nucleotide_pos = offset_from_sequence_line - newlines_passed;// requested nucleotide in file
 
-    // chunk is always overwritten by t.next(fh) before first use; nullptr in debug to catch
-    // accidental early reads, dummy init in release to suppress -Wmaybe-uninitialized
+        // calculate file position for next twobit
+        // when we are in an OPEN n block, we need to go to the first non-N base after, and place the file pointer there
+        uint32_t n_passed = 0;
+        this->get_n_offset(nucleotide_pos, &n_passed);
+        uint32_t compressed_nucleotide_offset = nucleotide_pos - n_passed; // number of nucleotides [NACT / compressed] behind us
+        fh.seek((uint32_t) this->data_position + 4 + T::nucleotides_to_compressed_fileoffset(compressed_nucleotide_offset));
+        bit_offset = compressed_nucleotide_offset % T::nucleotides_per_chunk;// twobit -> 4, fourbit: -> 2
+
+        /*
+         0  0  0  0  1  1  1  1 << desired offset from starting point
+         A  C  T  G  A  C  T  G
+        *
+
+        handigste is om file pointer naar de byte ervoor te zetten
+        vervolgens wanneer bit_offset gelijk is aan nul, lees je de volgende byte
+        * nooit out of bound
+
+        */
+
+        // chunk is always overwritten by t.next(fh) before first use; nullptr in debug to catch
+        // accidental early reads, dummy init in release to suppress -Wmaybe-uninitialized
 #if DEBUG
-    char *chunk = nullptr;
+        chunk = nullptr;
 #else
-    char *chunk = (char *) t.encode_hash[1];
+        chunk = (char *) t.encode_hash[1];
 #endif
 
-    if(bit_offset != 0) {
-        t.next(fh);
-        chunk = t.get();
+        if(bit_offset != 0) {
+            t.next(fh);
+            chunk = t.get();
+        }
     }
+
+    // Persist the state at each buffer-full return so the next contiguous read can resume.
+    // Only meaningful when a file handle is threaded through (cursor != nullptr).
+    auto save_cursor = [&]() {
+        if(cursor != nullptr) {
+            cursor->valid = true;
+            cursor->seq = this;
+            cursor->next_pos = pos;
+            cursor->n_block = n_block;
+            cursor->m_block = m_block;
+            cursor->bit_offset = bit_offset;
+            if(bit_offset != 0) {// chunk only matters mid-chunk; at a boundary it is reloaded on resume
+                memcpy(cursor->chunk, chunk, (size_t) T::nucleotides_per_chunk);
+            }
+        }
+    };
 
     uint32_t cur_n_end = cache->n_ends[n_block];
     uint32_t cur_n_start = cache->n_starts[n_block];
@@ -366,6 +405,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             if(written >= buffer_size) {
                 //fh->clear();
                 //delete[] from_file_buffer;
+                save_cursor();
                 return written;
             }
         }
@@ -379,6 +419,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
             if(written >= buffer_size) {
                 //fh->clear();
                 //delete[] from_file_buffer;
+                save_cursor();
                 return written;
             }
         }
@@ -388,6 +429,11 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
     //fh->clear();
     //delete[] from_file_buffer;
+    // Sequence exhausted: the reader has advanced past the end of this sequence's data,
+    // so any cached resume state for it is now stale - invalidate it.
+    if(cursor != nullptr) {
+        cursor->valid = false;
+    }
     return written;
 }
 
@@ -969,13 +1015,22 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
 
 
 
-uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset, chunked_reader &fh)
+uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffer_size, off_t file_offset, chunked_reader &fh, ffs2f_cursor* cursor)
 {
     uint32_t written = 0;
 
     size_t i = 0;// sequence iterator
     uint32_t pos = (uint32_t) file_offset;
     fastafs_seq *seq;
+
+    // Record the whole-file continuation offset for the reader-affinity dispatch (fuse.cpp
+    // do_read). The per-sequence resume state itself is maintained inside the seq-level
+    // view_fasta_chunk; here we only translate 'written' back into a whole-file offset.
+    auto record_global = [&]() {
+        if(cursor != nullptr and cursor->valid) {
+            cursor->global_next_pos = (size_t) file_offset + written;
+        }
+    };
 
     while(i < data.size()) {
         seq = this->data[i].get();
@@ -987,12 +1042,14 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
                                              &buffer[written],
                                              std::min((uint32_t) buffer_size - written, filesize),
                                              pos,
-                                             fh);
+                                             fh,
+                                             cursor);
 
             written += written_seq;
             pos -= (filesize - written_seq);
 
             if(written == buffer_size) {
+                record_global();
                 return written;
             }
         } else {
@@ -1002,6 +1059,7 @@ uint32_t fastafs::view_fasta_chunk(ffs2f_init* cache, char *buffer, size_t buffe
         i++;
     }
 
+    record_global();
     return written;
 }
 

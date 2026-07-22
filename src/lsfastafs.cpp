@@ -44,7 +44,8 @@ std::unordered_multimap<std::string, std::pair<std::string, std::string> > get_f
     f = fopen("/proc/mounts", "r");
 
     if(!f) {
-        fprintf(stdout, "Could not open /proc/mounts - are you sure this is running on linux?\n");
+        fprintf(stderr, "Could not open /proc/mounts - are you sure this is running on linux?\n");
+        return out;
     }
     do {
         match = fscanf(f, "%255s %255s %255s %255s %d %d\n", mount_dev, mount_dir, mount_type, mount_opts, &mount_freq, &mount_passno);
