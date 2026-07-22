@@ -50,6 +50,8 @@ public:
 
     static const char nucleotides_per_byte = 8 / twobit_byte::bits_per_nucleotide;
     static const char nucleotides_per_chunk = 8 / twobit_byte::bits_per_nucleotide;
+    static const char bytes_per_chunk = 1;
+    inline void load(const unsigned char *src) { this->data = *src; }
 
     void set(unsigned char, unsigned char);
     void set(char*);

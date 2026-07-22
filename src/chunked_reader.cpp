@@ -18,24 +18,21 @@ size_t State::read(unsigned char *arg_buffer_to, size_t arg_buffer_to_size,
     }
 #endif //DEBUG
 
-    size_t written = 0;
-    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);// number of characters to copy
+    const char *buf = this->context->get_buffer();
+    const size_t n1 = std::min(buffer_n - buffer_i, arg_buffer_to_size);
+    memcpy(arg_buffer_to, buf + buffer_i, n1);
+    buffer_i += n1;
 
-    // copy current internal buffer completely
-    while(written < n1) {
-        arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
+    if(n1 < arg_buffer_to_size) {
+        this->context->cache_buffer();
+        buf = this->context->get_buffer();
+        const size_t n2 = std::min(buffer_n - buffer_i, arg_buffer_to_size - n1);
+        memcpy(arg_buffer_to + n1, buf + buffer_i, n2);
+        buffer_i += n2;
+        return n1 + n2;
     }
 
-    if(written < arg_buffer_to_size) {
-        this->context->cache_buffer();// needs to set n to 0
-
-        while(buffer_i < buffer_n and written < arg_buffer_to_size) {
-            arg_buffer_to[written++] = this->context->get_buffer()[buffer_i++];
-        }
-    }
-
-
-    return written;
+    return n1;
 }
 
 

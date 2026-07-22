@@ -65,6 +65,12 @@ struct fuse_instance {
     int argc_fuse;
 
     timespec ts[2]; // access and modify time
+
+    // prebuilt virtual paths — set once in parse_args, reused in every getattr/read/readdir call
+    std::string path_fasta;  // "/name.fa"
+    std::string path_faidx;  // "/name.fa.fai"
+    std::string path_2bit;   // "/name.2bit"
+    std::string path_dict;   // "/name.dict"
 };
 
 
@@ -73,13 +79,14 @@ static int do_getattr(const char *path, struct stat *st)
 {
     fuse_instance *ffi = static_cast<fuse_instance *>(fuse_get_context()->private_data);
 
+    time_t now = time(NULL);
+
 #if DEBUG
     char cur_time[100];
-    time_t now = time(0);
     strftime(cur_time, 100, "%Y-%m-%d %H:%M:%S", localtime(&now));
 #endif
 
-    // GNU's definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
+    // GNU’s definitions of the attributes (http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html):
     // 		st_uid: 	The user ID of the file’s owner.
     //		st_gid: 	The group ID of the file.
     //		st_atime: 	This is the last access time for the file.
@@ -91,8 +98,8 @@ static int do_getattr(const char *path, struct stat *st)
     st->st_uid = getuid(); // The owner of the file/directory is the user who mounted the filesystem
     st->st_gid = getgid(); // The group of the file/directory is the same as the group of the user who mounted the filesystem
 
-    st->st_atime = time(NULL); // The last "a"ccess of the file/directory is right now
-    st->st_mtime = time(NULL); // The last "m"odification of the file/directory is right now
+    st->st_atime = now; // The last "a"ccess of the file/directory is right now
+    st->st_mtime = now; // The last "m"odification of the file/directory is right now
 
     st->st_nlink = 1;
 
@@ -127,18 +134,13 @@ static int do_getattr(const char *path, struct stat *st)
                 printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->f->name.c_str(), ffi->padding);
 #endif
 
-                std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
-                std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
-                std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
-                std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
-
-                if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+                if(strcmp(path, ffi->path_fasta.c_str()) == 0) {
                     st->st_size = ffi->f->fasta_filesize(ffi->padding);
-                } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+                } else if(strcmp(path, ffi->path_faidx.c_str()) == 0) {
                     st->st_size = ffi->f->get_faidx(ffi->padding).size();
-                } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
+                } else if(strcmp(path, ffi->path_2bit.c_str()) == 0) {
                     st->st_size = ffi->f->ucsc2bit_filesize();
-                } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+                } else if(strcmp(path, ffi->path_dict.c_str()) == 0) {
                     st->st_size = ffi->f->dict_filesize();
                 }
                 //else if(strncmp(path, "/seq/", 5) == 0) { // api access
@@ -151,12 +153,9 @@ static int do_getattr(const char *path, struct stat *st)
                 printf("\033[0;32m[%s]\033[0;33m do_getattr:\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, path, ffi->u2b->name.c_str(), ffi->padding);
 #endif
 
-                std::string virtual_fasta_filename = "/" + ffi->u2b->name + ".fa";
-                std::string virtual_faidx_filename = "/" + ffi->u2b->name + ".fa.fai";
-
-                if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+                if(strcmp(path, ffi->path_fasta.c_str()) == 0) {
                     st->st_size = ffi->u2b->fasta_filesize(ffi->padding);
-                } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+                } else if(strcmp(path, ffi->path_faidx.c_str()) == 0) {
                     st->st_size = ffi->u2b->get_faidx(ffi->padding).size();
                 }
             }
@@ -186,16 +185,11 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, __
         printf("\033[0;32m[%s]\033[0;33m do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->f->name.c_str(), ffi->padding);
 #endif
 
-        std::string virtual_fasta_filename = ffi->f->name + ".fa";
-        std::string virtual_faidx_filename = ffi->f->name + ".fa.fai";
-        std::string virtual_ucsc2bit_filename = ffi->f->name + ".2bit";
-        std::string virtual_dict_filename = ffi->f->name + ".dict";
-
         if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
-            filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
-            filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
-            filler(buffer, virtual_ucsc2bit_filename.c_str(), NULL, 0);
-            filler(buffer, virtual_dict_filename.c_str(), NULL, 0);
+            filler(buffer, ffi->path_fasta.c_str() + 1, NULL, 0);
+            filler(buffer, ffi->path_faidx.c_str() + 1, NULL, 0);
+            filler(buffer, ffi->path_2bit.c_str() + 1, NULL, 0);
+            filler(buffer, ffi->path_dict.c_str() + 1, NULL, 0);
         }
     } else {
         if(ffi->u2b != nullptr) {
@@ -203,12 +197,9 @@ static int do_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, __
             printf("\033[0;32m[%s]\033[0;33m 2bit::do_readdir(\033[0moffset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
 #endif
 
-            std::string virtual_fasta_filename = ffi->u2b->name + ".fa";
-            std::string virtual_faidx_filename = ffi->u2b->name + ".fa.fai";
-
             if(strcmp(path, "/") == 0) {    // If the user is trying to show the files/directories of the root directory show the following
-                filler(buffer, virtual_fasta_filename.c_str(), NULL, 0);
-                filler(buffer, virtual_faidx_filename.c_str(), NULL, 0);
+                filler(buffer, ffi->path_fasta.c_str() + 1, NULL, 0);
+                filler(buffer, ffi->path_faidx.c_str() + 1, NULL, 0);
             }
         }
     }
@@ -332,18 +323,13 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
         printf("\033[0;35m fi->padding: %u\n", fi->padding);
 #endif
 
-        std::string virtual_fasta_filename = "/" + ffi->f->name + ".fa";
-        std::string virtual_faidx_filename = "/" + ffi->f->name + ".fa.fai";
-        std::string virtual_ucsc2bit_filename = "/" + ffi->f->name + ".2bit";
-        std::string virtual_dict_filename = "/" + ffi->f->name + ".dict";
-
-        if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+        if(strcmp(path, ffi->path_fasta.c_str()) == 0) {
             written = (signed int) ffi->f->view_fasta_chunk(ffi->cache, buffer, size, offset, *ft->crs[cur_file_thread].cr);
-        } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+        } else if(strcmp(path, ffi->path_faidx.c_str()) == 0) {
             written = (signed int) ffi->f->view_faidx_chunk(ffi->padding, buffer, size, offset);
-        } else if(strcmp(path, virtual_ucsc2bit_filename.c_str()) == 0) {
+        } else if(strcmp(path, ffi->path_2bit.c_str()) == 0) {
             written = (signed int) ffi->f->view_ucsc2bit_chunk(buffer, size, offset);
-        } else if(strcmp(path, virtual_dict_filename.c_str()) == 0) {
+        } else if(strcmp(path, ffi->path_dict.c_str()) == 0) {
             written = (signed int) ffi->f->view_dict_chunk(buffer, size, offset);
         } else if(strncmp(path, "/seq/", 5) == 0) { // api access
             written = (signed int) ffi->f->view_sequence_region(ffi->cache_p0, (strchr(path, '/') + 5), buffer, size, offset);
@@ -358,12 +344,9 @@ static int do_read(const char *path, char *buffer, size_t size, off_t offset, st
             printf("\033[0;32m[%s]\033[0;33m 2bit::do_read(\033[0msize=%u, offset=%u\033[0;33m):\033[0m %s   \033[0;35m(fastafs: %s, padding: %u)\033[0m\n", cur_time, (uint32_t) size, (uint32_t) offset, path, ffi->u2b->name.c_str(), ffi->padding);
 #endif
 
-            std::string virtual_fasta_filename = "/" + ffi->u2b->name + ".fa";
-            std::string virtual_faidx_filename = "/" + ffi->u2b->name + ".fa.fai";
-
-            if(strcmp(path, virtual_fasta_filename.c_str()) == 0) {
+            if(strcmp(path, ffi->path_fasta.c_str()) == 0) {
                 written = (signed int) ffi->u2b->view_fasta_chunk(ffi->padding, buffer, size, offset);
-            } else if(strcmp(path, virtual_faidx_filename.c_str()) == 0) {
+            } else if(strcmp(path, ffi->path_faidx.c_str()) == 0) {
                 written = (signed int) ffi->u2b->view_faidx_chunk(ffi->padding, buffer, size, offset);
             }
         }
@@ -394,7 +377,7 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
 
                 return (int) filename_size + 1;
             } else {
-                return ERANGE;
+                return -ERANGE;
             }
         } else if(strcmp(name, FASTAFS_PID_XATTR_NAME.c_str()) == 0) { // requesting FASTAFS filename only works with FASTAFS files..
             char mypid[8];
@@ -408,12 +391,12 @@ static int do_getxattr(const char* path, const char* name, char* value, size_t s
 
                 return (int) pid_size + 1;
             } else {
-                return ERANGE;
+                return -ERANGE;
             }
         }
     }
 
-    return ENODATA; // returns -1 on other files
+    return -ENODATA; // returns -1 on other files
 }
 
 
@@ -730,12 +713,20 @@ fuse_instance *parse_args(int argc, char **argv, char **argv_fuse)
             fi->f->load(fname);
             fi->cache = fi->f->init_ffs2f(fi->padding, fi->allow_masking);
             fi->cache_p0 = fi->f->init_ffs2f(0, true);// allow mixed case
+
+            fi->path_fasta = "/" + fi->f->name + ".fa";
+            fi->path_faidx = "/" + fi->f->name + ".fa.fai";
+            fi->path_2bit  = "/" + fi->f->name + ".2bit";
+            fi->path_dict  = "/" + fi->f->name + ".dict";
         } else {
             std::string basename = basename_cpp(std::string(argv[mount_target_arg]));
             //std::string basename = std::filesystem::path(std::string(argv[mount_target_arg])).filename();
 
             fi->u2b = new ucsc2bit(basename);// useses basename as prefix for filenames to mount: hg19.2bit -> hg19.2bit.fa
             fi->u2b->load(std::string(argv[mount_target_arg]));
+
+            fi->path_fasta = "/" + fi->u2b->name + ".fa";
+            fi->path_faidx = "/" + fi->u2b->name + ".fa.fai";
         }
 
         //argv_fuse[fi->argc_fuse++] = argv[mount_target_arg];

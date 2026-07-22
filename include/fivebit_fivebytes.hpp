@@ -3,6 +3,7 @@
 #define FIVEBIT_FIVEBYTES_HPP
 
 #include <array>
+#include <cstring>
 #include "config.hpp"
 
 #include "chunked_reader.hpp"
@@ -26,8 +27,12 @@ public:
 
     //static const unsigned char bits_per_nucleotide = 5;
     //static const char nucleotides_per_byte = 1 ; //8 / bits_per_nucleotide ;
-    static const char bytes_per_chunk = 5 ; // this is about decompressed chunks
-    static const char nucleotides_per_chunk = 8 ; // this is about decompressed chunks
+    static const char bytes_per_chunk = 5;
+    static const char nucleotides_per_chunk = 8;
+    inline void load(const unsigned char *src) {
+        memcpy(this->data_compressed, src, 5);
+        this->unpack();
+    }
 
     void set(unsigned char, unsigned char);
     void set(char *);// string with 8 amino acids

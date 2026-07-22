@@ -320,51 +320,91 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                 } else {
                     buffer[written++] = T::n_fill_unmasked;
                 }
+
+                if(pos == cur_n_end) {
+                    n_block++;
+#if DEBUG
+                    if(n_block >= cache->n_ends.size()) {
+                        throw std::out_of_range("n_block advanced past sentinel\n");
+                    }
+#endif
+                    cur_n_end = cache->n_ends[n_block];
+                    cur_n_start = cache->n_starts[n_block];
+                }
+                if(pos == cur_m_end) {
+                    m_block++;
+#if DEBUG
+                    if(m_block >= cache->m_ends.size()) {
+                        throw std::out_of_range("m_block advanced past sentinel\n");
+                    }
+#endif
+                    cur_m_end = cache->m_ends[m_block];
+                    cur_m_start = cache->m_starts[m_block];
+                }
+
+                pos++;
+
+                if(written >= buffer_size) {
+                    return written;
+                }
             } else {
+                // N-free run: batch-lees alle compressed chunks tot het volgende N-blok
+                const uint32_t run_end = (uint32_t)std::min(
+                    std::min((size_t)cur_n_start, pos_limit),
+                    pos + (buffer_size - written));
 
-                if(bit_offset % T::nucleotides_per_chunk == 0) {
-                    t.next(fh);
-                    chunk = t.get();
-                }
-
-                if(pos >= cur_m_start) { // IN an m block; lower-case
-                    buffer[written++] = (unsigned char)(chunk[bit_offset] + 32);
-                } else {
-                    buffer[written++] = chunk[bit_offset];
-                }
-
-                bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_chunk;
-            }
-
-            if(pos == cur_n_end) {
-                //if(pos == cache->n_ends[n_block]) {
-                n_block++;
+                // verwerk de rest van de al-geladen chunk (bit_offset > 0)
+                while(pos < run_end && bit_offset > 0) {
+                    buffer[written++] = (pos >= cur_m_start)
+                        ? (unsigned char)(chunk[bit_offset] + 32) : chunk[bit_offset];
+                    if(pos == cur_m_end) {
+                        m_block++;
 #if DEBUG
-                if(n_block >= cache->n_ends.size()) {
-                    throw std::out_of_range("n_block advanced past sentinel\n");
-                }
+                        if(m_block >= cache->m_ends.size()) {
+                            throw std::out_of_range("m_block advanced past sentinel\n");
+                        }
 #endif
-                cur_n_end = cache->n_ends[n_block];
-                cur_n_start = cache->n_starts[n_block];
-            }
-            if(pos == cur_m_end) {
-                //if(pos == cache->m_ends[m_block]) {
-                m_block++;
+                        cur_m_end   = cache->m_ends[m_block];
+                        cur_m_start = cache->m_starts[m_block];
+                    }
+                    bit_offset = (unsigned char)(bit_offset + 1) % T::nucleotides_per_chunk;
+                    pos++;
+                }
+
+                // lees alle resterende chunks voor deze run in één aanroep
+                if(pos < run_end) {
+                    const uint32_t bulk_nt     = run_end - pos;
+                    const uint32_t bulk_chunks = (bulk_nt + (uint32_t)T::nucleotides_per_chunk - 1)
+                                                 / (uint32_t)T::nucleotides_per_chunk;
+                    unsigned char comp_buf[READ_BUFFER_SIZE];
+                    fh.read(comp_buf, (size_t)bulk_chunks * (size_t)T::bytes_per_chunk);
+
+                    for(uint32_t cb = 0; pos < run_end; cb++) {
+                        t.load(comp_buf + cb * (uint32_t)T::bytes_per_chunk);
+                        chunk = t.get();
+                        const uint32_t slots = std::min(
+                            (uint32_t)T::nucleotides_per_chunk, (uint32_t)(run_end - pos));
+                        for(uint32_t i = 0; i < slots; i++, pos++) {
+                            buffer[written++] = (pos >= cur_m_start)
+                                ? (unsigned char)(chunk[i] + 32) : chunk[i];
+                            if(pos == cur_m_end) {
+                                m_block++;
 #if DEBUG
-                if(m_block >= cache->m_ends.size()) {
-                    throw std::out_of_range("m_block advanced past sentinel\n");
-                }
+                                if(m_block >= cache->m_ends.size()) {
+                                    throw std::out_of_range("m_block advanced past sentinel\n");
+                                }
 #endif
-                cur_m_end = cache->m_ends[m_block];
-                cur_m_start = cache->m_starts[m_block];
-            }
+                                cur_m_end   = cache->m_ends[m_block];
+                                cur_m_start = cache->m_starts[m_block];
+                            }
+                        }
+                        bit_offset = (unsigned char)(slots % (uint32_t)T::nucleotides_per_chunk);
+                    }
+                }
 
-            pos++;
-
-            if(written >= buffer_size) {
-                //fh->clear();
-                //delete[] from_file_buffer;
-                return written;
+                if(written >= buffer_size) {
+                    return written;
+                }
             }
         }
 
