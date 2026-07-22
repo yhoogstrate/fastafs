@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-Mount benchmark voor fastafs virtuele bestandsformaten (fa, 2bit, dict, fai).
+Mount benchmark (UNTHREADED / single-threaded FUSE) voor fastafs virtuele
+bestandsformaten (fa, 2bit, dict, fai).
+
+Identiek aan run_mount_format_benchmarks.py, met één verschil: er wordt gemount
+met 'fastafs mount -s', wat de multi-threaded FUSE-operatie uitschakelt. Aparte
+variant zodat je snel alleen de unthreaded prestaties kunt draaien. Single-threaded
+lezen serialiseert de reads -> deterministischer, lager-ruis metingen waarin
+performance-verschillen (per-read CPU-werk) beter zichtbaar zijn dan onder threading,
+dat die verschillen kan effenen via scheduling/contentie/readahead.
 
 Genereert dezelfde testbestanden als run_view_benchmarks.sh, monteert elk
 fastafs-archief en leest elk virtueel bestandstype met drie toegangspatronen:
@@ -13,11 +21,12 @@ Encodings : dna, rna, iupac, protein
 Compressie: plain, zstd   (als kolom; beide gaan in hetzelfde uitvoerbestand)
 Formaten  : fa, 2bit, dict, fai
 
-Uitvoer: benchmarks/<user>-<machine-id>_mount_<enc>_<fmt>.txt  (TSV, appended)
-         -> dus één bestand per (encoding x bestandsformaat).
+Uitvoer: benchmarks/<user>-<machine-id>_mount_<enc>_<fmt>_unthreaded.txt  (TSV, appended)
+         -> dus één bestand per (encoding x bestandsformaat), gescheiden van de
+            threaded resultaten.
 
 Draaien vanuit de repo-root (release build vereist):
-  python3 benchmarks/run_mount_format_benchmarks.py
+  python3 benchmarks/run_mount_format_benchmarks_unthreaded.py
 """
 
 import datetime
@@ -39,6 +48,10 @@ N_RANDOM     = 200        # aantal random seeks per meting
 RANDOM_SEED  = 42
 REOPEN_EVERY = 50         # vast patroon: elke N-de random-seek de handle heropenen
 N_RUNS       = 3
+
+# Extra fastafs-mount-argumenten voor deze variant: '-s' schakelt multi-threaded
+# FUSE uit (single-threaded). Wordt na het 'mount'-subcommando ingevoegd.
+MOUNT_EXTRA_ARGS = ['-s']
 
 N_NUCLEOTIDES    = 10_000_000
 LINE_WIDTH       = 60
@@ -304,11 +317,13 @@ def valgrind_mount_metrics(ffs_path, mnt_dir, suffix, pattern):
     Aparte meting (niet onder perf): valgrind tracet alle allocaties van mount + de
     reads die het lezen van het virtuele bestand uitlokt. Deterministisch -> eenmalig.
     Geeft total_allocs, total_bytes (cumulatief gealloceerd) en definitely_lost bytes."""
-    vg_tmp = os.path.join(TMP_DIR, f'valgrind_mount_{pattern}.txt')
+    vg_tmp = os.path.join(TMP_DIR, f'valgrind_mount_{pattern}_unthreaded.txt')
     ensure_mountpoint(mnt_dir)
 
+    # valgrind's eigen '-s' (toon foutenlijst) staat vóór FASTAFS; fastafs' '-s'
+    # (single-threaded) staat na het 'mount'-subcommando via MOUNT_EXTRA_ARGS.
     cmd = ['valgrind', '--leak-check=full', '-s',
-           FASTAFS, 'mount', '-f', ffs_path, mnt_dir]
+           FASTAFS, 'mount', *MOUNT_EXTRA_ARGS, '-f', ffs_path, mnt_dir]
     vg_fh = open(vg_tmp, 'w')
     proc  = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=vg_fh)
 
@@ -388,7 +403,7 @@ def run_one(ffs_path, mnt_dir, enc, compression, file_type, pattern,
             timestamp, version, git_commit, tsv_path):
     """Geeft het aantal mislukte runs terug (0..N_RUNS)."""
     suffix   = FILE_TYPE_SUFFIX[file_type]
-    perf_tmp = os.path.join(TMP_DIR, f'perf_mount_{enc}_{compression}_{file_type}.txt')
+    perf_tmp = os.path.join(TMP_DIR, f'perf_mount_{enc}_{compression}_{file_type}_unthreaded.txt')
     failures = 0
 
     # Cumulatief geheugengebruik is deterministisch -> eenmalig meten (los van de perf-runs).
@@ -401,7 +416,7 @@ def run_one(ffs_path, mnt_dir, enc, compression, file_type, pattern,
         ensure_mountpoint(mnt_dir)   # ruim eventuele kapotte mount van een vorige run op
 
         cmd = ['perf', 'stat', '-e', 'instructions,cycles',
-               FASTAFS, 'mount', '-f', ffs_path, mnt_dir]
+               FASTAFS, 'mount', *MOUNT_EXTRA_ARGS, '-f', ffs_path, mnt_dir]
         perf_fh    = open(perf_tmp, 'w')
         mount_proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=perf_fh)
 
@@ -449,7 +464,7 @@ def run_one(ffs_path, mnt_dir, enc, compression, file_type, pattern,
                 f'{perf["wall"]:.6f}', f'{perf["user"]:.6f}', f'{perf["sys"]:.6f}',
                 peak_rss,
                 vg['allocs'], vg['bytes'], vg['lost'],
-                'threaded',
+                'unthreaded',
             ])
         elif virtual_file is None:
             print(f'  OVERGESLAGEN: *{suffix} niet gevonden in {mnt_dir} (mount mislukt?)')
@@ -462,6 +477,7 @@ def run_one(ffs_path, mnt_dir, enc, compression, file_type, pattern,
 
 def main():
     print(f'fastafs binary: {os.path.realpath(FASTAFS)}')
+    print('Modus: UNTHREADED (fastafs mount -s)')
     print('Testdata voorbereiden ...')
     ensure_test_data()
 
@@ -482,21 +498,23 @@ def main():
             for file_type in FILE_TYPE_SUFFIX:
                 # Eén uitvoerbestand per (encoding x bestandsformaat); beide
                 # compressies en alle patronen komen er als kolommen in.
+                # '_unthreaded'-suffix houdt deze resultaten gescheiden van de
+                # threaded run (run_mount_format_benchmarks.py).
                 tsv_path = os.path.join(
                     BENCH_DIR,
-                    f'{username}-{machine_id}_mount_{enc}_{file_type}.txt'
+                    f'{username}-{machine_id}_mount_{enc}_{file_type}_unthreaded.txt'
                 )
                 ensure_tsv(tsv_path)
 
                 for pattern in PATTERNS:
-                    print(f'\nBenchmarking {enc} ({compression})  '
+                    print(f'\nBenchmarking [unthreaded] {enc} ({compression})  '
                           f'{file_type}  patroon={pattern} ...')
                     total_failures += run_one(ffs_path, mnt_dir, enc, compression,
                                              file_type, pattern,
                                              timestamp, version, git_commit, tsv_path)
 
     print(f'\nResultaten toegevoegd aan '
-          f'{BENCH_DIR}/{username}-{machine_id}_mount_<enc>_<fmt>.txt')
+          f'{BENCH_DIR}/{username}-{machine_id}_mount_<enc>_<fmt>_unthreaded.txt')
 
     if total_failures:
         RED   = '\033[1;31m'
