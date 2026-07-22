@@ -243,7 +243,7 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
 
     size_t pos = (size_t) start_pos_in_fasta;
 
-    // kijkt of een stuk van de header naar de buffer gekopieerd moet worden
+    // kijkt of een / welk stuk van de header naar de buffer gekopieerd moet worden
     size_t pos_limit = this->name.size() + 2;
     if(pos < pos_limit) {
         const std::string header = ">" + this->name + "\n";
@@ -426,18 +426,26 @@ template <class T> inline uint32_t fastafs_seq::view_fasta_chunk_generalized(
                         chunk = t.get();
                         const uint32_t slots = std::min(
                             (uint32_t)T::nucleotides_per_chunk, (uint32_t)(run_end - pos));
-                        for(uint32_t i = 0; i < slots; i++, pos++) {
-                            buffer[written++] = (pos >= cur_m_start)
-                                ? (unsigned char)(chunk[i] + 32) : chunk[i];
-                            if(pos == cur_m_end) {
-                                m_block++;
+                        if(slots == (uint32_t)T::nucleotides_per_chunk && pos + slots <= cur_m_start) {
+                            // hele chunk ligt vóór het volgende m-blok: unmasked en geen m-grens erin
+                            // -> in één keer kopiëren i.p.v. per byte masking/grens-check
+                            memcpy(buffer + written, chunk, slots);
+                            written += slots;
+                            pos     += slots;
+                        } else {
+                            for(uint32_t i = 0; i < slots; i++, pos++) {
+                                buffer[written++] = (pos >= cur_m_start)
+                                    ? (unsigned char)(chunk[i] + 32) : chunk[i];
+                                if(pos == cur_m_end) {
+                                    m_block++;
 #if DEBUG
-                                if(m_block >= cache->m_ends.size()) {
-                                    throw std::out_of_range("m_block advanced past sentinel\n");
-                                }
+                                    if(m_block >= cache->m_ends.size()) {
+                                        throw std::out_of_range("m_block advanced past sentinel\n");
+                                    }
 #endif
-                                cur_m_end   = cache->m_ends[m_block];
-                                cur_m_start = cache->m_starts[m_block];
+                                    cur_m_end   = cache->m_ends[m_block];
+                                    cur_m_start = cache->m_starts[m_block];
+                                }
                             }
                         }
                         bit_offset = (unsigned char)(slots % (uint32_t)T::nucleotides_per_chunk);

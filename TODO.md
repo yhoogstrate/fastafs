@@ -135,3 +135,62 @@
 - `add(char *)` muteert de pointer niet; net als `get` kan het `const char *` worden.
 - Dan vervallen de `(char*)`-casts in `test/database/test_database.cpp`
   (regels 52, 57, 73, 76, 106) en is de API consistent met `get`.
+
+## Refactor-concept: `view_fasta_chunk_generalized` als 3 lagen met meerlaagse cursor
+Idee (geparkeerd): de huidige gefuseerde per-byte lus in
+`view_fasta_chunk_generalized` (`src/fastafs.cpp`) herstructureren tot drie duidelijk
+gescheiden lagen, zónder de tussenresultaten te materialiseren (lazy/pull-based) en op
+run-granulariteit (niet per byte). Doel is **schonere, beter testbare code** bij
+**gelijke performance** — geen snelheidstruc.
+
+**De drie lagen (pull-based: laag 3 vraagt aan laag 2, die aan laag 1):**
+1. **decode** — gepakte 2/4/5-bit stroom → uitgepakte nucleotiden/aminozuren. Puur,
+   branch-vrij, memcpy/SIMD-vriendelijk. Levert echte basen.
+2. **N + masking** — vult N-blokken (`N`/`n`/`-`/`?`) tussen de echte basen en past
+   lowercase-masking toe op M-blokken. Werkt in nucleotide-coördinaten.
+3. **line-wrap** — voegt elke `padding` tekens een `\n` toe. Werkt in FASTA-regel-coördinaten.
+
+**Cruciale ontwerpvoorwaarde — run-granulariteit, geen per-byte pulls.** Per byte pullen
+(virtual call / yield per nucleotide) herintroduceert precies de indirectie die de
+batch-decode juist wegnam → langzamer. Elke laag moet een **maximale homogene run**
+leveren ("geef alles tot de eerstvolgende grens"). De verenigende primitieve staat al in
+de code:
+```cpp
+run_end = min(cur_n_start, pos_limit, pos + buffer_remaining);
+```
+Dat is letterlijk "produceer tot de dichtstbijzijnde grens over de N-laag, de regel-laag en
+de output-buffer". Dit concept maakt die impliciete gelaagdheid expliciet; binnen een run
+blijft alles bulk (`memcpy`, zie ook punten A/B hieronder over de decode-lus).
+
+**Meerlaagse cursor.** Breid de bestaande `ffs2f_cursor` uit tot één resume-toestand met
+een slice per laag:
+- laag 1: stroompositie, `bit_offset`, huidige chunk;
+- laag 2: `n_block`/`m_block` + `cur_n_*`/`cur_m_*`;
+- laag 3: `newlines_passed` / regelpositie.
+
+Daarmee worden twee dingen uniform:
+- **willekeurige offset-read** = "seed elke laag-slice op offset X" (de cold-path:
+  `find_block` + `get_n_offset` + de newline-rekensom, netjes per laag verdeeld);
+- **sequentiële voortzetting** = "herstel alle drie de slices" → seek/refill én de
+  binary searches worden voor alle lagen tegelijk overgeslagen.
+De huidige cursor houdt al ~laag 1+2 bij; laag 3 toevoegen is architecturale netheid, geen
+snelheidswinst (newlines worden nu goedkoop per call teruggerekend).
+
+**Afweging / risico.** Drie samenhangende cursor-toestanden = meer oppervlak voor subtiele
+bugs (vgl. de merge-conflicten die de batch/cursor-lussen kapotmaakten). Het is de moeite
+als je de lagen wilt laten evolueren (bv. SIMD achter een schone laaggrens); minder als
+puur perf-argument, want run-granulair presteert het gelijk aan de huidige fused lus.
+
+**Snelheid blijft in laag 1.** De echte hefbomen zitten los van deze refactor, in de
+decode-run zelf:
+- **A (gedaan)** whole-chunk `memcpy` fast-path wanneer een volle chunk vóór het volgende
+  m-blok ligt (`slots == npc && pos + slots <= cur_m_start`), i.p.v. per-byte
+  masking/grens-check. Zie `src/fastafs.cpp`, de N-vrije `else`-tak.
+- **B (open)** masking per m-segment: run op m-grenzen splitsen zodat ook *binnen* een
+  m-blok branch-vrij gekopieerd wordt (heel segment `+32`). Reële winst op soft-masked
+  genomen (~50% lowercase in repeat-masked hg38); onzichtbaar op de ACGT-repeat-benchmark.
+- **C (open)** dubbele buffering wegnemen: de batch leest nu via `fh.read` naar een 256 KiB
+  stack-array `comp_buf` en decodeert daaruit. Met een `peek()`-API (pointer + beschikbare
+  lengte in de interne reader-buffer) decodeer je direct uit de interne buffer → een
+  volledige extra geheugen-pass én de stack-array vervallen. Let op de buffer-hergrens
+  (en fivebit met `bytes_per_chunk = 5` dat over de grens kan splitsen).
