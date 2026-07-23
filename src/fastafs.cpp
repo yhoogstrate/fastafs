@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -1619,20 +1620,23 @@ std::string fastafs::get_faidx(uint32_t padding)
     std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
     if(file.is_open()) {
-        file.close();
+        //file.close();
         uint32_t offset = 0;
 
         for(size_t i = 0; i < this->data.size(); i++) {
             offset += 1;// '>'
             offset += (uint32_t) this->data[i]->name.size() + 1; // "chr1\n"
 
-            // fasta headers may contanis spaces etc. which need to be excluded from fai files
+            // fasta headers may contain spaces etc. which need to be excluded from fai files
 
             std::string name_t;
             std::string::size_type truncate = data[i]->name.find(" ");
-            if(truncate > 1) {
+            if(truncate != std::string::npos)
+            {
                 name_t = data[i]->name.substr(0, truncate);
-            } else {
+            }
+            else
+            {
                 name_t = data[i]->name;
             }
 
@@ -1645,7 +1649,9 @@ std::string fastafs::get_faidx(uint32_t padding)
         //	buffer[written] = contents[written];
         //	written++;
         //	}
-    } else {
+    }
+    else
+    {
         throw std::runtime_error("[fastafs::get_faidx] could not load fastafs: " + this->filename);
     }
 
@@ -1656,9 +1662,17 @@ std::string fastafs::get_faidx(uint32_t padding)
 
 uint32_t fastafs::view_faidx_chunk(uint32_t padding, char *buffer, size_t buffer_size, off_t file_offset)
 {
+#ifdef DEBUG
+    assert(file_offset >= 0);
+#endif
+
     std::string contents = this->get_faidx(padding);
 
-    size_t to_copy = std::min(buffer_size, contents.size() - file_offset);
+#ifdef DEBUG
+    assert((size_t)file_offset < contents.size());  // "Dit mag NOOIT"
+#endif
+    
+    size_t to_copy = std::min(buffer_size, contents.size() - (size_t) file_offset);
 
     return (uint32_t) contents.copy(buffer, to_copy, file_offset);
 }
